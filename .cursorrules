@@ -1,0 +1,10 @@
+# Cursor Rules (References central .ai docs)
+
+Include/Refer:
+- `.ai*`
+
+Guidance:
+- 코드 작성/리팩터링/리뷰 시 위 문서를 우선 참조
+- 사용자 질문에 대한 맥락/아키텍처/표준 반영
+- 불일치 발견 시 PR로 .ai 문서 우선 업데이트
+

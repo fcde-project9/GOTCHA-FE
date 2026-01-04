@@ -27,7 +27,6 @@ const eslintConfig = [
             ["parent", "sibling"], // 상대 경로
             "index", // index 파일
             "object",
-            "type", // TypeScript 타입
           ],
           pathGroups: [
             {
@@ -47,7 +46,7 @@ const eslintConfig = [
             },
           ],
           pathGroupsExcludedImportTypes: ["react", "next"],
-          "newlines-between": "always",
+          "newlines-between": "never",
           alphabetize: {
             order: "asc",
             caseInsensitive: true,

@@ -64,6 +64,10 @@
 
    Open [http://localhost:3000](http://localhost:3000)
 
+5. 배포 환경
+
+   프로덕션: [https://gotcha.it.com](https://gotcha.it.com)
+
 ### 환경 변수
 
 - `NEXT_PUBLIC_API_BASE_URL`: 백엔드 API 주소
@@ -154,4 +158,4 @@ GOTCHA-FE/
 5. 타입
 6. 스타일 및 자산
 
-자세한 내용은 [ai/initial_setting.md](ai/initial_setting.md)를 참조하세요.
+자세한 내용은 [.ai/initial_setting.md](.ai/initial_setting.md)를 참조하세요.

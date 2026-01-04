@@ -117,7 +117,6 @@ const eslintConfig = [
             ["parent", "sibling"], // 상대 경로
             "index", // index 파일
             "object",
-            "type", // TypeScript 타입
           ],
           pathGroups: [
             {
@@ -137,7 +136,7 @@ const eslintConfig = [
             },
           ],
           pathGroupsExcludedImportTypes: ["react", "next"],
-          "newlines-between": "always",
+          "newlines-between": "never",
           alphabetize: {
             order: "asc",
             caseInsensitive: true,
@@ -162,10 +161,9 @@ export default eslintConfig;
 ```tsx
 // 1. React 및 Next.js 핵심
 import React, { useState, useEffect } from "react";
-
-import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
 
 // 2. 외부 라이브러리
 import { useQuery } from "@tanstack/react-query";
@@ -175,19 +173,91 @@ import { useStore } from "zustand";
 // 3. 내부 모듈 (절대 경로)
 import Button from "@/components/common/Button";
 import { useUserStore } from "@/store/userStore";
+import type { User } from "@/types/user";
 import { formatDate } from "@/utils/date";
 
 // 4. 상대 경로 모듈
 import LocalComponent from "./LocalComponent";
-
-// 5. 타입
-import type { User } from "@/types/user";
-
-// 6. 스타일 및 자산
 import styles from "./page.module.css";
 ```
 
-## 5. 프로젝트 폴더 구조
+**주요 변경사항:**
+- 타입 import가 같은 패키지의 일반 import와 함께 그룹화됨
+- 같은 그룹 내에서는 빈 줄 없이 정렬됨
+
+## 5. Husky & lint-staged 설정
+
+Git 커밋 시 자동으로 코드 품질을 검사하도록 설정합니다.
+
+### 패키지 설치
+
+```bash
+npm install -D husky lint-staged
+```
+
+### Husky 초기화
+
+```bash
+npx husky init
+```
+
+이 명령어는 다음을 자동으로 수행합니다:
+- `.husky/` 디렉토리 생성
+- `.husky/pre-commit` 파일 생성
+- `package.json`에 `"prepare": "husky"` 스크립트 추가
+
+### Pre-commit 훅 설정
+
+`.husky/pre-commit` 파일을 다음과 같이 수정:
+
+```sh
+#!/bin/sh
+set -eu
+npm run -s lint:staged
+```
+
+### package.json 설정
+
+`package.json`에 다음 설정 추가:
+
+```json
+{
+  "scripts": {
+    "lint:staged": "lint-staged"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,css,md}": [
+      "prettier --write"
+    ]
+  }
+}
+```
+
+### 동작 방식
+
+이제 `git commit` 실행 시:
+1. Staged된 파일만 선택
+2. JS/TS 파일: ESLint 자동 수정 + Prettier 포맷팅
+3. JSON/CSS/MD 파일: Prettier 포맷팅만 실행
+4. 에러가 있으면 커밋 중단
+
+### 테스트
+
+```bash
+# 파일 수정 후
+git add .
+git commit -m "test: husky 설정 테스트"
+
+# lint-staged가 자동으로 실행됨
+# [STARTED] Running tasks for staged files...
+# [COMPLETED] Running tasks for staged files...
+```
+
+## 6. 프로젝트 폴더 구조
 
 ```
 GOTCHA-FE/
@@ -503,8 +573,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "GOTCHA! - 가챠샵 지도 서비스",
-  description:
-    "가챠샵을 지도 기반으로 탐색하고 매장 정보를 확인할 수 있는 모바일 웹 서비스",
+  description: "가챠샵을 지도 기반으로 탐색하고 매장 정보를 확인할 수 있는 모바일 웹 서비스",
   openGraph: {
     title: "GOTCHA! - 가챠샵 지도 서비스",
     description: "가까운 가챠샵을 찾아보세요",
@@ -512,11 +581,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
       <head>
