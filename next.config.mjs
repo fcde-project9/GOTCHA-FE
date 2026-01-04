@@ -2,10 +2,14 @@
 const nextConfig = {
   // API 프록시 설정
   async rewrites() {
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (!apiBaseUrl) {
+      return [];
+    }
     return [
       {
         source: "/api/:path*",
-        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL}/:path*`,
+        destination: `${apiBaseUrl}/:path*`,
       },
     ];
   },
