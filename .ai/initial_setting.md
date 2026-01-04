@@ -182,6 +182,7 @@ import styles from "./page.module.css";
 ```
 
 **주요 변경사항:**
+
 - 타입 import가 같은 패키지의 일반 import와 함께 그룹화됨
 - 같은 그룹 내에서는 빈 줄 없이 정렬됨
 
@@ -202,6 +203,7 @@ npx husky init
 ```
 
 이 명령어는 다음을 자동으로 수행합니다:
+
 - `.husky/` 디렉토리 생성
 - `.husky/pre-commit` 파일 생성
 - `package.json`에 `"prepare": "husky"` 스크립트 추가
@@ -226,13 +228,8 @@ npm run -s lint:staged
     "lint:staged": "lint-staged"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,css,md}": [
-      "prettier --write"
-    ]
+    "*.{js,jsx,ts,tsx}": ["eslint --fix", "prettier --write"],
+    "*.{json,css,md}": ["prettier --write"]
   }
 }
 ```
@@ -240,6 +237,7 @@ npm run -s lint:staged
 ### 동작 방식
 
 이제 `git commit` 실행 시:
+
 1. Staged된 파일만 선택
 2. JS/TS 파일: ESLint 자동 수정 + Prettier 포맷팅
 3. JSON/CSS/MD 파일: Prettier 포맷팅만 실행
