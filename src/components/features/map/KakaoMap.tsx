@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useKakaoLoader } from "@/hooks/useKakaoLoader";
 
 interface KakaoMapProps {
   width?: string;
@@ -22,68 +23,63 @@ export default function KakaoMap({
   level = 3,
 }: KakaoMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
+  const mapInstance = useRef<KakaoMap | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [scriptLoaded, setScriptLoaded] = useState(false);
+  const [mapError, setMapError] = useState<string | null>(null);
 
-  // 1. 스크립트 로드 (한 번만 실행)
+  // 커스텀 훅으로 SDK 로드 (싱글톤 패턴으로 전역 관리)
+  const { loaded: scriptLoaded, error: sdkError } = useKakaoLoader();
+
+  // 지도 초기화 (한 번만 실행)
+  // latitude, longitude, level은 초기값만 사용하고 이후 업데이트는 별도 useEffect에서 처리
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    const apiKey = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY;
+    let isMounted = true;
+    let timeoutId: NodeJS.Timeout | null = null;
+    let retryCount = 0;
+    const MAX_RETRIES = 50; // 최대 5초 대기 (100ms * 50)
 
-    if (!apiKey) {
-      setError("카카오맵 API 키가 설정되지 않았습니다.");
-      setIsLoading(false);
-      return;
-    }
-
-    // 이미 로드되었는지 확인
-    if (window.kakao && window.kakao.maps) {
-      setScriptLoaded(true);
-      return;
-    }
-
-    // 스크립트 동적 추가
-    const script = document.createElement("script");
-    const scriptUrl = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&autoload=false`;
-    script.src = scriptUrl;
-    script.async = true;
-
-    script.onload = () => {
-      setScriptLoaded(true);
-    };
-    script.onerror = () => {
-      setError("카카오맵 SDK 로드에 실패했습니다.");
-      setIsLoading(false);
-    };
-    document.head.appendChild(script);
-  }, []);
-
-  // 2. 지도 초기화 (스크립트 로드 완료 후 + mapContainer 준비 후)
-  useEffect(() => {
     if (!scriptLoaded) {
       return;
     }
 
     const initMap = () => {
+      if (!isMounted) {
+        return;
+      }
+
       if (!mapContainer.current) {
-        // DOM이 준비될 때까지 재시도
-        setTimeout(initMap, 100);
+        // 재시도 횟수 제한
+        if (retryCount >= MAX_RETRIES) {
+          if (isMounted) {
+            setMapError("지도 컨테이너를 찾을 수 없습니다.");
+            setIsLoading(false);
+          }
+          return;
+        }
+        retryCount++;
+        timeoutId = setTimeout(initMap, 100);
         return;
       }
 
       if (window.kakao && window.kakao.maps) {
         window.kakao.maps.load(() => {
-          if (mapContainer.current) {
+          if (mapContainer.current && isMounted) {
             try {
               const options = {
                 center: new window.kakao.maps.LatLng(latitude, longitude),
                 level: level,
               };
-              new window.kakao.maps.Map(mapContainer.current, options);
-              setIsLoading(false);
+              // 지도 인스턴스를 ref에 저장
+              mapInstance.current = new window.kakao.maps.Map(mapContainer.current, options);
+              if (isMounted) {
+                setIsLoading(false);
+              }
             } catch (err) {
-              setError(`지도 초기화 실패: ${err}`);
-              setIsLoading(false);
+              if (isMounted) {
+                setMapError(`지도 초기화 실패: ${err}`);
+                setIsLoading(false);
+              }
             }
           }
         });
@@ -91,7 +87,36 @@ export default function KakaoMap({
     };
 
     initMap();
-  }, [scriptLoaded, latitude, longitude, level]);
+
+    return () => {
+      isMounted = false;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      // 지도 인스턴스 정리
+      // Kakao Maps API는 명시적인 destroy 메서드가 없지만, ref를 null로 설정
+      mapInstance.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scriptLoaded]);
+
+  // props 변경 시 지도 업데이트 (재생성하지 않음)
+  useEffect(() => {
+    if (!mapInstance.current) {
+      return;
+    }
+
+    try {
+      const newCenter = new window.kakao.maps.LatLng(latitude, longitude);
+      mapInstance.current.setCenter(newCenter);
+      mapInstance.current.setLevel(level);
+    } catch (err) {
+      setMapError(`지도 업데이트 실패: ${err}`);
+    }
+  }, [latitude, longitude, level]);
+
+  // SDK 에러와 지도 에러를 통합
+  const error = sdkError || mapError;
 
   return (
     <div style={{ width, height, position: "relative" }}>
