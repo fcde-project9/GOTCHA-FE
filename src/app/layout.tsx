@@ -8,6 +8,11 @@ export const metadata: Metadata = {
   title: "GOTCHA! - 가챠샵 지도 서비스",
   description: "가챠샵을 지도 기반으로 탐색하고 매장 정보를 확인할 수 있는 모바일 웹 서비스",
   keywords: ["가챠샵", "가챠", "지도", "매장찾기", "GOTCHA"],
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+  },
   openGraph: {
     title: "GOTCHA! - 가챠샵 지도 서비스",
     description: "가까운 가챠샵을 찾아보세요",
@@ -37,7 +42,7 @@ export default function RootLayout({
           strategy="beforeInteractive"
         />
       </head>
-      <body>
+      <body className="w-full max-w-[480px] mx-auto">
         <Providers>{children}</Providers>
       </body>
     </html>
