@@ -14,7 +14,7 @@ export default function PageWithLoading({ children }: { children: React.ReactNod
     // 2초 후 로딩 완료
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 2000);
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, []);
