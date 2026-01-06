@@ -1,4 +1,4 @@
-name: CI for Development
+name: Deploy to Development (Preview)
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - dev
 
 jobs:
-  ci:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -25,5 +25,23 @@ jobs:
       - name: Run linter
         run: npm run lint
 
-      - name: Build application
-        run: npm run build
+      # Preview 환경 기준으로 Vercel 프로젝트 정보 pull
+      - name: Pull Vercel Environment Information (Preview)
+        run: npx vercel@latest pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      # Preview build
+      - name: Build application (Preview)
+        run: npx vercel@latest build --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      # Preview deploy → dev.gotcha.it.com
+      - name: Deploy to Vercel (Preview)
+        run: npx vercel@latest deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
