@@ -1,5 +1,5 @@
-import Script from "next/script";
 import type { Metadata } from "next";
+import Script from "next/script";
 import Providers from "./providers";
 import "./globals.css";
 
