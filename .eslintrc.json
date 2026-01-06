@@ -9,6 +9,16 @@
         "pathGroups": [
           {
             "pattern": "react",
+            "group": "builtin",
+            "position": "before"
+          },
+          {
+            "pattern": "react-dom",
+            "group": "builtin",
+            "position": "before"
+          },
+          {
+            "pattern": "next",
             "group": "external",
             "position": "before"
           },
@@ -23,7 +33,7 @@
             "position": "after"
           }
         ],
-        "pathGroupsExcludedImportTypes": ["react", "next"],
+        "pathGroupsExcludedImportTypes": ["builtin"],
         "newlines-between": "never",
         "alphabetize": {
           "order": "asc",
