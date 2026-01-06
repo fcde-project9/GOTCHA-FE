@@ -1,9 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-
+import type { Shop } from "@/types/shop";
 import apiClient from "../client";
 import { ENDPOINTS } from "../endpoints";
-
-import type { Shop } from "@/types/shop";
 
 // 매장 리스트 조회
 export const useShops = () => {
