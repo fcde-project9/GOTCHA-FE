@@ -32,12 +32,9 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
-      # Preview build
+      # Preview build (Vercel pull에서 가져온 환경변수 사용)
       - name: Build application (Preview)
-        run: npx vercel@latest build --token=${{ secrets.VERCEL_TOKEN }}
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: npm run build
 
       # Preview deploy → dev.gotcha.it.com
       - name: Deploy to Vercel (Preview)

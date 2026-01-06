@@ -32,12 +32,9 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
-      # Production build
+      # Production build (Vercel pull에서 가져온 환경변수 사용)
       - name: Build application (Production)
-        run: npx vercel@latest build --prod --token=${{ secrets.VERCEL_TOKEN }}
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: npm run build
 
       # Production deploy → www.gotcha.it.com
       - name: Deploy to Vercel (Production)
