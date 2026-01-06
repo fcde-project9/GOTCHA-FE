@@ -26,8 +26,14 @@ jobs:
       - name: Run linter
         run: npm run lint
 
+      - name: Pull Vercel Environment Information
+        run: npx vercel@latest pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_MAIN }}
+
       - name: Build application
-        run: npx vercel@latest build --token=${{ secrets.VERCEL_TOKEN }}
+        run: npx vercel@latest build --prod --token=${{ secrets.VERCEL_TOKEN }}
         env:
           NEXT_PUBLIC_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_API_BASE_URL }}
           NEXT_PUBLIC_KAKAO_MAP_KEY: ${{ secrets.NEXT_PUBLIC_KAKAO_MAP_KEY }}
