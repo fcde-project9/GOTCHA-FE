@@ -68,34 +68,14 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     // Variant별 스타일
     const variantStyles: Record<ButtonVariant, string> = {
-      primary: cn(
-        "bg-main text-grey-white",
-        "hover:bg-main-700",
-        "active:bg-main-900",
-        "focus-visible:ring-main-300",
-        "disabled:bg-grey-300 disabled:text-grey-500"
-      ),
-      secondary: cn(
-        "bg-grey-900 text-grey-white",
-        "hover:bg-grey-800",
-        "active:bg-grey-900",
-        "focus-visible:ring-grey-500",
-        "disabled:bg-grey-300 disabled:text-grey-500"
-      ),
-      tertiary: cn(
-        "bg-grey-100 text-grey-900",
-        "hover:bg-grey-200",
-        "active:bg-grey-300",
-        "focus-visible:ring-grey-300",
-        "disabled:bg-grey-100 disabled:text-grey-400"
-      ),
-      ghost: cn(
-        "bg-transparent text-grey-900",
-        "hover:bg-grey-50",
-        "active:bg-grey-100",
-        "focus-visible:ring-grey-300",
-        "disabled:text-grey-400"
-      ),
+      primary:
+        "bg-main text-white hover:bg-main-700 active:bg-main-900 focus-visible:ring-main-300 disabled:bg-grey-300 disabled:text-grey-500",
+      secondary:
+        "bg-grey-900 text-white hover:bg-grey-800 active:bg-grey-900 focus-visible:ring-grey-500 disabled:bg-grey-300 disabled:text-grey-500",
+      tertiary:
+        "bg-grey-100 text-grey-900 hover:bg-grey-200 active:bg-grey-300 focus-visible:ring-grey-300 disabled:bg-grey-100 disabled:text-grey-400",
+      ghost:
+        "bg-transparent text-grey-900 hover:bg-grey-50 active:bg-grey-100 focus-visible:ring-grey-300 disabled:text-grey-400",
     };
 
     // Size별 스타일

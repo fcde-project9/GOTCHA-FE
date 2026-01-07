@@ -7,6 +7,30 @@ const config: Config = {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  safelist: [
+    // Explicit list for Button component
+    "bg-main",
+    "bg-main-700",
+    "bg-main-900",
+    "bg-grey-50",
+    "bg-grey-100",
+    "bg-grey-200",
+    "bg-grey-300",
+    "bg-grey-400",
+    "bg-grey-500",
+    "bg-grey-600",
+    "bg-grey-700",
+    "bg-grey-800",
+    "bg-grey-900",
+    "text-white",
+    "text-grey-400",
+    "text-grey-500",
+    "text-grey-600",
+    "text-grey-700",
+    "text-grey-800",
+    "text-grey-900",
+    "bg-transparent",
+  ],
   theme: {
     extend: {
       colors: {
@@ -94,7 +118,6 @@ const config: Config = {
       backgroundColor: {
         default: "#FDFEFF", // bg-default
         white: "#FFFFFF", // bg-white (GOTCHA white)
-        grey: "#F7F7F9", // bg-grey
       },
       borderRadius: {
         lg: "var(--radius)",
