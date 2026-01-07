@@ -30,10 +30,12 @@ export default function Footer() {
 
   return (
     <footer
-      className="fixed bottom-[14px] left-0 right-0 mx-auto w-full max-w-[480px] bg-white"
+      className="fixed left-0 right-0 mx-auto w-full max-w-[480px] bg-white"
       style={{
         boxShadow: "0px -3px 8px rgba(163, 163, 163, 0.15)",
         height: "56px",
+        bottom: "calc(14px + env(safe-area-inset-bottom))",
+        paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
       <nav className="flex h-full items-center justify-around px-9 py-2">
