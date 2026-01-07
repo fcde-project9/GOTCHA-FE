@@ -125,40 +125,14 @@ export default function KakaoMap({
 
       {/* 로딩 오버레이 */}
       {isLoading && !error && (
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "#f3f4f6",
-            color: "#6b7280",
-          }}
-        >
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 text-gray-500">
           지도 로딩 중...
         </div>
       )}
 
       {/* 에러 오버레이 */}
       {error && (
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "#f3f4f6",
-            color: "#dc2626",
-          }}
-        >
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 text-red-600">
           {error}
         </div>
       )}

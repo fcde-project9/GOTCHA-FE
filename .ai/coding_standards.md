@@ -22,6 +22,33 @@
 - components와 utils를 먼저 확인하고 재사용할 수 있는 코드는 재사용하기
 - import할때는 최대한 절대경로 ('@') 사용
 
+## 공통 컴포넌트
+
+### Button 사용법
+
+버튼이 필요한 경우 `@/components/common`의 Button 컴포넌트를 사용하세요.
+
+```tsx
+import { Button } from "@/components/common";
+
+// 기본 사용
+<Button variant="primary">확인</Button>
+
+// Variants: primary(메인액션), secondary(보조), tertiary(취소), ghost(최소)
+<Button variant="secondary" size="large">수정</Button>
+
+// Sizes: large(56px), medium(48px), small(40px)
+<Button size="small">작은 버튼</Button>
+
+// States: loading, disabled, fullWidth
+<Button loading>처리 중...</Button>
+<Button disabled>비활성화</Button>
+<Button fullWidth>전체 너비</Button>
+```
+
+**테스트 페이지**: 개발 서버에서 `/button-test` 접속하여 모든 스타일 확인 가능  
+**상세 문서**: `src/components/common/Button.md` 참고
+
 ## 라우팅/가드
 
 - `ProtectedRoute`, `AdminRoute`는 세션 체크 지연 호출 패턴 유지
@@ -39,6 +66,13 @@
 - 기존 포맷을 최대한 유지
 - 라인 길이 과도 시 가독성을 최우선으로 개행
 - 불필요한 주석/로그 삭제, 핵심 맥락만 주석
+- CSS는 `tailwind.config.ts`에 정의된 디자인 시스템 변수 우선 사용
+- inline style 대신 Tailwind className 사용
+  - 배경색: `bg-default`, `bg-white`, `bg-grey` (GOTCHA 시스템)
+  - 메인 컬러: `bg-main-500`, `text-main-700`
+  - Grey 컬러: `bg-grey-900`, `text-grey-800`
+  - Line 컬러: `border-line-100`, `border-line-300`
+- 컬러/간격 등 반복 스타일은 `tailwind.config.ts`에 먼저 정의 후 활용
 
 ## 테스트/품질
 
