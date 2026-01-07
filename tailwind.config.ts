@@ -9,6 +9,7 @@ const config: Config = {
   ],
   safelist: [
     // Explicit list for Button component
+    // NOTE: Keep this in sync with Button.tsx variant definitions
     "bg-main",
     "bg-main-700",
     "bg-main-900",
@@ -30,6 +31,10 @@ const config: Config = {
     "text-grey-800",
     "text-grey-900",
     "bg-transparent",
+    // Focus-visible ring colors for Button variants
+    "ring-main-300",
+    "ring-grey-300",
+    "ring-grey-500",
   ],
   theme: {
     extend: {
