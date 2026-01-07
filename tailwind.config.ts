@@ -7,6 +7,35 @@ const config: Config = {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  safelist: [
+    // Explicit list for Button component
+    // NOTE: Keep this in sync with Button.tsx variant definitions
+    "bg-main",
+    "bg-main-700",
+    "bg-main-900",
+    "bg-grey-50",
+    "bg-grey-100",
+    "bg-grey-200",
+    "bg-grey-300",
+    "bg-grey-400",
+    "bg-grey-500",
+    "bg-grey-600",
+    "bg-grey-700",
+    "bg-grey-800",
+    "bg-grey-900",
+    "text-white",
+    "text-grey-400",
+    "text-grey-500",
+    "text-grey-600",
+    "text-grey-700",
+    "text-grey-800",
+    "text-grey-900",
+    "bg-transparent",
+    // Focus-visible ring colors for Button variants
+    "ring-main-300",
+    "ring-grey-300",
+    "ring-grey-500",
+  ],
   theme: {
     extend: {
       colors: {
@@ -90,11 +119,13 @@ const config: Config = {
           DEFAULT: "#FF3E27",
           light: "#FFEBEE",
         },
+        icon: {
+          DEFAULT: "#3F4044",
+        },
       },
       backgroundColor: {
         default: "#FDFEFF", // bg-default
         white: "#FFFFFF", // bg-white (GOTCHA white)
-        grey: "#F7F7F9", // bg-grey
       },
       borderRadius: {
         lg: "var(--radius)",

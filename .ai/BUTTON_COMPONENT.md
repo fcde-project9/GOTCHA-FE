@@ -68,9 +68,12 @@ import { Button } from "@/components/common";
 
 ### ✅ Tailwind CSS 기반
 
-- `tailwind.config.ts`에 정의된 GOTCHA 디자인 시스템 컬러 사용
+- `tailwind.config.ts`에 정의된 GOTCHA 디자인 시스템 컬러 사용 (`grey`, `main`)
 - inline style 없음, 모든 스타일은 className으로 관리
 - `cn()` 유틸리티로 클래스 병합 및 확장 가능
+- **중요**: Tailwind JIT가 `grey` 색상 클래스를 생성하도록 `safelist` 설정 필요
+  - `bg-grey-*`, `text-grey-*` 등이 safelist에 명시되어야 함
+  - `colors.grey`와 `backgroundColor.grey`가 충돌하지 않도록 주의
 
 ### ✅ TypeScript 완벽 지원
 
@@ -101,6 +104,11 @@ npm run dev
 ```
 
 브라우저에서 `http://localhost:3000/button-test` 접속
+
+**⚠️ 중요**: 이 테스트 페이지는 **개발 환경에서만 접근 가능**합니다.
+
+- 프로덕션 환경(`NODE_ENV === "production"`)에서는 자동으로 404 페이지로 리다이렉트됩니다.
+- 보안을 위해 테스트 페이지가 프로덕션에 노출되지 않도록 환경 체크가 구현되어 있습니다.
 
 이 페이지에서 다음을 확인할 수 있습니다:
 
@@ -246,10 +254,18 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 - **상세 문서**: `src/components/common/Button.md`
 - **예시 코드**: `src/components/common/Button.example.tsx`
-- **테스트 페이지**: `/button-test` (개발 환경)
+- **테스트 페이지**: `/button-test` (개발 환경 전용 - 프로덕션에서는 404 반환)
 
 ## 참고
 
 - Figma 디자인: https://www.figma.com/design/cQ0OguMu2o7IO6arckxDtU/GOTCHA--디자인?node-id=636-5575
 - Tailwind Config: `tailwind.config.ts`
 - Coding Standards: `.ai/coding_standards.md`
+
+### 철자 주의사항
+
+- Tailwind 기본값은 `gray` (a 철자)이지만, GOTCHA 디자인 시스템은 `grey` (e 철자) 사용
+- 모든 Button 관련 클래스는 `grey` 철자를 일관되게 사용해야 함
+- `text-white`는 Tailwind 기본 클래스 사용 (커스텀 `text-grey-white` 대신)
+- `colors.grey`와 `backgroundColor.grey`가 중복 정의되지 않도록 확인
+  - `extend.colors.grey` 사용 시 `extend.backgroundColor.grey`는 제거
