@@ -1,5 +1,5 @@
 /**
- * Kakao Maps API 타입 정의
+ * Kakao API 타입 정의 (Maps & OAuth)
  */
 
 declare global {
@@ -13,6 +13,29 @@ declare global {
         InfoWindow: new (options: InfoWindowOptions) => InfoWindow;
       };
     };
+    Kakao: {
+      init: (appKey: string) => void;
+      isInitialized: () => boolean;
+      Auth: {
+        login: (options: KakaoAuthOptions) => void;
+        logout: (callback?: () => void) => void;
+        getAccessToken: () => string | null;
+      };
+    };
+  }
+
+  interface KakaoAuthResponse {
+    access_token: string;
+    token_type: string;
+    refresh_token: string;
+    expires_in: number;
+    scope: string;
+    refresh_token_expires_in: number;
+  }
+
+  interface KakaoAuthOptions {
+    success: (authObj: KakaoAuthResponse) => void;
+    fail: (err: Error) => void;
   }
 
   interface MapOptions {
