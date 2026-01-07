@@ -1,11 +1,11 @@
-import { PageWithLoading } from "@/components/common";
+import { Footer } from "@/components/common";
 import { KakaoMap } from "@/components/features/map";
 
 export default function Home() {
   return (
-    <PageWithLoading>
-      <main>
-        <div className="flex min-h-screen flex-col items-center gap-8">
+    <>
+      <main className="h-[calc(100vh-70px)]">
+        <div className="flex h-full flex-col items-center gap-8">
           {/* 카카오맵 */}
           <div className="w-full">
             <KakaoMap width="100%" height="570px" />
@@ -16,6 +16,7 @@ export default function Home() {
           </div>
         </div>
       </main>
-    </PageWithLoading>
+      <Footer />
+    </>
   );
 }
