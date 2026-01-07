@@ -4,7 +4,7 @@ Figma 디자인 시스템을 기반으로 공통 Button 컴포넌트를 생성�
 
 ## 생성된 파일들
 
-```
+```text
 src/
 ├── components/
 │   └── common/
@@ -200,7 +200,7 @@ function StepNavigation() {
 ## Props API
 
 ```typescript
-interface ButtonProps extends HTMLButtonAttributes<HTMLButtonElement> {
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "tertiary" | "ghost";
   size?: "large" | "medium" | "small";
   fullWidth?: boolean;

@@ -49,6 +49,10 @@ import { Button } from "@/components/common";
 **테스트 페이지**: 개발 서버에서 `/button-test` 접속하여 모든 스타일 확인 가능  
 **상세 문서**: `src/components/common/Button.md` 참고
 
+### 아이콘
+
+- 아이콘이 필요한 경우 `lucide-react`을 사용하세요.
+
 ## 라우팅/가드
 
 - `ProtectedRoute`, `AdminRoute`는 세션 체크 지연 호출 패턴 유지
