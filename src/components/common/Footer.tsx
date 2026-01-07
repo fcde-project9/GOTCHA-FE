@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { House, MessageSquare, Heart, UserRound } from "lucide-react";
+import { House, Megaphone, Heart, UserRound } from "lucide-react";
 
 interface NavItem {
   id: string;
@@ -12,7 +12,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { id: "home", label: "홈", path: "/", icon: House },
-  { id: "report", label: "제보", path: "/report", icon: MessageSquare },
+  { id: "report", label: "제보", path: "/report", icon: Megaphone },
   { id: "favorites", label: "찜", path: "/favorites", icon: Heart },
   { id: "mypage", label: "마이", path: "/mypage", icon: UserRound },
 ];

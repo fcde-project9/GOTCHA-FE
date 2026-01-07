@@ -114,6 +114,9 @@ const config: Config = {
           DEFAULT: "#FF3E27",
           light: "#FFEBEE",
         },
+        icon: {
+          DEFAULT: "#3F4044",
+        },
       },
       backgroundColor: {
         default: "#FDFEFF", // bg-default
