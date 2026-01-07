@@ -30,10 +30,8 @@ export default function Footer() {
 
   return (
     <footer
-      className="fixed left-0 right-0 mx-auto w-full max-w-[480px] bg-white"
+      className="fixed left-0 right-0 mx-auto w-full max-w-[480px] bg-white h-[56px] shadow-[0px_-3px_8px_rgba(163,163,163,0.15)]"
       style={{
-        boxShadow: "0px -3px 8px rgba(163, 163, 163, 0.15)",
-        height: "56px",
         bottom: "calc(14px + env(safe-area-inset-bottom))",
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
@@ -47,26 +45,20 @@ export default function Footer() {
             <button
               key={item.id}
               onClick={() => router.push(item.path)}
-              className="flex flex-col items-center justify-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded-md"
-              style={{ minWidth: "44px" }}
+              className="flex flex-col items-center justify-center gap-1 min-w-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded-md"
               aria-label={item.label}
               aria-current={active ? "page" : undefined}
             >
               <Icon
                 size={24}
-                stroke={active ? "#323233" : "#8A8A8B"}
-                fill={active ? "#323233" : "none"}
+                className={active ? "stroke-grey-800 fill-grey-800" : "stroke-grey-500 fill-none"}
                 strokeWidth={active ? 2 : 1.5}
                 aria-hidden="true"
               />
               <span
-                className="text-center font-medium"
-                style={{
-                  fontSize: "11px",
-                  lineHeight: "1.5",
-                  letterSpacing: "-0.11px",
-                  color: active ? "#323233" : "#8A8A8B",
-                }}
+                className={`text-center font-medium text-[11px] leading-[1.5] tracking-[-0.11px] ${
+                  active ? "text-grey-800" : "text-grey-500"
+                }`}
               >
                 {item.label}
               </span>
