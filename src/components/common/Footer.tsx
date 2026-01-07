@@ -45,14 +45,17 @@ export default function Footer() {
             <button
               key={item.id}
               onClick={() => router.push(item.path)}
-              className="flex flex-col items-center justify-center gap-1"
+              className="flex flex-col items-center justify-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded-md"
               style={{ minWidth: "44px" }}
+              aria-label={item.label}
+              aria-current={active ? "page" : undefined}
             >
               <Icon
                 size={24}
                 stroke={active ? "#323233" : "#8A8A8B"}
                 fill={active ? "#323233" : "none"}
                 strokeWidth={active ? 2 : 1.5}
+                aria-hidden="true"
               />
               <span
                 className="text-center font-medium"
