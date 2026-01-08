@@ -18,16 +18,24 @@ export function Toast({ message, isVisible, onClose, duration = 2000 }: ToastPro
 
   useEffect(() => {
     if (isVisible) {
-      // 약간의 딜레이 후 fade-in 시작
-      setTimeout(() => setShow(true), 10);
+      let fadeInTimer: ReturnType<typeof setTimeout> | null = null;
+      let fadeOutTimer: ReturnType<typeof setTimeout> | null = null;
+      let onCloseTimer: ReturnType<typeof setTimeout> | null = null;
 
-      const timer = setTimeout(() => {
+      // 약간의 딜레이 후 fade-in 시작
+      fadeInTimer = setTimeout(() => setShow(true), 10);
+
+      fadeOutTimer = setTimeout(() => {
         setShow(false);
         // fade-out 애니메이션 후 onClose 호출
-        setTimeout(() => onClose(), 300);
+        onCloseTimer = setTimeout(() => onClose(), 300);
       }, duration);
 
-      return () => clearTimeout(timer);
+      return () => {
+        if (fadeInTimer) clearTimeout(fadeInTimer);
+        if (fadeOutTimer) clearTimeout(fadeOutTimer);
+        if (onCloseTimer) clearTimeout(onCloseTimer);
+      };
     } else {
       setShow(false);
     }

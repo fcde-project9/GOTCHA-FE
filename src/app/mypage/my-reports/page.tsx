@@ -63,7 +63,10 @@ export default function MyReportsPage() {
               <p className="text-[14px] font-medium leading-[1.5] tracking-[-0.14px] text-grey-900">
                 총 {reports.length}개
               </p>
-              <button className="flex items-center gap-1">
+              <button
+                onClick={() => _setSortOrder(sortOrder === "latest" ? "distance" : "latest")}
+                className="flex items-center gap-1"
+              >
                 <span className="text-[14px] font-medium leading-[1.5] tracking-[-0.14px] text-grey-500">
                   {sortOrder === "latest" ? "최신순" : "거리순"}
                 </span>

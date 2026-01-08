@@ -128,7 +128,7 @@ export function NicknameModal({ isOpen, currentNickname, onClose, onSave }: Nick
           </p>
           <ul className="flex flex-col gap-0.5">
             <li className="text-[11px] font-normal leading-[1.5] tracking-[-0.11px] text-grey-500 before:content-['•'] before:mr-1">
-              욕설/비속어의 댓 생성/차별/비방은 표절이 안이
+              욕설·비속어, 차별·비방적 내용의 작성은 금지됩니다.
             </li>
             <li className="text-[11px] font-normal leading-[1.5] tracking-[-0.11px] text-grey-500 before:content-['•'] before:mr-1">
               타사의 브랜드 및 제품명을 포함한 단어
