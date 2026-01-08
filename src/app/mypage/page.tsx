@@ -5,9 +5,12 @@ import { useRouter } from "next/navigation";
 import { Headset } from "lucide-react";
 import { Toast } from "@/components/common";
 import Footer from "@/components/common/Footer";
+import { LogoutModal } from "@/components/mypage/LogoutModal";
 import { MenuList } from "@/components/mypage/MenuList";
 import { NicknameModal } from "@/components/mypage/NicknameModal";
 import { ProfileSection } from "@/components/mypage/ProfileSection";
+import { WithdrawConfirmModal } from "@/components/mypage/WithdrawConfirmModal";
+import { WithdrawModal } from "@/components/mypage/WithdrawModal";
 
 export default function MyPage() {
   const router = useRouter();
@@ -17,6 +20,11 @@ export default function MyPage() {
   const [isLoggedIn, _setIsLoggedIn] = useState(true);
   const [nickname, setNickname] = useState("빨간캡슐#21");
   const [isNicknameModalOpen, setIsNicknameModalOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+  const [isWithdrawConfirmModalOpen, setIsWithdrawConfirmModalOpen] = useState(false);
+  const [_withdrawReasons, setWithdrawReasons] = useState<string[]>([]);
+  const [_withdrawOtherReason, setWithdrawOtherReason] = useState<string>();
   const [showToast, setShowToast] = useState(false);
 
   const handleEditProfile = () => {
@@ -55,11 +63,32 @@ export default function MyPage() {
   };
 
   const handleLogout = () => {
+    setIsLogoutModalOpen(true);
+  };
+
+  const handleLogoutConfirm = () => {
     // TODO: 로그아웃 API 연동
+    // await apiClient.post('/auth/logout');
+    setIsLogoutModalOpen(false);
+    router.push("/");
   };
 
   const handleWithdraw = () => {
-    // TODO: 회원탈퇴 확인 모달 열기
+    setIsWithdrawModalOpen(true);
+  };
+
+  const handleWithdrawSubmit = (reasons: string[], otherReason?: string) => {
+    setWithdrawReasons(reasons);
+    setWithdrawOtherReason(otherReason);
+    setIsWithdrawModalOpen(false);
+    setIsWithdrawConfirmModalOpen(true);
+  };
+
+  const handleWithdrawConfirm = () => {
+    // TODO: 회원탈퇴 API 연동
+    // await apiClient.delete('/user', { reasons: _withdrawReasons, otherReason: _withdrawOtherReason });
+    setIsWithdrawConfirmModalOpen(false);
+    router.push("/");
   };
 
   return (
@@ -95,12 +124,27 @@ export default function MyPage() {
         </div>
       </main>
 
-      {/* Nickname Modal */}
+      {/* Modals */}
       <NicknameModal
         isOpen={isNicknameModalOpen}
         currentNickname={nickname}
         onClose={() => setIsNicknameModalOpen(false)}
         onSave={handleSaveNickname}
+      />
+      <LogoutModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={handleLogoutConfirm}
+      />
+      <WithdrawModal
+        isOpen={isWithdrawModalOpen}
+        onClose={() => setIsWithdrawModalOpen(false)}
+        onConfirm={handleWithdrawSubmit}
+      />
+      <WithdrawConfirmModal
+        isOpen={isWithdrawConfirmModalOpen}
+        onClose={() => setIsWithdrawConfirmModalOpen(false)}
+        onConfirm={handleWithdrawConfirm}
       />
 
       {/* Logout / Withdraw - 로그인 상태일 때만 표시 */}
