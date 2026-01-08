@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface WithdrawModalProps {
   isOpen: boolean;
@@ -24,6 +24,14 @@ export function WithdrawModal({ isOpen, onClose, onConfirm }: WithdrawModalProps
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
   const [otherReason, setOtherReason] = useState("");
 
+  // 모달이 닫힐 때 상태 초기화
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedReasons([]);
+      setOtherReason("");
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleReasonToggle = (reason: string) => {
@@ -32,8 +40,17 @@ export function WithdrawModal({ isOpen, onClose, onConfirm }: WithdrawModalProps
     );
   };
 
+  const handleClose = () => {
+    setSelectedReasons([]);
+    setOtherReason("");
+    onClose();
+  };
+
   const handleConfirm = () => {
     onConfirm(selectedReasons, otherReason);
+    // 확인 후 상태 초기화
+    setSelectedReasons([]);
+    setOtherReason("");
   };
 
   const isOtherSelected = selectedReasons.includes("기타");
@@ -110,7 +127,7 @@ export function WithdrawModal({ isOpen, onClose, onConfirm }: WithdrawModalProps
         {/* Buttons */}
         <div className="px-5 pb-8 pt-4 flex gap-2">
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="flex-1 h-12 rounded-lg bg-grey-100 text-[14px] font-semibold leading-[1.5] tracking-[-0.14px] text-grey-700"
           >
             취소

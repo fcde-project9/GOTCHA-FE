@@ -23,8 +23,8 @@ export default function MyPage() {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [isWithdrawConfirmModalOpen, setIsWithdrawConfirmModalOpen] = useState(false);
-  const [_withdrawReasons, setWithdrawReasons] = useState<string[]>([]);
-  const [_withdrawOtherReason, setWithdrawOtherReason] = useState<string>();
+  const [withdrawReasons, setWithdrawReasons] = useState<string[]>([]);
+  const [withdrawOtherReason, setWithdrawOtherReason] = useState<string>();
   const [showToast, setShowToast] = useState(false);
 
   const handleEditProfile = () => {
@@ -54,8 +54,10 @@ export default function MyPage() {
   };
 
   const handleSupport = () => {
-    // TODO: 인스타그램 디엠으로 이동
-    window.open("https://instagram.com/direct/inbox/", "_blank");
+    // 환경변수에서 Instagram DM URL 가져오기 (fallback: gotcha_map 계정)
+    const instagramDmUrl =
+      process.env.NEXT_PUBLIC_SUPPORT_INSTAGRAM_URL || "https://ig.me/m/gotcha_map";
+    window.open(instagramDmUrl, "_blank");
   };
 
   const handleLogin = () => {
@@ -66,11 +68,34 @@ export default function MyPage() {
     setIsLogoutModalOpen(true);
   };
 
-  const handleLogoutConfirm = () => {
-    // TODO: 로그아웃 API 연동
-    // await apiClient.post('/auth/logout');
-    setIsLogoutModalOpen(false);
-    router.push("/");
+  const handleLogoutConfirm = async () => {
+    try {
+      // TODO: 로그아웃 API 연동
+      // await apiClient.post('/auth/logout');
+    } catch (error) {
+      // API 실패 시에도 로컬 데이터는 정리
+      console.error("로그아웃 API 호출 실패:", error);
+    } finally {
+      // 로컬 스토리지 정리
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
+
+      // 세션 스토리지 정리
+      sessionStorage.clear();
+
+      // 쿠키 정리 (HttpOnly 쿠키는 서버에서 처리, 클라이언트 쿠키는 여기서 제거)
+      document.cookie.split(";").forEach((cookie) => {
+        const [name] = cookie.split("=");
+        document.cookie = `${name.trim()}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+      });
+
+      // TODO: SWR/React Query 캐시 정리
+      // mutate(() => true, undefined, { revalidate: false });
+
+      setIsLogoutModalOpen(false);
+      router.push("/");
+    }
   };
 
   const handleWithdraw = () => {
@@ -84,11 +109,43 @@ export default function MyPage() {
     setIsWithdrawConfirmModalOpen(true);
   };
 
-  const handleWithdrawConfirm = () => {
-    // TODO: 회원탈퇴 API 연동
-    // await apiClient.delete('/user', { reasons: _withdrawReasons, otherReason: _withdrawOtherReason });
-    setIsWithdrawConfirmModalOpen(false);
-    router.push("/");
+  const handleWithdrawConfirm = async () => {
+    try {
+      // TODO: 회원탈퇴 API 연동
+      // await apiClient.delete('/user', { data: { reasons: withdrawReasons, otherReason: withdrawOtherReason } });
+
+      // API 성공 시에만 상태 정리
+      // 로컬 스토리지 정리
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
+
+      // 세션 스토리지 정리
+      sessionStorage.clear();
+
+      // 쿠키 정리 (HttpOnly 쿠키는 서버에서 처리, 클라이언트 쿠키는 여기서 제거)
+      document.cookie.split(";").forEach((cookie) => {
+        const [name] = cookie.split("=");
+        document.cookie = `${name.trim()}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+      });
+
+      // TODO: SWR/React Query 캐시 정리
+      // mutate(() => true, undefined, { revalidate: false });
+
+      // 회원탈퇴 관련 상태 초기화
+      setWithdrawReasons([]);
+      setWithdrawOtherReason(undefined);
+
+      // 모달 닫기 및 홈으로 이동
+      setIsWithdrawConfirmModalOpen(false);
+      router.push("/");
+    } catch (error) {
+      // API 실패 시 에러 로그 및 모달 유지
+      console.error("회원탈퇴 API 호출 실패:", error);
+      // TODO: 에러 토스트 메시지 표시
+      // setShowToast(true);
+      // setToastMessage("회원탈퇴에 실패했습니다. 다시 시도해주세요.");
+    }
   };
 
   return (
