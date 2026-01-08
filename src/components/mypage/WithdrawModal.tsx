@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Checkbox } from "@/components/common";
 
 interface WithdrawModalProps {
   isOpen: boolean;
@@ -12,7 +13,6 @@ const WITHDRAW_REASONS = [
   "사용을 잘 안하게 돼요",
   "가자상 정보가 부족해요",
   "가자상 정보가 거래된 내용과 달라요",
-  "개인정보 보호를 위해 삭제할래요",
   "다른 계정이 있어요",
   "기타",
 ] as const;
@@ -81,32 +81,16 @@ export function WithdrawModal({ isOpen, onClose, onConfirm }: WithdrawModalProps
           {/* Reasons List */}
           <div className="flex flex-col gap-4 mb-6">
             {WITHDRAW_REASONS.map((reason) => (
-              <label key={reason} className="flex items-center justify-between cursor-pointer">
+              <div key={reason} className="flex items-center justify-between">
                 <span className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-900">
                   {reason}
                 </span>
-                <div className="relative">
-                  <input
-                    type="checkbox"
-                    checked={selectedReasons.includes(reason)}
-                    onChange={() => handleReasonToggle(reason)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-6 h-6 rounded-full border-2 border-grey-300 peer-checked:border-main-500 peer-checked:bg-main-500 flex items-center justify-center">
-                    {selectedReasons.includes(reason) && (
-                      <svg width="14" height="10" viewBox="0 0 14 10" fill="none">
-                        <path
-                          d="M1 4.5L5.5 9L13 1"
-                          stroke="white"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    )}
-                  </div>
-                </div>
-              </label>
+                <Checkbox
+                  checked={selectedReasons.includes(reason)}
+                  onChange={() => handleReasonToggle(reason)}
+                  variant="outlined"
+                />
+              </div>
             ))}
           </div>
 
