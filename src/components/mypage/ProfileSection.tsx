@@ -1,23 +1,85 @@
 "use client";
 
 import Image from "next/image";
-import { Plus, SquarePen } from "lucide-react";
+import { ChevronLeft, Plus, SquarePen } from "lucide-react";
 
 interface ProfileSectionProps {
+  isLoggedIn?: boolean;
   nickname?: string;
   email?: string;
   profileImage?: string;
+  socialProvider?: "google" | "kakao";
   onEditProfile?: () => void;
   onEditNickname?: () => void;
+  onLogin?: () => void;
 }
 
 export function ProfileSection({
+  isLoggedIn = true,
   nickname = "빨간캡슐#21",
   email = "abcd123@gmail.com",
   profileImage = "/images/default-profile.png",
+  socialProvider = "google",
   onEditProfile,
   onEditNickname,
+  onLogin,
 }: ProfileSectionProps) {
+  const handleProfileImageChange = () => {
+    // TODO: 백엔드 API 연동 - 프로필 사진 업로드
+    // 파일 선택 input 트리거
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        // TODO: 이미지 파일 업로드 API 호출
+        // const formData = new FormData();
+        // formData.append('profileImage', file);
+        // await apiClient.post('/user/profile-image', formData);
+        onEditProfile?.();
+      }
+    };
+    input.click();
+  };
+
+  // 게스트 상태 (로그인하지 않은 경우)
+  if (!isLoggedIn) {
+    return (
+      <div className="flex flex-col items-center gap-3 w-full px-5">
+        {/* 기본 프로필 이미지 */}
+        <div className="w-[88px] h-[88px] rounded-full bg-main-50 overflow-hidden flex items-center justify-center">
+          <Image
+            src="/images/default-profile.png"
+            alt="프로필 이미지"
+            width={88}
+            height={88}
+            className="object-contain"
+          />
+        </div>
+
+        {/* 로그인 유도 버튼 */}
+        <button
+          onClick={onLogin}
+          className="flex items-center justify-center gap-0"
+          aria-label="로그인하러 가기"
+        >
+          <h2 className="text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
+            로그인을 해주세요
+          </h2>
+          <div className="w-6 h-6 flex items-center justify-center">
+            <ChevronLeft
+              size={12}
+              className="stroke-grey-900 rotate-180 scale-y-[-1]"
+              strokeWidth={2}
+            />
+          </div>
+        </button>
+      </div>
+    );
+  }
+
+  // 로그인 상태
   return (
     <div className="flex flex-col items-center gap-7 w-full px-5">
       {/* Profile Image */}
@@ -28,7 +90,7 @@ export function ProfileSection({
           </div>
           {/* Edit Button */}
           <button
-            onClick={onEditProfile}
+            onClick={handleProfileImageChange}
             className="absolute bottom-0 right-0 w-6 h-6 bg-grey-900 rounded-full flex items-center justify-center"
             aria-label="프로필 수정"
           >
@@ -52,9 +114,14 @@ export function ProfileSection({
             </button>
           </div>
 
-          {/* Email */}
+          {/* Social Login Info */}
           <div className="bg-grey-50 rounded-md px-2 py-0.5 flex items-center gap-2 w-full justify-center">
-            <Image src="/images/icons/google.png" alt="Google" width={14} height={14} />
+            <Image
+              src={`/images/icons/${socialProvider}.png`}
+              alt={socialProvider === "google" ? "Google" : "Kakao"}
+              width={14}
+              height={14}
+            />
             <p className="text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-800 text-center">
               {email}
             </p>
