@@ -11,6 +11,7 @@ import { NicknameModal } from "@/components/mypage/NicknameModal";
 import { ProfileSection } from "@/components/mypage/ProfileSection";
 import { WithdrawConfirmModal } from "@/components/mypage/WithdrawConfirmModal";
 import { WithdrawModal } from "@/components/mypage/WithdrawModal";
+import { openInstagramSupport } from "@/utils";
 
 export default function MyPage() {
   const router = useRouter();
@@ -54,14 +55,7 @@ export default function MyPage() {
   };
 
   const handleSupport = () => {
-    // 환경변수에서 Instagram DM URL 가져오기 (fallback: gotcha_map 계정)
-    const instagramDmUrl =
-      process.env.NEXT_PUBLIC_SUPPORT_INSTAGRAM_URL || "https://ig.me/m/gotcha_map";
-    const newWindow = window.open(instagramDmUrl, "_blank", "noopener,noreferrer");
-    // Tabnabbing 방지: opener를 null로 설정
-    if (newWindow) {
-      newWindow.opener = null;
-    }
+    openInstagramSupport();
   };
 
   const handleLogin = () => {

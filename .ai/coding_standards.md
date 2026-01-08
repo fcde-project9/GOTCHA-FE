@@ -22,6 +22,13 @@
 - components와 utils를 먼저 확인하고 재사용할 수 있는 코드는 재사용하기
 - import할때는 최대한 절대경로 ('@') 사용
 
+## 유틸 함수
+
+- 2개 이상의 컴포넌트에서 사용되는 로직은 `src/utils/`에 공통 함수로 분리
+- 유틸 함수는 단일 책임 원칙을 따르며, 명확한 JSDoc 주석 작성
+- `src/utils/index.ts`에서 export하여 `@/utils`로 간편하게 import
+- 예시: `openInstagramSupport()` - Instagram 문의하기 로직
+
 ## 공통 컴포넌트
 
 ### Button 사용법
