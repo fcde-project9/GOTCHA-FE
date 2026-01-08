@@ -2,7 +2,7 @@
 
 import { Footer } from "@/components/common";
 import { KakaoMap } from "@/components/features/map";
-import { ShopListBottomSheet } from "@/components/features/bottomsheet";
+import { ShopListBottomSheet } from "@/components/features/shop";
 import { mockShops } from "@/data/mockShops";
 
 export default function Home() {

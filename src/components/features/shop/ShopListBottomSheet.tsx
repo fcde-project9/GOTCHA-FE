@@ -1,6 +1,6 @@
 "use client";
 
-import BottomSheet from "./BottomSheet";
+import { BottomSheet } from "../ui";
 import ShopListItem from "./ShopListItem";
 
 interface Shop {
@@ -24,10 +24,10 @@ export default function ShopListBottomSheet({ shops }: ShopListBottomSheetProps)
       <div className="flex flex-col items-center gap-2 shrink-0 px-5">
         {/* 헤더 섹션 */}
         <div className="flex items-center justify-between w-full pb-4">
-          <span className="text-[14px] font-normal text-[#121213] font-pretendard leading-[150%] tracking-[-0.14px]">
+          <span className="text-[14px] font-normal text-grey-900 font-pretendard leading-[150%] tracking-[-0.14px]">
             총 {shops.length}개
           </span>
-          <button className="text-[14px] text-[#626264]">거리순</button>
+          <button className="text-[14px] font-normal text-grey-700 font-pretendard leading-[150%] tracking-[-0.14px]">거리순</button>
         </div>
 
         {/* 가게 목록 */}

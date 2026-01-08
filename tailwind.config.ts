@@ -117,7 +117,7 @@ const config: Config = {
         },
         error: {
           DEFAULT: "#FF3E27",
-          light: "#FFEBEE",
+          light: "#FFF4F4",
         },
         icon: {
           DEFAULT: "#3F4044",

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Heart, Navigation } from "lucide-react";
-import { StatusBadge } from "@/components/common";
+import StatusBadge from "./StatusBadge";
 
 interface ShopListItemProps {
   name: string;
@@ -49,31 +49,29 @@ export default function ShopListItem({
               className="w-6 h-6 flex items-center justify-center focus:outline-none"
             >
               <Heart
-                size={19}
-                stroke={isFavorite ? "#FF4545" : "#626264"}
-                fill={isFavorite ? "#FF4545" : "none"}
+                size={24}
+                className={isFavorite ? "stroke-main fill-main" : "stroke-grey-700 fill-none"}
                 strokeWidth={1.5}
               />
             </button>
           </div>
 
           {/* 가게 이름 */}
-          <p className="text-[18px] font-semibold text-[#121213] tracking-[-0.18px] overflow-hidden text-ellipsis whitespace-nowrap font-pretendard">
+          <p className="text-[18px] font-semibold text-grey-900 tracking-[-0.18px] overflow-hidden text-ellipsis whitespace-nowrap font-pretendard leading-[150%]">
             {name}
           </p>
 
           {/* 거리 정보 */}
           <div className="flex gap-[4px] items-center">
             <Navigation
-              size={9}
-              fill="#626264"
-              stroke="#626264"
+              size={16}
+              className="fill-grey-700 stroke-grey-700 shrink-0"
               strokeWidth={1.25}
             />
-            <span className="text-[14px] text-[#626264] tracking-[-0.14px] font-pretendard">
+            <span className="text-[14px] font-normal text-grey-700 tracking-[-0.14px] font-pretendard leading-[150%]">
               현재 위치에서
             </span>
-            <span className="text-[14px] font-medium text-[#323233] tracking-[-0.308px] font-pretendard">
+            <span className="text-[14px] font-medium text-grey-800 tracking-[-0.14px] font-pretendard leading-[150%]">
               {distance}
             </span>
           </div>
@@ -81,7 +79,7 @@ export default function ShopListItem({
       </div>
 
       {/* 하단 구분선 */}
-      <div className="absolute left-0 bottom-0 w-full h-[1px] bg-[#EEEEEF]" />
+      <div className="absolute left-0 bottom-0 w-full h-[1px] bg-grey-100" />
     </div>
   );
 }

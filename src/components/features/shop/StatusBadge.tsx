@@ -7,8 +7,8 @@ export default function StatusBadge({ isOpen }: StatusBadgeProps) {
     <div
       className={`flex items-center justify-center px-[5.893px] py-[1.964px] rounded-[55px] ${
         isOpen
-          ? "bg-[#ecfcf4] text-[#02BD79]"
-          : "bg-[#FFF4F4] text-[#FF4545]"
+          ? "bg-success-light text-success"
+          : "bg-error-light text-main"
       }`}
     >
       <span
