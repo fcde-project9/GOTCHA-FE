@@ -57,7 +57,11 @@ export default function MyPage() {
     // 환경변수에서 Instagram DM URL 가져오기 (fallback: gotcha_map 계정)
     const instagramDmUrl =
       process.env.NEXT_PUBLIC_SUPPORT_INSTAGRAM_URL || "https://ig.me/m/gotcha_map";
-    window.open(instagramDmUrl, "_blank");
+    const newWindow = window.open(instagramDmUrl, "_blank", "noopener,noreferrer");
+    // Tabnabbing 방지: opener를 null로 설정
+    if (newWindow) {
+      newWindow.opener = null;
+    }
   };
 
   const handleLogin = () => {
