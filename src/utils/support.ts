@@ -38,8 +38,20 @@ function getApiBaseUrl(): string | undefined {
 }
 
 /**
+ * CSRF 방지를 위한 랜덤 state 생성
+ * 암호학적으로 안전한 난수를 사용하여 예측 불가능한 state 문자열 생성
+ * @returns 32자리 16진수 문자열
+ */
+function generateSecureState(): string {
+  const array = new Uint8Array(16);
+  crypto.getRandomValues(array);
+  return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+/**
  * 카카오 OAuth 로그인
  * 백엔드 OAuth 엔드포인트로 리다이렉트
+ * CSRF 공격 방지를 위해 state 파라미터 생성 및 검증
  * @throws {Error} window 객체를 사용할 수 없거나 로그인 처리 중 오류 발생 시
  */
 export function loginWithKakao(): void {
@@ -52,7 +64,12 @@ export function loginWithKakao(): void {
   }
 
   try {
-    const kakaoAuthUrl = `${apiBaseUrl}/oauth2/authorize/kakao`;
+    // CSRF 방지를 위한 state 생성 및 저장
+    const state = generateSecureState();
+    sessionStorage.setItem("kakao_oauth_state", state);
+
+    // state 파라미터를 포함한 OAuth URL 생성
+    const kakaoAuthUrl = `${apiBaseUrl}/oauth2/authorize/kakao?state=${encodeURIComponent(state)}`;
     window.location.href = kakaoAuthUrl;
   } catch (error) {
     const errorMessage = "카카오 로그인을 시작할 수 없습니다. 다시 시도해주세요.";
@@ -64,6 +81,7 @@ export function loginWithKakao(): void {
 /**
  * 네이버 OAuth 로그인
  * 백엔드 OAuth 엔드포인트로 리다이렉트
+ * CSRF 공격 방지를 위해 state 파라미터 생성 및 검증
  * @throws {Error} window 객체를 사용할 수 없거나 로그인 처리 중 오류 발생 시
  */
 export function loginWithNaver(): void {
@@ -76,7 +94,12 @@ export function loginWithNaver(): void {
   }
 
   try {
-    const naverAuthUrl = `${apiBaseUrl}/oauth2/authorize/naver`;
+    // CSRF 방지를 위한 state 생성 및 저장
+    const state = generateSecureState();
+    sessionStorage.setItem("naver_oauth_state", state);
+
+    // state 파라미터를 포함한 OAuth URL 생성
+    const naverAuthUrl = `${apiBaseUrl}/oauth2/authorize/naver?state=${encodeURIComponent(state)}`;
     window.location.href = naverAuthUrl;
   } catch (error) {
     const errorMessage = "네이버 로그인을 시작할 수 없습니다. 다시 시도해주세요.";
@@ -88,6 +111,7 @@ export function loginWithNaver(): void {
 /**
  * 구글 OAuth 로그인
  * 백엔드 OAuth 엔드포인트로 리다이렉트
+ * CSRF 공격 방지를 위해 state 파라미터 생성 및 검증
  * @throws {Error} window 객체를 사용할 수 없거나 로그인 처리 중 오류 발생 시
  */
 export function loginWithGoogle(): void {
@@ -100,7 +124,12 @@ export function loginWithGoogle(): void {
   }
 
   try {
-    const googleAuthUrl = `${apiBaseUrl}/oauth2/authorize/google`;
+    // CSRF 방지를 위한 state 생성 및 저장
+    const state = generateSecureState();
+    sessionStorage.setItem("google_oauth_state", state);
+
+    // state 파라미터를 포함한 OAuth URL 생성
+    const googleAuthUrl = `${apiBaseUrl}/oauth2/authorize/google?state=${encodeURIComponent(state)}`;
     window.location.href = googleAuthUrl;
   } catch (error) {
     const errorMessage = "구글 로그인을 시작할 수 없습니다. 다시 시도해주세요.";
