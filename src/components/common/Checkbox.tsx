@@ -27,9 +27,7 @@ export function Checkbox({
 
   const variantClasses = {
     filled: checked ? "bg-main border-0" : "bg-grey-200 border-0",
-    outlined: checked
-      ? "bg-main-500 border-2 border-main-500"
-      : "bg-white border-2 border-grey-300",
+    outlined: checked ? "bg-main border-2 border-main" : "bg-white border-2 border-grey-300",
   };
 
   return (
@@ -42,7 +40,7 @@ export function Checkbox({
           className="sr-only peer"
         />
         <div
-          className={`${sizeClasses[size]} ${variantClasses[variant]} rounded-full flex items-center justify-center transition-colors`}
+          className={`${sizeClasses[size]} ${variantClasses[variant]} rounded-full flex items-center justify-center transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-main`}
         >
           {checked && (
             <svg

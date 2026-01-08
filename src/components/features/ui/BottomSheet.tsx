@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 
 interface BottomSheetProps {
   children: React.ReactNode;
@@ -8,11 +8,25 @@ interface BottomSheetProps {
   defaultSnapPoint?: number; // 기본 스냅 포인트 인덱스
 }
 
+/**
+ * Get default snap points with SSR-safe window height calculation
+ */
+function getDefaultSnapPoints(): number[] {
+  if (typeof window !== "undefined") {
+    return [215, 400, window.innerHeight - 100];
+  }
+  // SSR fallback: use reasonable defaults
+  return [215, 400, 700];
+}
+
 export default function BottomSheet({
   children,
-  snapPoints = [215, 400, window.innerHeight - 100],
+  snapPoints,
   defaultSnapPoint = 0,
 }: BottomSheetProps) {
+  // Compute snapPoints client-side if not provided (memoized to prevent recreation)
+  const computedSnapPoints = useMemo(() => snapPoints ?? getDefaultSnapPoints(), [snapPoints]);
+
   const [currentSnapIndex, setCurrentSnapIndex] = useState(defaultSnapPoint);
   const [isDragging, setIsDragging] = useState(false);
   const [startY, setStartY] = useState(0);
@@ -21,13 +35,13 @@ export default function BottomSheet({
 
   const currentHeight = isDragging
     ? Math.max(
-        snapPoints[0],
+        computedSnapPoints[0],
         Math.min(
-          snapPoints[snapPoints.length - 1],
-          snapPoints[currentSnapIndex] - (currentY - startY)
+          computedSnapPoints[computedSnapPoints.length - 1],
+          computedSnapPoints[currentSnapIndex] - (currentY - startY)
         )
       )
-    : snapPoints[currentSnapIndex];
+    : computedSnapPoints[currentSnapIndex];
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setIsDragging(true);
@@ -45,13 +59,13 @@ export default function BottomSheet({
     setIsDragging(false);
 
     const deltaY = currentY - startY;
-    const newHeight = snapPoints[currentSnapIndex] - deltaY;
+    const newHeight = computedSnapPoints[currentSnapIndex] - deltaY;
 
     // 가장 가까운 스냅 포인트 찾기
     let closestIndex = 0;
-    let minDiff = Math.abs(newHeight - snapPoints[0]);
+    let minDiff = Math.abs(newHeight - computedSnapPoints[0]);
 
-    snapPoints.forEach((point, index) => {
+    computedSnapPoints.forEach((point, index) => {
       const diff = Math.abs(newHeight - point);
       if (diff < minDiff) {
         minDiff = diff;
@@ -78,12 +92,12 @@ export default function BottomSheet({
     setIsDragging(false);
 
     const deltaY = currentY - startY;
-    const newHeight = snapPoints[currentSnapIndex] - deltaY;
+    const newHeight = computedSnapPoints[currentSnapIndex] - deltaY;
 
     let closestIndex = 0;
-    let minDiff = Math.abs(newHeight - snapPoints[0]);
+    let minDiff = Math.abs(newHeight - computedSnapPoints[0]);
 
-    snapPoints.forEach((point, index) => {
+    computedSnapPoints.forEach((point, index) => {
       const diff = Math.abs(newHeight - point);
       if (diff < minDiff) {
         minDiff = diff;
@@ -103,7 +117,8 @@ export default function BottomSheet({
         window.removeEventListener("mouseup", handleMouseUp);
       };
     }
-  }, [isDragging, currentY, startY, currentSnapIndex]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDragging, currentY, startY, currentSnapIndex, computedSnapPoints]);
 
   return (
     <div

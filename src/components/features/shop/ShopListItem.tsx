@@ -41,12 +41,16 @@ export default function ShopListItem({ name, distance, isOpen, imageUrl }: ShopL
             {/* 하트 아이콘 */}
             <button
               onClick={() => setIsFavorite(!isFavorite)}
-              className="w-6 h-6 flex items-center justify-center focus:outline-none"
+              className="w-6 h-6 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-main rounded-sm"
+              aria-label={isFavorite ? `${name} 찜 취소` : `${name} 찜하기`}
+              aria-pressed={isFavorite}
+              type="button"
             >
               <Heart
                 size={24}
                 className={isFavorite ? "stroke-main fill-main" : "stroke-grey-700 fill-none"}
                 strokeWidth={1.5}
+                aria-hidden="true"
               />
             </button>
           </div>
