@@ -11,7 +11,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { id: "home", label: "홈", path: "/", icon: House },
+  { id: "home", label: "홈", path: "/home", icon: House },
   { id: "report", label: "제보", path: "/report", icon: MessageSquare },
   { id: "favorites", label: "찜", path: "/favorites", icon: Heart },
   { id: "mypage", label: "마이", path: "/mypage", icon: UserRound },
@@ -30,7 +30,7 @@ export default function Footer() {
 
   return (
     <footer
-      className="fixed left-0 right-0 mx-auto w-full max-w-[480px] bg-white"
+      className="fixed left-0 right-0 mx-auto w-full max-w-[480px] bg-white z-20"
       style={{
         boxShadow: "0px -3px 8px rgba(163, 163, 163, 0.15)",
         height: "56px",
