@@ -11,7 +11,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { id: "home", label: "홈", path: "/", icon: House },
+  { id: "home", label: "홈", path: "/home", icon: House },
   { id: "report", label: "제보", path: "/report", icon: Megaphone },
   { id: "favorites", label: "찜", path: "/favorites", icon: Heart },
   { id: "mypage", label: "마이", path: "/mypage", icon: UserRound },
