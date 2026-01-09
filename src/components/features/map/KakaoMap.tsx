@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useKakaoLoader } from "@/hooks/useKakaoLoader";
+import { MapBounds } from "@/types/api";
 
 interface KakaoMapProps {
   width?: string;
@@ -9,6 +10,7 @@ interface KakaoMapProps {
   latitude?: number;
   longitude?: number;
   level?: number;
+  onBoundsChange?: (bounds: MapBounds) => void;
 }
 
 /**
@@ -18,17 +20,43 @@ interface KakaoMapProps {
 export default function KakaoMap({
   width = "100%",
   height = "400px",
-  latitude = 37.558907, // 기본 위치: 서울 중심
-  longitude = 126.978305,
-  level = 3,
+  latitude = 37.497942, // 기본 위치: 강남역
+  longitude = 127.027621,
+  level = 5,
+  onBoundsChange,
 }: KakaoMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<KakaoMap | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [mapError, setMapError] = useState<string | null>(null);
 
+  // onBoundsChange를 ref로 저장하여 이벤트 리스너에서 최신 값 참조
+  const onBoundsChangeRef = useRef(onBoundsChange);
+  useEffect(() => {
+    onBoundsChangeRef.current = onBoundsChange;
+  }, [onBoundsChange]);
+
   // 커스텀 훅으로 SDK 로드 (싱글톤 패턴으로 전역 관리)
   const { loaded: scriptLoaded, error: sdkError } = useKakaoLoader();
+
+  // bounds 정보를 계산하여 콜백 호출
+  const notifyBoundsChange = useCallback((map: KakaoMap) => {
+    if (!onBoundsChangeRef.current || !map) return;
+
+    const bounds = map.getBounds();
+    const center = map.getCenter();
+
+    const mapBounds: MapBounds = {
+      northEastLat: bounds.getNorthEast().getLat(),
+      northEastLng: bounds.getNorthEast().getLng(),
+      southWestLat: bounds.getSouthWest().getLat(),
+      southWestLng: bounds.getSouthWest().getLng(),
+      centerLat: center.getLat(),
+      centerLng: center.getLng(),
+    };
+
+    onBoundsChangeRef.current(mapBounds);
+  }, []);
 
   // 지도 초기화 (한 번만 실행)
   // latitude, longitude, level은 초기값만 사용하고 이후 업데이트는 별도 useEffect에서 처리
@@ -71,7 +99,17 @@ export default function KakaoMap({
                 level: level,
               };
               // 지도 인스턴스를 ref에 저장
-              mapInstance.current = new window.kakao.maps.Map(mapContainer.current, options);
+              const map = new window.kakao.maps.Map(mapContainer.current, options);
+              mapInstance.current = map;
+
+              // 지도 이동 완료 시 bounds 변경 알림
+              window.kakao.maps.event.addListener(map, "idle", () => {
+                notifyBoundsChange(map);
+              });
+
+              // 초기 bounds 알림
+              notifyBoundsChange(map);
+
               if (isMounted) {
                 setIsLoading(false);
               }

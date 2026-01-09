@@ -6,13 +6,15 @@ import ShopListItem from "./ShopListItem";
 
 interface ShopListBottomSheetProps {
   shops: ShopListView[];
+  onHeightChange?: (height: number, isDragging: boolean) => void;
 }
 
-export default function ShopListBottomSheet({ shops }: ShopListBottomSheetProps) {
+export default function ShopListBottomSheet({ shops, onHeightChange }: ShopListBottomSheetProps) {
   return (
     <BottomSheet
       // Uses default snap points from BottomSheet (SSR-safe)
       defaultSnapPoint={0}
+      onHeightChange={onHeightChange}
     >
       <div className="flex flex-col items-center gap-2 px-5">
         {/* 헤더 섹션 */}

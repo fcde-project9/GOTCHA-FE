@@ -1,5 +1,5 @@
 export interface Shop {
-  id: string;
+  id: number;
   name: string;
   address: string;
   latitude: number;
