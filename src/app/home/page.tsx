@@ -21,6 +21,8 @@ export default function Home() {
   const [showReloadButton, setShowReloadButton] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [hasInitialLoad, setHasInitialLoad] = useState(false);
+  const [currentBounds, setCurrentBounds] = useState<MapBounds | null>(null);
 
   // 최초 접속 시 현재 위치 권한 요청
   useEffect(() => {
@@ -40,8 +42,8 @@ export default function Home() {
     }
   }, [searchQuery, searchPlaces, clearResults]);
 
-  // 지도 영역 변경 시 가게 목록 조회
-  const handleBoundsChange = useCallback(async (bounds: MapBounds) => {
+  // 가게 목록 조회 함수
+  const fetchShops = useCallback(async (bounds: MapBounds) => {
     try {
       const response = await fetchShopsInBounds(bounds);
 
@@ -54,6 +56,24 @@ export default function Home() {
       // TODO: 에러 처리 (토스트 메시지 등)
     }
   }, []);
+
+  // 지도 영역 변경 시 처리
+  const handleBoundsChange = useCallback(
+    async (bounds: MapBounds) => {
+      // 현재 bounds 저장
+      setCurrentBounds(bounds);
+
+      if (!hasInitialLoad) {
+        // 최초 로드 시 자동으로 가게 목록 조회
+        await fetchShops(bounds);
+        setHasInitialLoad(true);
+      } else {
+        // 이후 지도 이동 시 재검색 버튼 표시
+        setShowReloadButton(true);
+      }
+    },
+    [hasInitialLoad, fetchShops]
+  );
 
   const handleSearchClick = () => {
     setIsSearching(true);
@@ -79,9 +99,11 @@ export default function Home() {
     handleSearchCancel();
   };
 
-  const handleReloadArea = () => {
-    setShowReloadButton(false);
-    // 현재 bounds로 재검색 (handleBoundsChange가 자동 호출됨)
+  const handleReloadArea = async () => {
+    if (currentBounds) {
+      setShowReloadButton(false);
+      await fetchShops(currentBounds);
+    }
   };
 
   const handleCurrentLocation = () => {
@@ -178,12 +200,12 @@ export default function Home() {
 
             {/* 이 지역 재검색 버튼 */}
             {!isSearching && showReloadButton && (
-              <div className="absolute left-0 right-0 top-[120px] z-10 mx-auto flex w-full max-w-[480px] justify-center px-5">
+              <div className="absolute left-0 right-0 top-[88px] z-10 mx-auto flex w-full max-w-[480px] justify-center px-5">
                 <button
                   onClick={handleReloadArea}
                   className="flex items-center gap-1 rounded-full bg-white px-3 py-2 shadow-[0px_0px_5px_0px_rgba(0,0,0,0.2)]"
                 >
-                  <RefreshCcw size={24} className="stroke-grey-900" strokeWidth={2} />
+                  <RefreshCcw size={16} className="stroke-grey-900" strokeWidth={2} />
                   <span className="text-[15px] font-normal leading-[1.5] tracking-[-0.15px] text-grey-900">
                     이 지역 재검색
                   </span>

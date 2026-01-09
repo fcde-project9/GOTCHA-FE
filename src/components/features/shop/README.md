@@ -8,7 +8,7 @@ The single source of truth for shop data is defined in `src/types/shop.ts`:
 
 ```typescript
 export interface Shop {
-  id: string;
+  id: number;
   name: string;
   address: string;
   latitude: number;
@@ -27,7 +27,7 @@ For UI display purposes, we use `ShopListView` from `src/utils/shop.ts`:
 
 ```typescript
 export interface ShopListView {
-  id: string;
+  id: number;
   name: string;
   distance: string; // Computed: "200m", "1.2km"
   isOpen: boolean; // Computed: based on opening hours
@@ -158,7 +158,7 @@ interface ShopListBottomSheetProps {
 
 ### Key Changes
 
-1. **ID Type**: Changed from `number` to `string` to match API
+1. **ID Type**: Uses `number` type to match API response (ShopMapResponse.id is number)
 2. **Type Location**: Moved from component-local to shared utility
 3. **Type Name**: Clarified as `ShopListView` to distinguish from canonical `Shop`
 4. **Documentation**: Added JSDoc comments explaining computed fields

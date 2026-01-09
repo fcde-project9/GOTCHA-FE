@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useKakaoLoader } from "@/hooks/useKakaoLoader";
 import { MapBounds } from "@/types/api";
 
@@ -30,12 +30,18 @@ export default function KakaoMap({
   const [isLoading, setIsLoading] = useState(true);
   const [mapError, setMapError] = useState<string | null>(null);
 
+  // onBoundsChange를 ref로 저장하여 이벤트 리스너에서 최신 값 참조
+  const onBoundsChangeRef = useRef(onBoundsChange);
+  useEffect(() => {
+    onBoundsChangeRef.current = onBoundsChange;
+  }, [onBoundsChange]);
+
   // 커스텀 훅으로 SDK 로드 (싱글톤 패턴으로 전역 관리)
   const { loaded: scriptLoaded, error: sdkError } = useKakaoLoader();
 
   // bounds 정보를 계산하여 콜백 호출
-  const notifyBoundsChange = (map: KakaoMap) => {
-    if (!onBoundsChange || !map) return;
+  const notifyBoundsChange = useCallback((map: KakaoMap) => {
+    if (!onBoundsChangeRef.current || !map) return;
 
     const bounds = map.getBounds();
     const center = map.getCenter();
@@ -49,8 +55,8 @@ export default function KakaoMap({
       centerLng: center.getLng(),
     };
 
-    onBoundsChange(mapBounds);
-  };
+    onBoundsChangeRef.current(mapBounds);
+  }, []);
 
   // 지도 초기화 (한 번만 실행)
   // latitude, longitude, level은 초기값만 사용하고 이후 업데이트는 별도 useEffect에서 처리

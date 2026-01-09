@@ -51,7 +51,7 @@ export default function FavoritesPage() {
 
     // 임시: mockShops 데이터를 FavoriteShop 형식으로 변환
     const mockFavorites: FavoriteShop[] = mockShops.map((shop, index) => ({
-      id: parseInt(shop.id),
+      id: shop.id,
       name: shop.name,
       address: mockAddresses[index] || "서울시 강남구",
       isOpen: shop.isOpen,
