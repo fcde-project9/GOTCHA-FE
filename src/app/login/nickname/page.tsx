@@ -13,6 +13,11 @@ interface NicknameResponse {
   };
 }
 
+/**
+ * 닉네임 확인 페이지
+ * 신규 사용자 가입 시 백엔드에서 자동 생성된 닉네임을 확인하는 페이지
+ * 시작하기 버튼 클릭 시 홈으로 이동
+ */
 export default function NicknamePage() {
   const router = useRouter();
   const [nickname, setNickname] = useState("");
