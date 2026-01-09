@@ -6,6 +6,7 @@ interface BottomSheetProps {
   children: React.ReactNode;
   snapPoints?: number[]; // 스냅 포인트 (픽셀 단위)
   defaultSnapPoint?: number; // 기본 스냅 포인트 인덱스
+  onHeightChange?: (height: number, isDragging: boolean) => void; // 높이 변경 콜백 (isDragging 추가)
 }
 
 /**
@@ -23,6 +24,7 @@ export default function BottomSheet({
   children,
   snapPoints,
   defaultSnapPoint = 0,
+  onHeightChange,
 }: BottomSheetProps) {
   // Compute snapPoints client-side if not provided (memoized to prevent recreation)
   const computedSnapPoints = useMemo(() => snapPoints ?? getDefaultSnapPoints(), [snapPoints]);
@@ -120,12 +122,19 @@ export default function BottomSheet({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDragging, currentY, startY, currentSnapIndex, computedSnapPoints]);
 
+  // 높이 변경 시 콜백 호출
+  useEffect(() => {
+    if (onHeightChange) {
+      onHeightChange(currentHeight, isDragging);
+    }
+  }, [currentHeight, isDragging, onHeightChange]);
+
   return (
     <div
       ref={sheetRef}
       className="absolute bottom-0 left-0 right-0 bg-white rounded-t-[24px] shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden z-10"
       style={{
-        height: `${currentHeight}px`,
+        height: `${currentHeight - 72}px`,
         transition: isDragging ? "none" : "height 0.3s ease-out",
       }}
     >

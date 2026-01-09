@@ -94,7 +94,7 @@ export default function FavoritesPage() {
   };
 
   // TODO: API 연동 - 새로고침 (Pull to Refresh)
-  const handleRefresh = async () => {
+  const _handleRefresh = async () => {
     // setIsLoading(true);
     // try {
     //   const response = await fetch('/api/favorites');
@@ -135,7 +135,7 @@ export default function FavoritesPage() {
               />
               {searchQuery ? (
                 <button onClick={handleClearSearch} aria-label="검색어 지우기">
-                  <CircleX size={24} className="stroke-grey-500" strokeWidth={2} />
+                  <CircleX size={24} className="fill-grey-500 stroke-white" strokeWidth={2} />
                 </button>
               ) : (
                 <Search size={24} className="stroke-grey-500" strokeWidth={2} />

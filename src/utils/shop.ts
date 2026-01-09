@@ -1,3 +1,4 @@
+import { ShopMapResponse } from "@/types/api";
 import { Shop } from "@/types/shop";
 
 /**
@@ -5,7 +6,7 @@ import { Shop } from "@/types/shop";
  * with computed fields for UI presentation
  */
 export interface ShopListView {
-  id: string;
+  id: number;
   name: string;
   distance: string; // Computed field (e.g., "200m", "1.2km")
   isOpen: boolean; // Computed field based on opening hours
@@ -48,7 +49,7 @@ export function formatDistance(meters: number): string {
  * TODO: Implement actual opening hours check when API provides this data
  * For now, returns true as placeholder
  */
-function checkIsOpen(shop: Shop): boolean {
+function checkIsOpen(_shop: Shop): boolean {
   // TODO: Parse opening hours from shop data
   // For now, return true as placeholder
   return true;
@@ -94,4 +95,26 @@ export function toShopListViews(
   userLongitude: number
 ): ShopListView[] {
   return shops.map((shop) => toShopListView(shop, userLatitude, userLongitude));
+}
+
+/**
+ * Transform ShopMapResponse from API to ShopListView for display
+ * @param shopResponse - API 응답 데이터
+ * @returns ShopListView with display fields
+ */
+export function shopMapResponseToView(shopResponse: ShopMapResponse): ShopListView {
+  return {
+    id: shopResponse.id,
+    name: shopResponse.name,
+    distance: shopResponse.distance,
+    isOpen: shopResponse.openStatus,
+    imageUrl: shopResponse.mainImageUrl,
+  };
+}
+
+/**
+ * Transform array of ShopMapResponse to ShopListViews
+ */
+export function shopMapResponsesToViews(shopResponses: ShopMapResponse[]): ShopListView[] {
+  return shopResponses.map((shop) => shopMapResponseToView(shop));
 }
