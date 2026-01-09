@@ -1,0 +1,100 @@
+"use client";
+
+import { useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Toast } from "@/components/common";
+import { useDelayedRedirectWithToast } from "@/hooks";
+
+/**
+ * OAuth 콜백 페이지
+ * 백엔드에서 소셜 로그인 성공 후 토큰과 함께 리다이렉트되는 페이지
+ * URL 파라미터: accessToken, refreshToken, isNewUser
+ */
+function OAuthCallbackContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { toastMessage, showToast, setShowToast, redirectWithToast } =
+    useDelayedRedirectWithToast();
+
+  useEffect(() => {
+    const accessToken = searchParams.get("accessToken");
+    const refreshToken = searchParams.get("refreshToken");
+    const isNewUser = searchParams.get("isNewUser") === "true";
+    const errorCode = searchParams.get("code");
+
+    // 에러 코드가 있는 경우 (로그인 실패)
+    if (errorCode) {
+      console.error("소셜 로그인 실패:", errorCode);
+      const errorMessage = getErrorMessage(errorCode);
+      redirectWithToast(errorMessage, "/login");
+      return;
+    }
+
+    // 토큰이 없는 경우
+    if (!accessToken || !refreshToken) {
+      console.error("토큰이 없습니다");
+      redirectWithToast("로그인에 실패했습니다. 다시 시도해주세요.", "/login");
+      return;
+    }
+
+    // 토큰 저장
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("refreshToken", refreshToken);
+    localStorage.setItem("user_type", "member");
+
+    // 신규 사용자면 닉네임 설정 페이지로, 기존 사용자면 홈으로 이동
+    if (isNewUser) {
+      router.push("/login/nickname");
+    } else {
+      router.push("/home");
+    }
+  }, [searchParams, router, redirectWithToast]);
+
+  return (
+    <>
+      <div className="flex min-h-screen w-full items-center justify-center bg-default">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
+          <p className="text-[16px] font-medium text-grey-700">로그인 처리 중...</p>
+        </div>
+      </div>
+      <Toast message={toastMessage} isVisible={showToast} onClose={() => setShowToast(false)} />
+    </>
+  );
+}
+
+/**
+ * 에러 코드에 따른 사용자 메시지 반환
+ */
+function getErrorMessage(errorCode: string): string {
+  switch (errorCode) {
+    case "A005":
+      return "소셜 로그인에 실패했습니다. 다시 시도해주세요.";
+    case "A006":
+      return "지원하지 않는 소셜 로그인입니다.";
+    case "A007":
+      return "로그인이 취소되었습니다.";
+    case "A008":
+      return "인증 정보가 유효하지 않습니다.";
+    case "A009":
+      return "소셜 로그인 응답이 올바르지 않습니다.";
+    case "A012":
+      return "탈퇴한 계정입니다. 새로 가입해주세요.";
+    default:
+      return "로그인에 실패했습니다. 다시 시도해주세요.";
+  }
+}
+
+export default function OAuthCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen w-full items-center justify-center bg-default">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
+        </div>
+      }
+    >
+      <OAuthCallbackContent />
+    </Suspense>
+  );
+}
