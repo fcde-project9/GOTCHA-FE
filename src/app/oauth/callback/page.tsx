@@ -39,7 +39,8 @@ function OAuthCallbackContent() {
     // 에러 코드가 있는 경우 (로그인 실패)
     if (errorCode) {
       console.error("소셜 로그인 실패:", errorCode);
-      const errorMessage = getErrorMessage(errorCode);
+      const errorMessage =
+        searchParams.get("message") || "로그인에 실패했습니다. 다시 시도해주세요.";
       redirectWithToast(errorMessage, "/login");
       return;
     }
@@ -91,28 +92,6 @@ function OAuthCallbackContent() {
       <Toast message={toastMessage} isVisible={showToast} onClose={() => setShowToast(false)} />
     </>
   );
-}
-
-/**
- * 에러 코드에 따른 사용자 메시지 반환
- */
-function getErrorMessage(errorCode: string): string {
-  switch (errorCode) {
-    case "A005":
-      return "소셜 로그인에 실패했습니다. 다시 시도해주세요.";
-    case "A006":
-      return "지원하지 않는 소셜 로그인입니다.";
-    case "A007":
-      return "로그인이 취소되었습니다.";
-    case "A008":
-      return "인증 정보가 유효하지 않습니다.";
-    case "A009":
-      return "소셜 로그인 응답이 올바르지 않습니다.";
-    case "A012":
-      return "탈퇴한 계정입니다. 새로 가입해주세요.";
-    default:
-      return "로그인에 실패했습니다. 다시 시도해주세요.";
-  }
 }
 
 export default function OAuthCallbackPage() {
