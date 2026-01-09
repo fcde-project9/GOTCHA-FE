@@ -15,9 +15,13 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     // 토큰이 있으면 헤더에 추가
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch {
+      // Private Browsing 등 localStorage 접근 불가 시 무시
     }
     return config;
   },
@@ -32,12 +36,31 @@ apiClient.interceptors.response.use(
     return response;
   },
   async (error) => {
+    const status = error?.response?.status ?? 0;
+
     // 401 에러 처리 (인증 실패)
-    if (error.response?.status === 401) {
-      // 토큰 갱신 또는 로그인 페이지로 리다이렉트
-      localStorage.removeItem("accessToken");
-      window.location.href = "/login";
+    if (status === 401) {
+      const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
+
+      // 로그인 관련 페이지에서는 리다이렉트 안 함 (무한 루프 방지)
+      const isAuthPage = ["/login", "/oauth/callback", "/login/nickname"].includes(currentPath);
+
+      if (!isAuthPage) {
+        // 스토리지 정리
+        try {
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+          localStorage.removeItem("user_type");
+        } catch {
+          // ignore storage errors
+        }
+
+        // 알림 표시 후 리다이렉트
+        alert("로그인 세션이 만료되었습니다. 다시 로그인해주세요.");
+        window.location.replace("/login");
+      }
     }
+
     return Promise.reject(error);
   }
 );

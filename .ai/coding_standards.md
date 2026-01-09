@@ -72,6 +72,66 @@ import { Button } from "@/components/common";
 - API 응답 타입은 `ApiResponse<T>` 형태 유지
 - 에러 코드/메시지는 사용자 메시지와 개발자 로그를 분리
 
+### API 에러 처리 패턴
+
+#### 타입 정의 (`src/api/types.ts`)
+
+```typescript
+import { ApiError, ApiResponse, getErrorMessage, extractApiError } from "@/api/types";
+
+// 백엔드 응답 형식
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: ApiError; // { code: string, message: string }
+}
+```
+
+#### 에러 처리 규칙
+
+1. **백엔드 메시지 우선 사용**: 에러 코드별 메시지를 프론트에서 중복 정의하지 않음
+2. **401 에러**: 전역 인터셉터에서 알림 표시 후 /login 리다이렉트
+3. **개발자 로그**: `console.error`로 상세 정보 기록
+4. **사용자 알림**: Toast 또는 alert로 백엔드 메시지 표시
+
+#### 사용 예시
+
+```typescript
+import apiClient from "@/api/client";
+import { ApiResponse, extractApiError } from "@/api/types";
+
+// API 호출
+const fetchData = async () => {
+  try {
+    const response = await apiClient.get<ApiResponse<UserData>>("/api/users/me");
+
+    if (!response.data.success) {
+      // 백엔드에서 success: false 반환한 경우
+      const errorMessage = response.data.error?.message || "오류가 발생했습니다.";
+      setToast(errorMessage);
+      return;
+    }
+
+    // 성공 처리
+    setUser(response.data.data);
+  } catch (error) {
+    // 네트워크 에러 또는 서버 에러
+    const apiError = extractApiError(error);
+    const errorMessage = apiError?.message || "네트워크 오류가 발생했습니다.";
+
+    console.error("API 호출 실패:", error);
+    setToast(errorMessage);
+  }
+};
+```
+
+#### 전역 인터셉터 동작 (`src/api/client.ts`)
+
+- **401 에러 발생 시**:
+  1. 로그인 관련 페이지(/login, /oauth/callback)에서는 무시
+  2. 그 외 페이지에서는 토큰 삭제 → 알림 표시 → /login 리다이렉트
+- **Private Browsing 대응**: localStorage 접근 시 try-catch로 감싸기
+
 ## 스타일/포맷
 
 - 기존 포맷을 최대한 유지
