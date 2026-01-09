@@ -69,8 +69,9 @@ function redirectToOAuth(provider: SocialLoginProvider, providerDisplayName: str
     sessionStorage.setItem(`${provider}_oauth_state`, state);
 
     // state 파라미터를 포함한 OAuth URL 생성
+    // replace 사용: /login 페이지를 히스토리에서 제거 (뒤로가기 시 /login으로 안 돌아감)
     const oauthUrl = `${apiBaseUrl}/oauth2/authorize/${provider}?state=${encodeURIComponent(state)}`;
-    window.location.href = oauthUrl;
+    window.location.replace(oauthUrl);
   } catch (error) {
     const errorMessage = `${providerDisplayName} 로그인을 시작할 수 없습니다. 다시 시도해주세요.`;
     alert(errorMessage);
