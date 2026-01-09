@@ -4,37 +4,93 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
+import apiClient from "@/api/client";
+
+interface NicknameResponse {
+  success: boolean;
+  data: {
+    nickname: string;
+  };
+}
 
 export default function NicknamePage() {
   const router = useRouter();
   const [nickname, setNickname] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // TODO: 백엔드 API 연동 - 서버에서 닉네임 자동 생성
-    // 임시로 랜덤 닉네임 생성 (예시)
-    const colors = ["빨강", "파랑", "노랑", "초록", "보라"];
-    const items = ["캡슐", "구슬", "별", "하트", "다이아"];
-    const randomColor = colors[Math.floor(Math.random() * colors.length)];
-    const randomItem = items[Math.floor(Math.random() * items.length)];
-    const randomNumber = Math.floor(Math.random() * 100);
+    // 토큰 확인
+    const accessToken = localStorage.getItem("accessToken");
+    if (!accessToken) {
+      router.replace("/login");
+      return;
+    }
 
-    setNickname(`${randomColor}${randomItem}#${randomNumber}`);
-  }, []);
+    // 백엔드에서 닉네임 조회
+    const fetchNickname = async () => {
+      try {
+        const response = await apiClient.get<NicknameResponse>("/api/users/me/nickname");
+        if (response.data.success && response.data.data.nickname) {
+          setNickname(response.data.data.nickname);
+        } else {
+          setError("닉네임을 불러올 수 없습니다.");
+        }
+      } catch (err) {
+        console.error("닉네임 조회 실패:", err);
+        setError("닉네임을 불러오는데 실패했습니다.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchNickname();
+  }, [router]);
 
   const handleBack = () => {
-    router.back();
+    // 뒤로가기 시 로그인 취소 처리
+    // 토큰 삭제 후 로그인 페이지로 이동
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("user_type");
+    router.replace("/login");
   };
 
   const handleStart = () => {
-    // TODO: 백엔드 API 연동 - 닉네임 확정 및 회원가입 완료
-    // 임시로 로컬스토리지에 저장 (클라이언트에서만)
-    if (typeof window !== "undefined") {
-      localStorage.setItem("user_type", "social");
-      localStorage.setItem("nickname", nickname);
-    }
-
-    router.push("/home");
+    // 닉네임은 백엔드에서 이미 저장되어 있음
+    // user_type만 설정하고 홈으로 이동
+    localStorage.setItem("user_type", "member");
+    router.replace("/home");
   };
+
+  // 로딩 중
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center bg-default">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
+          <p className="text-[16px] font-medium text-grey-700">닉네임을 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 에러 발생
+  if (error) {
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center bg-default">
+        <div className="flex flex-col items-center gap-4">
+          <p className="text-[16px] font-medium text-grey-700">{error}</p>
+          <button
+            onClick={handleBack}
+            className="rounded-lg bg-main px-6 py-2 text-white hover:bg-main-700"
+          >
+            로그인으로 돌아가기
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative flex min-h-screen w-full flex-col bg-default">

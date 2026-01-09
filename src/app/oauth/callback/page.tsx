@@ -52,10 +52,11 @@ function OAuthCallbackContent() {
     }
 
     // 신규 사용자면 닉네임 설정 페이지로, 기존 사용자면 홈으로 이동
+    // replace 사용: 뒤로가기 시 콜백 페이지로 돌아오지 않도록 함
     if (isNewUser) {
-      router.push("/login/nickname");
+      router.replace("/login/nickname");
     } else {
-      router.push("/home");
+      router.replace("/home");
     }
   }, [searchParams, router, redirectWithToast]);
 
