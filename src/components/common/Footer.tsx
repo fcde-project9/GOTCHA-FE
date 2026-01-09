@@ -29,8 +29,14 @@ export default function Footer() {
   };
 
   return (
-    <footer className="fixed left-0 right-0 mx-auto w-full max-w-[480px] bg-white h-[70px] pb-2 shadow-[0px_-3px_8px_rgba(163,163,163,0.15)]">
-      <nav className="flex h-full items-center justify-around px-9 py-2">
+    <footer
+      className="fixed left-0 right-0 mx-auto w-full max-w-[480px] bg-white shadow-[0px_-3px_8px_rgba(163,163,163,0.15)]"
+      style={{
+        paddingBottom: "calc(0.5rem + env(safe-area-inset-bottom))",
+        minHeight: "calc(70px + env(safe-area-inset-bottom))",
+      }}
+    >
+      <nav className="flex h-[70px] items-center justify-around px-9 py-2">
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
