@@ -42,9 +42,9 @@ export default function LoginPage() {
       <div
         className={`relative flex min-h-screen w-full flex-col bg-default ${showTermsSheet ? "overflow-hidden" : ""}`}
       >
-        <div className="mx-auto flex w-full max-w-[480px] flex-col">
-          {/* 로고 */}
-          <div className="mt-[207px] flex justify-center">
+        <div className="mx-auto flex min-h-screen flex-col w-full max-w-[480px]">
+          {/* 로고 - 남은 영역에서 가운데 */}
+          <div className="flex flex-1 items-center justify-center">
             <Image
               src="/images/gotcha-logo.png"
               alt="GOTCHA 로고"
@@ -54,8 +54,8 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* 소셜 로그인 버튼 영역 */}
-          <div className="mt-[123px] flex flex-col gap-7 px-5">
+          {/* 소셜 로그인 버튼 영역 - 하단 32px 여백 */}
+          <div className="mb-8 flex flex-col gap-7 px-5">
             {/* 소셜 로그인 버튼 그룹 */}
             <div className="flex flex-col gap-3">
               {/* 카카오 로그인 */}

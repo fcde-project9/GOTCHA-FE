@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, Suspense, useState } from "react";
+import { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Toast } from "@/components/common";
+import { useDelayedRedirectWithToast } from "@/hooks";
 
 function KakaoCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [toastMessage, setToastMessage] = useState("");
-  const [showToast, setShowToast] = useState(false);
+  const { toastMessage, showToast, setShowToast, redirectWithToast } =
+    useDelayedRedirectWithToast();
 
   useEffect(() => {
     const code = searchParams.get("code");
@@ -18,13 +19,7 @@ function KakaoCallbackContent() {
     // 에러 체크
     if (error) {
       console.error("카카오 로그인 실패:", error);
-      setToastMessage("카카오 로그인에 실패했습니다. 다시 시도해주세요.");
-      setShowToast(true);
-
-      // 토스트를 보여준 후 리다이렉트
-      setTimeout(() => {
-        router.push("/login");
-      }, 2500);
+      redirectWithToast("카카오 로그인에 실패했습니다. 다시 시도해주세요.", "/login");
       return;
     }
 
@@ -38,13 +33,7 @@ function KakaoCallbackContent() {
       });
       // state 검증 실패 시 저장된 state 제거 및 로그인 페이지로 리다이렉트
       sessionStorage.removeItem("kakao_oauth_state");
-      setToastMessage("보안 검증에 실패했습니다. 다시 로그인해주세요.");
-      setShowToast(true);
-
-      // 토스트를 보여준 후 리다이렉트
-      setTimeout(() => {
-        router.push("/login");
-      }, 2500);
+      redirectWithToast("보안 검증에 실패했습니다. 다시 로그인해주세요.", "/login");
       return;
     }
 
@@ -65,7 +54,7 @@ function KakaoCallbackContent() {
     } else {
       router.push("/login");
     }
-  }, [searchParams, router]);
+  }, [searchParams, router, redirectWithToast]);
 
   return (
     <>
