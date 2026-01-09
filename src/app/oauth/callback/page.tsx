@@ -17,8 +17,8 @@ function OAuthCallbackContent() {
     useDelayedRedirectWithToast();
 
   useEffect(() => {
-    const accessToken = searchParams.get("accessToken");
-    const refreshToken = searchParams.get("refreshToken");
+    const accessToken = searchParams.get("accessToken")?.trim();
+    const refreshToken = searchParams.get("refreshToken")?.trim();
     const isNewUser = searchParams.get("isNewUser") === "true";
     const errorCode = searchParams.get("code");
 
@@ -30,17 +30,26 @@ function OAuthCallbackContent() {
       return;
     }
 
-    // 토큰이 없는 경우
+    // 토큰이 없거나 빈 문자열인 경우
     if (!accessToken || !refreshToken) {
       console.error("토큰이 없습니다");
       redirectWithToast("로그인에 실패했습니다. 다시 시도해주세요.", "/login");
       return;
     }
 
-    // 토큰 저장
-    localStorage.setItem("accessToken", accessToken);
-    localStorage.setItem("refreshToken", refreshToken);
-    localStorage.setItem("user_type", "member");
+    // 토큰 저장 (localStorage 에러 핸들링)
+    try {
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
+      localStorage.setItem("user_type", "member");
+    } catch (error) {
+      console.error("토큰 저장 실패:", error);
+      redirectWithToast(
+        "로그인 정보를 저장할 수 없습니다. 브라우저 설정을 확인해주세요.",
+        "/login"
+      );
+      return;
+    }
 
     // 신규 사용자면 닉네임 설정 페이지로, 기존 사용자면 홈으로 이동
     if (isNewUser) {
