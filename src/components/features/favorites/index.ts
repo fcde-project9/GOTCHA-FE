@@ -1,0 +1,1 @@
+export { FavoriteShopItem } from "./FavoriteShopItem";

@@ -39,4 +39,11 @@ export const mockShops = [
     isOpen: false,
     imageUrl: undefined,
   },
+  {
+    id: "6",
+    name: "가챠샵 대박나자 우왕 강남 미왕빌딩에서 두줄 테스트입니당",
+    distance: "3.2km",
+    isOpen: false,
+    imageUrl: undefined,
+  },
 ];
