@@ -27,14 +27,11 @@ export type SocialLoginProvider = "kakao" | "naver" | "google";
 
 /**
  * API Base URL 가져오기
- * window.location.origin을 사용하여 현재 도메인을 API 베이스로 사용
- * SSR 환경에서는 undefined 반환
+ * 환경변수 NEXT_PUBLIC_API_BASE_URL을 사용
+ * 환경변수가 설정되지 않은 경우 undefined 반환
  */
 function getApiBaseUrl(): string | undefined {
-  if (typeof window === "undefined") {
-    return undefined;
-  }
-  return window.location.origin;
+  return process.env.NEXT_PUBLIC_API_BASE_URL;
 }
 
 /**
@@ -49,93 +46,66 @@ function generateSecureState(): string {
 }
 
 /**
- * 카카오 OAuth 로그인
+ * OAuth 로그인 공통 헬퍼 함수
  * 백엔드 OAuth 엔드포인트로 리다이렉트
- * CSRF 공격 방지를 위해 state 파라미터 생성 및 검증
- * @throws {Error} window 객체를 사용할 수 없거나 로그인 처리 중 오류 발생 시
+ * @param provider - OAuth 제공자 이름 (kakao, naver, google)
+ * @param providerDisplayName - 에러 메시지에 표시할 제공자 이름
+ * @throws {Error} 환경변수가 설정되지 않았거나 로그인 처리 중 오류 발생 시
  */
-export function loginWithKakao(): void {
+function redirectToOAuth(provider: SocialLoginProvider, providerDisplayName: string): void {
   const apiBaseUrl = getApiBaseUrl();
 
   if (!apiBaseUrl) {
     const errorMessage = "로그인을 처리할 수 없습니다. 페이지를 새로고침 후 다시 시도해주세요.";
     alert(errorMessage);
-    throw new Error("API Base URL을 가져올 수 없습니다. (SSR 환경이거나 window 객체 없음)");
+    throw new Error(
+      "API Base URL이 설정되지 않았습니다. (NEXT_PUBLIC_API_BASE_URL 환경변수 확인 필요)"
+    );
   }
 
   try {
     // CSRF 방지를 위한 state 생성 및 저장
     const state = generateSecureState();
-    sessionStorage.setItem("kakao_oauth_state", state);
+    sessionStorage.setItem(`${provider}_oauth_state`, state);
 
     // state 파라미터를 포함한 OAuth URL 생성
-    const kakaoAuthUrl = `${apiBaseUrl}/oauth2/authorize/kakao?state=${encodeURIComponent(state)}`;
-    window.location.href = kakaoAuthUrl;
+    const oauthUrl = `${apiBaseUrl}/api/oauth2/authorization/${provider}?state=${encodeURIComponent(state)}`;
+    window.location.href = oauthUrl;
   } catch (error) {
-    const errorMessage = "카카오 로그인을 시작할 수 없습니다. 다시 시도해주세요.";
+    const errorMessage = `${providerDisplayName} 로그인을 시작할 수 없습니다. 다시 시도해주세요.`;
     alert(errorMessage);
-    throw new Error(`카카오 로그인 실패: ${error}`);
+    throw new Error(`${providerDisplayName} 로그인 실패: ${error}`);
   }
+}
+
+/**
+ * 카카오 OAuth 로그인
+ * 백엔드 OAuth 엔드포인트로 리다이렉트
+ * CSRF 공격 방지를 위해 state 파라미터 생성 및 검증
+ * @throws {Error} 환경변수가 설정되지 않았거나 로그인 처리 중 오류 발생 시
+ */
+export function loginWithKakao(): void {
+  redirectToOAuth("kakao", "카카오");
 }
 
 /**
  * 네이버 OAuth 로그인
  * 백엔드 OAuth 엔드포인트로 리다이렉트
  * CSRF 공격 방지를 위해 state 파라미터 생성 및 검증
- * @throws {Error} window 객체를 사용할 수 없거나 로그인 처리 중 오류 발생 시
+ * @throws {Error} 환경변수가 설정되지 않았거나 로그인 처리 중 오류 발생 시
  */
 export function loginWithNaver(): void {
-  const apiBaseUrl = getApiBaseUrl();
-
-  if (!apiBaseUrl) {
-    const errorMessage = "로그인을 처리할 수 없습니다. 페이지를 새로고침 후 다시 시도해주세요.";
-    alert(errorMessage);
-    throw new Error("API Base URL을 가져올 수 없습니다. (SSR 환경이거나 window 객체 없음)");
-  }
-
-  try {
-    // CSRF 방지를 위한 state 생성 및 저장
-    const state = generateSecureState();
-    sessionStorage.setItem("naver_oauth_state", state);
-
-    // state 파라미터를 포함한 OAuth URL 생성
-    const naverAuthUrl = `${apiBaseUrl}/oauth2/authorize/naver?state=${encodeURIComponent(state)}`;
-    window.location.href = naverAuthUrl;
-  } catch (error) {
-    const errorMessage = "네이버 로그인을 시작할 수 없습니다. 다시 시도해주세요.";
-    alert(errorMessage);
-    throw new Error(`네이버 로그인 실패: ${error}`);
-  }
+  redirectToOAuth("naver", "네이버");
 }
 
 /**
  * 구글 OAuth 로그인
  * 백엔드 OAuth 엔드포인트로 리다이렉트
  * CSRF 공격 방지를 위해 state 파라미터 생성 및 검증
- * @throws {Error} window 객체를 사용할 수 없거나 로그인 처리 중 오류 발생 시
+ * @throws {Error} 환경변수가 설정되지 않았거나 로그인 처리 중 오류 발생 시
  */
 export function loginWithGoogle(): void {
-  const apiBaseUrl = getApiBaseUrl();
-
-  if (!apiBaseUrl) {
-    const errorMessage = "로그인을 처리할 수 없습니다. 페이지를 새로고침 후 다시 시도해주세요.";
-    alert(errorMessage);
-    throw new Error("API Base URL을 가져올 수 없습니다. (SSR 환경이거나 window 객체 없음)");
-  }
-
-  try {
-    // CSRF 방지를 위한 state 생성 및 저장
-    const state = generateSecureState();
-    sessionStorage.setItem("google_oauth_state", state);
-
-    // state 파라미터를 포함한 OAuth URL 생성
-    const googleAuthUrl = `${apiBaseUrl}/oauth2/authorize/google?state=${encodeURIComponent(state)}`;
-    window.location.href = googleAuthUrl;
-  } catch (error) {
-    const errorMessage = "구글 로그인을 시작할 수 없습니다. 다시 시도해주세요.";
-    alert(errorMessage);
-    throw new Error(`구글 로그인 실패: ${error}`);
-  }
+  redirectToOAuth("google", "구글");
 }
 
 /**
