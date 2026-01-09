@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
@@ -11,6 +11,14 @@ export default function LoginPage() {
   const router = useRouter();
   const [showTermsSheet, setShowTermsSheet] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+
+  // 이미 로그인된 경우 홈으로 리다이렉트
+  useEffect(() => {
+    const accessToken = localStorage.getItem("accessToken");
+    if (accessToken) {
+      router.replace("/home");
+    }
+  }, [router]);
 
   const handleGuestLogin = () => {
     setShowTermsSheet(true);
