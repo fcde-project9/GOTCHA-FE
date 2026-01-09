@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
@@ -19,6 +19,26 @@ export default function NicknamePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 백엔드에서 닉네임 조회
+  const fetchNickname = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await apiClient.get<NicknameResponse>("/api/users/me/nickname");
+      if (response.data.success && response.data.data.nickname) {
+        setNickname(response.data.data.nickname);
+      } else {
+        setError("닉네임을 불러올 수 없습니다.");
+      }
+    } catch (err) {
+      console.error("닉네임 조회 실패:", err);
+      setError("닉네임을 불러오는데 실패했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     // 토큰 확인
     const accessToken = localStorage.getItem("accessToken");
@@ -27,25 +47,8 @@ export default function NicknamePage() {
       return;
     }
 
-    // 백엔드에서 닉네임 조회
-    const fetchNickname = async () => {
-      try {
-        const response = await apiClient.get<NicknameResponse>("/api/users/me/nickname");
-        if (response.data.success && response.data.data.nickname) {
-          setNickname(response.data.data.nickname);
-        } else {
-          setError("닉네임을 불러올 수 없습니다.");
-        }
-      } catch (err) {
-        console.error("닉네임 조회 실패:", err);
-        setError("닉네임을 불러오는데 실패했습니다.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchNickname();
-  }, [router]);
+  }, [router, fetchNickname]);
 
   const handleBack = () => {
     // 뒤로가기 시 로그인 취소 처리
@@ -81,12 +84,20 @@ export default function NicknamePage() {
       <div className="flex min-h-screen w-full items-center justify-center bg-default">
         <div className="flex flex-col items-center gap-4">
           <p className="text-[16px] font-medium text-grey-700">{error}</p>
-          <button
-            onClick={handleBack}
-            className="rounded-lg bg-main px-6 py-2 text-white hover:bg-main-700"
-          >
-            로그인으로 돌아가기
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={fetchNickname}
+              className="rounded-lg bg-main px-6 py-2 text-white hover:bg-main-700"
+            >
+              다시 시도
+            </button>
+            <button
+              onClick={handleBack}
+              className="rounded-lg border border-grey-300 bg-white px-6 py-2 text-grey-700 hover:bg-grey-50"
+            >
+              로그인으로 돌아가기
+            </button>
+          </div>
         </div>
       </div>
     );
