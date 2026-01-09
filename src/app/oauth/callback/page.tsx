@@ -29,16 +29,21 @@ function OAuthCallbackContent() {
     const accessToken = searchParams.get("accessToken")?.trim();
     const refreshToken = searchParams.get("refreshToken")?.trim();
     const isNewUser = searchParams.get("isNewUser") === "true";
-    const errorCode = searchParams.get("code");
+    const codeParam = searchParams.get("code");
+
+    // 백엔드 에러 코드 패턴 (A001, A005 등)
+    const isErrorCode = codeParam && /^A\d{3}$/.test(codeParam);
 
     // URL에서 파라미터 제거 (새로고침 시 재처리 방지)
-    if (accessToken || refreshToken || errorCode) {
-      window.history.replaceState({}, "", "/oauth/callback");
+    if (accessToken || refreshToken || codeParam) {
+      const url = new URL(window.location.href);
+      url.search = "";
+      window.history.replaceState({}, "", url.pathname);
     }
 
     // 에러 코드가 있는 경우 (로그인 실패)
-    if (errorCode) {
-      console.error("소셜 로그인 실패:", errorCode);
+    if (isErrorCode) {
+      console.error("소셜 로그인 실패:", codeParam);
       const errorMessage =
         searchParams.get("message") || "로그인에 실패했습니다. 다시 시도해주세요.";
       redirectWithToast(errorMessage, "/login");
@@ -47,11 +52,15 @@ function OAuthCallbackContent() {
 
     // 토큰이 없거나 빈 문자열인 경우
     if (!accessToken || !refreshToken) {
-      // 이미 로그인된 상태인지 확인
-      const existingToken = localStorage.getItem("accessToken");
-      if (existingToken) {
-        router.replace("/home");
-        return;
+      // 이미 로그인된 상태인지 확인 (Private Browsing 대응)
+      try {
+        const existingToken = localStorage.getItem("accessToken");
+        if (existingToken) {
+          router.replace("/home");
+          return;
+        }
+      } catch {
+        // Private Browsing 모드에서 localStorage 접근 실패 시 무시
       }
       console.error("토큰이 없습니다");
       redirectWithToast("로그인에 실패했습니다. 다시 시도해주세요.", "/login");
