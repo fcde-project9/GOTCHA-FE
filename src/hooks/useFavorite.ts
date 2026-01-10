@@ -63,6 +63,8 @@ export function useFavorite({
       } else {
         // 실패 시 롤백
         setIsFavorite(previousState);
+        // 호출자에게 실패 알림
+        onError?.(new Error("찜하기 업데이트에 실패했습니다."));
       }
     } catch (error) {
       // 에러 시 롤백
