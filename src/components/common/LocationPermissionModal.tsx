@@ -48,11 +48,19 @@ export function LocationPermissionModal({
     setSettingsGuide(guide);
 
     // 권한 상태 확인 (Permissions API 지원 시)
+    let permissionStatus: PermissionStatus | null = null;
+    let isMounted = true;
+
     if (navigator.permissions) {
       navigator.permissions.query({ name: "geolocation" }).then((result) => {
+        if (!isMounted) return;
+
+        permissionStatus = result;
         setPermissionState(result.state);
+
         // 권한 상태 변경 감지
         result.onchange = () => {
+          if (!isMounted) return;
           setPermissionState(result.state);
           // 권한이 허용되면 자동으로 위치 요청
           if (result.state === "granted") {
@@ -61,6 +69,13 @@ export function LocationPermissionModal({
         };
       });
     }
+
+    return () => {
+      isMounted = false;
+      if (permissionStatus) {
+        permissionStatus.onchange = null;
+      }
+    };
   }, []);
 
   // 위치 권한 다시 요청
