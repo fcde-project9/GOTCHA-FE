@@ -41,7 +41,7 @@ export default function KakaoMap({
 }: KakaoMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<KakaoMap | null>(null);
-  const markersRef = useRef<Marker[]>([]);
+  const markersRef = useRef<Array<{ marker: Marker; handler: () => void }>>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [mapError, setMapError] = useState<string | null>(null);
 
@@ -181,15 +181,15 @@ export default function KakaoMap({
 
     const map = mapInstance.current;
 
-    // 기존 마커 제거
-    markersRef.current.forEach((marker) => {
+    // 기존 마커 및 이벤트 리스너 제거
+    markersRef.current.forEach(({ marker, handler }) => {
+      window.kakao.maps.event.removeListener(marker, "click", handler);
       marker.setMap(null);
     });
     markersRef.current = [];
 
     // 마커가 없으면 종료
     if (markers.length === 0) {
-      console.log("마커 데이터 없음");
       return;
     }
 
@@ -226,15 +226,26 @@ export default function KakaoMap({
 
       const marker = new window.kakao.maps.Marker(markerOptions);
 
-      // 마커 클릭 이벤트
-      window.kakao.maps.event.addListener(marker, "click", () => {
-        if (onMarkerClickRef.current) {
-          onMarkerClickRef.current(markerData);
-        }
-      });
+      // 명명된 핸들러 생성 (이벤트 리스너 제거를 위해 필요)
+      const handleMarkerClick = () => {
+        onMarkerClickRef.current?.(markerData);
+      };
 
-      markersRef.current.push(marker);
+      // 마커 클릭 이벤트 등록
+      window.kakao.maps.event.addListener(marker, "click", handleMarkerClick);
+
+      // 마커와 핸들러를 함께 저장
+      markersRef.current.push({ marker, handler: handleMarkerClick });
     });
+
+    // cleanup 함수: 컴포넌트 언마운트 또는 의존성 변경 시 실행
+    return () => {
+      markersRef.current.forEach(({ marker, handler }) => {
+        window.kakao.maps.event.removeListener(marker, "click", handler);
+        marker.setMap(null);
+      });
+      markersRef.current = [];
+    };
   }, [markers, isLoading]);
 
   // SDK 에러와 지도 에러를 통합
