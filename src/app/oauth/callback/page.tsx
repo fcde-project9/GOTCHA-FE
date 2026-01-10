@@ -92,7 +92,7 @@ function OAuthCallbackContent() {
 
   return (
     <>
-      <div className="flex min-h-screen w-full items-center justify-center bg-default">
+      <div className="flex min-h-[100dvh] w-full items-center justify-center bg-default">
         <div className="flex flex-col items-center gap-4">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
           <p className="text-[16px] font-medium text-grey-700">로그인 처리 중...</p>
@@ -107,7 +107,7 @@ export default function OAuthCallbackPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen w-full items-center justify-center bg-default">
+        <div className="flex min-h-[100dvh] w-full items-center justify-center bg-default">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
         </div>
       }

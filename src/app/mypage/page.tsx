@@ -147,7 +147,7 @@ export default function MyPage() {
   };
 
   return (
-    <div className="bg-default min-h-screen w-full max-w-[480px] mx-auto relative pb-[70px]">
+    <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[70px]">
       {/* Header */}
       <header className="bg-white h-12 flex items-center px-5 py-2">
         <h1 className="flex-1 text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900 h-6 flex items-center">

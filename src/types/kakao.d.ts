@@ -14,6 +14,7 @@ declare global {
         Size: new (width: number, height: number) => Size;
         Point: new (x: number, y: number) => Point;
         InfoWindow: new (options: InfoWindowOptions) => InfoWindow;
+        CustomOverlay: new (options: CustomOverlayOptions) => CustomOverlay;
         event: {
           addListener: (
             target: KakaoMap | Marker,
@@ -106,6 +107,42 @@ declare global {
   interface InfoWindow {
     open: (map: KakaoMap, marker: Marker) => void;
     close: () => void;
+  }
+
+  interface Viewpoint {
+    pan: number;
+    tilt: number;
+    zoom: number;
+    panoId?: number;
+  }
+
+  interface Roadview {
+    setPanoId: (panoId: number, position: LatLng) => void;
+    getPanoId: () => number;
+    setViewpoint: (viewpoint: Viewpoint) => void;
+    getViewpoint: () => Viewpoint;
+    getPosition: () => LatLng;
+  }
+
+  interface CustomOverlayOptions {
+    content: Node | string;
+    position: LatLng | Viewpoint;
+    xAnchor?: number;
+    yAnchor?: number;
+    zIndex?: number;
+    clickable?: boolean;
+    map?: KakaoMap | Roadview;
+  }
+
+  interface CustomOverlay {
+    setMap: (map: KakaoMap | Roadview | null) => void;
+    getMap: () => KakaoMap | Roadview | null;
+    setPosition: (position: LatLng) => void;
+    getPosition: () => LatLng;
+    setContent: (content: Node | string) => void;
+    getContent: () => Node | string;
+    setZIndex: (zIndex: number) => void;
+    getZIndex: () => number;
   }
 
   interface PlacesSearchOptions {

@@ -12,7 +12,7 @@ export default function TermsPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col bg-default">
+    <div className="relative flex min-h-[100dvh] w-full flex-col bg-default">
       <div className="mx-auto flex w-full max-w-[480px] flex-col">
         {/* 헤더 */}
         <header className="flex h-12 items-center gap-2 px-5 py-2">

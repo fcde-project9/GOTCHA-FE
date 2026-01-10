@@ -19,7 +19,7 @@ export default function ShopListBottomSheet({ shops, onHeightChange }: ShopListB
       defaultSnapPoint={0}
       onHeightChange={onHeightChange}
     >
-      <div className="flex flex-col items-center gap-2 px-5">
+      <div className="flex flex-col items-center gap-2 px-5 h-full">
         {hasShops ? (
           <>
             {/* 헤더 섹션 */}
@@ -52,8 +52,8 @@ export default function ShopListBottomSheet({ shops, onHeightChange }: ShopListB
           </>
         ) : (
           /* 빈 상태 UI */
-          <div className="flex w-full flex-col items-center justify-center py-12">
-            <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-grey-100">
+          <div className="flex w-full flex-col items-center justify-center h-full">
+            <div className="mb-4 flex items-center justify-center rounded-full bg-grey-100 flex-shrink-0 w-16 h-16 min-w-16 min-h-16">
               <Store size={32} className="stroke-grey-400" strokeWidth={1.5} />
             </div>
             <p className="mb-1 text-[16px] font-semibold leading-[1.5] tracking-[-0.16px] text-grey-900">

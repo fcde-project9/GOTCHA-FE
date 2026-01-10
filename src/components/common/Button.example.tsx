@@ -9,7 +9,7 @@ import { Button } from "./Button";
 
 export function ButtonExamples() {
   return (
-    <div className="p-8 space-y-12 bg-default min-h-screen">
+    <div className="p-8 space-y-12 bg-default min-h-[100dvh]">
       <h1 className="text-3xl font-bold text-grey-900">Button Component Examples</h1>
 
       {/* Variants */}
