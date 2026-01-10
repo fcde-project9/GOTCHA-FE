@@ -148,7 +148,7 @@ export default function Home() {
 
   return (
     <>
-      <main className="h-[calc(100vh-70px)] relative">
+      <main className="h-[calc(100dvh-70px)] overflow-hidden relative">
         <div className="flex h-full flex-col items-center relative">
           {/* 카카오맵 */}
           <div className="w-full h-full relative">

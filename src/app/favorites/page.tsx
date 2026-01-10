@@ -114,88 +114,86 @@ export default function FavoritesPage() {
 
   return (
     <>
-      <main className="h-[calc(100vh-70px)] relative bg-default">
-        <div className="flex h-full flex-col">
-          {/* 헤더 */}
-          <header className="flex h-12 items-center bg-default px-5 py-2">
-            <h1 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900">
-              찜한 업체
-            </h1>
-          </header>
+      <main className="h-[calc(100dvh-70px)] overflow-hidden relative bg-default flex flex-col">
+        {/* 헤더 */}
+        <header className="flex-shrink-0 flex h-12 items-center bg-default px-5 py-2">
+          <h1 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900">
+            찜한 업체
+          </h1>
+        </header>
 
-          {/* 검색창 */}
-          <div className="px-5 pt-3">
-            <div className="flex h-11 items-center justify-between rounded-lg bg-grey-50 px-3 py-2.5">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="찜한 업체 검색"
-                className="flex-1 bg-transparent text-[15px] font-normal leading-[1.5] tracking-[-0.15px] text-grey-900 placeholder:text-grey-500 focus:outline-none"
-              />
-              {searchQuery ? (
-                <button onClick={handleClearSearch} aria-label="검색어 지우기">
-                  <CircleX size={24} className="fill-grey-500 stroke-white" strokeWidth={2} />
-                </button>
-              ) : (
-                <Search size={24} className="stroke-grey-500" strokeWidth={2} />
-              )}
-            </div>
+        {/* 검색창 */}
+        <div className="flex-shrink-0 px-5 pt-3">
+          <div className="flex h-11 items-center justify-between rounded-lg bg-grey-50 px-3 py-2.5">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="찜한 업체 검색"
+              className="flex-1 bg-transparent text-[15px] font-normal leading-[1.5] tracking-[-0.15px] text-grey-900 placeholder:text-grey-500 focus:outline-none"
+            />
+            {searchQuery ? (
+              <button onClick={handleClearSearch} aria-label="검색어 지우기">
+                <CircleX size={24} className="fill-grey-500 stroke-white" strokeWidth={2} />
+              </button>
+            ) : (
+              <Search size={24} className="stroke-grey-500" strokeWidth={2} />
+            )}
           </div>
-
-          {/* 컨텐츠 영역 */}
-          {isLoading ? (
-            <div className="flex flex-1 items-center justify-center px-5">
-              <div className="h-12 w-12 animate-spin rounded-full border-4 border-grey-200 border-t-main"></div>
-            </div>
-          ) : sortedFavorites.length === 0 ? (
-            // Empty State
-            <div className="flex flex-1 flex-col items-center justify-center gap-7 px-5">
-              <div className="relative h-24 w-24">
-                <Image
-                  src="/images/shop.png"
-                  alt="찜한 업체 없음"
-                  width={96}
-                  height={96}
-                  className="object-contain"
-                />
-              </div>
-              <p className="text-center text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
-                관심있는 매장을 찜 해보세요!
-              </p>
-            </div>
-          ) : (
-            <>
-              {/* 총 개수 & 정렬 - 고정 */}
-              <div className="mt-4 mb-3 flex items-center justify-between px-5">
-                <div className="flex items-center text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-900">
-                  <span>총&nbsp;</span>
-                  <span>{sortedFavorites.length}개</span>
-                </div>
-                <button
-                  onClick={handleSortToggle}
-                  className="flex items-center gap-1 text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-700"
-                >
-                  <span>{sortOption === "latest" ? "최신순" : "오래된순"}</span>
-                  <ArrowUpDown size={16} className="stroke-grey-700" strokeWidth={2} />
-                </button>
-              </div>
-
-              {/* 찜한 업체 리스트 - 스크롤 가능 */}
-              <div className="flex-1 overflow-y-auto px-5">
-                <div className="flex flex-col">
-                  {sortedFavorites.map((shop) => (
-                    <FavoriteShopItem
-                      key={shop.id}
-                      shop={shop}
-                      onRemove={() => handleRemoveFavorite(shop.id)}
-                    />
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
         </div>
+
+        {/* 컨텐츠 영역 */}
+        {isLoading ? (
+          <div className="flex flex-1 items-center justify-center px-5">
+            <div className="h-12 w-12 animate-spin rounded-full border-4 border-grey-200 border-t-main"></div>
+          </div>
+        ) : sortedFavorites.length === 0 ? (
+          // Empty State
+          <div className="flex flex-1 flex-col items-center justify-center gap-7 px-5">
+            <div className="relative h-24 w-24">
+              <Image
+                src="/images/shop.png"
+                alt="찜한 업체 없음"
+                width={96}
+                height={96}
+                className="object-contain"
+              />
+            </div>
+            <p className="text-center text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
+              관심있는 매장을 찜 해보세요!
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* 총 개수 & 정렬 - 고정 */}
+            <div className="flex-shrink-0 mt-4 mb-3 flex items-center justify-between px-5">
+              <div className="flex items-center text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-900">
+                <span>총&nbsp;</span>
+                <span>{sortedFavorites.length}개</span>
+              </div>
+              <button
+                onClick={handleSortToggle}
+                className="flex items-center gap-1 text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-700"
+              >
+                <span>{sortOption === "latest" ? "최신순" : "오래된순"}</span>
+                <ArrowUpDown size={16} className="stroke-grey-700" strokeWidth={2} />
+              </button>
+            </div>
+
+            {/* 찜한 업체 리스트 - 스크롤 영역 */}
+            <div className="flex-1 overflow-y-auto px-5 pb-4">
+              <div className="flex flex-col">
+                {sortedFavorites.map((shop) => (
+                  <FavoriteShopItem
+                    key={shop.id}
+                    shop={shop}
+                    onRemove={() => handleRemoveFavorite(shop.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </main>
       <Footer />
     </>
