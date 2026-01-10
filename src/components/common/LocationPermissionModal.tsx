@@ -12,7 +12,15 @@ interface LocationPermissionModalProps {
 
 /**
  * 위치 권한 요청 모달
- * 사용자가 위치 권한을 거부했을 때 다시 허용을 유도하는 모달
+ *
+ * 표준 준수:
+ * - .ai/modal_and_permission_standards.md 참조
+ * - ESC 키로 닫기
+ * - 오버레이 클릭으로 닫기
+ * - Body 스크롤 방지
+ * - 접근성 속성 (role, aria-*)
+ * - 브라우저별 설정 안내
+ * - Permissions API 미지원 환경 대응
  */
 export function LocationPermissionModal({
   isOpen,
@@ -24,8 +32,32 @@ export function LocationPermissionModal({
   const [isRequesting, setIsRequesting] = useState(false);
   const requestLocationRef = useRef<() => void>(() => {});
 
+  // ESC 키로 모달 닫기 (표준 준수)
   useEffect(() => {
-    // 브라우저별 설정 안내 텍스트 생성
+    if (!isOpen) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [isOpen, onClose]);
+
+  // Body 스크롤 방지 (표준 준수)
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    }
+  }, [isOpen]);
+
+  // 브라우저별 설정 안내 텍스트 생성 (한 번만 실행)
+  useEffect(() => {
     const userAgent = navigator.userAgent.toLowerCase();
     const isIOS = /iphone|ipad|ipod/.test(userAgent);
     const isAndroid = /android/.test(userAgent);
@@ -46,28 +78,44 @@ export function LocationPermissionModal({
     }
 
     setSettingsGuide(guide);
+  }, []);
 
-    // 권한 상태 확인 (Permissions API 지원 시)
+  // 권한 상태 확인 (모달이 열릴 때만 리스너 등록)
+  useEffect(() => {
+    if (!isOpen) return;
+
     let permissionStatus: PermissionStatus | null = null;
     let isMounted = true;
 
     if (navigator.permissions) {
-      navigator.permissions.query({ name: "geolocation" }).then((result) => {
-        if (!isMounted) return;
-
-        permissionStatus = result;
-        setPermissionState(result.state);
-
-        // 권한 상태 변경 감지
-        result.onchange = () => {
+      navigator.permissions
+        .query({ name: "geolocation" })
+        .then((result) => {
           if (!isMounted) return;
+
+          permissionStatus = result;
           setPermissionState(result.state);
-          // 권한이 허용되면 자동으로 위치 요청
+
+          // 이미 권한이 허용된 경우 바로 위치 요청
           if (result.state === "granted") {
             requestLocationRef.current();
+            return;
           }
-        };
-      });
+
+          // 권한 상태 변경 감지
+          result.onchange = () => {
+            if (!isMounted) return;
+            setPermissionState(result.state);
+            // 권한이 허용되면 자동으로 위치 요청
+            if (result.state === "granted") {
+              requestLocationRef.current();
+            }
+          };
+        })
+        .catch((error) => {
+          // Permissions API 에러 처리 (일부 브라우저에서 지원하지 않을 수 있음)
+          console.warn("Permissions API error:", error);
+        });
     }
 
     return () => {
@@ -76,19 +124,31 @@ export function LocationPermissionModal({
         permissionStatus.onchange = null;
       }
     };
-  }, []);
+  }, [isOpen]);
 
   // 위치 권한 다시 요청
   const requestLocation = useCallback(() => {
     setIsRequesting(true);
+
+    // Geolocation API 미지원 환경 체크
+    if (!("geolocation" in navigator)) {
+      setIsRequesting(false);
+      setPermissionState("denied");
+      return;
+    }
+
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setIsRequesting(false);
         onPermissionGranted?.(position);
         onClose();
       },
-      () => {
+      (error) => {
         setIsRequesting(false);
+        // Permissions API 미지원 환경에서도 UX가 동작하도록 보정
+        if (error.code === error.PERMISSION_DENIED) {
+          setPermissionState("denied");
+        }
         // 여전히 거부됨 - 설정 안내 계속 표시
       },
       {
@@ -117,10 +177,15 @@ export function LocationPermissionModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* 배경 오버레이 */}
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden="true" />
 
       {/* 모달 컨텐츠 */}
-      <div className="relative z-10 mx-5 w-full max-w-[340px] rounded-2xl bg-white p-6">
+      <div
+        role="dialog"
+        aria-labelledby="location-permission-title"
+        aria-describedby="location-permission-description"
+        className="relative z-10 mx-5 w-full max-w-[340px] rounded-2xl bg-white p-6"
+      >
         {/* 닫기 버튼 */}
         <button
           onClick={onClose}
@@ -138,12 +203,18 @@ export function LocationPermissionModal({
         </div>
 
         {/* 제목 */}
-        <h2 className="mb-2 text-center text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900">
+        <h2
+          id="location-permission-title"
+          className="mb-2 text-center text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900"
+        >
           위치 권한이 필요해요
         </h2>
 
         {/* 설명 */}
-        <p className="mb-4 text-center text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-600">
+        <p
+          id="location-permission-description"
+          className="mb-4 text-center text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-600"
+        >
           내 주변 매장을 찾기 위해
           <br />
           위치 권한이 필요합니다.

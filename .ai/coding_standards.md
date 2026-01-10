@@ -146,6 +146,139 @@ const fetchData = async () => {
   - Line 컬러: `border-line-100`, `border-line-300`
 - 컬러/간격 등 반복 스타일은 `tailwind.config.ts`에 먼저 정의 후 활용
 
+## 모달 (Modal) 표준
+
+### 모달 동작 요구사항
+
+#### 1. Focus Trap (포커스 트랩)
+
+- 모달이 열리면 포커스가 모달 내부로 이동
+- Tab/Shift+Tab으로 모달 내부 요소만 순환
+- 모달 외부 요소는 포커스 불가
+- 첫 번째 포커스 가능한 요소에 자동 포커스 (일반적으로 닫기 버튼 또는 주요 액션 버튼)
+
+#### 2. Overlay/Backdrop 상호작용
+
+- 오버레이 클릭 시 모달 닫기 (dismissible modal)
+- 중요한 액션(결제, 삭제 등)은 오버레이 클릭으로 닫히지 않도록 설정 가능
+- 오버레이 배경색: `bg-black/50` (50% 투명도)
+- z-index: `z-50` (모달), `z-40` (오버레이)
+
+#### 3. 접근성 (Accessibility)
+
+- ESC 키로 모달 닫기 지원
+- `role="dialog"` 또는 `role="alertdialog"` 속성
+- `aria-labelledby` (제목 ID 참조)
+- `aria-describedby` (설명 ID 참조, 선택사항)
+- 닫기 버튼에 `aria-label="닫기"` 추가
+- 모달이 열리면 body 스크롤 방지
+
+#### 4. 애니메이션
+
+- 페이드 인/아웃: `transition-opacity duration-200`
+- 슬라이드 업(바텀시트): `transition-transform duration-300`
+- 모달이 닫힐 때 애니메이션 완료 후 DOM에서 제거
+
+### 모달 구현 체크리스트
+
+```typescript
+// ✅ 필수 구현 사항
+interface ModalProps {
+  isOpen: boolean;              // 모달 열림 상태
+  onClose: () => void;          // 닫기 핸들러
+  title?: string;               // 접근성을 위한 제목
+  dismissible?: boolean;        // 오버레이 클릭으로 닫기 가능 여부 (기본: true)
+}
+
+// ✅ 구현 예시
+export function ExampleModal({ isOpen, onClose, title, dismissible = true }: ModalProps) {
+  // ESC 키 처리
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [isOpen, onClose]);
+
+  // Body 스크롤 방지
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* 오버레이 */}
+      <div
+        className="absolute inset-0 bg-black/50"
+        onClick={dismissible ? onClose : undefined}
+        aria-hidden="true"
+      />
+
+      {/* 모달 컨텐츠 */}
+      <div
+        role="dialog"
+        aria-labelledby={title ? "modal-title" : undefined}
+        className="relative z-10 mx-5 w-full max-w-[340px] rounded-2xl bg-white p-6"
+      >
+        {/* 닫기 버튼 */}
+        <button onClick={onClose} aria-label="닫기">
+          <X size={20} />
+        </button>
+
+        {/* 컨텐츠 */}
+        {title && <h2 id="modal-title">{title}</h2>}
+        {/* ... */}
+      </div>
+    </div>
+  );
+}
+```
+
+## 권한 요청 (Permission Request) 가이드라인
+
+### 표준화된 메시지 (Standardized Copy)
+
+#### 위치 권한 (Location Permission)
+
+```typescript
+// ✅ 권장 메시지
+const LOCATION_PERMISSION_MESSAGES = {
+  title: "위치 권한이 필요해요",
+  description: "내 주변 매장을 찾기 위해\n위치 권한이 필요합니다.",
+  primaryAction: "위치 권한 허용하기",
+  secondaryAction: "나중에",
+  deniedTitle: "📍 설정 방법",
+  deniedDescription: "브라우저 설정에서 위치 권한을 허용해주세요.",
+};
+
+// ❌ 피해야 할 표현
+// - "위치 정보를 수집합니다" (불안감 유발)
+// - "필수입니다" (강제성)
+// - 기술 용어 (Geolocation API, GPS 등)
+```
+
+#### 알림 권한 (Notification Permission)
+
+```typescript
+const NOTIFICATION_PERMISSION_MESSAGES = {
+  title: "알림을 받아보세요",
+  description: "새로운 매장 정보와 이벤트 소식을\n가장 먼저 받아보세요.",
+  primaryAction: "알림 받기",
+  secondaryAction: "나중에",
+};
+```
+
 ## 테스트/품질
 
 - 타입/린트 에러 0 유지
