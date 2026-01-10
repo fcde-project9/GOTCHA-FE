@@ -167,10 +167,10 @@ export default function Home() {
           } catch {
             // localStorage 접근 불가 시 무시
           }
+          setShowLocationModal(true);
         }
-        // 다른 에러(타임아웃, 위치 불가 등)는 locationDenied 상태를 변경하지 않음
-        // 기존 localStorage 플래그 유지
-        setShowLocationModal(true);
+        // 다른 에러(타임아웃, 위치 불가 등)는 모달을 표시하지 않음
+        // locationDenied 상태와 localStorage 플래그 유지
       },
       {
         enableHighAccuracy: true,
