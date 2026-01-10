@@ -25,11 +25,22 @@ export default function Home() {
   const [hasInitialLoad, setHasInitialLoad] = useState(false);
   const [currentBounds, setCurrentBounds] = useState<MapBounds | null>(null);
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const [locationDenied, setLocationDenied] = useState(false);
   const [showCurrentLocation, setShowCurrentLocation] = useState<{
     latitude: number;
     longitude: number;
     heading: number | null;
   } | null>(null);
+
+  // localStorage에서 권한 거부 플래그 읽기
+  useEffect(() => {
+    try {
+      const denied = localStorage.getItem("locationPermissionDenied") === "true";
+      setLocationDenied(denied);
+    } catch {
+      // localStorage 접근 불가 시 무시
+    }
+  }, []);
 
   // 최초 접속 시 현재 위치 권한 요청
   useEffect(() => {
@@ -147,8 +158,19 @@ export default function Home() {
       (err) => {
         console.error("위치 정보를 가져올 수 없습니다:", err);
 
-        // 위치 권한 거부 시 모달 표시
+        // 위치 권한 거부 시 설정 안내 모달 표시
         if (err.code === err.PERMISSION_DENIED) {
+          setLocationDenied(true);
+          // localStorage에 거부 플래그 저장
+          try {
+            localStorage.setItem("locationPermissionDenied", "true");
+          } catch {
+            // localStorage 접근 불가 시 무시
+          }
+          setShowLocationModal(true);
+        } else {
+          // 다른 에러(타임아웃, 위치 불가 등)는 권한 요청 UI 표시
+          setLocationDenied(false);
           setShowLocationModal(true);
         }
       },
@@ -220,11 +242,35 @@ export default function Home() {
 
   return (
     <>
-      {/* 위치 권한 모달 - 권한 거부 시 설정 안내만 표시 */}
+      {/* 위치 권한 모달 */}
       <LocationPermissionModal
         isOpen={showLocationModal}
-        onClose={() => setShowLocationModal(false)}
-        initialDenied
+        onClose={() => {
+          setShowLocationModal(false);
+          // 모달 닫을 때는 localStorage 플래그 유지 (영구 저장)
+          // denied 상태는 다음 렌더링 시 localStorage에서 다시 읽어옴
+        }}
+        initialDenied={locationDenied}
+        onPermissionGranted={(position) => {
+          const newLocation = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          };
+          setMapCenter(newLocation);
+          setShowCurrentLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            heading: position.coords.heading ?? null,
+          });
+          startDeviceOrientationTracking(newLocation);
+          // 권한 허용 시 denied 상태 초기화 및 localStorage 플래그 제거
+          setLocationDenied(false);
+          try {
+            localStorage.removeItem("locationPermissionDenied");
+          } catch {
+            // localStorage 접근 불가 시 무시
+          }
+        }}
       />
 
       <main className="h-[calc(100dvh-70px)] overflow-hidden relative touch-none">

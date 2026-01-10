@@ -139,12 +139,24 @@ export function LocationPermissionModal({
     if (!("geolocation" in navigator)) {
       setIsRequesting(false);
       setPermissionState("denied");
+      // localStorage에 거부 플래그 저장
+      try {
+        localStorage.setItem("locationPermissionDenied", "true");
+      } catch {
+        // localStorage 접근 불가 시 무시
+      }
       return;
     }
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setIsRequesting(false);
+        // 권한 허용 시 거부 플래그 제거
+        try {
+          localStorage.removeItem("locationPermissionDenied");
+        } catch {
+          // localStorage 접근 불가 시 무시
+        }
         onPermissionGranted?.(position);
         onClose();
       },
@@ -153,6 +165,12 @@ export function LocationPermissionModal({
         // Permissions API 미지원 환경에서도 UX가 동작하도록 보정
         if (error.code === error.PERMISSION_DENIED) {
           setPermissionState("denied");
+          // localStorage에 거부 플래그 저장
+          try {
+            localStorage.setItem("locationPermissionDenied", "true");
+          } catch {
+            // localStorage 접근 불가 시 무시
+          }
         }
         // 여전히 거부됨 - 설정 안내 계속 표시
       },
