@@ -14,6 +14,7 @@ declare global {
         Size: new (width: number, height: number) => Size;
         Point: new (x: number, y: number) => Point;
         InfoWindow: new (options: InfoWindowOptions) => InfoWindow;
+        CustomOverlay: new (options: CustomOverlayOptions) => CustomOverlay;
         event: {
           addListener: (
             target: KakaoMap | Marker,
@@ -106,6 +107,27 @@ declare global {
   interface InfoWindow {
     open: (map: KakaoMap, marker: Marker) => void;
     close: () => void;
+  }
+
+  interface CustomOverlayOptions {
+    content: string | HTMLElement;
+    position: LatLng;
+    xAnchor?: number;
+    yAnchor?: number;
+    zIndex?: number;
+    clickable?: boolean;
+    map?: KakaoMap;
+  }
+
+  interface CustomOverlay {
+    setMap: (map: KakaoMap | null) => void;
+    getMap: () => KakaoMap | null;
+    setPosition: (position: LatLng) => void;
+    getPosition: () => LatLng;
+    setContent: (content: string | HTMLElement) => void;
+    getContent: () => string | HTMLElement;
+    setZIndex: (zIndex: number) => void;
+    getZIndex: () => number;
   }
 
   interface PlacesSearchOptions {

@@ -1,40 +1,97 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { MapPin, X } from "lucide-react";
 import { Button } from "./Button";
 
 interface LocationPermissionModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onPermissionGranted?: (position: GeolocationPosition) => void;
 }
 
 /**
  * 위치 권한 요청 모달
  * 사용자가 위치 권한을 거부했을 때 다시 허용을 유도하는 모달
  */
-export function LocationPermissionModal({ isOpen, onClose }: LocationPermissionModalProps) {
+export function LocationPermissionModal({
+  isOpen,
+  onClose,
+  onPermissionGranted,
+}: LocationPermissionModalProps) {
   const [settingsGuide, setSettingsGuide] = useState<string>("");
+  const [permissionState, setPermissionState] = useState<PermissionState | null>(null);
+  const [isRequesting, setIsRequesting] = useState(false);
 
   useEffect(() => {
     // 브라우저별 설정 안내 텍스트 생성
     const userAgent = navigator.userAgent.toLowerCase();
+    const isIOS = /iphone|ipad|ipod/.test(userAgent);
+    const isAndroid = /android/.test(userAgent);
     let guide = "";
 
-    if (userAgent.includes("chrome")) {
-      guide = "Chrome 설정 → 개인정보 및 보안 → 사이트 설정 → 위치에서 권한을 허용해주세요.";
+    if (isIOS) {
+      guide = "설정 앱 → Safari → 위치에서 '허용'으로 변경해주세요.";
+    } else if (isAndroid && userAgent.includes("chrome")) {
+      guide = "주소창 왼쪽 자물쇠 아이콘 → 권한 → 위치에서 '허용'으로 변경해주세요.";
+    } else if (userAgent.includes("chrome")) {
+      guide = "주소창 왼쪽 자물쇠 아이콘 → 사이트 설정 → 위치에서 권한을 허용해주세요.";
     } else if (userAgent.includes("safari")) {
       guide = "Safari 설정 → 웹사이트 → 위치 정보에서 권한을 허용해주세요.";
     } else if (userAgent.includes("firefox")) {
-      guide = "Firefox 설정 → 개인정보 및 보안 → 권한 → 위치에서 권한을 허용해주세요.";
+      guide = "주소창 왼쪽 아이콘 → 권한 → 위치에서 권한을 허용해주세요.";
     } else {
       guide = "브라우저 설정에서 위치 권한을 허용해주세요.";
     }
 
     setSettingsGuide(guide);
+
+    // 권한 상태 확인 (Permissions API 지원 시)
+    if (navigator.permissions) {
+      navigator.permissions.query({ name: "geolocation" }).then((result) => {
+        setPermissionState(result.state);
+        // 권한 상태 변경 감지
+        result.onchange = () => {
+          setPermissionState(result.state);
+          // 권한이 허용되면 자동으로 위치 요청
+          if (result.state === "granted") {
+            requestLocation();
+          }
+        };
+      });
+    }
   }, []);
 
+  // 위치 권한 다시 요청
+  const requestLocation = useCallback(() => {
+    setIsRequesting(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setIsRequesting(false);
+        onPermissionGranted?.(position);
+        onClose();
+      },
+      () => {
+        setIsRequesting(false);
+        // 여전히 거부됨 - 설정 안내 계속 표시
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
+  }, [onClose, onPermissionGranted]);
+
+  const handleRequestPermission = () => {
+    // 권한이 "prompt" 상태면 다시 요청 가능
+    // "denied" 상태면 브라우저 설정에서 변경해야 함
+    requestLocation();
+  };
+
   if (!isOpen) return null;
+
+  const isDenied = permissionState === "denied";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -71,20 +128,41 @@ export function LocationPermissionModal({ isOpen, onClose }: LocationPermissionM
           위치 권한이 필요합니다.
         </p>
 
-        {/* 설정 안내 박스 */}
-        <div className="mb-6 rounded-lg bg-grey-50 p-4">
-          <p className="text-[13px] font-medium leading-[1.6] tracking-[-0.13px] text-grey-700">
-            📍 설정 방법
-          </p>
-          <p className="mt-2 text-[13px] font-normal leading-[1.6] tracking-[-0.13px] text-grey-600">
-            {settingsGuide}
-          </p>
-        </div>
+        {/* 권한이 완전히 차단된 경우 설정 안내 표시 */}
+        {isDenied && (
+          <div className="mb-6 rounded-lg bg-grey-50 p-4">
+            <p className="text-[13px] font-medium leading-[1.6] tracking-[-0.13px] text-grey-700">
+              📍 설정 방법
+            </p>
+            <p className="mt-2 text-[13px] font-normal leading-[1.6] tracking-[-0.13px] text-grey-600">
+              {settingsGuide}
+            </p>
+          </div>
+        )}
 
-        {/* 확인 버튼 */}
-        <Button variant="secondary" size="medium" fullWidth onClick={onClose}>
-          확인
-        </Button>
+        {/* 버튼 */}
+        <div className="flex flex-col gap-2">
+          {!isDenied ? (
+            <Button
+              variant="primary"
+              size="medium"
+              fullWidth
+              onClick={handleRequestPermission}
+              disabled={isRequesting}
+            >
+              {isRequesting ? "확인 중..." : "위치 권한 허용하기"}
+            </Button>
+          ) : (
+            <Button variant="secondary" size="medium" fullWidth onClick={onClose}>
+              확인
+            </Button>
+          )}
+          {!isDenied && (
+            <Button variant="ghost" size="medium" fullWidth onClick={onClose}>
+              나중에
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

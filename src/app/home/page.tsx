@@ -25,6 +25,11 @@ export default function Home() {
   const [hasInitialLoad, setHasInitialLoad] = useState(false);
   const [currentBounds, setCurrentBounds] = useState<MapBounds | null>(null);
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const [showCurrentLocation, setShowCurrentLocation] = useState<{
+    latitude: number;
+    longitude: number;
+    heading: number | null;
+  } | null>(null);
 
   // 최초 접속 시 현재 위치 권한 요청
   useEffect(() => {
@@ -127,6 +132,17 @@ export default function Home() {
         };
         // 지도 중심을 현재 위치로 즉시 업데이트
         setMapCenter(newLocation);
+
+        // 현재 위치 마커 표시 (heading이 있으면 사용)
+        const heading = position.coords.heading;
+        setShowCurrentLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          heading: heading != null && !isNaN(heading) ? heading : null,
+        });
+
+        // 디바이스 방향 감지 시작 (iOS에서는 권한 요청 필요)
+        startDeviceOrientationTracking(newLocation);
       },
       (err) => {
         console.error("위치 정보를 가져올 수 없습니다:", err);
@@ -142,6 +158,51 @@ export default function Home() {
         maximumAge: 0,
       }
     );
+  };
+
+  // 디바이스 방향 감지
+  const startDeviceOrientationTracking = (currentLoc: { latitude: number; longitude: number }) => {
+    const handleOrientation = (event: DeviceOrientationEvent) => {
+      // iOS Safari에서는 webkitCompassHeading 사용
+      // Android Chrome에서는 alpha 사용 (절대값이 아닐 수 있음)
+      let heading: number | null = null;
+
+      if ("webkitCompassHeading" in event && typeof event.webkitCompassHeading === "number") {
+        // iOS: webkitCompassHeading은 0-360도, 북쪽 기준
+        heading = event.webkitCompassHeading;
+      } else if (event.absolute && event.alpha != null) {
+        // Android: alpha는 0-360도, 시계 반대 방향
+        // 지도에서 사용하기 위해 360에서 빼서 시계 방향으로 변환
+        heading = (360 - event.alpha) % 360;
+      }
+
+      if (heading != null) {
+        setShowCurrentLocation((prev) =>
+          prev
+            ? { ...prev, heading }
+            : { latitude: currentLoc.latitude, longitude: currentLoc.longitude, heading }
+        );
+      }
+    };
+
+    // iOS 13+에서는 권한 요청 필요
+    if (
+      typeof DeviceOrientationEvent !== "undefined" &&
+      typeof (DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> })
+        .requestPermission === "function"
+    ) {
+      (DeviceOrientationEvent as unknown as { requestPermission: () => Promise<string> })
+        .requestPermission()
+        .then((permission) => {
+          if (permission === "granted") {
+            window.addEventListener("deviceorientation", handleOrientation, true);
+          }
+        })
+        .catch(console.error);
+    } else {
+      // Android 및 기타 브라우저
+      window.addEventListener("deviceorientation", handleOrientation, true);
+    }
   };
 
   const handleBottomSheetHeightChange = (height: number, isDragging: boolean) => {
@@ -163,6 +224,19 @@ export default function Home() {
       <LocationPermissionModal
         isOpen={showLocationModal}
         onClose={() => setShowLocationModal(false)}
+        onPermissionGranted={(position) => {
+          const newLocation = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          };
+          setMapCenter(newLocation);
+          setShowCurrentLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            heading: position.coords.heading ?? null,
+          });
+          startDeviceOrientationTracking(newLocation);
+        }}
       />
 
       <main className="h-[calc(100dvh-70px)] overflow-hidden relative touch-none">
@@ -176,6 +250,7 @@ export default function Home() {
               longitude={mapCenter?.longitude || location?.longitude}
               markers={markers}
               onBoundsChange={handleBoundsChange}
+              currentLocation={showCurrentLocation}
             />
 
             {/* 검색창 */}

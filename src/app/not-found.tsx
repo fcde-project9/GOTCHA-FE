@@ -11,7 +11,7 @@ export default function NotFound() {
   };
 
   return (
-    <div className="relative flex min-h-screen w-full bg-default">
+    <div className="relative flex min-h-[100dvh] w-full bg-default">
       <div className="relative mx-auto flex w-full max-w-[480px] flex-col">
         {/* 404 메시지 - 버튼 영역을 제외한 나머지 공간에서 가운데 정렬 */}
         <div className="flex flex-1 items-center justify-center pb-[96px]">

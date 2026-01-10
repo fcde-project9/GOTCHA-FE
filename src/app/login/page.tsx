@@ -48,9 +48,9 @@ export default function LoginPage() {
   return (
     <>
       <div
-        className={`relative flex min-h-screen w-full flex-col bg-default ${showTermsSheet ? "overflow-hidden" : ""}`}
+        className={`relative flex min-h-[100dvh] w-full flex-col bg-default ${showTermsSheet ? "overflow-hidden" : ""}`}
       >
-        <div className="mx-auto flex min-h-screen flex-col w-full max-w-[480px]">
+        <div className="mx-auto flex min-h-[100dvh] flex-col w-full max-w-[480px]">
           {/* 로고 - 남은 영역에서 가운데 */}
           <div className="flex flex-1 items-center justify-center">
             <Image

@@ -74,7 +74,7 @@ export default function NicknamePage() {
   // 로딩 중
   if (isLoading) {
     return (
-      <div className="flex min-h-screen w-full items-center justify-center bg-default">
+      <div className="flex min-h-[100dvh] w-full items-center justify-center bg-default">
         <div className="flex flex-col items-center gap-4">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
           <p className="text-[16px] font-medium text-grey-700">닉네임을 불러오는 중...</p>
@@ -86,7 +86,7 @@ export default function NicknamePage() {
   // 에러 발생
   if (error) {
     return (
-      <div className="flex min-h-screen w-full items-center justify-center bg-default">
+      <div className="flex min-h-[100dvh] w-full items-center justify-center bg-default">
         <div className="flex flex-col items-center gap-4">
           <p className="text-[16px] font-medium text-grey-700">{error}</p>
           <div className="flex gap-3">
@@ -109,8 +109,8 @@ export default function NicknamePage() {
   }
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col bg-default">
-      <div className="mx-auto flex min-h-screen w-full max-w-[480px] flex-col">
+    <div className="relative flex min-h-[100dvh] w-full flex-col bg-default">
+      <div className="mx-auto flex min-h-[100dvh] w-full max-w-[480px] flex-col">
         {/* 헤더 */}
         <header className="flex h-12 items-center px-5 py-2">
           <button onClick={handleBack} className="flex items-center justify-center">

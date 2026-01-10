@@ -14,6 +14,12 @@ const MARKER_IMAGE = {
   offsetY: 48,
 };
 
+interface CurrentLocationState {
+  latitude: number;
+  longitude: number;
+  heading?: number | null; // 디바이스 방향 (0-360도, null이면 방향 미지원)
+}
+
 interface KakaoMapProps {
   width?: string;
   height?: string;
@@ -23,6 +29,7 @@ interface KakaoMapProps {
   markers?: ShopMapResponse[];
   onBoundsChange?: (bounds: MapBounds) => void;
   onMarkerClick?: (marker: ShopMapResponse) => void;
+  currentLocation?: CurrentLocationState | null; // 현재 위치 마커 표시용
 }
 
 /**
@@ -38,10 +45,12 @@ export default function KakaoMap({
   markers = [],
   onBoundsChange,
   onMarkerClick,
+  currentLocation,
 }: KakaoMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<KakaoMap | null>(null);
   const markersRef = useRef<Array<{ marker: Marker; handler: () => void }>>([]);
+  const currentLocationOverlayRef = useRef<CustomOverlay | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [mapError, setMapError] = useState<string | null>(null);
 
@@ -247,6 +256,104 @@ export default function KakaoMap({
       markersRef.current = [];
     };
   }, [markers, isLoading]);
+
+  // 현재 위치 마커 렌더링
+  useEffect(() => {
+    if (!mapInstance.current || !window.kakao?.maps || isLoading) {
+      return;
+    }
+
+    const map = mapInstance.current;
+
+    // 기존 현재 위치 오버레이 제거
+    if (currentLocationOverlayRef.current) {
+      currentLocationOverlayRef.current.setMap(null);
+      currentLocationOverlayRef.current = null;
+    }
+
+    // 현재 위치가 없으면 종료
+    if (!currentLocation) {
+      return;
+    }
+
+    const position = new window.kakao.maps.LatLng(
+      currentLocation.latitude,
+      currentLocation.longitude
+    );
+
+    // 방향 화살표 회전 각도 (heading이 있으면 사용, 없으면 숨김)
+    const hasHeading = currentLocation.heading != null && !isNaN(currentLocation.heading);
+    const rotationStyle = hasHeading
+      ? `transform: rotate(${currentLocation.heading}deg);`
+      : "display: none;";
+
+    // 현재 위치 마커 HTML (빨간 동그라미 + 방향 화살표)
+    const content = `
+      <div style="position: relative; width: 40px; height: 40px;">
+        <!-- 바깥 원 (투명한 빨간색) -->
+        <div style="
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 40px;
+          height: 40px;
+          background-color: rgba(239, 68, 68, 0.2);
+          border-radius: 50%;
+        "></div>
+        <!-- 안쪽 원 (빨간색) -->
+        <div style="
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 16px;
+          height: 16px;
+          background-color: #EF4444;
+          border: 3px solid white;
+          border-radius: 50%;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        "></div>
+        <!-- 방향 화살표 -->
+        <div style="
+          position: absolute;
+          top: -8px;
+          left: 50%;
+          transform: translateX(-50%);
+          transform-origin: center 28px;
+          ${rotationStyle}
+        ">
+          <div style="
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 12px solid #EF4444;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+          "></div>
+        </div>
+      </div>
+    `;
+
+    // 커스텀 오버레이 생성
+    const overlay = new window.kakao.maps.CustomOverlay({
+      position,
+      content,
+      yAnchor: 0.5,
+      xAnchor: 0.5,
+      zIndex: 100, // 다른 마커보다 위에 표시
+    });
+
+    overlay.setMap(map);
+    currentLocationOverlayRef.current = overlay;
+
+    return () => {
+      if (currentLocationOverlayRef.current) {
+        currentLocationOverlayRef.current.setMap(null);
+        currentLocationOverlayRef.current = null;
+      }
+    };
+  }, [currentLocation, isLoading]);
 
   // SDK 에러와 지도 에러를 통합
   const error = sdkError || mapError;
