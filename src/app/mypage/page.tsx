@@ -24,9 +24,17 @@ export default function MyPage() {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [isWithdrawConfirmModalOpen, setIsWithdrawConfirmModalOpen] = useState(false);
-  const [withdrawReasons, setWithdrawReasons] = useState<string[]>([]);
-  const [withdrawOtherReason, setWithdrawOtherReason] = useState<string>();
+  const [_withdrawReasons, setWithdrawReasons] = useState<string[]>([]);
+  const [_withdrawOtherReason, setWithdrawOtherReason] = useState<string>();
+
+  // Toast 상태
   const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+
+  const displayToast = (message: string) => {
+    setToastMessage(message);
+    setShowToast(true);
+  };
 
   const handleEditProfile = () => {
     // TODO: 프로필 사진 변경 API 연동
@@ -39,7 +47,7 @@ export default function MyPage() {
   const handleSaveNickname = (newNickname: string) => {
     // TODO: 백엔드 API 연동 - 닉네임 변경
     setNickname(newNickname);
-    setShowToast(true);
+    displayToast("닉네임이 변경되었습니다");
   };
 
   const handleMyReports = () => {
@@ -75,12 +83,21 @@ export default function MyPage() {
       console.error("로그아웃 API 호출 실패:", error);
     } finally {
       // 로컬 스토리지 정리
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("user");
+      try {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("user");
+        localStorage.removeItem("user_type");
+      } catch {
+        // Private Browsing 등 localStorage 접근 불가 시 무시
+      }
 
       // 세션 스토리지 정리
-      sessionStorage.clear();
+      try {
+        sessionStorage.clear();
+      } catch {
+        // ignore
+      }
 
       // 쿠키 정리 (HttpOnly 쿠키는 서버에서 처리, 클라이언트 쿠키는 여기서 제거)
       document.cookie.split(";").forEach((cookie) => {
@@ -92,7 +109,12 @@ export default function MyPage() {
       // mutate(() => true, undefined, { revalidate: false });
 
       setIsLogoutModalOpen(false);
-      router.push("/");
+      displayToast("로그아웃되었습니다");
+
+      // 토스트가 보이도록 약간의 딜레이 후 이동
+      setTimeout(() => {
+        router.push("/login");
+      }, 1500);
     }
   };
 
@@ -114,12 +136,21 @@ export default function MyPage() {
 
       // API 성공 시에만 상태 정리
       // 로컬 스토리지 정리
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("user");
+      try {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("user");
+        localStorage.removeItem("user_type");
+      } catch {
+        // Private Browsing 등 localStorage 접근 불가 시 무시
+      }
 
       // 세션 스토리지 정리
-      sessionStorage.clear();
+      try {
+        sessionStorage.clear();
+      } catch {
+        // ignore
+      }
 
       // 쿠키 정리 (HttpOnly 쿠키는 서버에서 처리, 클라이언트 쿠키는 여기서 제거)
       document.cookie.split(";").forEach((cookie) => {
@@ -134,15 +165,18 @@ export default function MyPage() {
       setWithdrawReasons([]);
       setWithdrawOtherReason(undefined);
 
-      // 모달 닫기 및 홈으로 이동
+      // 모달 닫기 및 로그인으로 이동
       setIsWithdrawConfirmModalOpen(false);
-      router.push("/");
+      displayToast("회원탈퇴가 완료되었습니다");
+
+      // 토스트가 보이도록 약간의 딜레이 후 이동
+      setTimeout(() => {
+        router.push("/login");
+      }, 1500);
     } catch (error) {
       // API 실패 시 에러 로그 및 모달 유지
       console.error("회원탈퇴 API 호출 실패:", error);
-      // TODO: 에러 토스트 메시지 표시
-      // setShowToast(true);
-      // setToastMessage("회원탈퇴에 실패했습니다. 다시 시도해주세요.");
+      displayToast("회원탈퇴에 실패했습니다. 다시 시도해주세요.");
     }
   };
 
@@ -223,11 +257,7 @@ export default function MyPage() {
       <Footer />
 
       {/* Toast */}
-      <Toast
-        message="닉네임이 변경되었습니다"
-        isVisible={showToast}
-        onClose={() => setShowToast(false)}
-      />
+      <Toast message={toastMessage} isVisible={showToast} onClose={() => setShowToast(false)} />
     </div>
   );
 }
