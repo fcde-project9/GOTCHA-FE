@@ -107,7 +107,7 @@ export function shopMapResponseToView(shopResponse: ShopMapResponse): ShopListVi
     id: shopResponse.id,
     name: shopResponse.name,
     distance: shopResponse.distance,
-    isOpen: shopResponse.openStatus,
+    isOpen: shopResponse.isOpen,
     imageUrl: shopResponse.mainImageUrl,
   };
 }

@@ -88,5 +88,12 @@
       "Segoe UI Emoji",
       "Segoe UI Symbol",
       sans-serif;
+    /* 모바일 pull-to-refresh 비활성화 */
+    overscroll-behavior-y: contain;
+  }
+
+  html {
+    /* 전체 페이지에서 pull-to-refresh 비활성화 */
+    overscroll-behavior: none;
   }
 }

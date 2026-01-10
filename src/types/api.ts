@@ -24,11 +24,13 @@ export interface MapBounds {
 export interface ShopMapResponse {
   id: number;
   name: string;
+  latitude: number;
+  longitude: number;
   mainImageUrl: string;
-  openTime: string; // JSON string: {"Mon": "10:00~22:00", ...}
-  openStatus: boolean;
-  distance: string;
-  isFavorite: boolean;
+  openTime: string; // JSON string: {"Mon": "10:00~22:00", "Tue": null, ...}
+  isOpen: boolean; // 현재 영업 여부
+  distance: string; // 거리 (예: "300m", "1.2km")
+  isFavorite: boolean; // 즐겨찾기 여부
 }
 
 /**
