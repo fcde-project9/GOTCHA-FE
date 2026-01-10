@@ -109,23 +109,38 @@ declare global {
     close: () => void;
   }
 
+  interface Viewpoint {
+    pan: number;
+    tilt: number;
+    zoom: number;
+    panoId?: number;
+  }
+
+  interface Roadview {
+    setPanoId: (panoId: number, position: LatLng) => void;
+    getPanoId: () => number;
+    setViewpoint: (viewpoint: Viewpoint) => void;
+    getViewpoint: () => Viewpoint;
+    getPosition: () => LatLng;
+  }
+
   interface CustomOverlayOptions {
-    content: string | HTMLElement;
-    position: LatLng;
+    content: Node | string;
+    position: LatLng | Viewpoint;
     xAnchor?: number;
     yAnchor?: number;
     zIndex?: number;
     clickable?: boolean;
-    map?: KakaoMap;
+    map?: KakaoMap | Roadview;
   }
 
   interface CustomOverlay {
-    setMap: (map: KakaoMap | null) => void;
-    getMap: () => KakaoMap | null;
+    setMap: (map: KakaoMap | Roadview | null) => void;
+    getMap: () => KakaoMap | Roadview | null;
     setPosition: (position: LatLng) => void;
     getPosition: () => LatLng;
-    setContent: (content: string | HTMLElement) => void;
-    getContent: () => string | HTMLElement;
+    setContent: (content: Node | string) => void;
+    getContent: () => Node | string;
     setZIndex: (zIndex: number) => void;
     getZIndex: () => number;
   }

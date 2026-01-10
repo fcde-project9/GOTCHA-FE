@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { MapPin, X } from "lucide-react";
 import { Button } from "./Button";
 
@@ -22,6 +22,7 @@ export function LocationPermissionModal({
   const [settingsGuide, setSettingsGuide] = useState<string>("");
   const [permissionState, setPermissionState] = useState<PermissionState | null>(null);
   const [isRequesting, setIsRequesting] = useState(false);
+  const requestLocationRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     // 브라우저별 설정 안내 텍스트 생성
@@ -55,7 +56,7 @@ export function LocationPermissionModal({
           setPermissionState(result.state);
           // 권한이 허용되면 자동으로 위치 요청
           if (result.state === "granted") {
-            requestLocation();
+            requestLocationRef.current();
           }
         };
       });
@@ -82,6 +83,11 @@ export function LocationPermissionModal({
       }
     );
   }, [onClose, onPermissionGranted]);
+
+  // ref를 최신 requestLocation으로 유지
+  useEffect(() => {
+    requestLocationRef.current = requestLocation;
+  }, [requestLocation]);
 
   const handleRequestPermission = () => {
     // 권한이 "prompt" 상태면 다시 요청 가능
