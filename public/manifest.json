@@ -1,0 +1,21 @@
+{
+  "name": "GOTCHA! - 가챠샵 지도 서비스",
+  "short_name": "GOTCHA!",
+  "description": "내 주변 가챠샵을 쉽게 찾아보세요",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#FF4545",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["lifestyle", "navigation"],
+  "lang": "ko-KR",
+  "dir": "ltr"
+}
