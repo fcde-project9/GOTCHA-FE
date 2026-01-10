@@ -158,7 +158,7 @@ export default function Home() {
       (err) => {
         console.error("위치 정보를 가져올 수 없습니다:", err);
 
-        // 위치 권한 거부 시 설정 안내 모달 표시
+        // 위치 권한 거부 시만 설정 안내 모달 표시
         if (err.code === err.PERMISSION_DENIED) {
           setLocationDenied(true);
           // localStorage에 거부 플래그 저장
@@ -167,12 +167,10 @@ export default function Home() {
           } catch {
             // localStorage 접근 불가 시 무시
           }
-          setShowLocationModal(true);
-        } else {
-          // 다른 에러(타임아웃, 위치 불가 등)는 권한 요청 UI 표시
-          setLocationDenied(false);
-          setShowLocationModal(true);
         }
+        // 다른 에러(타임아웃, 위치 불가 등)는 locationDenied 상태를 변경하지 않음
+        // 기존 localStorage 플래그 유지
+        setShowLocationModal(true);
       },
       {
         enableHighAccuracy: true,
