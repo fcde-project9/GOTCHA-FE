@@ -19,6 +19,19 @@ export interface MapBounds {
 }
 
 /**
+ * 요일별 영업시간
+ */
+export interface OpenTime {
+  Mon: string | null;
+  Tue: string | null;
+  Wed: string | null;
+  Thu: string | null;
+  Fri: string | null;
+  Sat: string | null;
+  Sun: string | null;
+}
+
+/**
  * GET /api/shops/map 응답 - 가게 정보
  */
 export interface ShopMapResponse {
@@ -27,10 +40,10 @@ export interface ShopMapResponse {
   latitude: number;
   longitude: number;
   mainImageUrl: string;
-  openTime: string; // JSON string: {"Mon": "10:00~22:00", "Tue": null, ...}
-  isOpen: boolean; // 현재 영업 여부
-  distance: string; // 거리 (예: "300m", "1.2km")
-  isFavorite: boolean; // 즐겨찾기 여부
+  openTime: OpenTime;
+  isOpen: boolean;
+  distance: string;
+  isFavorite: boolean;
 }
 
 /**
@@ -63,3 +76,16 @@ export interface FavoritesPageResponse {
  * GET /api/users/me/favorites 전체 응답
  */
 export type FavoritesApiResponse = ApiResponse<FavoritesPageResponse>;
+
+/**
+ * POST/DELETE /api/shops/{shopId}/favorite 응답
+ */
+export interface FavoriteToggleResponse {
+  shopId: number;
+  isFavorite: boolean;
+}
+
+/**
+ * POST/DELETE /api/shops/{shopId}/favorite 전체 응답
+ */
+export type FavoriteToggleApiResponse = ApiResponse<FavoriteToggleResponse>;

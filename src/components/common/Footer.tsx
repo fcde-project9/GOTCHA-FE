@@ -30,7 +30,7 @@ export default function Footer() {
 
   return (
     <footer
-      className="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-[480px] bg-white shadow-[0px_-3px_8px_rgba(163,163,163,0.15)]"
+      className="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-[480px] bg-white shadow-[0px_-3px_8px_rgba(163,163,163,0.15)] z-[20]"
       style={{
         paddingBottom: "calc(0.5rem + env(safe-area-inset-bottom))",
         minHeight: "calc(70px + env(safe-area-inset-bottom))",

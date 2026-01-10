@@ -11,6 +11,7 @@ export interface ShopListView {
   distance: string; // Computed field (e.g., "200m", "1.2km")
   isOpen: boolean; // Computed field based on opening hours
   imageUrl?: string;
+  isFavorite?: boolean;
 }
 
 /**
@@ -109,6 +110,7 @@ export function shopMapResponseToView(shopResponse: ShopMapResponse): ShopListVi
     distance: shopResponse.distance,
     isOpen: shopResponse.isOpen,
     imageUrl: shopResponse.mainImageUrl,
+    isFavorite: shopResponse.isFavorite,
   };
 }
 
