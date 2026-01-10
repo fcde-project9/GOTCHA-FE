@@ -37,3 +37,29 @@ export interface ShopMapResponse {
  * GET /api/shops/map 전체 응답
  */
 export type ShopsMapApiResponse = ApiResponse<ShopMapResponse[]>;
+
+/**
+ * GET /api/users/me/favorites 응답 - 찜한 가게 정보
+ */
+export interface FavoriteShopResponse {
+  id: number;
+  name: string;
+  address: string;
+  mainImageUrl: string;
+  distance: number; // 미터 단위
+  isOpen: boolean;
+  favoritedAt: string; // ISO 8601 형식
+}
+
+/**
+ * GET /api/users/me/favorites 응답
+ */
+export interface FavoritesPageResponse {
+  content: FavoriteShopResponse[];
+  totalCount: number;
+}
+
+/**
+ * GET /api/users/me/favorites 전체 응답
+ */
+export type FavoritesApiResponse = ApiResponse<FavoritesPageResponse>;

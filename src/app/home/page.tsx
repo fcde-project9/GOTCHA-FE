@@ -2,12 +2,12 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Search, LocateFixed, RefreshCcw, ChevronLeft, CircleX } from "lucide-react";
+import { fetchShopsInBounds } from "@/api/queries/shopApi";
 import { Footer, LocationPermissionModal } from "@/components/common";
 import { KakaoMap } from "@/components/features/map";
 import { SearchResultItem } from "@/components/features/search";
 import { ShopListBottomSheet } from "@/components/features/shop";
 import { useCurrentLocation, useKakaoPlaces, PlaceSearchResult } from "@/hooks";
-import { fetchShopsInBounds } from "@/services/shopApi";
 import { MapBounds, ShopMapResponse } from "@/types/api";
 import { shopMapResponsesToViews, ShopListView } from "@/utils/shop";
 

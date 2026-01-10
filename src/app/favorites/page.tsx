@@ -3,15 +3,16 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Search, ArrowUpDown, CircleX } from "lucide-react";
+import { fetchFavorites, removeFavorite } from "@/api/queries/favoriteApi";
 import { Footer } from "@/components/common";
 import { FavoriteShopItem } from "@/components/features/favorites";
-import { mockShops } from "@/data/mockShops";
+import { FavoriteShopResponse } from "@/types/api";
 
-// TODO: API 연동 - 찜한 업체 타입 정의
+// 찜한 업체 UI 표시용 타입
 interface FavoriteShop {
   id: number;
   name: string;
-  address: string; // 구/동까지 (예: 강남구 역삼동)
+  address: string;
   isOpen: boolean;
   imageUrl?: string;
   createdAt: string; // 찜 등록일
@@ -19,48 +20,70 @@ interface FavoriteShop {
 
 type SortOption = "latest" | "oldest";
 
-// Mock 주소 데이터 (실제로는 API에서 받아올 데이터)
-const mockAddresses = [
-  "강남구 역삼동",
-  "마포구 신촌동",
-  "마포구 서교동",
-  "중구 명동",
-  "송파구 잠실동",
-];
+/**
+ * API 응답을 UI 표시용 타입으로 변환
+ */
+function favoriteResponseToShop(response: FavoriteShopResponse): FavoriteShop {
+  return {
+    id: response.id,
+    name: response.name,
+    address: response.address,
+    isOpen: response.isOpen,
+    imageUrl: response.mainImageUrl,
+    createdAt: response.favoritedAt,
+  };
+}
 
 export default function FavoritesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState<SortOption>("latest");
   const [favorites, setFavorites] = useState<FavoriteShop[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // 로그인 여부 확인
+  const checkLoginStatus = () => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const userType = localStorage.getItem("user_type");
+      return !!(accessToken && userType === "member");
+    } catch {
+      return false;
+    }
+  };
+
+  // 찜한 업체 목록 가져오기
+  const loadFavorites = async () => {
+    // 로그인 여부 확인
+    const loggedIn = checkLoginStatus();
+    setIsLoggedIn(loggedIn);
+
+    // 비로그인 사용자는 빈 목록 표시
+    if (!loggedIn) {
+      setIsLoading(false);
+      setFavorites([]);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetchFavorites();
+      if (response.success) {
+        const favoriteShops = response.data.content.map(favoriteResponseToShop);
+        setFavorites(favoriteShops);
+      }
+    } catch (err) {
+      console.error("찜한 업체 목록 불러오기 실패:", err);
+      setError("찜한 업체 목록을 불러올 수 없습니다.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // TODO: API 연동 - 찜한 업체 목록 가져오기
-    // const fetchFavorites = async () => {
-    //   try {
-    //     const response = await fetch('/api/favorites');
-    //     const data = await response.json();
-    //     setFavorites(data);
-    //   } catch (error) {
-    //     console.error('찜한 업체 목록 불러오기 실패:', error);
-    //   } finally {
-    //     setIsLoading(false);
-    //   }
-    // };
-    // fetchFavorites();
-
-    // 임시: mockShops 데이터를 FavoriteShop 형식으로 변환
-    const mockFavorites: FavoriteShop[] = mockShops.map((shop, index) => ({
-      id: shop.id,
-      name: shop.name,
-      address: mockAddresses[index] || "서울시 강남구",
-      isOpen: shop.isOpen,
-      imageUrl: shop.imageUrl,
-      createdAt: new Date(Date.now() - index * 24 * 60 * 60 * 1000).toISOString(), // 하루씩 차이나게
-    }));
-
-    setFavorites(mockFavorites);
-    setIsLoading(false);
+    loadFavorites();
   }, []);
 
   // 검색 필터링
@@ -75,17 +98,16 @@ export default function FavoritesPage() {
     return sortOption === "latest" ? dateB - dateA : dateA - dateB;
   });
 
-  // TODO: API 연동 - 찜 해제
+  // 찜 해제
   const handleRemoveFavorite = async (shopId: number) => {
-    // try {
-    //   await fetch(`/api/favorites/${shopId}`, { method: 'DELETE' });
-    //   setFavorites(favorites.filter(shop => shop.id !== shopId));
-    // } catch (error) {
-    //   console.error('찜 해제 실패:', error);
-    // }
-
-    // 임시: 로컬 상태에서만 제거
-    setFavorites(favorites.filter((shop) => shop.id !== shopId));
+    try {
+      await removeFavorite(shopId);
+      // 성공 시 로컬 상태에서 제거
+      setFavorites(favorites.filter((shop) => shop.id !== shopId));
+    } catch (err) {
+      console.error("찜 해제 실패:", err);
+      // TODO: 에러 토스트 메시지 표시
+    }
   };
 
   // 정렬 옵션 토글
@@ -93,18 +115,9 @@ export default function FavoritesPage() {
     setSortOption((prev) => (prev === "latest" ? "oldest" : "latest"));
   };
 
-  // TODO: API 연동 - 새로고침 (Pull to Refresh)
-  const _handleRefresh = async () => {
-    // setIsLoading(true);
-    // try {
-    //   const response = await fetch('/api/favorites');
-    //   const data = await response.json();
-    //   setFavorites(data);
-    // } catch (error) {
-    //   console.error('새로고침 실패:', error);
-    // } finally {
-    //   setIsLoading(false);
-    // }
+  // 새로고침
+  const handleRefresh = async () => {
+    await loadFavorites();
   };
 
   // 검색어 초기화
@@ -147,21 +160,45 @@ export default function FavoritesPage() {
           <div className="flex flex-1 items-center justify-center px-5">
             <div className="h-12 w-12 animate-spin rounded-full border-4 border-grey-200 border-t-main"></div>
           </div>
+        ) : error ? (
+          // Error State
+          <div className="flex flex-1 flex-col items-center justify-center gap-4 px-5">
+            <p className="text-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-600">
+              {error}
+            </p>
+            <button
+              onClick={handleRefresh}
+              className="rounded-lg bg-main px-6 py-3 text-[15px] font-semibold text-white"
+            >
+              다시 시도
+            </button>
+          </div>
         ) : sortedFavorites.length === 0 ? (
           // Empty State
           <div className="flex flex-1 flex-col items-center justify-center gap-7 px-5">
-            <div className="relative h-24 w-24">
+            <div>
               <Image
                 src="/images/shop.png"
                 alt="찜한 업체 없음"
-                width={96}
-                height={96}
+                width={80}
+                height={80}
                 className="object-contain"
               />
             </div>
-            <p className="text-center text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
-              관심있는 매장을 찜 해보세요!
-            </p>
+            {isLoggedIn ? (
+              <p className="text-center text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
+                관심있는 매장을 찜 해보세요!
+              </p>
+            ) : (
+              <div className="flex flex-col items-center gap-2 pb-12">
+                <p className="text-center text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
+                  로그인이 필요해요
+                </p>
+                <p className="text-center text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-600">
+                  로그인하고 관심있는 매장을 찜 해보세요
+                </p>
+              </div>
+            )}
           </div>
         ) : (
           <>

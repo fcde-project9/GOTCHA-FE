@@ -6,6 +6,7 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  themeColor: "#ffffff", // Safe area 배경색 흰색
 };
 
 export const metadata: Metadata = {
@@ -154,8 +155,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
-      <body className="w-full max-w-[480px] mx-auto overscroll-none">
+    <html lang="ko" className="bg-white">
+      <body className="w-full max-w-[480px] mx-auto overscroll-none bg-white">
         <Providers>{children}</Providers>
       </body>
     </html>

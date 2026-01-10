@@ -70,6 +70,14 @@
   * {
     @apply border-border;
   }
+
+  html {
+    /* 전체 페이지에서 pull-to-refresh 비활성화 */
+    overscroll-behavior: none;
+    /* Safe area 영역 배경색 흰색으로 고정 */
+    background-color: #ffffff;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family:
@@ -90,10 +98,7 @@
       sans-serif;
     /* 모바일 pull-to-refresh 비활성화 */
     overscroll-behavior-y: contain;
-  }
-
-  html {
-    /* 전체 페이지에서 pull-to-refresh 비활성화 */
-    overscroll-behavior: none;
+    /* body 배경색도 흰색으로 명시 */
+    background-color: #ffffff;
   }
 }
