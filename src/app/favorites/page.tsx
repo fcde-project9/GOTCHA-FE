@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Search, ArrowUpDown, CircleX } from "lucide-react";
 import { fetchFavorites, removeFavorite } from "@/api/queries/favoriteApi";
-import { Footer } from "@/components/common";
+import { Footer, Button } from "@/components/common";
 import { FavoriteShopItem } from "@/components/features/favorites";
 import { FavoriteShopResponse } from "@/types/api";
 
@@ -35,6 +36,7 @@ function favoriteResponseToShop(response: FavoriteShopResponse): FavoriteShop {
 }
 
 export default function FavoritesPage() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState<SortOption>("latest");
   const [favorites, setFavorites] = useState<FavoriteShop[]>([]);
@@ -196,13 +198,18 @@ export default function FavoritesPage() {
                 관심있는 매장을 찜 해보세요!
               </p>
             ) : (
-              <div className="flex flex-col items-center gap-2 pb-12">
-                <p className="text-center text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
-                  로그인이 필요해요
-                </p>
-                <p className="text-center text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-600">
-                  로그인하고 관심있는 매장을 찜 해보세요
-                </p>
+              <div className="flex flex-col items-center gap-6 pb-8">
+                <div className="flex flex-col items-center gap-2">
+                  <p className="text-center text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
+                    로그인이 필요해요
+                  </p>
+                  <p className="text-center text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-600">
+                    로그인하고 관심있는 매장을 찜 해보세요
+                  </p>
+                </div>
+                <Button variant="primary" size="medium" onClick={() => router.push("/login")}>
+                  로그인하러 가기
+                </Button>
               </div>
             )}
           </div>

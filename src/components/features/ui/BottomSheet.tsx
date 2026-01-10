@@ -7,6 +7,7 @@ interface BottomSheetProps {
   snapPoints?: number[]; // 스냅 포인트 (픽셀 단위)
   defaultSnapPoint?: number; // 기본 스냅 포인트 인덱스
   onHeightChange?: (height: number, isDragging: boolean) => void; // 높이 변경 콜백 (isDragging 추가)
+  scrollToTop?: number; // 스크롤을 맨 위로 이동시키기
 }
 
 /**
@@ -25,6 +26,7 @@ export default function BottomSheet({
   snapPoints,
   defaultSnapPoint = 0,
   onHeightChange,
+  scrollToTop,
 }: BottomSheetProps) {
   // Compute snapPoints client-side if not provided (memoized to prevent recreation)
   const computedSnapPoints = useMemo(() => snapPoints ?? getDefaultSnapPoints(), [snapPoints]);
@@ -34,6 +36,7 @@ export default function BottomSheet({
   const [startY, setStartY] = useState(0);
   const [currentY, setCurrentY] = useState(0);
   const sheetRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const currentHeight = isDragging
     ? Math.max(
@@ -129,10 +132,17 @@ export default function BottomSheet({
     }
   }, [currentHeight, isDragging, onHeightChange]);
 
+  // 스크롤을 맨 위로 이동 (scrollToTop 값이 변경될 때마다)
+  useEffect(() => {
+    if (scrollToTop !== undefined && contentRef.current) {
+      contentRef.current.scrollTop = 0;
+    }
+  }, [scrollToTop]);
+
   return (
     <div
       ref={sheetRef}
-      className="absolute bottom-0 left-0 right-0 bg-white rounded-t-[24px] shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden z-10"
+      className="absolute bottom-0 left-0 right-0 bg-white rounded-t-[24px] overflow-hidden z-10"
       style={{
         height: `${currentHeight - 72}px`,
         transition: isDragging ? "none" : "height 0.3s ease-out",
@@ -150,7 +160,9 @@ export default function BottomSheet({
       </div>
 
       {/* Content */}
-      <div className="overflow-y-auto h-[calc(100%-44px)]">{children}</div>
+      <div ref={contentRef} className="overflow-y-auto h-[calc(100%-44px)]">
+        {children}
+      </div>
     </div>
   );
 }

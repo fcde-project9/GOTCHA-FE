@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState, useMemo } from "react";
 import { Store } from "lucide-react";
 import { ShopListView } from "@/utils/shop";
 import { BottomSheet } from "../ui";
@@ -12,12 +13,24 @@ interface ShopListBottomSheetProps {
 
 export default function ShopListBottomSheet({ shops, onHeightChange }: ShopListBottomSheetProps) {
   const hasShops = shops.length > 0;
+  const [scrollTrigger, setScrollTrigger] = useState(0);
+
+  // shops의 ID 목록을 문자열로 변환하여 변경 감지
+  const shopsKey = useMemo(() => {
+    return shops.map((shop) => shop.id).join(",");
+  }, [shops]);
+
+  // shops 데이터가 변경될 때마다 스크롤 트리거 증가
+  useEffect(() => {
+    setScrollTrigger((prev) => prev + 1);
+  }, [shopsKey]);
 
   return (
     <BottomSheet
       // Uses default snap points from BottomSheet (SSR-safe)
       defaultSnapPoint={0}
       onHeightChange={onHeightChange}
+      scrollToTop={scrollTrigger}
     >
       <div className="flex flex-col items-center gap-2 px-5 h-full">
         {hasShops ? (
@@ -42,10 +55,12 @@ export default function ShopListBottomSheet({ shops, onHeightChange }: ShopListB
               {shops.map((shop) => (
                 <ShopListItem
                   key={shop.id}
+                  shopId={shop.id}
                   name={shop.name}
                   distance={shop.distance}
                   isOpen={shop.isOpen}
                   imageUrl={shop.imageUrl}
+                  isFavorite={shop.isFavorite}
                 />
               ))}
             </div>

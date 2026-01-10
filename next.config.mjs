@@ -15,8 +15,18 @@ const nextConfig = {
   },
 
   // 이미지 최적화 도메인
+  // TODO: 배포 전에 도메인 수정
   images: {
-    domains: ["localhost", "your-s3-bucket.amazonaws.com"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+      },
+    ],
   },
 
   // 외부 스크립트 (Kakao Map SDK)

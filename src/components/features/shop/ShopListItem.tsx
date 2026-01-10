@@ -1,18 +1,30 @@
 "use client";
 
-import { useState } from "react";
 import { Heart, Navigation } from "lucide-react";
+import { useFavorite } from "@/hooks";
 import StatusBadge from "./StatusBadge";
 
 interface ShopListItemProps {
+  shopId: number;
   name: string;
   distance: string;
   isOpen: boolean;
   imageUrl?: string;
+  isFavorite?: boolean;
 }
 
-export default function ShopListItem({ name, distance, isOpen, imageUrl }: ShopListItemProps) {
-  const [isFavorite, setIsFavorite] = useState(false);
+export default function ShopListItem({
+  shopId,
+  name,
+  distance,
+  isOpen,
+  imageUrl,
+  isFavorite: initialIsFavorite = false,
+}: ShopListItemProps) {
+  const { isFavorite, isLoading, toggleFavorite } = useFavorite({
+    shopId,
+    initialIsFavorite,
+  });
 
   return (
     <div className="relative w-full">
@@ -40,8 +52,9 @@ export default function ShopListItem({ name, distance, isOpen, imageUrl }: ShopL
 
             {/* 하트 아이콘 */}
             <button
-              onClick={() => setIsFavorite(!isFavorite)}
-              className="w-6 h-6 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-main rounded-sm"
+              onClick={toggleFavorite}
+              disabled={isLoading}
+              className="w-6 h-6 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-main rounded-sm disabled:opacity-50"
               aria-label={isFavorite ? `${name} 찜 취소` : `${name} 찜하기`}
               aria-pressed={isFavorite}
               type="button"
