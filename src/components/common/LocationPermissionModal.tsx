@@ -8,6 +8,8 @@ interface LocationPermissionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onPermissionGranted?: (position: GeolocationPosition) => void;
+  /** 이미 권한이 거부된 상태로 모달을 열 때 true */
+  initialDenied?: boolean;
 }
 
 /**
@@ -26,9 +28,12 @@ export function LocationPermissionModal({
   isOpen,
   onClose,
   onPermissionGranted,
+  initialDenied = false,
 }: LocationPermissionModalProps) {
   const [settingsGuide, setSettingsGuide] = useState<string>("");
-  const [permissionState, setPermissionState] = useState<PermissionState | null>(null);
+  const [permissionState, setPermissionState] = useState<PermissionState | null>(
+    initialDenied ? "denied" : null
+  );
   const [isRequesting, setIsRequesting] = useState(false);
   const requestLocationRef = useRef<() => void>(() => {});
 
@@ -134,12 +139,24 @@ export function LocationPermissionModal({
     if (!("geolocation" in navigator)) {
       setIsRequesting(false);
       setPermissionState("denied");
+      // localStorage에 거부 플래그 저장
+      try {
+        localStorage.setItem("locationPermissionDenied", "true");
+      } catch {
+        // localStorage 접근 불가 시 무시
+      }
       return;
     }
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setIsRequesting(false);
+        // 권한 허용 시 거부 플래그 제거
+        try {
+          localStorage.removeItem("locationPermissionDenied");
+        } catch {
+          // localStorage 접근 불가 시 무시
+        }
         onPermissionGranted?.(position);
         onClose();
       },
@@ -148,6 +165,12 @@ export function LocationPermissionModal({
         // Permissions API 미지원 환경에서도 UX가 동작하도록 보정
         if (error.code === error.PERMISSION_DENIED) {
           setPermissionState("denied");
+          // localStorage에 거부 플래그 저장
+          try {
+            localStorage.setItem("locationPermissionDenied", "true");
+          } catch {
+            // localStorage 접근 불가 시 무시
+          }
         }
         // 여전히 거부됨 - 설정 안내 계속 표시
       },

@@ -25,7 +25,7 @@ export default function SplashPage() {
 
   return (
     <div
-      className={`relative flex h-screen w-full flex-col items-center justify-center bg-main transition-opacity duration-500 ${
+      className={`fixed inset-0 flex flex-col items-center justify-center bg-main transition-opacity duration-500 ${
         fadeOut ? "opacity-0" : "opacity-100"
       }`}
     >

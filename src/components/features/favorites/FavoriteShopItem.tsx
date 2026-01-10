@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { MapPin, Heart } from "lucide-react";
 import StatusBadge from "@/components/features/shop/StatusBadge";
+import { useFavorite } from "@/hooks";
 
 interface FavoriteShop {
   id: number;
@@ -15,29 +16,24 @@ interface FavoriteShop {
 
 interface FavoriteShopItemProps {
   shop: FavoriteShop;
-  onRemove: () => void;
 }
 
 /**
  * 찜한 업체 아이템 컴포넌트
  */
-export function FavoriteShopItem({ shop, onRemove }: FavoriteShopItemProps) {
-  const handleShopClick = () => {
-    // TODO: API 연동 - 업체 상세 페이지로 이동
-    // router.push(`/shop/${shop.id}`);
-    console.log("업체 클릭:", shop.id);
-  };
+export function FavoriteShopItem({ shop }: FavoriteShopItemProps) {
+  const { isFavorite, isLoading, toggleFavorite } = useFavorite({
+    shopId: shop.id,
+    initialIsFavorite: true, // 찜 목록에 있으므로 초기값 true
+  });
 
   const handleHeartClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // 부모 클릭 이벤트 전파 방지
-    onRemove();
+    toggleFavorite();
   };
 
   return (
-    <div
-      onClick={handleShopClick}
-      className="flex cursor-pointer gap-2.5 border-b border-line-100 py-4 last:border-b-0"
-    >
+    <div className="flex cursor-pointer gap-2.5 border-b border-line-100 py-4 last:border-b-0">
       {/* 업체 이미지 */}
       <div className="relative h-[85px] w-[85px] shrink-0 overflow-hidden rounded-[5px]">
         {shop.imageUrl ? (
@@ -56,13 +52,18 @@ export function FavoriteShopItem({ shop, onRemove }: FavoriteShopItemProps) {
           {/* 영업상태 뱃지 */}
           <StatusBadge isOpen={shop.isOpen} />
 
-          {/* 찜 해제 버튼 */}
+          {/* 찜 토글 버튼 */}
           <button
             onClick={handleHeartClick}
-            className="flex h-6 w-6 items-center justify-center"
-            aria-label="찜 해제"
+            disabled={isLoading}
+            className="flex h-6 w-6 items-center justify-center disabled:opacity-50"
+            aria-label={isFavorite ? "찜 해제" : "찜하기"}
           >
-            <Heart size={24} className="fill-error stroke-error" strokeWidth={2} />
+            <Heart
+              size={24}
+              className={isFavorite ? "fill-main stroke-main" : "fill-none stroke-grey-400"}
+              strokeWidth={2}
+            />
           </button>
         </div>
 

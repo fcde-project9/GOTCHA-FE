@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Search, ArrowUpDown, CircleX } from "lucide-react";
-import { fetchFavorites, removeFavorite } from "@/api/queries/favoriteApi";
+import { fetchFavorites } from "@/api/queries/favoriteApi";
 import { Footer, Button } from "@/components/common";
 import { FavoriteShopItem } from "@/components/features/favorites";
 import { FavoriteShopResponse } from "@/types/api";
@@ -106,18 +106,6 @@ export default function FavoritesPage() {
     return sortOption === "latest" ? dateB - dateA : dateA - dateB;
   });
 
-  // 찜 해제
-  const handleRemoveFavorite = async (shopId: number) => {
-    try {
-      await removeFavorite(shopId);
-      // 성공 시 로컬 상태에서 제거
-      setFavorites(favorites.filter((shop) => shop.id !== shopId));
-    } catch (err) {
-      console.error("찜 해제 실패:", err);
-      // TODO: 에러 토스트 메시지 표시
-    }
-  };
-
   // 정렬 옵션 토글
   const handleSortToggle = () => {
     setSortOption((prev) => (prev === "latest" ? "oldest" : "latest"));
@@ -155,7 +143,7 @@ export default function FavoritesPage() {
             />
             {searchQuery ? (
               <button onClick={handleClearSearch} aria-label="검색어 지우기">
-                <CircleX size={24} className="fill-grey-500 stroke-white" strokeWidth={2} />
+                <CircleX size={24} className="fill-grey-500 stroke-grey-50" strokeWidth={2} />
               </button>
             ) : (
               <Search size={24} className="stroke-grey-500" strokeWidth={2} />
@@ -194,7 +182,7 @@ export default function FavoritesPage() {
               />
             </div>
             {isLoggedIn ? (
-              <p className="text-center text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
+              <p className="text-center text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900 pb-16">
                 관심있는 매장을 찜 해보세요!
               </p>
             ) : (
@@ -234,11 +222,7 @@ export default function FavoritesPage() {
             <div className="flex-1 overflow-y-auto px-5 pb-4">
               <div className="flex flex-col">
                 {sortedFavorites.map((shop) => (
-                  <FavoriteShopItem
-                    key={shop.id}
-                    shop={shop}
-                    onRemove={() => handleRemoveFavorite(shop.id)}
-                  />
+                  <FavoriteShopItem key={shop.id} shop={shop} />
                 ))}
               </div>
             </div>
