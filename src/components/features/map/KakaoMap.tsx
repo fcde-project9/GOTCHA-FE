@@ -207,8 +207,8 @@ export default function KakaoMap({
 
     // 새 마커 생성
     markers.forEach((markerData) => {
-      // 유효하지 않은 좌표 건너뛰기
-      if (!markerData.latitude || !markerData.longitude) {
+      // 유효하지 않은 좌표 건너뛰기 (null, undefined, NaN만 제외, 0은 유효한 좌표)
+      if (!Number.isFinite(markerData.latitude) || !Number.isFinite(markerData.longitude)) {
         return;
       }
 
