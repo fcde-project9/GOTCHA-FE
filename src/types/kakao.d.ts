@@ -10,6 +10,9 @@ declare global {
         Map: new (container: HTMLElement, options: MapOptions) => KakaoMap;
         LatLng: new (lat: number, lng: number) => LatLng;
         Marker: new (options: MarkerOptions) => Marker;
+        MarkerImage: new (src: string, size: Size, options?: MarkerImageOptions) => MarkerImage;
+        Size: new (width: number, height: number) => Size;
+        Point: new (x: number, y: number) => Point;
         InfoWindow: new (options: InfoWindowOptions) => InfoWindow;
         event: {
           addListener: (
@@ -58,14 +61,41 @@ declare global {
     getBounds: () => LatLngBounds;
   }
 
+  interface Size {
+    width: number;
+    height: number;
+  }
+
+  interface Point {
+    x: number;
+    y: number;
+  }
+
+  interface MarkerImageOptions {
+    offset?: Point;
+    alt?: string;
+    shape?: string;
+    coords?: string;
+  }
+
+  interface MarkerImage {
+    // MarkerImage는 Marker 생성 시 사용되는 이미지 객체
+    // Kakao Maps API에서 생성된 객체로 직접 프로퍼티 접근은 제한적
+    [key: string]: unknown;
+  }
+
   interface MarkerOptions {
     position: LatLng;
     map?: KakaoMap;
+    image?: MarkerImage;
+    title?: string;
+    clickable?: boolean;
   }
 
   interface Marker {
     setMap: (map: KakaoMap | null) => void;
     getPosition: () => LatLng;
+    setImage: (image: MarkerImage) => void;
   }
 
   interface InfoWindowOptions {

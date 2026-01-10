@@ -38,7 +38,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className="w-full max-w-[480px] mx-auto">
+      <body className="w-full max-w-[480px] mx-auto overscroll-none">
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -2,13 +2,13 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Search, LocateFixed, RefreshCcw, ChevronLeft, CircleX } from "lucide-react";
-import { Footer } from "@/components/common";
+import { Footer, LocationPermissionModal } from "@/components/common";
 import { KakaoMap } from "@/components/features/map";
 import { SearchResultItem } from "@/components/features/search";
 import { ShopListBottomSheet } from "@/components/features/shop";
 import { useCurrentLocation, useKakaoPlaces, PlaceSearchResult } from "@/hooks";
 import { fetchShopsInBounds } from "@/services/shopApi";
-import { MapBounds } from "@/types/api";
+import { MapBounds, ShopMapResponse } from "@/types/api";
 import { shopMapResponsesToViews, ShopListView } from "@/utils/shop";
 
 export default function Home() {
@@ -17,12 +17,14 @@ export default function Home() {
   const [bottomSheetHeight, setBottomSheetHeight] = useState(215); // 기본 높이
   const [isSheetDragging, setIsSheetDragging] = useState(false);
   const [shops, setShops] = useState<ShopListView[]>([]);
+  const [markers, setMarkers] = useState<ShopMapResponse[]>([]);
   const [mapCenter, setMapCenter] = useState<{ latitude: number; longitude: number } | null>(null);
   const [showReloadButton, setShowReloadButton] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [hasInitialLoad, setHasInitialLoad] = useState(false);
   const [currentBounds, setCurrentBounds] = useState<MapBounds | null>(null);
+  const [showLocationModal, setShowLocationModal] = useState(false);
 
   // 최초 접속 시 현재 위치 권한 요청
   useEffect(() => {
@@ -49,7 +51,9 @@ export default function Home() {
 
       if (response.success) {
         const shopViews = shopMapResponsesToViews(response.data);
+
         setShops(shopViews);
+        setMarkers(response.data); // ShopMapResponse를 직접 사용
       }
     } catch (error) {
       console.error("가게 목록 조회 실패:", error);
@@ -96,7 +100,9 @@ export default function Home() {
       latitude: parseFloat(result.y),
       longitude: parseFloat(result.x),
     });
-    handleSearchCancel();
+    // 검색 모드 종료 (검색어는 유지)
+    setIsSearching(false);
+    clearResults();
   };
 
   const handleReloadArea = async () => {
@@ -124,6 +130,11 @@ export default function Home() {
       },
       (err) => {
         console.error("위치 정보를 가져올 수 없습니다:", err);
+
+        // 위치 권한 거부 시 모달 표시
+        if (err.code === err.PERMISSION_DENIED) {
+          setShowLocationModal(true);
+        }
       },
       {
         enableHighAccuracy: true,
@@ -148,8 +159,14 @@ export default function Home() {
 
   return (
     <>
-      <main className="h-[calc(100dvh-70px)] overflow-hidden relative">
-        <div className="flex h-full flex-col items-center relative">
+      {/* 위치 권한 모달 */}
+      <LocationPermissionModal
+        isOpen={showLocationModal}
+        onClose={() => setShowLocationModal(false)}
+      />
+
+      <main className="h-[calc(100dvh-70px)] overflow-hidden relative touch-none">
+        <div className="flex h-full flex-col items-center relative touch-auto">
           {/* 카카오맵 */}
           <div className="w-full h-full relative">
             <KakaoMap
@@ -157,6 +174,7 @@ export default function Home() {
               height="100%"
               latitude={mapCenter?.latitude || location?.latitude}
               longitude={mapCenter?.longitude || location?.longitude}
+              markers={markers}
               onBoundsChange={handleBoundsChange}
             />
 
@@ -168,8 +186,12 @@ export default function Home() {
                   className="flex h-11 w-full items-center gap-2 rounded-lg bg-white px-2.5 py-2.5 shadow-[0px_0px_5px_0px_rgba(0,0,0,0.2)]"
                 >
                   <Search size={20} className="stroke-grey-800" strokeWidth={2} />
-                  <span className="text-[15px] font-normal leading-[1.5] tracking-[-0.15px] text-grey-600">
-                    지역 또는 지하철역 검색
+                  <span
+                    className={`text-[15px] font-normal leading-[1.5] tracking-[-0.15px] ${
+                      searchQuery ? "text-grey-800" : "text-grey-600"
+                    }`}
+                  >
+                    {searchQuery || "지역 또는 지하철역 검색"}
                   </span>
                 </button>
               ) : (
