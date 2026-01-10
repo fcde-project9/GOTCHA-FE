@@ -8,6 +8,8 @@ interface LocationPermissionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onPermissionGranted?: (position: GeolocationPosition) => void;
+  /** 이미 권한이 거부된 상태로 모달을 열 때 true */
+  initialDenied?: boolean;
 }
 
 /**
@@ -26,9 +28,12 @@ export function LocationPermissionModal({
   isOpen,
   onClose,
   onPermissionGranted,
+  initialDenied = false,
 }: LocationPermissionModalProps) {
   const [settingsGuide, setSettingsGuide] = useState<string>("");
-  const [permissionState, setPermissionState] = useState<PermissionState | null>(null);
+  const [permissionState, setPermissionState] = useState<PermissionState | null>(
+    initialDenied ? "denied" : null
+  );
   const [isRequesting, setIsRequesting] = useState(false);
   const requestLocationRef = useRef<() => void>(() => {});
 

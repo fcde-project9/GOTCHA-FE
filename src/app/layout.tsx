@@ -156,7 +156,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className="bg-white">
-      <body className="w-full max-w-[480px] mx-auto overscroll-none bg-white">
+      <body className="w-full max-w-[480px] mx-auto bg-white">
         <Providers>{children}</Providers>
       </body>
     </html>

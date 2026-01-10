@@ -220,23 +220,11 @@ export default function Home() {
 
   return (
     <>
-      {/* 위치 권한 모달 */}
+      {/* 위치 권한 모달 - 권한 거부 시 설정 안내만 표시 */}
       <LocationPermissionModal
         isOpen={showLocationModal}
         onClose={() => setShowLocationModal(false)}
-        onPermissionGranted={(position) => {
-          const newLocation = {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          };
-          setMapCenter(newLocation);
-          setShowCurrentLocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            heading: position.coords.heading ?? null,
-          });
-          startDeviceOrientationTracking(newLocation);
-        }}
+        initialDenied
       />
 
       <main className="h-[calc(100dvh-70px)] overflow-hidden relative touch-none">
@@ -288,7 +276,7 @@ export default function Home() {
                   />
                   {searchQuery && (
                     <button onClick={handleClearSearch} aria-label="검색어 지우기">
-                      <CircleX size={24} className="fill-grey-500 stroke-white" strokeWidth={2} />
+                      <CircleX size={24} className="fill-grey-500 stroke-grey-50" strokeWidth={2} />
                     </button>
                   )}
                 </div>
