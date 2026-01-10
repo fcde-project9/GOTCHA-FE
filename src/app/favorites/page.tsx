@@ -73,10 +73,16 @@ export default function FavoritesPage() {
       if (response.success) {
         const favoriteShops = response.data.content.map(favoriteResponseToShop);
         setFavorites(favoriteShops);
+      } else {
+        // API 응답은 받았지만 success: false인 경우
+        console.error("찜한 업체 목록 조회 실패:", response);
+        setError("찜한 업체 목록을 불러올 수 없습니다.");
+        setFavorites([]);
       }
     } catch (err) {
       console.error("찜한 업체 목록 불러오기 실패:", err);
       setError("찜한 업체 목록을 불러올 수 없습니다.");
+      setFavorites([]);
     } finally {
       setIsLoading(false);
     }
