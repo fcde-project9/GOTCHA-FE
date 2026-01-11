@@ -1,5 +1,9 @@
 import { useState, useCallback } from "react";
-import { getCurrentLocationWithError, GeolocationResult } from "@/utils/geolocation";
+import {
+  getCurrentLocationWithError,
+  GeolocationResult,
+  GeolocationErrorCode,
+} from "@/utils/geolocation";
 
 interface UseCurrentLocationReturn {
   location: GeolocationResult | null;
@@ -42,13 +46,13 @@ export function useCurrentLocation(): UseCurrentLocationReturn {
       let errorMessage = "위치 정보를 가져올 수 없습니다.";
 
       switch (geoError.code) {
-        case geoError.PERMISSION_DENIED:
+        case GeolocationErrorCode.PERMISSION_DENIED:
           errorMessage = "위치 정보 접근이 거부되었습니다.";
           break;
-        case geoError.POSITION_UNAVAILABLE:
+        case GeolocationErrorCode.POSITION_UNAVAILABLE:
           errorMessage = "위치 정보를 사용할 수 없습니다.";
           break;
-        case geoError.TIMEOUT:
+        case GeolocationErrorCode.TIMEOUT:
           errorMessage = "위치 정보 요청 시간이 초과되었습니다.";
           break;
       }

@@ -9,6 +9,19 @@ export interface GeolocationOptions {
   maximumAge?: number;
 }
 
+/** Geolocation 에러 코드 상수 */
+export const GeolocationErrorCode = {
+  PERMISSION_DENIED: 1,
+  POSITION_UNAVAILABLE: 2,
+  TIMEOUT: 3,
+} as const;
+
+/** 커스텀 Geolocation 에러 타입 */
+export interface GeolocationError {
+  code: number;
+  message: string;
+}
+
 const DEFAULT_OPTIONS: GeolocationOptions = {
   enableHighAccuracy: true,
   timeout: 5000,
@@ -55,6 +68,11 @@ export async function getCurrentLocation(
   });
 }
 
+export interface GeolocationWithErrorResult {
+  position: GeolocationPosition | null;
+  error: GeolocationError | null;
+}
+
 /**
  * 현재 위치를 가져오는 함수 (에러 정보 포함)
  *
@@ -63,18 +81,15 @@ export async function getCurrentLocation(
  */
 export async function getCurrentLocationWithError(
   options: GeolocationOptions = {}
-): Promise<{ position: GeolocationPosition | null; error: GeolocationPositionError | null }> {
+): Promise<GeolocationWithErrorResult> {
   return new Promise((resolve) => {
     if (!("geolocation" in navigator)) {
       resolve({
         position: null,
         error: {
-          code: 2,
+          code: GeolocationErrorCode.POSITION_UNAVAILABLE,
           message: "브라우저가 위치 정보를 지원하지 않습니다.",
-          PERMISSION_DENIED: 1,
-          POSITION_UNAVAILABLE: 2,
-          TIMEOUT: 3,
-        } as GeolocationPositionError,
+        },
       });
       return;
     }
@@ -86,7 +101,13 @@ export async function getCurrentLocationWithError(
         resolve({ position, error: null });
       },
       (error) => {
-        resolve({ position: null, error });
+        resolve({
+          position: null,
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
       },
       mergedOptions
     );
