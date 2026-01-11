@@ -19,15 +19,15 @@ export const useUploadFile = (folder: string) => {
 
         const { data } = await apiClient.post<ApiResponse<FileUploadResponse>>(
           ENDPOINTS.FILE.UPLOAD,
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
+          formData
         );
 
-        return data.data!;
+        // API 응답 검증
+        if (!data.success || !data.data) {
+          throw new Error(data.error?.message || "파일 업로드에 실패했습니다.");
+        }
+
+        return data.data;
       } catch (error) {
         const apiError = extractApiError(error);
         throw new Error(apiError?.message || "파일 업로드에 실패했습니다.");

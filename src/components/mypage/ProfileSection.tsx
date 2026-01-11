@@ -3,6 +3,12 @@
 import Image from "next/image";
 import { ChevronLeft, Plus, SquarePen } from "lucide-react";
 
+const SOCIAL_PROVIDER_LABELS = {
+  google: "Google",
+  kakao: "Kakao",
+  naver: "Naver",
+} as const;
+
 interface ProfileSectionProps {
   isLoggedIn?: boolean;
   nickname?: string;
@@ -112,13 +118,7 @@ export function ProfileSection({
           <div className="bg-grey-50 rounded-md px-2 py-0.5 flex items-center gap-2 w-full justify-center">
             <Image
               src={`/images/icons/${socialProvider}.png`}
-              alt={
-                socialProvider === "google"
-                  ? "Google"
-                  : socialProvider === "kakao"
-                    ? "Kakao"
-                    : "Naver"
-              }
+              alt={socialProvider ? SOCIAL_PROVIDER_LABELS[socialProvider] : ""}
               width={14}
               height={14}
             />

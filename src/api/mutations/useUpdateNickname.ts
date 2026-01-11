@@ -22,8 +22,12 @@ export const useUpdateNickname = () => {
           nickname,
         } as UpdateNicknameRequest);
 
-        // 성공 시 데이터 반환
-        return data.data!;
+        // API 응답 검증
+        if (!data.success || !data.data) {
+          throw new Error(data.error?.message || "닉네임 변경에 실패했습니다.");
+        }
+
+        return data.data;
       } catch (error) {
         // 백엔드 에러 메시지 추출 (U001: 닉네임 중복, U002: 닉네임 형식 오류 등)
         const apiError = extractApiError(error);

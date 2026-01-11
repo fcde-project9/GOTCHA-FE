@@ -23,7 +23,12 @@ export const useUpdateProfileImage = () => {
           { profileImageUrl } as UpdateProfileImageRequest
         );
 
-        return data.data!;
+        // API 응답 검증
+        if (!data.success || !data.data) {
+          throw new Error(data.error?.message || "프로필 이미지 변경에 실패했습니다.");
+        }
+
+        return data.data;
       } catch (error) {
         const apiError = extractApiError(error);
         throw new Error(apiError?.message || "프로필 이미지 변경에 실패했습니다.");

@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Headset } from "lucide-react";
 import { useUpdateNickname } from "@/api/mutations/useUpdateNickname";
-import { useUpdateProfileImage } from "@/api/mutations/useUpdateProfileImage";
-import { useUploadFile } from "@/api/mutations/useUploadFile";
+import { useUpdateProfileImageWithUpload } from "@/api/mutations/useUpdateProfileImageWithUpload";
 import { useUser } from "@/api/queries/useUser";
+import type { User } from "@/api/types";
 import { Toast } from "@/components/common";
 import Footer from "@/components/common/Footer";
 import { LogoutModal } from "@/components/mypage/LogoutModal";
@@ -21,8 +21,7 @@ export default function MyPage() {
   const router = useRouter();
   const { data: user, isLoading, error } = useUser();
   const updateNicknameMutation = useUpdateNickname();
-  const uploadFileMutation = useUploadFile("profiles");
-  const updateProfileImageMutation = useUpdateProfileImage();
+  const updateProfileImageWithUploadMutation = useUpdateProfileImageWithUpload();
 
   const [isNicknameModalOpen, setIsNicknameModalOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
@@ -32,20 +31,24 @@ export default function MyPage() {
   const [withdrawOtherReason, setWithdrawOtherReason] = useState<string>();
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("닉네임이 변경되었습니다");
+  const [toastKey, setToastKey] = useState(0);
+
+  // 토스트 재출현을 위한 헬퍼 함수
+  const displayToast = (message: string) => {
+    setToastMessage(message);
+    setShowToast(false); // 먼저 false로 설정
+    setTimeout(() => {
+      setToastKey((prev) => prev + 1); // key 변경으로 강제 리렌더
+      setShowToast(true);
+    }, 0);
+  };
 
   const handleEditProfile = async (file: File) => {
     try {
-      // 1. 파일 업로드
-      const uploadResult = await uploadFileMutation.mutateAsync(file);
-
-      // 2. 프로필 이미지 변경
-      await updateProfileImageMutation.mutateAsync(uploadResult.fileUrl);
-
-      setToastMessage("프로필 이미지가 변경되었습니다");
-      setShowToast(true);
+      await updateProfileImageWithUploadMutation.mutateAsync(file);
+      displayToast("프로필 이미지가 변경되었습니다");
     } catch (error) {
-      setToastMessage("프로필 이미지 변경에 실패했습니다");
-      setShowToast(true);
+      displayToast("프로필 이미지 변경에 실패했습니다");
     }
   };
 
@@ -57,11 +60,9 @@ export default function MyPage() {
     try {
       await updateNicknameMutation.mutateAsync(newNickname);
       setIsNicknameModalOpen(false);
-      setToastMessage("닉네임이 변경되었습니다");
-      setShowToast(true);
+      displayToast("닉네임이 변경되었습니다");
     } catch (error) {
-      setToastMessage("닉네임 변경에 실패했습니다");
-      setShowToast(true);
+      displayToast("닉네임 변경에 실패했습니다");
     }
   };
 
@@ -168,13 +169,10 @@ export default function MyPage() {
     }
   };
 
-  // socialType을 socialProvider 형식으로 변환
-  const socialProvider = user?.socialType.toLowerCase() as "google" | "kakao" | "naver" | undefined;
-
   // 로딩 중이면 빈 화면 표시
   if (isLoading) {
     return (
-      <div className="bg-default min-h-screen w-full max-w-[480px] mx-auto relative pb-[70px]">
+      <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[70px]">
         <header className="bg-white h-12 flex items-center px-5 py-2">
           <h1 className="flex-1 text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900 h-6 flex items-center">
             마이
@@ -186,9 +184,17 @@ export default function MyPage() {
 
   // 에러 발생 시 게스트 모드로 표시 (401 에러는 이미 인터셉터에서 처리됨)
   const isLoggedIn = !error && !!user;
+  const loggedInUser: User | undefined = isLoggedIn ? user : undefined;
+
+  // socialType을 socialProvider 형식으로 변환
+  const socialProvider = loggedInUser?.socialType?.toLowerCase() as
+    | "google"
+    | "kakao"
+    | "naver"
+    | undefined;
 
   return (
-    <div className="bg-default min-h-screen w-full max-w-[480px] mx-auto relative pb-[70px]">
+    <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[70px]">
       {/* Header */}
       <header className="bg-white h-12 flex items-center px-5 py-2">
         <h1 className="flex-1 text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900 h-6 flex items-center">
@@ -208,9 +214,9 @@ export default function MyPage() {
         {/* Profile Section */}
         <ProfileSection
           isLoggedIn={isLoggedIn}
-          nickname={user?.nickname}
-          email={user?.email}
-          profileImage={user?.profileImageUrl ?? undefined}
+          nickname={loggedInUser?.nickname}
+          email={loggedInUser?.email}
+          profileImage={loggedInUser?.profileImageUrl ?? undefined}
           socialProvider={socialProvider}
           onEditProfile={handleEditProfile}
           onEditNickname={handleEditNickname}
@@ -267,7 +273,12 @@ export default function MyPage() {
       <Footer />
 
       {/* Toast */}
-      <Toast message={toastMessage} isVisible={showToast} onClose={() => setShowToast(false)} />
+      <Toast
+        key={toastKey}
+        message={toastMessage}
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+      />
     </div>
   );
 }
