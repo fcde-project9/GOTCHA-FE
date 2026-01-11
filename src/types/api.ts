@@ -59,7 +59,6 @@ export interface FavoriteShopResponse {
   name: string;
   address: string;
   mainImageUrl: string;
-  distance: number; // 미터 단위
   isOpen: boolean;
   favoritedAt: string; // ISO 8601 형식
 }
