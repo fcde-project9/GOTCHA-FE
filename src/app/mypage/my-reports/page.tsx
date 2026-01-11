@@ -28,7 +28,7 @@ export default function MyReportsPage() {
   };
 
   return (
-    <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[70px]">
+    <div className="bg-default min-h-screen w-full max-w-[480px] mx-auto relative pb-[70px]">
       {/* Header */}
       <header className="bg-white h-12 flex items-center pl-3 pr-5 py-2 gap-3">
         <button

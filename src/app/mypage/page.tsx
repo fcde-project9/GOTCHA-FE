@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Headset } from "lucide-react";
+import { useUpdateNickname } from "@/api/mutations/useUpdateNickname";
+import { useUpdateProfileImage } from "@/api/mutations/useUpdateProfileImage";
+import { useUploadFile } from "@/api/mutations/useUploadFile";
+import { useUser } from "@/api/queries/useUser";
 import { Toast } from "@/components/common";
 import Footer from "@/components/common/Footer";
 import { LogoutModal } from "@/components/mypage/LogoutModal";
@@ -15,11 +19,11 @@ import { openInstagramSupport } from "@/utils";
 
 export default function MyPage() {
   const router = useRouter();
+  const { data: user, isLoading, error } = useUser();
+  const updateNicknameMutation = useUpdateNickname();
+  const uploadFileMutation = useUploadFile("profiles");
+  const updateProfileImageMutation = useUpdateProfileImage();
 
-  // TODO: 백엔드 API 연동 후 실제 로그인 상태 확인 로직으로 교체
-  // 현재는 임시로 로컬 상태로 관리 (true: 로그인, false: 게스트)
-  const [isLoggedIn, _setIsLoggedIn] = useState(true);
-  const [nickname, setNickname] = useState("빨간캡슐#21");
   const [isNicknameModalOpen, setIsNicknameModalOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
@@ -27,19 +31,38 @@ export default function MyPage() {
   const [withdrawReasons, setWithdrawReasons] = useState<string[]>([]);
   const [withdrawOtherReason, setWithdrawOtherReason] = useState<string>();
   const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("닉네임이 변경되었습니다");
 
-  const handleEditProfile = () => {
-    // TODO: 프로필 사진 변경 API 연동
+  const handleEditProfile = async (file: File) => {
+    try {
+      // 1. 파일 업로드
+      const uploadResult = await uploadFileMutation.mutateAsync(file);
+
+      // 2. 프로필 이미지 변경
+      await updateProfileImageMutation.mutateAsync(uploadResult.fileUrl);
+
+      setToastMessage("프로필 이미지가 변경되었습니다");
+      setShowToast(true);
+    } catch (error) {
+      setToastMessage("프로필 이미지 변경에 실패했습니다");
+      setShowToast(true);
+    }
   };
 
   const handleEditNickname = () => {
     setIsNicknameModalOpen(true);
   };
 
-  const handleSaveNickname = (newNickname: string) => {
-    // TODO: 백엔드 API 연동 - 닉네임 변경
-    setNickname(newNickname);
-    setShowToast(true);
+  const handleSaveNickname = async (newNickname: string) => {
+    try {
+      await updateNicknameMutation.mutateAsync(newNickname);
+      setIsNicknameModalOpen(false);
+      setToastMessage("닉네임이 변경되었습니다");
+      setShowToast(true);
+    } catch (error) {
+      setToastMessage("닉네임 변경에 실패했습니다");
+      setShowToast(true);
+    }
   };
 
   const handleMyReports = () => {
@@ -70,9 +93,8 @@ export default function MyPage() {
     try {
       // TODO: 로그아웃 API 연동
       // await apiClient.post('/auth/logout');
-    } catch (error) {
+    } catch {
       // API 실패 시에도 로컬 데이터는 정리
-      console.error("로그아웃 API 호출 실패:", error);
     } finally {
       // 로컬 스토리지 정리
       localStorage.removeItem("accessToken");
@@ -146,8 +168,27 @@ export default function MyPage() {
     }
   };
 
+  // socialType을 socialProvider 형식으로 변환
+  const socialProvider = user?.socialType.toLowerCase() as "google" | "kakao" | "naver" | undefined;
+
+  // 로딩 중이면 빈 화면 표시
+  if (isLoading) {
+    return (
+      <div className="bg-default min-h-screen w-full max-w-[480px] mx-auto relative pb-[70px]">
+        <header className="bg-white h-12 flex items-center px-5 py-2">
+          <h1 className="flex-1 text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900 h-6 flex items-center">
+            마이
+          </h1>
+        </header>
+      </div>
+    );
+  }
+
+  // 에러 발생 시 게스트 모드로 표시 (401 에러는 이미 인터셉터에서 처리됨)
+  const isLoggedIn = !error && !!user;
+
   return (
-    <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[70px]">
+    <div className="bg-default min-h-screen w-full max-w-[480px] mx-auto relative pb-[70px]">
       {/* Header */}
       <header className="bg-white h-12 flex items-center px-5 py-2">
         <h1 className="flex-1 text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900 h-6 flex items-center">
@@ -167,7 +208,10 @@ export default function MyPage() {
         {/* Profile Section */}
         <ProfileSection
           isLoggedIn={isLoggedIn}
-          nickname={nickname}
+          nickname={user?.nickname}
+          email={user?.email}
+          profileImage={user?.profileImageUrl ?? undefined}
+          socialProvider={socialProvider}
           onEditProfile={handleEditProfile}
           onEditNickname={handleEditNickname}
           onLogin={handleLogin}
@@ -182,7 +226,7 @@ export default function MyPage() {
       {/* Modals */}
       <NicknameModal
         isOpen={isNicknameModalOpen}
-        currentNickname={nickname}
+        currentNickname={user?.nickname ?? ""}
         onClose={() => setIsNicknameModalOpen(false)}
         onSave={handleSaveNickname}
       />
@@ -223,11 +267,7 @@ export default function MyPage() {
       <Footer />
 
       {/* Toast */}
-      <Toast
-        message="닉네임이 변경되었습니다"
-        isVisible={showToast}
-        onClose={() => setShowToast(false)}
-      />
+      <Toast message={toastMessage} isVisible={showToast} onClose={() => setShowToast(false)} />
     </div>
   );
 }
