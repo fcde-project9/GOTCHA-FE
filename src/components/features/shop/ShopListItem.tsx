@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Heart, Navigation } from "lucide-react";
 import { useFavorite } from "@/hooks";
 import StatusBadge from "./StatusBadge";
@@ -21,16 +22,24 @@ export default function ShopListItem({
   imageUrl,
   isFavorite: initialIsFavorite = false,
 }: ShopListItemProps) {
+  const router = useRouter();
   const { isFavorite, isLoading, toggleFavorite } = useFavorite({
     shopId,
     initialIsFavorite,
   });
 
+  const handleItemClick = () => {
+    router.push(`/shop/${shopId}`);
+  };
+
   return (
     <div className="relative w-full">
       <div className="flex gap-[10px] items-center w-full py-4">
         {/* 이미지 */}
-        <div className="relative rounded-[5px] shrink-0 size-[85px] bg-gray-200">
+        <button
+          onClick={handleItemClick}
+          className="relative rounded-[5px] shrink-0 size-[85px] bg-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-main"
+        >
           {imageUrl ? (
             <img
               src={imageUrl}
@@ -42,7 +51,7 @@ export default function ShopListItem({
               No Image
             </div>
           )}
-        </div>
+        </button>
 
         {/* 정보 */}
         <div className="flex flex-col gap-[4px] h-[85px] flex-1 min-w-0">
@@ -69,9 +78,14 @@ export default function ShopListItem({
           </div>
 
           {/* 가게 이름 */}
-          <p className="text-[18px] font-semibold text-grey-900 tracking-[-0.18px] overflow-hidden text-ellipsis whitespace-nowrap font-pretendard leading-[150%]">
-            {name}
-          </p>
+          <button
+            onClick={handleItemClick}
+            className="text-left focus:outline-none focus-visible:underline"
+          >
+            <p className="text-[18px] font-semibold text-grey-900 tracking-[-0.18px] overflow-hidden text-ellipsis whitespace-nowrap font-pretendard leading-[150%]">
+              {name}
+            </p>
+          </button>
 
           {/* 거리 정보 */}
           <div className="flex gap-[4px] items-center">

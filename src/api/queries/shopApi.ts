@@ -1,6 +1,14 @@
 import apiClient from "@/api/client";
-import { MapBounds, ShopsMapApiResponse } from "@/types/api";
+import {
+  MapBounds,
+  ShopsMapApiResponse,
+  ShopDetailResponse,
+  ReviewSortOption,
+  ApiResponse,
+} from "@/types/api";
 import { getCurrentLocation } from "@/utils/geolocation";
+
+export type ShopDetailApiResponse = ApiResponse<ShopDetailResponse>;
 
 /**
  * 지도 영역 내 가게 목록 조회
@@ -30,6 +38,25 @@ export async function fetchShopsInBounds(bounds: MapBounds): Promise<ShopsMapApi
       centerLat: userLocation?.latitude ?? null,
       centerLng: userLocation?.longitude ?? null,
     },
+  });
+
+  return data;
+}
+
+/**
+ * 가게 상세 조회
+ * GET /api/shops/{shopId}
+ *
+ * @param shopId - 가게 ID
+ * @param sortBy - 리뷰 정렬 옵션 (LATEST: 최신순, LIKE_COUNT: 좋아요순)
+ * @returns 가게 상세 정보 (리뷰 5개 포함)
+ */
+export async function fetchShopDetail(
+  shopId: number,
+  sortBy: ReviewSortOption = "LATEST"
+): Promise<ShopDetailApiResponse> {
+  const { data } = await apiClient.get<ShopDetailApiResponse>(`/api/shops/${shopId}`, {
+    params: { sortBy },
   });
 
   return data;
