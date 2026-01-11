@@ -30,6 +30,7 @@ interface KakaoMapProps {
   onBoundsChange?: (bounds: MapBounds) => void;
   onMarkerClick?: (marker: ShopMapResponse) => void;
   currentLocation?: CurrentLocationState | null; // 현재 위치 마커 표시용
+  onMapLoad?: (map: KakaoMap) => void; // 지도 로드 완료 시 콜백
 }
 
 /**
@@ -46,6 +47,7 @@ export default function KakaoMap({
   onBoundsChange,
   onMarkerClick,
   currentLocation,
+  onMapLoad,
 }: KakaoMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<KakaoMap | null>(null);
@@ -126,7 +128,6 @@ export default function KakaoMap({
                 center: new window.kakao.maps.LatLng(latitude, longitude),
                 level: level,
               };
-              // 지도 인스턴스를 ref에 저장
               const map = new window.kakao.maps.Map(mapContainer.current, options);
               mapInstance.current = map;
 
@@ -137,6 +138,11 @@ export default function KakaoMap({
 
               // 초기 bounds 알림
               notifyBoundsChange(map);
+
+              // 지도 로드 완료 콜백 호출
+              if (onMapLoad) {
+                onMapLoad(map);
+              }
 
               if (isMounted) {
                 setIsLoading(false);
