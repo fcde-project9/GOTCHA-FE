@@ -50,3 +50,81 @@ export function extractApiError(error: unknown): ApiError | null {
   };
   return axiosError?.response?.data?.error ?? null;
 }
+
+/**
+ * 소셜 로그인 타입
+ */
+export type SocialType = "KAKAO" | "GOOGLE" | "NAVER";
+
+/**
+ * 사용자 정보 타입
+ * 백엔드 /api/users/me 응답 형식
+ */
+export interface User {
+  id: number;
+  nickname: string;
+  email: string;
+  profileImageUrl: string | null;
+  socialType: SocialType;
+}
+
+/**
+ * 파일 업로드 응답 타입
+ * 백엔드 /api/files/upload 응답 형식
+ */
+export interface FileUploadResponse {
+  fileUrl: string;
+  originalFilename: string;
+  fileSize: number;
+  contentType: string;
+}
+
+/**
+ * 가게 생성 요청 타입
+ * 백엔드 POST /api/shops/save 요청 형식
+ */
+export interface CreateShopRequest {
+  name: string;
+  mainImageUrl?: string;
+  locationHint?: string;
+  openTime?: Record<string, string | null>; // {"Mon": "10:00~22:00", "Tue": null, ...}
+}
+
+/**
+ * 좌표 요청 타입
+ */
+export interface CoordinateRequest {
+  latitude: number;
+  longitude: number;
+}
+
+/**
+ * 가게 응답 타입
+ */
+export interface ShopResponse {
+  id: number;
+  name: string;
+  latitude: number;
+  longitude: number;
+  addressName: string;
+  mainImageUrl: string | null;
+  locationHint: string | null;
+  openTime: Record<string, string | null> | null;
+  isOpen: boolean;
+}
+
+/**
+ * 근처 가게 응답 타입
+ */
+export interface NearbyShopResponse {
+  name: string;
+  mainImageUrl: string | null;
+}
+
+/**
+ * 근처 가게 목록 응답 타입
+ */
+export interface NearbyShopsResponse {
+  count: number;
+  shops: NearbyShopResponse[];
+}
