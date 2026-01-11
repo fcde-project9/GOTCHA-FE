@@ -33,7 +33,7 @@ export function ProfileSection({
   const handleProfileImageChange = () => {
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = "image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif";
+    input.accept = "image/jpeg,image/jpg,image/png,image/webp";
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {

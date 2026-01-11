@@ -9,6 +9,7 @@ import { useUser } from "@/api/queries/useUser";
 import type { User } from "@/api/types";
 import { Toast } from "@/components/common";
 import Footer from "@/components/common/Footer";
+import { ErrorPage } from "@/components/error/ErrorPage";
 import { LogoutModal } from "@/components/mypage/LogoutModal";
 import { MenuList } from "@/components/mypage/MenuList";
 import { NicknameModal } from "@/components/mypage/NicknameModal";
@@ -19,7 +20,7 @@ import { openInstagramSupport } from "@/utils";
 
 export default function MyPage() {
   const router = useRouter();
-  const { data: user, isLoading, error } = useUser();
+  const { data: user, isLoading, error, refetch } = useUser();
   const updateNicknameMutation = useUpdateNickname();
   const updateProfileImageWithUploadMutation = useUpdateProfileImageWithUpload();
 
@@ -180,6 +181,18 @@ export default function MyPage() {
         </header>
       </div>
     );
+  }
+
+  // 일시적 에러 확인 (네트워크 오류 또는 5xx 서버 오류)
+  const axiosError = error as { response?: { status?: number } } | null;
+  const isTemporaryError =
+    error &&
+    (!axiosError?.response ||
+      (axiosError.response.status !== undefined && axiosError.response.status >= 500));
+
+  // 일시적 에러 시 재시도 UI 표시
+  if (isTemporaryError) {
+    return <ErrorPage onRetry={refetch} />;
   }
 
   // 에러 발생 시 게스트 모드로 표시 (401 에러는 이미 인터셉터에서 처리됨)
