@@ -131,25 +131,27 @@ export default function FavoritesPage() {
           </h1>
         </header>
 
-        {/* 검색창 */}
-        <div className="flex-shrink-0 px-5 pt-3">
-          <div className="flex h-11 items-center justify-between rounded-lg bg-grey-50 px-3 py-2.5">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="찜한 업체 검색"
-              className="flex-1 bg-transparent text-[15px] font-normal leading-[1.5] tracking-[-0.15px] text-grey-900 placeholder:text-grey-500 focus:outline-none"
-            />
-            {searchQuery ? (
-              <button onClick={handleClearSearch} aria-label="검색어 지우기">
-                <CircleX size={24} className="fill-grey-500 stroke-grey-50" strokeWidth={2} />
-              </button>
-            ) : (
-              <Search size={24} className="stroke-grey-500" strokeWidth={2} />
-            )}
+        {/* 검색창 - 찜한 업체가 있을 때만 표시 */}
+        {favorites.length > 0 && (
+          <div className="flex-shrink-0 px-5 pt-3">
+            <div className="flex h-11 items-center justify-between rounded-lg bg-grey-50 px-3 py-2.5">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="찜한 업체 검색"
+                className="flex-1 bg-transparent text-[15px] font-normal leading-[1.5] tracking-[-0.15px] text-grey-900 placeholder:text-grey-500 focus:outline-none"
+              />
+              {searchQuery ? (
+                <button onClick={handleClearSearch} aria-label="검색어 지우기">
+                  <CircleX size={24} className="fill-grey-500 stroke-grey-50" strokeWidth={2} />
+                </button>
+              ) : (
+                <Search size={24} className="stroke-grey-500" strokeWidth={2} />
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* 컨텐츠 영역 */}
         {isLoading ? (

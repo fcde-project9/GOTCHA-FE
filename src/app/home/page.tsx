@@ -32,6 +32,14 @@ export default function Home() {
     heading: number | null;
   } | null>(null);
 
+  // 홈페이지에서 pull-to-refresh 비활성화
+  useEffect(() => {
+    document.body.style.overscrollBehaviorY = "contain";
+    return () => {
+      document.body.style.overscrollBehaviorY = "";
+    };
+  }, []);
+
   // localStorage에서 권한 거부 플래그 읽기
   useEffect(() => {
     try {
