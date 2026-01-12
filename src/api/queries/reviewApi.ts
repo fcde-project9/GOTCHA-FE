@@ -25,12 +25,7 @@ export async function uploadImage(
 
   const { data } = await apiClient.post<FileUploadApiResponse>(
     `/api/files/upload?folder=${folder}`,
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
+    formData
   );
 
   return data;
@@ -50,9 +45,14 @@ export async function uploadImages(
   if (files.length === 0) return [];
 
   const uploadPromises = files.map((file) => uploadImage(file, folder));
-  const results = await Promise.all(uploadPromises);
+  const results = await Promise.allSettled(uploadPromises);
 
-  return results.filter((result) => result.success).map((result) => result.data.fileUrl);
+  return results
+    .filter(
+      (result): result is PromiseFulfilledResult<FileUploadApiResponse> =>
+        result.status === "fulfilled" && result.value.success
+    )
+    .map((result) => result.value.data.fileUrl);
 }
 
 /**

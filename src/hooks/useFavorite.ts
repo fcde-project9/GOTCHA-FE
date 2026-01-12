@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { addShopFavorite, removeShopFavorite } from "@/api/queries/favoriteApi";
 
 interface UseFavoriteOptions {
@@ -43,6 +43,11 @@ export function useFavorite({
 }: UseFavoriteOptions): UseFavoriteReturn {
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
   const [isLoading, setIsLoading] = useState(false);
+
+  // initialIsFavorite 변경 시 상태 동기화 (API 응답 후 shop 데이터가 로드되었을 때)
+  useEffect(() => {
+    setIsFavorite(initialIsFavorite);
+  }, [initialIsFavorite]);
 
   const toggleFavorite = useCallback(async () => {
     if (isLoading) return;

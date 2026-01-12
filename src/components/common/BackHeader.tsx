@@ -55,6 +55,7 @@ export function BackHeader({ onBack, title, rightElement, showBorder = false }: 
       {/* 뒤로가기 버튼 & 타이틀 */}
       <div className="flex items-center gap-2">
         <button
+          type="button"
           onClick={handleBack}
           className="flex items-center justify-center"
           aria-label="뒤로가기"

@@ -86,10 +86,20 @@ function ReviewListItem({
   );
 }
 
+// shopId 파싱 및 검증
+function parseShopId(id: string | string[] | undefined): number | null {
+  if (typeof id !== "string") return null;
+  const parsed = Number(id);
+  if (Number.isNaN(parsed) || !Number.isInteger(parsed) || parsed <= 0) {
+    return null;
+  }
+  return parsed;
+}
+
 export default function ReviewsListPage() {
   const params = useParams();
   const router = useRouter();
-  const shopId = Number(params.id);
+  const shopId = parseShopId(params.id);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
@@ -100,6 +110,9 @@ export default function ReviewsListPage() {
   const [page, setPage] = useState(0);
   const [hasNext, setHasNext] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
+
+  const isValidShopId = shopId !== null;
+  const validShopId = shopId ?? 0; // hooks에서 사용할 안전한 값
 
   // 리뷰 목록 불러오기
   const fetchReviews = useCallback(
@@ -143,14 +156,15 @@ export default function ReviewsListPage() {
         setIsLoadingMore(false);
       }
     },
-    [shopId, sortBy]
+    [validShopId, sortBy]
   );
 
   // 초기 로딩 및 정렬 변경 시
   useEffect(() => {
+    if (!isValidShopId) return;
     setPage(0);
     fetchReviews(0, true);
-  }, [fetchReviews]);
+  }, [fetchReviews, isValidShopId]);
 
   // 무한 스크롤
   useEffect(() => {
@@ -183,8 +197,23 @@ export default function ReviewsListPage() {
 
   // 리뷰 작성
   const handleWriteReview = () => {
-    router.push(`/shop/${shopId}/review/write`);
+    router.push(`/shop/${validShopId}/review/write`);
   };
+
+  // 유효하지 않은 shopId 처리
+  if (!isValidShopId) {
+    return (
+      <div className="min-h-dvh bg-default flex flex-col">
+        <BackHeader showBorder />
+        <div className="flex-1 flex flex-col items-center justify-center px-5">
+          <p className="text-[15px] text-grey-500 mb-4">잘못된 접근입니다</p>
+          <Button variant="primary" size="small" onClick={() => router.push("/")}>
+            홈으로 돌아가기
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   // 좋아요 토글
   const handleLikeToggle = async (reviewId: number) => {
