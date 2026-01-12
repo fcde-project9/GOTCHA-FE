@@ -68,13 +68,13 @@ export default function ShopListBottomSheet({ shops, onHeightChange }: ShopListB
         ) : (
           /* 빈 상태 UI */
           <div className="flex w-full flex-col items-center justify-center h-full">
-            <div className="mb-4 flex items-center justify-center rounded-full bg-grey-100 flex-shrink-0 w-16 h-16 min-w-16 min-h-16">
-              <Store size={32} className="stroke-grey-400" strokeWidth={1.5} />
+            <div className="mb-4 flex items-center justify-center flex-shrink-0 w-20">
+              <img src="/images/shop-list-empty.png" alt="shop-list-empty" />
             </div>
-            <p className="mb-1 text-[16px] font-semibold leading-[1.5] tracking-[-0.16px] text-grey-900">
+            <p className="mb-1 text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900">
               이 지역에 등록된 매장이 없어요
             </p>
-            <p className="text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-500">
+            <p className="text-[15px] font-normal leading-[1.5] tracking-[-0.15px] text-grey-500">
               다른 지역을 검색해보세요
             </p>
           </div>

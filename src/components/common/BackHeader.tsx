@@ -63,7 +63,9 @@ export function BackHeader({ onBack, title, rightElement, showBorder = false }: 
           <ChevronLeft size={24} strokeWidth={1.75} className="text-grey-800" />
         </button>
         {title && (
-          <span className="max-w-48 truncate text-[16px] font-medium text-grey-900">{title}</span>
+          <span className="max-w-48 truncate text-[20px] font-semibold leading-[1.5] tracking-[-0.2px] text-grey-900">
+            {title}
+          </span>
         )}
       </div>
 

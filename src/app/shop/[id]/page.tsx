@@ -1,16 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
-import { Heart, Share, Copy, ChevronRight, PencilLine, X, Expand } from "lucide-react";
+import {
+  Heart,
+  Share,
+  Copy,
+  ChevronRight,
+  ChevronDown,
+  PencilLine,
+  X,
+  Expand,
+  ThumbsUp,
+  MoreVertical,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { useShopDetail } from "@/api/queries/useShopDetail";
-import { Button, BackHeader } from "@/components/common";
+import { Button, BackHeader, OutlineButton } from "@/components/common";
 import KakaoMap from "@/components/features/map/KakaoMap";
 import { ReviewWriteModal } from "@/components/features/review/ReviewWriteModal";
 import { StatusBadge } from "@/components/features/shop";
 import { useFavorite, useToast } from "@/hooks";
-import type { ReviewResponse, OpenTime } from "@/types/api";
+import type { ReviewResponse, OpenTime, ReviewSortOption } from "@/types/api";
 
 // 요일 매핑 (API 응답 키 -> 한글)
 const DAY_MAP: Record<keyof OpenTime, string> = {
@@ -54,7 +67,34 @@ function DayBadge({ day, isActive }: { day: string; isActive: boolean }) {
 }
 
 // 리뷰 아이템 컴포넌트
-function ReviewItem({ review }: { review: ReviewResponse }) {
+function ReviewItem({
+  review,
+  onLikeToggle,
+  onEdit,
+  onDelete,
+}: {
+  review: ReviewResponse;
+  onLikeToggle: (reviewId: number) => void;
+  onEdit: (reviewId: number) => void;
+  onDelete: (reviewId: number) => void;
+}) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // 메뉴 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    if (isMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isMenuOpen]);
+
   // createdAt 포맷팅
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -62,24 +102,98 @@ function ReviewItem({ review }: { review: ReviewResponse }) {
   };
 
   return (
-    <div className="flex gap-3 py-4 border-b border-grey-100 last:border-b-0">
-      {review.imageUrls && review.imageUrls.length > 0 && (
-        <div className="shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-grey-100">
-          <Image
-            src={review.imageUrls[0]}
-            alt="리뷰 이미지"
-            width={64}
-            height={64}
-            className="w-full h-full object-cover"
+    <div className="bg-grey-50 rounded-[10px] p-[14px] flex flex-col gap-4">
+      {/* 닉네임 & 메뉴 */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <span className="text-[12px] text-grey-600 leading-[1.5]">
+            {review.author.nickname}
+            {review.isOwner ? "" : ""}
+          </span>
+          {review.isOwner && (
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="flex items-center justify-center w-6 h-6"
+                aria-label="메뉴"
+              >
+                <MoreVertical size={16} className="text-grey-500" />
+              </button>
+              {/* 드롭다운 메뉴 */}
+              {isMenuOpen && (
+                <div className="absolute right-0 top-6 z-10 bg-white rounded-lg shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden">
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onEdit(review.id);
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
+                  >
+                    <Pencil size={16} className="text-grey-900" />
+                    <span className="text-[14px] text-grey-900 whitespace-nowrap">수정하기</span>
+                  </button>
+                  <div className="border-t border-grey-100" />
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onDelete(review.id);
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
+                  >
+                    <Trash2 size={16} className="text-error" />
+                    <span className="text-[14px] text-error whitespace-nowrap">삭제하기</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* 리뷰 내용 */}
+        <p className="text-[15px] text-grey-900 leading-[1.5] tracking-[-0.15px]">
+          {review.content}
+        </p>
+
+        {/* 리뷰 이미지 */}
+        {review.imageUrls && review.imageUrls.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+            {review.imageUrls.map((imageUrl, index) => (
+              <div
+                key={index}
+                className="shrink-0 w-[105px] h-[105px] rounded-lg overflow-hidden bg-grey-100"
+              >
+                <Image
+                  src={imageUrl}
+                  alt={`리뷰 이미지 ${index + 1}`}
+                  width={105}
+                  height={105}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 날짜 & 좋아요 */}
+      <div className="flex items-center gap-[14px]">
+        <span className="text-[12px] text-grey-400 leading-[1.5]">
+          {formatDate(review.createdAt)}
+        </span>
+        <button
+          onClick={() => onLikeToggle(review.id)}
+          className="flex items-center gap-[3px]"
+          aria-label={review.isLiked ? "좋아요 취소" : "좋아요"}
+        >
+          <ThumbsUp
+            size={16}
+            className={
+              review.isLiked ? "fill-grey-800 stroke-grey-800" : "stroke-grey-500 fill-none"
+            }
+            strokeWidth={1.5}
           />
-        </div>
-      )}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-[14px] font-semibold text-grey-900">{review.author.nickname}</span>
-          <span className="text-[12px] text-grey-500">{formatDate(review.createdAt)}</span>
-        </div>
-        <p className="text-[14px] text-grey-700 leading-[1.5] line-clamp-2">{review.content}</p>
+          <span className="text-[12px] text-grey-800 tracking-[-0.264px]">{review.likeCount}</span>
+        </button>
       </div>
     </div>
   );
@@ -104,8 +218,27 @@ export default function ShopDetailPage() {
   const isValidShopId = shopId !== null;
   const validShopId = shopId ?? 0;
 
+  // 리뷰 정렬 옵션
+  const [sortBy, setSortBy] = useState<ReviewSortOption>("LATEST");
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
+  const sortDropdownRef = useRef<HTMLDivElement>(null);
+
+  // 정렬 드롭다운 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target as Node)) {
+        setIsSortDropdownOpen(false);
+      }
+    };
+
+    if (isSortDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isSortDropdownOpen]);
+
   // React Query로 shop 상세 조회
-  const { data: shop, isLoading, error, refetch } = useShopDetail(validShopId);
+  const { data: shop, isLoading, error, refetch } = useShopDetail(validShopId, sortBy);
 
   // 찜하기 훅 (shop 데이터 로드 후 초기값 동기화)
   const {
@@ -171,6 +304,29 @@ export default function ShopDetailPage() {
   // 전체 리뷰 보기
   const handleViewAllReviews = () => {
     router.push(`/shop/${validShopId}/reviews`);
+  };
+
+  // 리뷰 좋아요 토글
+  const handleLikeToggle = async (_reviewId: number) => {
+    // TODO: API 연동 후 구현
+    showToast("좋아요 기능 준비 중입니다");
+  };
+
+  // 리뷰 수정
+  const handleEditReview = (reviewId: number) => {
+    router.push(`/shop/${validShopId}/review/${reviewId}/edit`);
+  };
+
+  // 리뷰 삭제
+  const handleDeleteReview = async (_reviewId: number) => {
+    // TODO: 삭제 확인 모달 및 API 연동
+    showToast("삭제 기능 준비 중입니다");
+  };
+
+  // 정렬 변경
+  const handleSortChange = (newSortBy: ReviewSortOption) => {
+    setSortBy(newSortBy);
+    setIsSortDropdownOpen(false);
   };
 
   // 전체 사진 보기
@@ -257,11 +413,8 @@ export default function ShopDetailPage() {
           </div>
         </section>
 
-        {/* 구분선 */}
-        <div className="h-2 bg-grey-50" />
-
         {/* 주소 정보 */}
-        <section className="px-5 pt-4 pb-2">
+        <section className="px-5 py-2">
           <div className="flex items-start gap-3">
             <div className="flex flex-col min-w-0 gap-2">
               <div className="flex items-center gap-2">
@@ -371,7 +524,7 @@ export default function ShopDetailPage() {
               <>
                 <div className="flex items-center justify-between px-5 mb-3">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-[18px] font-medium text-grey-900 leading-[1.5] tracking-[-0.18px]">
+                    <h3 className="text-[20px] font-semibold text-grey-900 leading-[1.4] tracking-[-0.2px]">
                       업체 사진
                     </h3>
                     {totalImageCount > 0 && (
@@ -435,68 +588,102 @@ export default function ShopDetailPage() {
 
         {/* 방문 리뷰 */}
         <section className="py-4">
-          <div className="flex items-center justify-between px-5 mb-3">
-            <div className="flex items-center gap-2">
-              <h3 className="text-[18px] font-medium text-grey-900 leading-[1.5] tracking-[-0.18px]">
-                방문리뷰
-              </h3>
-              <span className="text-[14px] text-main font-medium">
-                {shop.reviews.length > 0 ? shop.reviews.length : ""}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              {shop.reviews.length > 0 && (
-                <>
-                  <button
-                    onClick={handleWriteReview}
-                    className="flex items-center gap-1 text-[14px] text-main font-medium"
-                  >
-                    <PencilLine size={14} strokeWidth={2} />
-                    작성
-                  </button>
-                  <span className="text-grey-300">|</span>
-                  <button
-                    onClick={handleViewAllReviews}
-                    className="flex items-center text-[14px] text-grey-500"
-                  >
-                    전체보기
-                    <ChevronRight size={16} />
-                  </button>
-                </>
-              )}
-            </div>
+          {/* 섹션 타이틀 */}
+          <div className="px-5 mb-4">
+            <h3 className="text-[20px] font-semibold text-grey-900 leading-[1.4] tracking-[-0.2px]">
+              방문리뷰
+            </h3>
           </div>
 
-          {shop.reviews.length === 0 ? (
-            // 리뷰 없음 상태
+          {/* 리뷰 작성 버튼 */}
+          <div className="px-5 mb-4">
+            <Button
+              variant="primary"
+              size="medium"
+              fullWidth
+              onClick={handleWriteReview}
+              className="!bg-grey-700 hover:!bg-grey-800 active:!bg-grey-900 gap-1.5"
+            >
+              <PencilLine size={16} strokeWidth={2} />
+              <span className="text-[16px] font-medium text-white leading-[1.5] tracking-[-0.16px]">
+                {shop.reviews.length === 0 ? "첫 리뷰를 작성해주세요" : "리뷰를 작성해주세요"}
+              </span>
+            </Button>
+          </div>
+
+          {shop.reviews.length > 0 && (
             <div className="px-5">
-              <Button
-                variant="primary"
-                size="medium"
+              {/* 총 개수 & 정렬 */}
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center text-[14px] text-grey-900 tracking-[-0.14px]">
+                  <span>총&nbsp;</span>
+                  <span>{shop.reviews.length}</span>
+                  <span>개</span>
+                </div>
+                <div className="relative" ref={sortDropdownRef}>
+                  <button
+                    onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                    className="flex items-center gap-1 text-[14px] text-grey-700"
+                  >
+                    <span>{sortBy === "LATEST" ? "최신순" : "좋아요순"}</span>
+                    <ChevronDown
+                      size={16}
+                      className={`text-grey-700 transition-transform ${isSortDropdownOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                  {/* 정렬 드롭다운 */}
+                  {isSortDropdownOpen && (
+                    <div className="absolute right-0 top-6 z-10 bg-white rounded-lg shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden min-w-[80px]">
+                      <button
+                        onClick={() => handleSortChange("LATEST")}
+                        className={`flex items-center px-3 py-2 w-full text-[14px] ${
+                          sortBy === "LATEST" ? "text-main font-medium" : "text-grey-700"
+                        } hover:bg-grey-50`}
+                      >
+                        최신순
+                      </button>
+                      <div className="border-t border-grey-100" />
+                      <button
+                        onClick={() => handleSortChange("LIKE_COUNT")}
+                        className={`flex items-center px-3 py-2 w-full text-[14px] ${
+                          sortBy === "LIKE_COUNT" ? "text-main font-medium" : "text-grey-700"
+                        } hover:bg-grey-50`}
+                      >
+                        좋아요순
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 리뷰 목록 */}
+              <div className="flex flex-col gap-2">
+                {shop.reviews.slice(0, 3).map((review) => (
+                  <ReviewItem
+                    key={review.id}
+                    review={review}
+                    onLikeToggle={handleLikeToggle}
+                    onEdit={handleEditReview}
+                    onDelete={handleDeleteReview}
+                  />
+                ))}
+              </div>
+
+              {/* 리뷰 전체보기 버튼 */}
+              <OutlineButton
+                onClick={handleViewAllReviews}
                 fullWidth
-                onClick={handleWriteReview}
-                className="!bg-grey-700 hover:!bg-grey-800 active:!bg-grey-900 gap-1.5"
+                rightIcon={<ChevronRight size={24} className="text-grey-700" />}
+                className="mt-4"
               >
-                <PencilLine size={16} strokeWidth={2} />
-                <span className="text-[16px] font-medium text-white leading-[1.5] tracking-[-0.16px]">
-                  첫 리뷰를 작성해주세요
-                </span>
-              </Button>
+                리뷰 전체보기
+              </OutlineButton>
             </div>
-          ) : (
-            // 리뷰 목록
-            <div className="px-5">
-              {shop.reviews.slice(0, 3).map((review) => (
-                <ReviewItem key={review.id} review={review} />
-              ))}
-              {shop.reviews.length > 3 && (
-                <button
-                  onClick={handleViewAllReviews}
-                  className="w-full py-3 text-center text-[14px] text-grey-600 border border-grey-200 rounded-lg mt-3"
-                >
-                  리뷰 {shop.reviews.length}개 전체보기
-                </button>
-              )}
+          )}
+
+          {shop.reviews.length === 0 && (
+            <div className="px-5 py-8 flex flex-col items-center justify-center">
+              <p className="text-[14px] text-grey-400">아직 작성된 리뷰가 없어요</p>
             </div>
           )}
         </section>

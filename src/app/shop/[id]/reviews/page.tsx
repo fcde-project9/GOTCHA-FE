@@ -3,9 +3,10 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
-import { Plus, Heart, ArrowUpDown } from "lucide-react";
+import { ChevronDown, ThumbsUp, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { useInfiniteReviews } from "@/api/queries/useInfiniteReviews";
 import { Button, BackHeader } from "@/components/common";
+import { useToast } from "@/hooks";
 import type { ReviewResponse, ReviewSortOption } from "@/types/api";
 
 // 날짜 포맷팅
@@ -18,72 +19,122 @@ function formatDate(dateStr: string) {
 function ReviewListItem({
   review,
   onLikeToggle,
+  onEdit,
+  onDelete,
 }: {
   review: ReviewResponse;
   onLikeToggle: (reviewId: number) => void;
+  onEdit: (reviewId: number) => void;
+  onDelete: (reviewId: number) => void;
 }) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // 메뉴 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    if (isMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isMenuOpen]);
+
   return (
-    <div className="py-4 border-b border-grey-100 last:border-b-0">
-      {/* 작성자 정보 */}
-      <div className="flex items-center gap-2 mb-3">
-        <div className="w-8 h-8 rounded-full overflow-hidden bg-grey-100">
-          {review.author.profileImageUrl ? (
-            <Image
-              src={review.author.profileImageUrl}
-              alt={review.author.nickname}
-              width={32}
-              height={32}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-grey-400 text-[12px]">
-              {review.author.nickname.charAt(0)}
+    <div className="bg-grey-50 rounded-[10px] p-[14px] flex flex-col gap-4">
+      {/* 닉네임 & 메뉴 */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <span className="text-[12px] text-grey-600 leading-[1.5]">{review.author.nickname}</span>
+          {review.isOwner && (
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="flex items-center justify-center w-6 h-6"
+                aria-label="메뉴"
+              >
+                <MoreVertical size={16} className="text-grey-500" />
+              </button>
+              {/* 드롭다운 메뉴 */}
+              {isMenuOpen && (
+                <div className="absolute right-0 top-6 z-10 bg-white rounded-lg shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden">
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onEdit(review.id);
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
+                  >
+                    <Pencil size={16} className="text-grey-900" />
+                    <span className="text-[14px] text-grey-900 whitespace-nowrap">수정하기</span>
+                  </button>
+                  <div className="border-t border-grey-100" />
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onDelete(review.id);
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
+                  >
+                    <Trash2 size={16} className="text-error" />
+                    <span className="text-[14px] text-error whitespace-nowrap">삭제하기</span>
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[14px] font-semibold text-grey-900 truncate">
-            {review.author.nickname}
-          </p>
-        </div>
-        <span className="text-[12px] text-grey-400">{formatDate(review.createdAt)}</span>
+
+        {/* 리뷰 내용 */}
+        <p className="text-[15px] text-grey-900 leading-[1.5] tracking-[-0.15px]">
+          {review.content}
+        </p>
+
+        {/* 리뷰 이미지 */}
+        {review.imageUrls && review.imageUrls.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+            {review.imageUrls.map((imageUrl, index) => (
+              <div
+                key={index}
+                className="shrink-0 w-[105px] h-[105px] rounded-lg overflow-hidden bg-grey-100"
+              >
+                <Image
+                  src={imageUrl}
+                  alt={`리뷰 이미지 ${index + 1}`}
+                  width={105}
+                  height={105}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* 내용 */}
-      <p className="text-[14px] text-grey-700 leading-[1.6] mb-3 whitespace-pre-wrap">
-        {review.content}
-      </p>
-
-      {/* 이미지 */}
-      {review.imageUrls.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-2 mb-3">
-          {review.imageUrls.map((imageUrl, index) => (
-            <div key={index} className="shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-grey-100">
-              <Image
-                src={imageUrl}
-                alt={`리뷰 이미지 ${index + 1}`}
-                width={80}
-                height={80}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* 좋아요 버튼 */}
-      <button
-        type="button"
-        onClick={() => onLikeToggle(review.id)}
-        className="flex items-center gap-1 text-[13px] text-grey-500"
-      >
-        <Heart
-          size={16}
-          className={review.isLiked ? "fill-main stroke-main" : "stroke-grey-400 fill-none"}
-          strokeWidth={1.5}
-        />
-        <span className={review.isLiked ? "text-main" : ""}>{review.likeCount}</span>
-      </button>
+      {/* 날짜 & 좋아요 */}
+      <div className="flex items-center gap-[14px]">
+        <span className="text-[12px] text-grey-400 leading-[1.5]">
+          {formatDate(review.createdAt)}
+        </span>
+        <button
+          onClick={() => onLikeToggle(review.id)}
+          className="flex items-center gap-[3px]"
+          aria-label={review.isLiked ? "좋아요 취소" : "좋아요"}
+        >
+          <ThumbsUp
+            size={16}
+            className={
+              review.isLiked ? "fill-grey-800 stroke-grey-800" : "stroke-grey-500 fill-none"
+            }
+            strokeWidth={1.5}
+          />
+          <span className="text-[12px] text-grey-800 tracking-[-0.264px]">{review.likeCount}</span>
+        </button>
+      </div>
     </div>
   );
 }
@@ -101,13 +152,30 @@ function parseShopId(id: string | string[] | undefined): number | null {
 export default function ReviewsListPage() {
   const params = useParams();
   const router = useRouter();
+  const { showToast } = useToast();
   const shopId = parseShopId(params.id);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const [sortBy, setSortBy] = useState<ReviewSortOption>("LATEST");
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
+  const sortDropdownRef = useRef<HTMLDivElement>(null);
 
   const isValidShopId = shopId !== null;
   const validShopId = shopId ?? 0;
+
+  // 정렬 드롭다운 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target as Node)) {
+        setIsSortDropdownOpen(false);
+      }
+    };
+
+    if (isSortDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isSortDropdownOpen]);
 
   // React Query 무한 스크롤 훅
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, error } =
@@ -138,25 +206,33 @@ export default function ReviewsListPage() {
   }, [isLoading, isFetchingNextPage, hasNextPage, fetchNextPage]);
 
   // 정렬 변경
-  const handleSortToggle = () => {
-    setSortBy((prev) => (prev === "LATEST" ? "LIKE_COUNT" : "LATEST"));
+  const handleSortChange = (newSortBy: ReviewSortOption) => {
+    setSortBy(newSortBy);
+    setIsSortDropdownOpen(false);
   };
 
-  // 리뷰 작성
-  const handleWriteReview = () => {
-    router.push(`/shop/${validShopId}/review/write`);
-  };
-
-  // 좋아요 토글 (TODO: useMutation으로 구현)
+  // 좋아요 토글
   const handleLikeToggle = async (_reviewId: number) => {
-    // TODO: 좋아요 API mutation 구현
+    // TODO: API 연동 후 구현
+    showToast("좋아요 기능 준비 중입니다");
+  };
+
+  // 리뷰 수정
+  const handleEditReview = (reviewId: number) => {
+    router.push(`/shop/${validShopId}/review/${reviewId}/edit`);
+  };
+
+  // 리뷰 삭제
+  const handleDeleteReview = async (_reviewId: number) => {
+    // TODO: 삭제 확인 모달 및 API 연동
+    showToast("삭제 기능 준비 중입니다");
   };
 
   // 유효하지 않은 shopId 처리
   if (!isValidShopId) {
     return (
       <div className="min-h-dvh bg-default flex flex-col">
-        <BackHeader showBorder />
+        <BackHeader title="방문 리뷰 상세" />
         <div className="flex-1 flex flex-col items-center justify-center px-5">
           <p className="text-[15px] text-grey-500 mb-4">잘못된 접근입니다</p>
           <Button variant="primary" size="small" onClick={() => router.push("/")}>
@@ -170,14 +246,7 @@ export default function ReviewsListPage() {
   return (
     <div className="min-h-dvh bg-default flex flex-col">
       {/* 헤더 */}
-      <BackHeader
-        showBorder
-        rightElement={
-          <button type="button" onClick={handleWriteReview} aria-label="리뷰 작성">
-            <Plus size={24} className="text-grey-900" />
-          </button>
-        }
-      />
+      <BackHeader title="방문 리뷰 상세" />
 
       {/* 컨텐츠 */}
       <div className="flex-1">
@@ -194,39 +263,65 @@ export default function ReviewsListPage() {
           </div>
         ) : reviews.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 px-5">
-            <Image
-              src="/images/review-empty.png"
-              alt="리뷰 없음"
-              width={80}
-              height={80}
-              className="mb-4 opacity-60"
-            />
             <p className="text-[15px] text-grey-500 mb-4">아직 작성된 리뷰가 없어요</p>
-            <Button variant="primary" size="small" onClick={handleWriteReview}>
-              첫 리뷰 작성하기
+            <Button variant="primary" size="small" onClick={() => router.back()}>
+              돌아가기
             </Button>
           </div>
         ) : (
-          <>
+          <div className="px-5 pt-3">
             {/* 정렬 & 총 개수 */}
-            <div className="flex items-center justify-between px-5 py-3 border-b border-grey-100">
-              <span className="text-[14px] text-grey-700">
-                총 <span className="font-semibold text-grey-900">{totalCount}</span>개
-              </span>
-              <button
-                type="button"
-                onClick={handleSortToggle}
-                className="flex items-center gap-1 text-[14px] text-grey-700"
-              >
-                <span>{sortBy === "LATEST" ? "최신순" : "좋아요순"}</span>
-                <ArrowUpDown size={14} className="stroke-grey-700" />
-              </button>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center text-[14px] text-grey-900 tracking-[-0.14px]">
+                <span>총&nbsp;</span>
+                <span>{totalCount}개</span>
+              </div>
+              <div className="relative" ref={sortDropdownRef}>
+                <button
+                  onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                  className="flex items-center gap-1 text-[14px] text-grey-700"
+                >
+                  <span>{sortBy === "LATEST" ? "최신순" : "좋아요순"}</span>
+                  <ChevronDown
+                    size={16}
+                    className={`text-grey-700 transition-transform ${isSortDropdownOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+                {/* 정렬 드롭다운 */}
+                {isSortDropdownOpen && (
+                  <div className="absolute right-0 top-6 z-10 bg-white rounded-lg shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden min-w-[80px]">
+                    <button
+                      onClick={() => handleSortChange("LATEST")}
+                      className={`flex items-center px-3 py-2 w-full text-[14px] ${
+                        sortBy === "LATEST" ? "text-main font-medium" : "text-grey-700"
+                      } hover:bg-grey-50`}
+                    >
+                      최신순
+                    </button>
+                    <div className="border-t border-grey-100" />
+                    <button
+                      onClick={() => handleSortChange("LIKE_COUNT")}
+                      className={`flex items-center px-3 py-2 w-full text-[14px] ${
+                        sortBy === "LIKE_COUNT" ? "text-main font-medium" : "text-grey-700"
+                      } hover:bg-grey-50`}
+                    >
+                      좋아요순
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* 리뷰 목록 */}
-            <div className="px-5">
+            <div className="flex flex-col gap-2">
               {reviews.map((review) => (
-                <ReviewListItem key={review.id} review={review} onLikeToggle={handleLikeToggle} />
+                <ReviewListItem
+                  key={review.id}
+                  review={review}
+                  onLikeToggle={handleLikeToggle}
+                  onEdit={handleEditReview}
+                  onDelete={handleDeleteReview}
+                />
               ))}
             </div>
 
@@ -238,7 +333,7 @@ export default function ReviewsListPage() {
                 </div>
               )}
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>
