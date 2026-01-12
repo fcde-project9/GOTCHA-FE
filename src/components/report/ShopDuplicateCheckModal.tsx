@@ -100,7 +100,12 @@ export function ShopDuplicateCheckModal({
             <p className="text-[12px] font-medium leading-[1.5] tracking-[-0.12px] text-grey-500 select-none">
               근처 가게
             </p>
-            <div className="flex gap-2 overflow-x-auto pb-px -mr-3 pr-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <div
+              className="flex gap-2 overflow-x-auto pb-px -mr-3 pr-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+              onWheel={(e) => {
+                e.currentTarget.scrollLeft += e.deltaY;
+              }}
+            >
               {shops.map((shop) => (
                 <div key={shop.id} className="flex flex-col gap-2 flex-shrink-0 select-none">
                   {/* Shop Image */}
