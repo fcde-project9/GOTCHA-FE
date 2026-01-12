@@ -22,22 +22,31 @@ export const useShopsInBounds = (bounds: MapBounds | null, enabled: boolean = tr
         return [];
       }
 
+      // 사용자의 현재 위치 가져오기 (5분간 캐시 사용, 실패 시 null)
+      let centerLat: number | null = null;
+      let centerLng: number | null = null;
+
       try {
-        // 사용자의 현재 위치 가져오기 (5분간 캐시 사용)
         const userLocation = await getCurrentLocation({
           enableHighAccuracy: false,
           timeout: 5000,
           maximumAge: 300000,
         });
+        centerLat = userLocation?.latitude ?? null;
+        centerLng = userLocation?.longitude ?? null;
+      } catch {
+        // 위치 정보를 가져올 수 없는 경우 null 유지
+      }
 
+      try {
         const { data } = await apiClient.get<ShopsMapApiResponse>("/api/shops/map", {
           params: {
             northEastLat: bounds.northEastLat,
             northEastLng: bounds.northEastLng,
             southWestLat: bounds.southWestLat,
             southWestLng: bounds.southWestLng,
-            centerLat: userLocation?.latitude ?? null,
-            centerLng: userLocation?.longitude ?? null,
+            centerLat,
+            centerLng,
           },
         });
 
