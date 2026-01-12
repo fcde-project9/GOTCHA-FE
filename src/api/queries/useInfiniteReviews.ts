@@ -42,7 +42,10 @@ export const useInfiniteReviews = (
         return data.data;
       } catch (error) {
         const apiError = extractApiError(error);
-        throw new Error(apiError?.message || "리뷰 목록을 불러오는데 실패했습니다.");
+        if (apiError) {
+          throw new Error(apiError.message);
+        }
+        throw error;
       }
     },
     initialPageParam: 0,

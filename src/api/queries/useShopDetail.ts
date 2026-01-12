@@ -27,7 +27,10 @@ export const useShopDetail = (shopId: number, sortBy: ReviewSortOption = "LATEST
         return data.data;
       } catch (error) {
         const apiError = extractApiError(error);
-        throw new Error(apiError?.message || "업체 정보를 불러오는데 실패했습니다.");
+        if (apiError) {
+          throw new Error(apiError.message);
+        }
+        throw error;
       }
     },
     enabled: shopId > 0,

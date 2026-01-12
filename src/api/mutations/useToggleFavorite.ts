@@ -27,7 +27,10 @@ export const useAddFavorite = () => {
         return data.data;
       } catch (error) {
         const apiError = extractApiError(error);
-        throw new Error(apiError?.message || "찜 추가에 실패했습니다.");
+        if (apiError) {
+          throw new Error(apiError.message);
+        }
+        throw error;
       }
     },
     onSuccess: () => {
@@ -57,7 +60,10 @@ export const useRemoveFavorite = () => {
         return data.data;
       } catch (error) {
         const apiError = extractApiError(error);
-        throw new Error(apiError?.message || "찜 해제에 실패했습니다.");
+        if (apiError) {
+          throw new Error(apiError.message);
+        }
+        throw error;
       }
     },
     onSuccess: () => {

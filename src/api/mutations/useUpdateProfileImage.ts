@@ -31,7 +31,10 @@ export const useUpdateProfileImage = () => {
         return data.data;
       } catch (error) {
         const apiError = extractApiError(error);
-        throw new Error(apiError?.message || "프로필 이미지 변경에 실패했습니다.");
+        if (apiError) {
+          throw new Error(apiError.message);
+        }
+        throw error;
       }
     },
     onSuccess: () => {

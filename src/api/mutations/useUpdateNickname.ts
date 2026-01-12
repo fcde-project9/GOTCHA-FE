@@ -31,7 +31,10 @@ export const useUpdateNickname = () => {
       } catch (error) {
         // 백엔드 에러 메시지 추출 (U001: 닉네임 중복, U002: 닉네임 형식 오류 등)
         const apiError = extractApiError(error);
-        throw new Error(apiError?.message || "닉네임 변경에 실패했습니다.");
+        if (apiError) {
+          throw new Error(apiError.message);
+        }
+        throw error;
       }
     },
     onSuccess: () => {

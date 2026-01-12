@@ -30,7 +30,10 @@ export const useUploadFile = (folder: string) => {
         return data.data;
       } catch (error) {
         const apiError = extractApiError(error);
-        throw new Error(apiError?.message || "파일 업로드에 실패했습니다.");
+        if (apiError) {
+          throw new Error(apiError.message);
+        }
+        throw error;
       }
     },
   });

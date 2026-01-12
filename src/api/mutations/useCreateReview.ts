@@ -30,7 +30,10 @@ export const useCreateReview = (shopId: number) => {
         return data.data;
       } catch (error) {
         const apiError = extractApiError(error);
-        throw new Error(apiError?.message || "리뷰 작성에 실패했습니다.");
+        if (apiError) {
+          throw new Error(apiError.message);
+        }
+        throw error;
       }
     },
   });
