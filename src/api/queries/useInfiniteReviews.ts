@@ -3,15 +3,7 @@ import apiClient from "@/api/client";
 import { ENDPOINTS } from "@/api/endpoints";
 import type { ApiResponse } from "@/api/types";
 import { extractApiError } from "@/api/types";
-import type { ReviewResponse, ReviewSortOption } from "@/types/api";
-
-interface ReviewsPageData {
-  content: ReviewResponse[];
-  page: number;
-  size: number;
-  hasNext: boolean;
-  totalCount: number;
-}
+import type { ReviewsPageResponse, ReviewSortOption } from "@/types/api";
 
 /**
  * 리뷰 목록 무한 스크롤 Query Hook
@@ -30,7 +22,7 @@ export const useInfiniteReviews = (
     queryKey: ["reviews", "infinite", shopId, sortBy, size],
     queryFn: async ({ pageParam = 0 }) => {
       try {
-        const { data } = await apiClient.get<ApiResponse<ReviewsPageData>>(
+        const { data } = await apiClient.get<ApiResponse<ReviewsPageResponse>>(
           ENDPOINTS.REVIEWS.LIST(shopId),
           { params: { sortBy, page: pageParam, size } }
         );

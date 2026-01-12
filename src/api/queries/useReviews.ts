@@ -3,15 +3,7 @@ import apiClient from "@/api/client";
 import { ENDPOINTS } from "@/api/endpoints";
 import type { ApiResponse } from "@/api/types";
 import { extractApiError } from "@/api/types";
-import type { ReviewResponse, ReviewSortOption } from "@/types/api";
-
-interface ReviewsPageData {
-  content: ReviewResponse[];
-  page: number;
-  size: number;
-  hasNext: boolean;
-  totalCount: number;
-}
+import type { ReviewsPageResponse, ReviewSortOption } from "@/types/api";
 
 /**
  * 리뷰 목록 조회 Query Hook
@@ -32,7 +24,7 @@ export const useReviews = (
     queryKey: ["reviews", shopId, sortBy, page, size],
     queryFn: async () => {
       try {
-        const { data } = await apiClient.get<ApiResponse<ReviewsPageData>>(
+        const { data } = await apiClient.get<ApiResponse<ReviewsPageResponse>>(
           ENDPOINTS.REVIEWS.LIST(shopId),
           { params: { sortBy, page, size } }
         );

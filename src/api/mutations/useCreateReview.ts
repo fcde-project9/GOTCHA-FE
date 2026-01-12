@@ -3,12 +3,7 @@ import apiClient from "@/api/client";
 import { ENDPOINTS } from "@/api/endpoints";
 import type { ApiResponse } from "@/api/types";
 import { extractApiError } from "@/api/types";
-import type { ReviewResponse } from "@/types/api";
-
-interface CreateReviewRequest {
-  content: string;
-  imageUrls: string[];
-}
+import type { CreateReviewRequest, ReviewResponse } from "@/types/api";
 
 /**
  * 리뷰 작성 Mutation Hook

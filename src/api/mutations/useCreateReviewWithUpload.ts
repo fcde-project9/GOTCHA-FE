@@ -30,25 +30,28 @@ export const useCreateReviewWithUpload = (
   return useMutation({
     mutationFn: async ({ content, images }: CreateReviewWithUploadRequest) => {
       // 1. 이미지들을 GCS에 업로드 (Promise.allSettled로 개별 실패 처리)
-      const imageUrls: string[] = [];
+      let imageUrls: string[] = [];
 
       if (images.length > 0) {
-        const uploadPromises = images.map((file, index) =>
+        // 순서 보존을 위해 원본 길이만큼 배열 할당
+        const uploadedUrls: (string | null)[] = new Array(images.length).fill(null);
+        let completedCount = 0;
+
+        const uploadPromises = images.map((file, originalIndex) =>
           uploadFileMutation.mutateAsync(file).then((result) => {
-            // 진행률 업데이트
-            onUploadProgress?.({ uploaded: index + 1, total: images.length });
+            // 원본 순서 유지하며 URL 저장
+            uploadedUrls[originalIndex] = result.fileUrl;
+            // 완료된 개수 증가 후 진행률 업데이트
+            completedCount += 1;
+            onUploadProgress?.({ uploaded: completedCount, total: images.length });
             return result;
           })
         );
 
-        const results = await Promise.allSettled(uploadPromises);
+        await Promise.allSettled(uploadPromises);
 
-        // 성공한 업로드만 URL 추출
-        for (const result of results) {
-          if (result.status === "fulfilled") {
-            imageUrls.push(result.value.fileUrl);
-          }
-        }
+        // 성공한 업로드만 필터링 (순서 유지)
+        imageUrls = uploadedUrls.filter((url): url is string => url !== null);
       }
 
       // 2. 리뷰 작성
