@@ -1,29 +1,28 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { Search, LocateFixed, RefreshCcw, ChevronLeft, CircleX } from "lucide-react";
-import { fetchShopsInBounds } from "@/api/queries/shopApi";
+import { useShopsInBounds } from "@/api/queries/useShopsInBounds";
 import { Footer, LocationPermissionModal } from "@/components/common";
 import { KakaoMap } from "@/components/features/map";
 import { SearchResultItem } from "@/components/features/search";
 import { ShopListBottomSheet } from "@/components/features/shop";
 import { useCurrentLocation, useKakaoPlaces, PlaceSearchResult } from "@/hooks";
-import { MapBounds, ShopMapResponse } from "@/types/api";
-import { shopMapResponsesToViews, ShopListView } from "@/utils/shop";
+import { MapBounds } from "@/types/api";
+import { shopMapResponsesToViews } from "@/utils/shop";
 
 export default function Home() {
   const { location, getCurrentLocation } = useCurrentLocation();
   const { results, searchPlaces, clearResults } = useKakaoPlaces();
   const [bottomSheetHeight, setBottomSheetHeight] = useState(215); // 기본 높이
   const [isSheetDragging, setIsSheetDragging] = useState(false);
-  const [shops, setShops] = useState<ShopListView[]>([]);
-  const [markers, setMarkers] = useState<ShopMapResponse[]>([]);
   const [mapCenter, setMapCenter] = useState<{ latitude: number; longitude: number } | null>(null);
   const [showReloadButton, setShowReloadButton] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [hasInitialLoad, setHasInitialLoad] = useState(false);
   const [currentBounds, setCurrentBounds] = useState<MapBounds | null>(null);
+  const [activeBounds, setActiveBounds] = useState<MapBounds | null>(null); // 실제 조회할 bounds
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [locationDenied, setLocationDenied] = useState(false);
   const [showCurrentLocation, setShowCurrentLocation] = useState<{
@@ -31,6 +30,17 @@ export default function Home() {
     longitude: number;
     heading: number | null;
   } | null>(null);
+
+  // React Query로 가게 목록 조회
+  const { data: shopsData } = useShopsInBounds(activeBounds);
+
+  // API 응답을 UI용 데이터로 변환
+  const shops = useMemo(() => {
+    if (!shopsData) return [];
+    return shopMapResponsesToViews(shopsData);
+  }, [shopsData]);
+
+  const markers = shopsData ?? [];
 
   // 홈페이지에서 pull-to-refresh 비활성화
   useEffect(() => {
@@ -68,39 +78,22 @@ export default function Home() {
     }
   }, [searchQuery, searchPlaces, clearResults]);
 
-  // 가게 목록 조회 함수
-  const fetchShops = useCallback(async (bounds: MapBounds) => {
-    try {
-      const response = await fetchShopsInBounds(bounds);
-
-      if (response.success) {
-        const shopViews = shopMapResponsesToViews(response.data);
-
-        setShops(shopViews);
-        setMarkers(response.data); // ShopMapResponse를 직접 사용
-      }
-    } catch (error) {
-      console.error("가게 목록 조회 실패:", error);
-      // TODO: 에러 처리 (토스트 메시지 등)
-    }
-  }, []);
-
   // 지도 영역 변경 시 처리
   const handleBoundsChange = useCallback(
-    async (bounds: MapBounds) => {
+    (bounds: MapBounds) => {
       // 현재 bounds 저장
       setCurrentBounds(bounds);
 
       if (!hasInitialLoad) {
         // 최초 로드 시 자동으로 가게 목록 조회
-        await fetchShops(bounds);
+        setActiveBounds(bounds);
         setHasInitialLoad(true);
       } else {
         // 이후 지도 이동 시 재검색 버튼 표시
         setShowReloadButton(true);
       }
     },
-    [hasInitialLoad, fetchShops]
+    [hasInitialLoad]
   );
 
   const handleSearchClick = () => {
@@ -129,10 +122,10 @@ export default function Home() {
     clearResults();
   };
 
-  const handleReloadArea = async () => {
+  const handleReloadArea = () => {
     if (currentBounds) {
       setShowReloadButton(false);
-      await fetchShops(currentBounds);
+      setActiveBounds(currentBounds);
     }
   };
 

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Search, ArrowUpDown, CircleX } from "lucide-react";
-import { fetchFavorites } from "@/api/queries/favoriteApi";
+import { useFavorites } from "@/api/queries/useFavorites";
 import { Footer, Button } from "@/components/common";
 import { FavoriteShopItem } from "@/components/features/favorites";
 import { FavoriteShopResponse } from "@/types/api";
@@ -35,76 +35,50 @@ function favoriteResponseToShop(response: FavoriteShopResponse): FavoriteShop {
   };
 }
 
+/**
+ * 로그인 여부 확인
+ */
+function checkLoginStatus(): boolean {
+  try {
+    const accessToken = localStorage.getItem("accessToken");
+    const userType = localStorage.getItem("user_type");
+    return !!(accessToken && userType === "member");
+  } catch {
+    return false;
+  }
+}
+
 export default function FavoritesPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState<SortOption>("latest");
-  const [favorites, setFavorites] = useState<FavoriteShop[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // 로그인 여부 확인
-  const checkLoginStatus = () => {
-    try {
-      const accessToken = localStorage.getItem("accessToken");
-      const userType = localStorage.getItem("user_type");
-      return !!(accessToken && userType === "member");
-    } catch {
-      return false;
-    }
-  };
+  // 로그인 상태 확인
+  const isLoggedIn = useMemo(() => checkLoginStatus(), []);
 
-  // 찜한 업체 목록 가져오기
-  const loadFavorites = async () => {
-    // 로그인 여부 확인
-    const loggedIn = checkLoginStatus();
-    setIsLoggedIn(loggedIn);
+  // React Query로 찜 목록 조회 (로그인 상태일 때만)
+  const { data: favoritesData, isLoading, error, refetch } = useFavorites();
 
-    // 비로그인 사용자는 빈 목록 표시
-    if (!loggedIn) {
-      setIsLoading(false);
-      setFavorites([]);
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await fetchFavorites();
-      if (response.success) {
-        const favoriteShops = response.data.content.map(favoriteResponseToShop);
-        setFavorites(favoriteShops);
-      } else {
-        // API 응답은 받았지만 success: false인 경우
-        console.error("찜한 업체 목록 조회 실패:", response);
-        setError("찜한 업체 목록을 불러올 수 없습니다.");
-        setFavorites([]);
-      }
-    } catch (err) {
-      console.error("찜한 업체 목록 불러오기 실패:", err);
-      setError("찜한 업체 목록을 불러올 수 없습니다.");
-      setFavorites([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadFavorites();
-  }, []);
+  // API 응답을 UI용 타입으로 변환
+  const favorites: FavoriteShop[] = useMemo(() => {
+    if (!favoritesData || !isLoggedIn) return [];
+    return (favoritesData as unknown as FavoriteShopResponse[]).map(favoriteResponseToShop);
+  }, [favoritesData, isLoggedIn]);
 
   // 검색 필터링
-  const filteredFavorites = favorites.filter((shop) =>
-    shop.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredFavorites = useMemo(
+    () => favorites.filter((shop) => shop.name.toLowerCase().includes(searchQuery.toLowerCase())),
+    [favorites, searchQuery]
   );
 
   // 정렬
-  const sortedFavorites = [...filteredFavorites].sort((a, b) => {
-    const dateA = new Date(a.createdAt).getTime();
-    const dateB = new Date(b.createdAt).getTime();
-    return sortOption === "latest" ? dateB - dateA : dateA - dateB;
-  });
+  const sortedFavorites = useMemo(() => {
+    return [...filteredFavorites].sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return sortOption === "latest" ? dateB - dateA : dateA - dateB;
+    });
+  }, [filteredFavorites, sortOption]);
 
   // 정렬 옵션 토글
   const handleSortToggle = () => {
@@ -112,14 +86,18 @@ export default function FavoritesPage() {
   };
 
   // 새로고침
-  const handleRefresh = async () => {
-    await loadFavorites();
+  const handleRefresh = () => {
+    refetch();
   };
 
   // 검색어 초기화
   const handleClearSearch = () => {
     setSearchQuery("");
   };
+
+  // 비로그인 또는 로딩/에러 상태 결정
+  const showLoading = isLoggedIn && isLoading;
+  const showError = isLoggedIn && error;
 
   return (
     <>
@@ -143,7 +121,7 @@ export default function FavoritesPage() {
                 className="flex-1 bg-transparent text-[15px] font-normal leading-[1.5] tracking-[-0.15px] text-grey-900 placeholder:text-grey-500 focus:outline-none"
               />
               {searchQuery ? (
-                <button onClick={handleClearSearch} aria-label="검색어 지우기">
+                <button type="button" onClick={handleClearSearch} aria-label="검색어 지우기">
                   <CircleX size={24} className="fill-grey-500 stroke-grey-50" strokeWidth={2} />
                 </button>
               ) : (
@@ -154,17 +132,18 @@ export default function FavoritesPage() {
         )}
 
         {/* 컨텐츠 영역 */}
-        {isLoading ? (
+        {showLoading ? (
           <div className="flex flex-1 items-center justify-center px-5">
             <div className="h-12 w-12 animate-spin rounded-full border-4 border-grey-200 border-t-main"></div>
           </div>
-        ) : error ? (
+        ) : showError ? (
           // Error State
           <div className="flex flex-1 flex-col items-center justify-center gap-4 px-5">
             <p className="text-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-600">
-              {error}
+              {error instanceof Error ? error.message : "찜한 업체 목록을 불러올 수 없습니다."}
             </p>
             <button
+              type="button"
               onClick={handleRefresh}
               className="rounded-lg bg-main px-6 py-3 text-[15px] font-semibold text-white"
             >
@@ -212,6 +191,7 @@ export default function FavoritesPage() {
                 <span>{sortedFavorites.length}개</span>
               </div>
               <button
+                type="button"
                 onClick={handleSortToggle}
                 className="flex items-center gap-1 text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-700"
               >

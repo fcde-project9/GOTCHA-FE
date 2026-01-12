@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { Plus, Heart, ArrowUpDown } from "lucide-react";
+import { useInfiniteReviews } from "@/api/queries/useInfiniteReviews";
 import { Button, BackHeader } from "@/components/common";
-import { ReviewResponse, ReviewSortOption } from "@/types/api";
+import type { ReviewResponse, ReviewSortOption } from "@/types/api";
 
 // 날짜 포맷팅
 function formatDate(dateStr: string) {
@@ -72,6 +73,7 @@ function ReviewListItem({
 
       {/* 좋아요 버튼 */}
       <button
+        type="button"
         onClick={() => onLikeToggle(review.id)}
         className="flex items-center gap-1 text-[13px] text-grey-500"
       >
@@ -100,95 +102,40 @@ export default function ReviewsListPage() {
   const params = useParams();
   const router = useRouter();
   const shopId = parseShopId(params.id);
-  const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
-  const [reviews, setReviews] = useState<ReviewResponse[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [sortBy, setSortBy] = useState<ReviewSortOption>("LATEST");
-  const [page, setPage] = useState(0);
-  const [hasNext, setHasNext] = useState(false);
-  const [totalCount, setTotalCount] = useState(0);
 
   const isValidShopId = shopId !== null;
-  const validShopId = shopId ?? 0; // hooks에서 사용할 안전한 값
+  const validShopId = shopId ?? 0;
 
-  // 리뷰 목록 불러오기
-  const fetchReviews = useCallback(
-    async (pageNum: number, isRefresh: boolean = false) => {
-      if (isRefresh) {
-        setIsLoading(true);
-      } else {
-        setIsLoadingMore(true);
-      }
+  // React Query 무한 스크롤 훅
+  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, error } =
+    useInfiniteReviews(validShopId, sortBy);
 
-      try {
-        // TODO: 실제 API 호출로 교체
-        // const response = await axios.get(`/api/shops/${shopId}/reviews`, {
-        //   params: { sortBy, page: pageNum, size: 10 }
-        // });
-        // if (response.data.success) {
-        //   const data = response.data.data;
-        //   if (isRefresh) {
-        //     setReviews(data.content);
-        //   } else {
-        //     setReviews(prev => [...prev, ...data.content]);
-        //   }
-        //   setHasNext(data.hasNext);
-        //   setTotalCount(data.totalCount);
-        //   setPage(data.page);
-        // }
+  // 모든 페이지의 리뷰를 평탄화
+  const reviews = data?.pages.flatMap((page) => page.content) ?? [];
+  const totalCount = data?.pages[0]?.totalCount ?? 0;
 
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        // Mock 데이터 (빈 배열)
-        if (isRefresh) {
-          setReviews([]);
-        }
-        setHasNext(false);
-        setTotalCount(0);
-        setPage(pageNum);
-      } catch {
-        console.error("리뷰 목록 불러오기 실패");
-      } finally {
-        setIsLoading(false);
-        setIsLoadingMore(false);
-      }
-    },
-    [validShopId, sortBy]
-  );
-
-  // 초기 로딩 및 정렬 변경 시
+  // 무한 스크롤 Intersection Observer
   useEffect(() => {
-    if (!isValidShopId) return;
-    setPage(0);
-    fetchReviews(0, true);
-  }, [fetchReviews, isValidShopId]);
+    if (isLoading || isFetchingNextPage || !hasNextPage) return;
 
-  // 무한 스크롤
-  useEffect(() => {
-    if (isLoading || isLoadingMore || !hasNext) return;
-
-    observerRef.current = new IntersectionObserver(
+    const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasNext && !isLoadingMore) {
-          fetchReviews(page + 1, false);
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
         }
       },
       { threshold: 0.1 }
     );
 
     if (loadMoreRef.current) {
-      observerRef.current.observe(loadMoreRef.current);
+      observer.observe(loadMoreRef.current);
     }
 
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [isLoading, isLoadingMore, hasNext, page, fetchReviews]);
+    return () => observer.disconnect();
+  }, [isLoading, isFetchingNextPage, hasNextPage, fetchNextPage]);
 
   // 정렬 변경
   const handleSortToggle = () => {
@@ -198,6 +145,12 @@ export default function ReviewsListPage() {
   // 리뷰 작성
   const handleWriteReview = () => {
     router.push(`/shop/${validShopId}/review/write`);
+  };
+
+  // 좋아요 토글 (TODO: useMutation으로 구현)
+  const handleLikeToggle = async (reviewId: number) => {
+    // TODO: 좋아요 API mutation 구현
+    console.log("Like toggle:", reviewId);
   };
 
   // 유효하지 않은 shopId 처리
@@ -215,32 +168,13 @@ export default function ReviewsListPage() {
     );
   }
 
-  // 좋아요 토글
-  const handleLikeToggle = async (reviewId: number) => {
-    // TODO: 좋아요 API 호출
-    // await axios.post(`/api/reviews/${reviewId}/like`);
-
-    // Optimistic update
-    setReviews((prev) =>
-      prev.map((review) =>
-        review.id === reviewId
-          ? {
-              ...review,
-              isLiked: !review.isLiked,
-              likeCount: review.isLiked ? review.likeCount - 1 : review.likeCount + 1,
-            }
-          : review
-      )
-    );
-  };
-
   return (
     <div className="min-h-dvh bg-default flex flex-col">
       {/* 헤더 */}
       <BackHeader
         showBorder
         rightElement={
-          <button onClick={handleWriteReview} aria-label="리뷰 작성">
+          <button type="button" onClick={handleWriteReview} aria-label="리뷰 작성">
             <Plus size={24} className="text-grey-900" />
           </button>
         }
@@ -251,6 +185,13 @@ export default function ReviewsListPage() {
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center h-64 px-5">
+            <p className="text-[15px] text-grey-500 mb-4">리뷰를 불러오는데 실패했습니다</p>
+            <Button variant="primary" size="small" onClick={() => router.back()}>
+              돌아가기
+            </Button>
           </div>
         ) : reviews.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 px-5">
@@ -274,6 +215,7 @@ export default function ReviewsListPage() {
                 총 <span className="font-semibold text-grey-900">{totalCount}</span>개
               </span>
               <button
+                type="button"
                 onClick={handleSortToggle}
                 className="flex items-center gap-1 text-[14px] text-grey-700"
               >
@@ -291,7 +233,7 @@ export default function ReviewsListPage() {
 
             {/* 무한 스크롤 로딩 */}
             <div ref={loadMoreRef} className="py-4">
-              {isLoadingMore && (
+              {isFetchingNextPage && (
                 <div className="flex items-center justify-center">
                   <div className="h-6 w-6 animate-spin rounded-full border-2 border-grey-200 border-t-main" />
                 </div>

@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import apiClient from "@/api/client";
+import { ENDPOINTS } from "@/api/endpoints";
 import type { ApiResponse, User } from "@/api/types";
 import { extractApiError } from "@/api/types";
-import apiClient from "../client";
-import { ENDPOINTS } from "../endpoints";
 
 interface UpdateNicknameRequest {
   nickname: string;

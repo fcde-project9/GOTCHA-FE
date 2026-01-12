@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
+import apiClient from "@/api/client";
+import { ENDPOINTS } from "@/api/endpoints";
 import type { ApiResponse, User } from "@/api/types";
-import apiClient from "../client";
-import { ENDPOINTS } from "../endpoints";
 
 /**
  * 사용자 정보 조회 Hook

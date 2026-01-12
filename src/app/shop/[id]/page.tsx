@@ -1,15 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { Heart, Share2, Copy, ChevronRight, PencilLine } from "lucide-react";
-import { fetchShopDetail } from "@/api/queries/shopApi";
+import { useShopDetail } from "@/api/queries/useShopDetail";
 import { Button, BackHeader } from "@/components/common";
 import KakaoMap from "@/components/features/map/KakaoMap";
 import { StatusBadge } from "@/components/features/shop";
 import { useFavorite } from "@/hooks";
-import { ShopDetailResponse, ReviewResponse, OpenTime } from "@/types/api";
+import type { ReviewResponse, OpenTime } from "@/types/api";
 
 // 요일 매핑 (API 응답 키 -> 한글)
 const DAY_MAP: Record<keyof OpenTime, string> = {
@@ -84,45 +83,36 @@ function ReviewItem({ review }: { review: ReviewResponse }) {
   );
 }
 
+// shopId 파싱 및 검증
+function parseShopId(id: string | string[] | undefined): number | null {
+  if (typeof id !== "string") return null;
+  const parsed = Number(id);
+  if (Number.isNaN(parsed) || !Number.isInteger(parsed) || parsed <= 0) {
+    return null;
+  }
+  return parsed;
+}
+
 export default function ShopDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const shopId = Number(params.id);
+  const shopId = parseShopId(params.id);
 
-  const [shop, setShop] = useState<ShopDetailResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const isValidShopId = shopId !== null;
+  const validShopId = shopId ?? 0;
 
-  // TODO: API에서 가져온 isFavorite 값으로 초기화
+  // React Query로 shop 상세 조회
+  const { data: shop, isLoading, error } = useShopDetail(validShopId);
+
+  // 찜하기 훅 (shop 데이터 로드 후 초기값 동기화)
   const {
     isFavorite,
     isLoading: isFavoriteLoading,
     toggleFavorite,
   } = useFavorite({
-    shopId,
+    shopId: validShopId,
     initialIsFavorite: shop?.isFavorite ?? false,
   });
-
-  useEffect(() => {
-    const loadShopDetail = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const response = await fetchShopDetail(shopId);
-        if (response.success) {
-          setShop(response.data);
-        } else {
-          setError("업체 정보를 불러올 수 없습니다.");
-        }
-      } catch {
-        setError("업체 정보를 불러올 수 없습니다.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadShopDetail();
-  }, [shopId]);
 
   // openTime 파싱
   const openTime = shop ? parseOpenTime(shop.openTime) : null;
@@ -162,18 +152,33 @@ export default function ShopDetailPage() {
 
   // 리뷰 작성 페이지로 이동
   const handleWriteReview = () => {
-    router.push(`/shop/${shopId}/review/write`);
+    router.push(`/shop/${validShopId}/review/write`);
   };
 
   // 전체 리뷰 보기
   const handleViewAllReviews = () => {
-    router.push(`/shop/${shopId}/reviews`);
+    router.push(`/shop/${validShopId}/reviews`);
   };
 
   // 전체 사진 보기
   const handleViewAllImages = () => {
-    router.push(`/shop/${shopId}/images`);
+    router.push(`/shop/${validShopId}/images`);
   };
+
+  // 유효하지 않은 shopId 처리
+  if (!isValidShopId) {
+    return (
+      <div className="h-dvh bg-default flex flex-col">
+        <BackHeader title="업체 상세정보" />
+        <div className="flex-1 flex flex-col items-center justify-center px-5">
+          <p className="text-[15px] text-grey-500 mb-4">잘못된 접근입니다</p>
+          <Button variant="primary" size="small" onClick={() => router.push("/")}>
+            홈으로 돌아가기
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   // 로딩 상태
   if (isLoading) {
@@ -188,7 +193,9 @@ export default function ShopDetailPage() {
   if (error || !shop) {
     return (
       <div className="h-dvh flex flex-col items-center justify-center gap-4 bg-default px-5">
-        <p className="text-[16px] text-grey-600">{error || "업체를 찾을 수 없습니다."}</p>
+        <p className="text-[16px] text-grey-600">
+          {error instanceof Error ? error.message : "업체를 찾을 수 없습니다."}
+        </p>
         <Button variant="primary" size="medium" onClick={() => router.back()}>
           돌아가기
         </Button>

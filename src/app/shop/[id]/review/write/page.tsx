@@ -4,24 +4,40 @@ import { useState, useRef } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { Camera, X } from "lucide-react";
-import { uploadImages, createReview } from "@/api/queries/reviewApi";
+import { useCreateReviewWithUpload } from "@/api/mutations/useCreateReviewWithUpload";
 import { Button, BackHeader } from "@/components/common";
 
 const MAX_IMAGES = 10;
 const MAX_CONTENT_LENGTH = 500;
 
+// shopId 파싱 및 검증
+function parseShopId(id: string | string[] | undefined): number | null {
+  if (typeof id !== "string") return null;
+  const parsed = Number(id);
+  if (Number.isNaN(parsed) || !Number.isInteger(parsed) || parsed <= 0) {
+    return null;
+  }
+  return parsed;
+}
+
 export default function ReviewWritePage() {
   const params = useParams();
   const router = useRouter();
-  const shopId = Number(params.id);
+  const shopId = parseShopId(params.id);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [content, setContent] = useState("");
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<string | null>(null);
+
+  const isValidShopId = shopId !== null;
+  const validShopId = shopId ?? 0;
+
+  // 리뷰 작성 mutation hook
+  const createReviewMutation = useCreateReviewWithUpload(validShopId, (progress) => {
+    setUploadProgress(`이미지 업로드 중... (${progress.uploaded}/${progress.total})`);
+  });
 
   // 이미지 선택
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,48 +77,50 @@ export default function ReviewWritePage() {
   };
 
   // 리뷰 작성 제출
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!content.trim()) {
       alert("리뷰 내용을 입력해주세요.");
       return;
     }
 
-    setIsSubmitting(true);
-    setError(null);
+    setUploadProgress(images.length > 0 ? "이미지 업로드 준비 중..." : null);
 
-    try {
-      // 1. 이미지 업로드
-      let imageUrls: string[] = [];
-      if (images.length > 0) {
-        setIsUploading(true);
-        imageUrls = await uploadImages(images, "reviews");
-        setIsUploading(false);
-      }
-
-      // 2. 리뷰 작성 API 호출
-      const response = await createReview(shopId, {
+    createReviewMutation.mutate(
+      {
         content: content.trim(),
-        imageUrls,
-      });
-
-      if (response.success) {
-        // TODO: 토스트 메시지로 변경
-        alert("리뷰가 등록되었습니다.");
-        router.back();
-      } else {
-        setError("리뷰 등록에 실패했습니다.");
+        images,
+      },
+      {
+        onSuccess: () => {
+          setUploadProgress(null);
+          alert("리뷰가 등록되었습니다.");
+          router.back();
+        },
+        onError: (error) => {
+          setUploadProgress(null);
+          alert(error.message || "리뷰 등록에 실패했습니다. 다시 시도해주세요.");
+        },
       }
-    } catch (err) {
-      console.error("리뷰 등록 실패:", err);
-      setError("리뷰 등록에 실패했습니다. 다시 시도해주세요.");
-    } finally {
-      setIsSubmitting(false);
-      setIsUploading(false);
-    }
+    );
   };
 
+  // 유효하지 않은 shopId 처리
+  if (!isValidShopId) {
+    return (
+      <div className="min-h-dvh bg-default flex flex-col">
+        <BackHeader showBorder />
+        <div className="flex-1 flex flex-col items-center justify-center px-5">
+          <p className="text-[15px] text-grey-500 mb-4">잘못된 접근입니다</p>
+          <Button variant="primary" size="small" onClick={() => router.push("/")}>
+            홈으로 돌아가기
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const isValid = content.trim().length > 0;
-  const isProcessing = isSubmitting || isUploading;
+  const isProcessing = createReviewMutation.isPending;
 
   return (
     <div className="min-h-dvh bg-default flex flex-col">
@@ -112,8 +130,10 @@ export default function ReviewWritePage() {
       {/* 컨텐츠 */}
       <div className="flex-1 px-5 py-4">
         {/* 에러 메시지 */}
-        {error && (
-          <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-600 text-[14px]">{error}</div>
+        {createReviewMutation.isError && (
+          <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-600 text-[14px]">
+            {createReviewMutation.error?.message || "리뷰 등록에 실패했습니다."}
+          </div>
         )}
 
         {/* 이미지 업로드 */}
@@ -129,6 +149,7 @@ export default function ReviewWritePage() {
             {/* 이미지 추가 버튼 */}
             {images.length < MAX_IMAGES && (
               <button
+                type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isProcessing}
                 className="shrink-0 w-20 h-20 rounded-lg border-2 border-dashed border-grey-200 flex flex-col items-center justify-center gap-1 bg-grey-50 disabled:opacity-50"
@@ -149,6 +170,7 @@ export default function ReviewWritePage() {
                 />
                 {!isProcessing && (
                   <button
+                    type="button"
                     onClick={() => handleImageRemove(index)}
                     className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-grey-900 flex items-center justify-center"
                     aria-label={`이미지 ${index + 1} 삭제`}
@@ -205,7 +227,7 @@ export default function ReviewWritePage() {
           loading={isProcessing}
           onClick={handleSubmit}
         >
-          {isUploading ? "이미지 업로드 중..." : "리뷰 등록하기"}
+          {uploadProgress || "리뷰 등록하기"}
         </Button>
       </div>
     </div>
