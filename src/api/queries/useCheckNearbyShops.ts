@@ -4,7 +4,7 @@ import apiClient from "../client";
 import { ENDPOINTS } from "../endpoints";
 
 /**
- * 근처 가게 확인 Query Hook (50m 이내)
+ * 근처 가게 확인 Query Hook
  * GET /api/shops/nearby
  */
 export const useCheckNearbyShops = (latitude: number, longitude: number, enabled = true) => {
@@ -17,7 +17,13 @@ export const useCheckNearbyShops = (latitude: number, longitude: number, enabled
           params: { latitude, longitude },
         }
       );
-      return data.data!;
+
+      // success 플래그 검증
+      if (!data.success || !data.data) {
+        throw new Error(data.error?.message || "근처 가게 조회에 실패했습니다.");
+      }
+
+      return data.data;
     },
     enabled,
   });

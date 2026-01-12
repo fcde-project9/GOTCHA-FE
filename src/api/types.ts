@@ -85,9 +85,10 @@ export interface FileUploadResponse {
  */
 export interface CreateShopRequest {
   name: string;
+  addressName?: string; // 주소 (선택)
   mainImageUrl?: string;
   locationHint?: string;
-  openTime?: Record<string, string | null>; // {"Mon": "10:00~22:00", "Tue": null, ...}
+  openTime?: Record<string, string>; // {"mon": "10:00-22:00", "tue": "10:00-22:00", ...} (영업하는 날만 포함)
 }
 
 /**
@@ -109,7 +110,7 @@ export interface ShopResponse {
   addressName: string;
   mainImageUrl: string | null;
   locationHint: string | null;
-  openTime: Record<string, string | null> | null;
+  openTime: Record<string, string> | null; // {"mon": "10:00-22:00", ...}
   isOpen: boolean;
 }
 
