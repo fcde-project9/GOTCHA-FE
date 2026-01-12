@@ -29,8 +29,8 @@ export default function MyPage() {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [isWithdrawConfirmModalOpen, setIsWithdrawConfirmModalOpen] = useState(false);
-  const [, setWithdrawReasons] = useState<string[]>([]);
-  const [, setWithdrawOtherReason] = useState<string>();
+  const [withdrawReasons, setWithdrawReasons] = useState<string[]>([]);
+  const [withdrawOtherReason, setWithdrawOtherReason] = useState<string>();
 
   const handleEditProfile = async (file: File) => {
     try {

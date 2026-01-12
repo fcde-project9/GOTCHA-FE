@@ -2,18 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import apiClient from "@/api/client";
 import type { ApiResponse } from "@/api/types";
 import { extractApiError } from "@/api/types";
-
-interface FavoriteShop {
-  id: number;
-  name: string;
-  addressName: string;
-  mainImageUrl: string | null;
-  isOpen: boolean;
-}
-
-interface FavoritesResponse {
-  favorites: FavoriteShop[];
-}
+import type { FavoriteShopResponse, FavoritesPageResponse } from "@/types/api";
 
 /**
  * 찜한 가게 목록 조회 Query Hook
@@ -25,17 +14,17 @@ interface FavoritesResponse {
 export const useFavorites = () => {
   return useQuery({
     queryKey: ["favorites"],
-    queryFn: async (): Promise<FavoriteShop[] | null> => {
+    queryFn: async (): Promise<FavoriteShopResponse[] | null> => {
       try {
         const { data } =
-          await apiClient.get<ApiResponse<FavoritesResponse>>("/api/users/me/favorites");
+          await apiClient.get<ApiResponse<FavoritesPageResponse>>("/api/users/me/favorites");
 
         if (!data.success || !data.data) {
           throw new Error(data.error?.message || "찜 목록을 불러오는데 실패했습니다.");
         }
 
         // React Query는 undefined를 허용하지 않으므로 빈 배열로 대체
-        return data.data.favorites ?? [];
+        return data.data.content ?? [];
       } catch (error: unknown) {
         // 401 Unauthorized (비로그인 상태)는 정상적인 케이스로 처리
         const axiosError = error as { response?: { status?: number } };

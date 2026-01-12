@@ -49,7 +49,7 @@ export default function FavoritesPage() {
   // API 응답을 UI용 타입으로 변환
   const favorites: FavoriteShop[] = useMemo(() => {
     if (!favoritesData) return [];
-    return (favoritesData as unknown as FavoriteShopResponse[]).map(favoriteResponseToShop);
+    return favoritesData.map(favoriteResponseToShop);
   }, [favoritesData]);
 
   // 검색 필터링
