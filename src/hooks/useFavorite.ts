@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { addShopFavorite, removeShopFavorite } from "@/api/queries/favoriteApi";
+import { useState, useCallback, useEffect } from "react";
+import { useAddFavorite, useRemoveFavorite } from "@/api/mutations/useToggleFavorite";
 
 interface UseFavoriteOptions {
   shopId: number;
@@ -13,7 +13,7 @@ interface UseFavoriteOptions {
 interface UseFavoriteReturn {
   isFavorite: boolean;
   isLoading: boolean;
-  toggleFavorite: () => Promise<void>;
+  toggleFavorite: () => void;
 }
 
 /**
@@ -42,39 +42,46 @@ export function useFavorite({
   onError,
 }: UseFavoriteOptions): UseFavoriteReturn {
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
-  const [isLoading, setIsLoading] = useState(false);
 
-  const toggleFavorite = useCallback(async () => {
+  const addFavoriteMutation = useAddFavorite();
+  const removeFavoriteMutation = useRemoveFavorite();
+
+  const isLoading = addFavoriteMutation.isPending || removeFavoriteMutation.isPending;
+
+  // initialIsFavorite 변경 시 상태 동기화 (API 응답 후 shop 데이터가 로드되었을 때)
+  useEffect(() => {
+    setIsFavorite(initialIsFavorite);
+  }, [initialIsFavorite]);
+
+  const toggleFavorite = useCallback(() => {
     if (isLoading) return;
 
     const previousState = isFavorite;
     // Optimistic update
     setIsFavorite(!previousState);
-    setIsLoading(true);
 
-    try {
-      const response = previousState
-        ? await removeShopFavorite(shopId)
-        : await addShopFavorite(shopId);
+    const mutation = previousState ? removeFavoriteMutation : addFavoriteMutation;
 
-      if (response.success) {
-        setIsFavorite(response.data.isFavorite);
-        onSuccess?.(response.data.isFavorite);
-      } else {
-        // 실패 시 롤백
+    mutation.mutate(shopId, {
+      onSuccess: (data) => {
+        setIsFavorite(data.isFavorite);
+        onSuccess?.(data.isFavorite);
+      },
+      onError: (error) => {
+        // 에러 시 롤백
         setIsFavorite(previousState);
-        // 호출자에게 실패 알림
-        onError?.(new Error("찜하기 업데이트에 실패했습니다."));
-      }
-    } catch (error) {
-      // 에러 시 롤백
-      setIsFavorite(previousState);
-      const errorMessage = error instanceof Error ? error : new Error("찜하기에 실패했습니다.");
-      onError?.(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [shopId, isFavorite, isLoading, onSuccess, onError]);
+        onError?.(error instanceof Error ? error : new Error("찜하기에 실패했습니다."));
+      },
+    });
+  }, [
+    shopId,
+    isFavorite,
+    isLoading,
+    addFavoriteMutation,
+    removeFavoriteMutation,
+    onSuccess,
+    onError,
+  ]);
 
   return {
     isFavorite,

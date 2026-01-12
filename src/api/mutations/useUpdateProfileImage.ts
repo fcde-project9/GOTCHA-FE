@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import apiClient from "@/api/client";
+import { ENDPOINTS } from "@/api/endpoints";
 import type { ApiResponse, User } from "@/api/types";
 import { extractApiError } from "@/api/types";
-import apiClient from "../client";
-import { ENDPOINTS } from "../endpoints";
 
 interface UpdateProfileImageRequest {
   profileImageUrl: string;
@@ -31,7 +31,10 @@ export const useUpdateProfileImage = () => {
         return data.data;
       } catch (error) {
         const apiError = extractApiError(error);
-        throw new Error(apiError?.message || "프로필 이미지 변경에 실패했습니다.");
+        if (apiError) {
+          throw new Error(apiError.message);
+        }
+        throw error;
       }
     },
     onSuccess: () => {
