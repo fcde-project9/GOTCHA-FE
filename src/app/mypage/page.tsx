@@ -3,8 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Headset } from "lucide-react";
+import { useUpdateNickname } from "@/api/mutations/useUpdateNickname";
+import { useUpdateProfileImageWithUpload } from "@/api/mutations/useUpdateProfileImageWithUpload";
+import { useUser } from "@/api/queries/useUser";
+import type { User } from "@/api/types";
 import { Toast } from "@/components/common";
 import Footer from "@/components/common/Footer";
+import { ErrorPage } from "@/components/error/ErrorPage";
 import { LogoutModal } from "@/components/mypage/LogoutModal";
 import { MenuList } from "@/components/mypage/MenuList";
 import { NicknameModal } from "@/components/mypage/NicknameModal";
@@ -15,11 +20,10 @@ import { openInstagramSupport } from "@/utils";
 
 export default function MyPage() {
   const router = useRouter();
+  const { data: user, isLoading, error, refetch } = useUser();
+  const updateNicknameMutation = useUpdateNickname();
+  const updateProfileImageWithUploadMutation = useUpdateProfileImageWithUpload();
 
-  // TODO: 백엔드 API 연동 후 실제 로그인 상태 확인 로직으로 교체
-  // 현재는 임시로 로컬 상태로 관리 (true: 로그인, false: 게스트)
-  const [isLoggedIn, _setIsLoggedIn] = useState(true);
-  const [nickname, setNickname] = useState("빨간캡슐#21");
   const [isNicknameModalOpen, setIsNicknameModalOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
@@ -27,19 +31,40 @@ export default function MyPage() {
   const [withdrawReasons, setWithdrawReasons] = useState<string[]>([]);
   const [withdrawOtherReason, setWithdrawOtherReason] = useState<string>();
   const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("닉네임이 변경되었습니다");
+  const [toastKey, setToastKey] = useState(0);
 
-  const handleEditProfile = () => {
-    // TODO: 프로필 사진 변경 API 연동
+  // 토스트 재출현을 위한 헬퍼 함수
+  const displayToast = (message: string) => {
+    setToastMessage(message);
+    setShowToast(false); // 먼저 false로 설정
+    setTimeout(() => {
+      setToastKey((prev) => prev + 1); // key 변경으로 강제 리렌더
+      setShowToast(true);
+    }, 0);
+  };
+
+  const handleEditProfile = async (file: File) => {
+    try {
+      await updateProfileImageWithUploadMutation.mutateAsync(file);
+      displayToast("프로필 이미지가 변경되었습니다");
+    } catch (error) {
+      displayToast("프로필 이미지 변경에 실패했습니다");
+    }
   };
 
   const handleEditNickname = () => {
     setIsNicknameModalOpen(true);
   };
 
-  const handleSaveNickname = (newNickname: string) => {
-    // TODO: 백엔드 API 연동 - 닉네임 변경
-    setNickname(newNickname);
-    setShowToast(true);
+  const handleSaveNickname = async (newNickname: string) => {
+    try {
+      await updateNicknameMutation.mutateAsync(newNickname);
+      setIsNicknameModalOpen(false);
+      displayToast("닉네임이 변경되었습니다");
+    } catch (error) {
+      displayToast("닉네임 변경에 실패했습니다");
+    }
   };
 
   const handleMyReports = () => {
@@ -70,9 +95,8 @@ export default function MyPage() {
     try {
       // TODO: 로그아웃 API 연동
       // await apiClient.post('/auth/logout');
-    } catch (error) {
+    } catch {
       // API 실패 시에도 로컬 데이터는 정리
-      console.error("로그아웃 API 호출 실패:", error);
     } finally {
       // 로컬 스토리지 정리
       localStorage.removeItem("accessToken");
@@ -146,6 +170,42 @@ export default function MyPage() {
     }
   };
 
+  // 로딩 중이면 빈 화면 표시
+  if (isLoading) {
+    return (
+      <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[70px]">
+        <header className="bg-white h-12 flex items-center px-5 py-2">
+          <h1 className="flex-1 text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900 h-6 flex items-center">
+            마이
+          </h1>
+        </header>
+      </div>
+    );
+  }
+
+  // 일시적 에러 확인 (네트워크 오류 또는 5xx 서버 오류)
+  const axiosError = error as { response?: { status?: number } } | null;
+  const isTemporaryError =
+    error &&
+    (!axiosError?.response ||
+      (axiosError.response.status !== undefined && axiosError.response.status >= 500));
+
+  // 일시적 에러 시 재시도 UI 표시
+  if (isTemporaryError) {
+    return <ErrorPage onRetry={refetch} />;
+  }
+
+  // 에러 발생 시 게스트 모드로 표시 (401 에러는 이미 인터셉터에서 처리됨)
+  const isLoggedIn = !error && !!user;
+  const loggedInUser: User | undefined = isLoggedIn ? user : undefined;
+
+  // socialType을 socialProvider 형식으로 변환
+  const socialProvider = loggedInUser?.socialType?.toLowerCase() as
+    | "google"
+    | "kakao"
+    | "naver"
+    | undefined;
+
   return (
     <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[70px]">
       {/* Header */}
@@ -167,7 +227,10 @@ export default function MyPage() {
         {/* Profile Section */}
         <ProfileSection
           isLoggedIn={isLoggedIn}
-          nickname={nickname}
+          nickname={loggedInUser?.nickname}
+          email={loggedInUser?.email}
+          profileImage={loggedInUser?.profileImageUrl ?? undefined}
+          socialProvider={socialProvider}
           onEditProfile={handleEditProfile}
           onEditNickname={handleEditNickname}
           onLogin={handleLogin}
@@ -182,7 +245,7 @@ export default function MyPage() {
       {/* Modals */}
       <NicknameModal
         isOpen={isNicknameModalOpen}
-        currentNickname={nickname}
+        currentNickname={user?.nickname ?? ""}
         onClose={() => setIsNicknameModalOpen(false)}
         onSave={handleSaveNickname}
       />
@@ -224,7 +287,8 @@ export default function MyPage() {
 
       {/* Toast */}
       <Toast
-        message="닉네임이 변경되었습니다"
+        key={toastKey}
+        message={toastMessage}
         isVisible={showToast}
         onClose={() => setShowToast(false)}
       />

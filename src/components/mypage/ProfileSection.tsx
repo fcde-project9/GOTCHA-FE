@@ -3,13 +3,19 @@
 import Image from "next/image";
 import { ChevronLeft, Plus, SquarePen } from "lucide-react";
 
+const SOCIAL_PROVIDER_LABELS = {
+  google: "Google",
+  kakao: "Kakao",
+  naver: "Naver",
+} as const;
+
 interface ProfileSectionProps {
   isLoggedIn?: boolean;
   nickname?: string;
   email?: string;
   profileImage?: string;
-  socialProvider?: "google" | "kakao";
-  onEditProfile?: () => void;
+  socialProvider?: "google" | "kakao" | "naver";
+  onEditProfile?: (file: File) => void;
   onEditNickname?: () => void;
   onLogin?: () => void;
 }
@@ -25,19 +31,13 @@ export function ProfileSection({
   onLogin,
 }: ProfileSectionProps) {
   const handleProfileImageChange = () => {
-    // TODO: 백엔드 API 연동 - 프로필 사진 업로드
-    // 파일 선택 input 트리거
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = "image/*";
+    input.accept = "image/jpeg,image/jpg,image/png,image/webp";
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
-        // TODO: 이미지 파일 업로드 API 호출
-        // const formData = new FormData();
-        // formData.append('profileImage', file);
-        // await apiClient.post('/user/profile-image', formData);
-        onEditProfile?.();
+        onEditProfile?.(file);
       }
     };
     input.click();
@@ -118,7 +118,7 @@ export function ProfileSection({
           <div className="bg-grey-50 rounded-md px-2 py-0.5 flex items-center gap-2 w-full justify-center">
             <Image
               src={`/images/icons/${socialProvider}.png`}
-              alt={socialProvider === "google" ? "Google" : "Kakao"}
+              alt={socialProvider ? SOCIAL_PROVIDER_LABELS[socialProvider] : ""}
               width={14}
               height={14}
             />
