@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, LocateFixed } from "lucide-react";
 import apiClient from "@/api/client";
 import { ENDPOINTS } from "@/api/endpoints";
-import { useUser } from "@/api/queries/useUser";
-import type { NearbyShopResponse, ApiResponse, NearbyShopsResponse, User } from "@/api/types";
+import type { NearbyShopResponse, ApiResponse, NearbyShopsResponse } from "@/api/types";
 import { Button } from "@/components/common";
 import { KakaoMap } from "@/components/features/map";
 import { ShopDuplicateCheckModal } from "@/components/report/ShopDuplicateCheckModal";
@@ -19,12 +18,9 @@ interface KakaoLatLng {
 
 // 위치 핀 이미지
 const LOCATION_PIN_IMAGE = "/images/markers/shop-marker.png";
-const MY_LOCATION_IMAGE = "/images/markers/my-location-marker.png";
 
 export default function ReportLocationPage() {
   const router = useRouter();
-  const { data: user } = useUser();
-  const currentUser: User | undefined = user;
   const [address, setAddress] = useState("위치를 선택해주세요");
   const [center, setCenter] = useState({ latitude: 37.4979, longitude: 127.0276 }); // 강남역 기본값
   const [myLocation, setMyLocation] = useState<{ latitude: number; longitude: number } | null>(
@@ -34,9 +30,6 @@ export default function ReportLocationPage() {
   const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
   const [checkingNearby, setCheckingNearby] = useState(false);
   const [map, setMap] = useState<KakaoMap | null>(null);
-
-  const profileImageUrl = currentUser?.profileImageUrl || "/images/default-profile.png";
-
   const [nearbyShops, setNearbyShops] = useState<NearbyShopsResponse | null>(null);
 
   // 근처 가게 확인 함수
@@ -79,30 +72,6 @@ export default function ReportLocationPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 내 위치 마커 추가
-  useEffect(() => {
-    if (!map || !myLocation) return;
-
-    // 프로필 이미지가 포함된 커스텀 오버레이 HTML
-    const content = `
-      <div class="relative w-[54px] h-[56px]">
-        <img src="${MY_LOCATION_IMAGE}" alt="배경" class="absolute top-0 left-[6px] w-[42px] h-[56px]" />
-        <img src="${profileImageUrl}" alt="프로필" class="absolute top-[1.5px] left-[7.5px] w-[39px] h-[39px] rounded-full object-cover" />
-      </div>
-    `;
-
-    const customOverlay = new window.kakao.maps.CustomOverlay({
-      map: map,
-      position: new window.kakao.maps.LatLng(myLocation.latitude, myLocation.longitude),
-      content: content,
-      yAnchor: 1,
-    });
-
-    return () => {
-      customOverlay.setMap(null);
-    };
-  }, [map, myLocation, profileImageUrl]);
-
   const getAddressFromCoords = useCallback((lat: number, lng: number) => {
     // 카카오 지도 SDK의 Geocoder 서비스 사용 (CORS 문제 없음)
     if (!window.kakao?.maps?.services) {
@@ -124,6 +93,40 @@ export default function ReportLocationPage() {
     });
   }, []);
 
+  // 지도 클릭 이벤트 핸들러
+  const handleMapClick = useCallback(
+    async (...args: unknown[]) => {
+      const mouseEvent = args[0] as { latLng: KakaoLatLng };
+      const latlng = mouseEvent.latLng;
+      const latitude = latlng.getLat();
+      const longitude = latlng.getLng();
+      setCenter({ latitude, longitude });
+      await getAddressFromCoords(latitude, longitude);
+
+      // 자동으로 근처 가게 확인 (새 좌표로)
+      const result = await checkNearbyShops(latitude, longitude);
+      setNearbyShops(result);
+    },
+    [getAddressFromCoords]
+  );
+
+  // 지도 클릭 이벤트 리스너 등록/해제
+  useEffect(() => {
+    if (!map) return;
+
+    window.kakao.maps.event.addListener(map, "click", handleMapClick);
+
+    return () => {
+      window.kakao.maps.event.removeListener(map, "click", handleMapClick);
+    };
+  }, [map, handleMapClick]);
+
+  const navigateToRegister = () => {
+    router.push(
+      `/report/register?lat=${center.latitude}&lng=${center.longitude}&address=${encodeURIComponent(address)}`
+    );
+  };
+
   const handleSubmit = async () => {
     setCheckingNearby(true);
     try {
@@ -136,15 +139,11 @@ export default function ReportLocationPage() {
         setIsDuplicateModalOpen(true);
       } else {
         // 근처 가게가 없으면 업체 정보 등록 페이지로 이동
-        router.push(
-          `/report/register?lat=${center.latitude}&lng=${center.longitude}&address=${encodeURIComponent(address)}`
-        );
+        navigateToRegister();
       }
     } catch {
       // 에러 발생 시에도 등록 페이지로 이동
-      router.push(
-        `/report/register?lat=${center.latitude}&lng=${center.longitude}&address=${encodeURIComponent(address)}`
-      );
+      navigateToRegister();
     } finally {
       setCheckingNearby(false);
     }
@@ -152,9 +151,7 @@ export default function ReportLocationPage() {
 
   const handleSelectNotHere = () => {
     setIsDuplicateModalOpen(false);
-    router.push(
-      `/report/register?lat=${center.latitude}&lng=${center.longitude}&address=${encodeURIComponent(address)}`
-    );
+    navigateToRegister();
   };
 
   const handleCurrentLocation = () => {
@@ -223,23 +220,6 @@ export default function ReportLocationPage() {
           }
           onMapLoad={(mapInstance) => {
             setMap(mapInstance);
-            // 지도 클릭 시 해당 위치로 핀 이동 및 주소 업데이트
-            window.kakao.maps.event.addListener(
-              mapInstance,
-              "click",
-              async (...args: unknown[]) => {
-                const mouseEvent = args[0] as { latLng: KakaoLatLng };
-                const latlng = mouseEvent.latLng;
-                const latitude = latlng.getLat();
-                const longitude = latlng.getLng();
-                setCenter({ latitude, longitude });
-                await getAddressFromCoords(latitude, longitude);
-
-                // 자동으로 근처 가게 확인 (새 좌표로)
-                const result = await checkNearbyShops(latitude, longitude);
-                setNearbyShops(result);
-              }
-            );
           }}
         />
 

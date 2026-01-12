@@ -22,8 +22,8 @@ function ReportRegisterContent() {
     shopName: "",
     locationHint: "",
     openDays: [] as number[],
-    openTime: "오전 00:00",
-    closeTime: "오전 00:00",
+    openTime: "오전 12:00",
+    closeTime: "오전 12:00",
     images: [] as File[],
   });
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);

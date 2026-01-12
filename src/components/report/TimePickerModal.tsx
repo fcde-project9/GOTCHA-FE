@@ -12,7 +12,7 @@ interface TimePickerModalProps {
 
 export function TimePickerModal({
   isOpen,
-  initialTime = "오전 00:00",
+  initialTime = "오전 12:00",
   onClose,
   onSelect,
 }: TimePickerModalProps) {
