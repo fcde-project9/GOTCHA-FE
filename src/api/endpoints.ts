@@ -25,4 +25,9 @@ export const ENDPOINTS = {
   FILE: {
     UPLOAD: "/api/files/upload",
   },
+  // 리뷰
+  REVIEWS: {
+    CREATE: (shopId: number) => `/api/shops/${shopId}/reviews`,
+    LIST: (shopId: number) => `/api/shops/${shopId}/reviews`,
+  },
 } as const;

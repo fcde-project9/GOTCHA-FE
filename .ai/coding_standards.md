@@ -73,6 +73,27 @@ import { Button } from "@/components/common";
 - API 응답 타입은 `ApiResponse<T>` 형태 유지
 - 에러 코드/메시지는 사용자 메시지와 개발자 로그를 분리
 
+### React Query 사용 패턴
+
+#### 폴더 구조
+
+```
+src/api/
+├── queries/      # useQuery 훅 (데이터 조회 - GET)
+├── mutations/    # useMutation 훅 (데이터 변경 - POST/PUT/DELETE)
+├── client.ts     # axios 인스턴스
+├── endpoints.ts  # API 엔드포인트 상수
+└── types.ts      # 공통 타입 정의
+```
+
+#### 규칙
+
+1. **queries vs mutations**: GET 요청은 `queries/`, POST/PUT/DELETE는 `mutations/`
+2. **네이밍**: `use` 접두사 + 동작 (예: `useShopDetail`, `useCreateReview`)
+3. **에러 처리**: `extractApiError()` 사용, 사용자 친화적 메시지 반환
+4. **타입 안전성**: `ApiResponse<T>` 제네릭으로 응답 타입 명시
+5. **캐시 무효화**: 필요시 `queryClient.invalidateQueries()` 사용
+
 ### API 에러 처리 패턴
 
 #### 타입 정의 (`src/api/types.ts`)

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { MapPin, Heart } from "lucide-react";
 import StatusBadge from "@/components/features/shop/StatusBadge";
 import { useFavorite } from "@/hooks";
@@ -22,6 +23,7 @@ interface FavoriteShopItemProps {
  * 찜한 업체 아이템 컴포넌트
  */
 export function FavoriteShopItem({ shop }: FavoriteShopItemProps) {
+  const router = useRouter();
   const { isFavorite, isLoading, toggleFavorite } = useFavorite({
     shopId: shop.id,
     initialIsFavorite: true, // 찜 목록에 있으므로 초기값 true
@@ -32,8 +34,15 @@ export function FavoriteShopItem({ shop }: FavoriteShopItemProps) {
     toggleFavorite();
   };
 
+  const handleItemClick = () => {
+    router.push(`/shop/${shop.id}`);
+  };
+
   return (
-    <div className="flex cursor-pointer gap-2.5 border-b border-line-100 py-4 last:border-b-0">
+    <div
+      onClick={handleItemClick}
+      className="flex cursor-pointer gap-2.5 border-b border-line-100 py-4 last:border-b-0"
+    >
       {/* 업체 이미지 */}
       <div className="relative h-[85px] w-[85px] shrink-0 overflow-hidden rounded-[5px]">
         {shop.imageUrl ? (
