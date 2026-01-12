@@ -17,10 +17,15 @@ export const useUploadFile = (folder: string) => {
         formData.append("file", file);
         formData.append("folder", folder);
 
-        // Content-Type 헤더 제거 - axios가 FormData boundary를 자동 설정
+        // Content-Type 헤더를 undefined로 설정하여 axios가 FormData boundary를 자동 설정하도록 함
         const { data } = await apiClient.post<ApiResponse<FileUploadResponse>>(
           ENDPOINTS.FILE.UPLOAD,
-          formData
+          formData,
+          {
+            headers: {
+              "Content-Type": undefined,
+            },
+          }
         );
 
         // success 플래그 검증
