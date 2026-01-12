@@ -11,7 +11,7 @@ const MOCK_IMAGES: string[] = [];
 
 export default function ImagesGalleryPage() {
   const params = useParams();
-  const router = useRouter();
+  const _router = useRouter();
   const shopId = Number(params.id);
 
   const [images, setImages] = useState<string[]>([]);

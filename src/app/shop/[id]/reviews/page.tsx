@@ -148,9 +148,8 @@ export default function ReviewsListPage() {
   };
 
   // 좋아요 토글 (TODO: useMutation으로 구현)
-  const handleLikeToggle = async (reviewId: number) => {
+  const handleLikeToggle = async (_reviewId: number) => {
     // TODO: 좋아요 API mutation 구현
-    console.log("Like toggle:", reviewId);
   };
 
   // 유효하지 않은 shopId 처리
