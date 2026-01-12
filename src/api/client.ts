@@ -42,10 +42,21 @@ apiClient.interceptors.response.use(
     if (status === 401) {
       const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
 
-      // 로그인 관련 페이지에서는 리다이렉트 안 함 (무한 루프 방지)
-      const isAuthPage = ["/login", "/oauth/callback", "/login/nickname"].includes(currentPath);
+      // 리다이렉트하지 않는 페이지 목록
+      // - 로그인 관련 페이지: 무한 루프 방지
+      // - 찜 페이지, 마이페이지: 비로그인 상태에서도 접근 가능 (게스트 UI 표시)
+      const skipRedirectPaths = [
+        "/login",
+        "/oauth/callback",
+        "/login/nickname",
+        "/favorites",
+        "/mypage",
+      ];
+      const shouldSkipRedirect = skipRedirectPaths.some(
+        (path) => currentPath === path || currentPath.startsWith(`${path}/`)
+      );
 
-      if (!isAuthPage) {
+      if (!shouldSkipRedirect) {
         // 스토리지 정리
         try {
           localStorage.removeItem("accessToken");

@@ -30,6 +30,8 @@ interface KakaoMapProps {
   onBoundsChange?: (bounds: MapBounds) => void;
   onMarkerClick?: (marker: ShopMapResponse) => void;
   currentLocation?: CurrentLocationState | null; // 현재 위치 마커 표시용
+  draggable?: boolean; // 드래그 가능 여부 (기본값: true)
+  zoomable?: boolean; // 줌 가능 여부 (기본값: true)
 }
 
 /**
@@ -46,6 +48,8 @@ export default function KakaoMap({
   onBoundsChange,
   onMarkerClick,
   currentLocation,
+  draggable = true,
+  zoomable = true,
 }: KakaoMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<KakaoMap | null>(null);
@@ -125,10 +129,18 @@ export default function KakaoMap({
               const options = {
                 center: new window.kakao.maps.LatLng(latitude, longitude),
                 level: level,
+                draggable: draggable,
+                scrollwheel: zoomable,
+                disableDoubleClickZoom: !zoomable,
               };
               // 지도 인스턴스를 ref에 저장
               const map = new window.kakao.maps.Map(mapContainer.current, options);
               mapInstance.current = map;
+
+              // 줌 컨트롤 비활성화 (zoomable이 false일 때)
+              if (!zoomable) {
+                map.setZoomable(false);
+              }
 
               // 지도 이동 완료 시 bounds 변경 알림
               window.kakao.maps.event.addListener(map, "idle", () => {

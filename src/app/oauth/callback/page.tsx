@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Toast } from "@/components/common";
 import { useDelayedRedirectWithToast } from "@/hooks";
 
 /**
@@ -13,8 +12,7 @@ import { useDelayedRedirectWithToast } from "@/hooks";
 function OAuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { toastMessage, showToast, setShowToast, redirectWithToast } =
-    useDelayedRedirectWithToast();
+  const { redirectWithToast } = useDelayedRedirectWithToast();
 
   // 중복 실행 방지 플래그
   const isProcessingRef = useRef(false);
@@ -91,15 +89,12 @@ function OAuthCallbackContent() {
   }, [searchParams, router, redirectWithToast]);
 
   return (
-    <>
-      <div className="flex min-h-[100dvh] w-full items-center justify-center bg-default">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
-          <p className="text-[16px] font-medium text-grey-700">로그인 처리 중...</p>
-        </div>
+    <div className="flex min-h-[100dvh] w-full items-center justify-center bg-default">
+      <div className="flex flex-col items-center gap-4">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
+        <p className="text-[16px] font-medium text-grey-700">로그인 처리 중...</p>
       </div>
-      <Toast message={toastMessage} isVisible={showToast} onClose={() => setShowToast(false)} />
-    </>
+    </div>
   );
 }
 

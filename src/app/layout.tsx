@@ -9,8 +9,10 @@ export const viewport = {
   themeColor: "#ffffff", // Safe area 배경색 흰색
 };
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gotcha.it.com";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://gotcha.it.com"),
+  metadataBase: new URL(siteUrl),
   title: {
     default: "GOTCHA! - 가챠샵 지도 서비스",
     template: "%s | GOTCHA!",
@@ -111,9 +113,9 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   openGraph: {
     type: "website",
-    url: "https://gotcha.it.com",
-    title: "GOTCHA! - 가챠샵 지도 서비스",
-    description: "가챠샵 정보를 한곳에서 갓차!",
+    url: siteUrl,
+    title: "가챠 덕후들의 아지트 GOTCHA!",
+    description: "지도 기반 가챠샵 정보 서비스",
     siteName: "GOTCHA!",
     locale: "ko_KR",
     images: [
@@ -121,16 +123,9 @@ export const metadata: Metadata = {
         url: "/images/og-image.png", // 1200x630 권장
         width: 1200,
         height: 630,
-        alt: "GOTCHA! 가챠샵 지도 서비스",
+        alt: "가챠 덕후들의 아지트 GOTCHA!",
       },
     ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "GOTCHA! - 가챠샵 지도 서비스",
-    description: "가챠샵 정보를 한곳에서 갓차!",
-    images: ["/images/og-image.png"],
-    creator: "@gotcha_official", // 트위터 계정이 있다면
   },
   robots: {
     index: true,

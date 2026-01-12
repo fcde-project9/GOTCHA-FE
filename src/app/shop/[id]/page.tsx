@@ -1,13 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
-import { Heart, Share2, Copy, ChevronRight, PencilLine } from "lucide-react";
+import { Heart, Share, Copy, ChevronRight, PencilLine, X, Expand } from "lucide-react";
 import { useShopDetail } from "@/api/queries/useShopDetail";
 import { Button, BackHeader } from "@/components/common";
 import KakaoMap from "@/components/features/map/KakaoMap";
+import { ReviewWriteModal } from "@/components/features/review/ReviewWriteModal";
 import { StatusBadge } from "@/components/features/shop";
-import { useFavorite } from "@/hooks";
+import { useFavorite, useToast } from "@/hooks";
 import type { ReviewResponse, OpenTime } from "@/types/api";
 
 // 요일 매핑 (API 응답 키 -> 한글)
@@ -43,7 +45,7 @@ function DayBadge({ day, isActive }: { day: string; isActive: boolean }) {
   return (
     <div
       className={`flex items-center justify-center w-7 h-7 rounded-full text-[12px] font-medium ${
-        isActive ? "bg-grey-600 text-white" : "bg-grey-100 text-grey-400"
+        isActive ? "bg-grey-500 text-white" : "bg-grey-100 text-grey-400"
       }`}
     >
       {day}
@@ -96,13 +98,14 @@ function parseShopId(id: string | string[] | undefined): number | null {
 export default function ShopDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { showToast } = useToast();
   const shopId = parseShopId(params.id);
 
   const isValidShopId = shopId !== null;
   const validShopId = shopId ?? 0;
 
   // React Query로 shop 상세 조회
-  const { data: shop, isLoading, error } = useShopDetail(validShopId);
+  const { data: shop, isLoading, error, refetch } = useShopDetail(validShopId);
 
   // 찜하기 훅 (shop 데이터 로드 후 초기값 동기화)
   const {
@@ -112,21 +115,32 @@ export default function ShopDetailPage() {
   } = useFavorite({
     shopId: validShopId,
     initialIsFavorite: shop?.isFavorite ?? false,
+    onUnauthorized: () => {
+      showToast("찜하기는 로그인 후 이용 가능합니다");
+    },
   });
 
   // openTime 파싱
   const openTime = shop ? parseOpenTime(shop.openTime) : null;
   const businessDays = getBusinessDays(openTime);
 
+  // 지도 확대 모달 상태
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+
+  // 이미지 뷰어 모달 상태
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
+
+  // 리뷰 작성 모달 상태
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+
   // 주소 복사
   const handleCopyAddress = async () => {
     if (!shop) return;
     try {
       await navigator.clipboard.writeText(shop.addressName);
-      // TODO: 토스트 메시지 표시
-      alert("주소가 복사되었습니다.");
+      showToast("주소를 복사했어요!");
     } catch {
-      alert("주소 복사에 실패했습니다.");
+      showToast("주소 복사에 실패했습니다");
     }
   };
 
@@ -142,17 +156,16 @@ export default function ShopDetailPage() {
         });
       } else {
         await navigator.clipboard.writeText(window.location.href);
-        // TODO: 토스트 메시지 표시
-        alert("링크가 복사되었습니다.");
+        showToast("링크가 복사되었습니다");
       }
     } catch {
       // 공유 취소 시 무시
     }
   };
 
-  // 리뷰 작성 페이지로 이동
+  // 리뷰 작성 모달 열기
   const handleWriteReview = () => {
-    router.push(`/shop/${validShopId}/review/write`);
+    setIsReviewModalOpen(true);
   };
 
   // 전체 리뷰 보기
@@ -206,38 +219,40 @@ export default function ShopDetailPage() {
   return (
     <div className="h-dvh bg-default flex flex-col overflow-hidden">
       {/* 헤더 */}
-      <BackHeader title="업체 상세정보" />
+      <div className="flex items-center justify-between pr-5">
+        <BackHeader title={shop.name} />
+        <div className="flex items-center gap-1 ml-3">
+          <button
+            onClick={toggleFavorite}
+            disabled={isFavoriteLoading}
+            className="flex items-center justify-center w-10 h-10 rounded-full disabled:opacity-50"
+            aria-label={isFavorite ? "찜 취소" : "찜하기"}
+          >
+            <Heart
+              size={24}
+              className={isFavorite ? "fill-main stroke-main" : "stroke-icon-default fill-none"}
+              strokeWidth={1.5}
+            />
+          </button>
+          <button
+            onClick={handleShare}
+            className="flex items-center justify-center w-10 h-10 rounded-full"
+            aria-label="공유하기"
+          >
+            <Share size={24} className="stroke-icon-default" strokeWidth={1.5} />
+          </button>
+        </div>
+      </div>
 
       {/* 스크롤 컨텐츠 */}
       <div className="flex-1 overflow-y-auto pb-safe">
         {/* 업체명 & 액션 버튼 */}
-        <section className="px-5 py-4">
+        <section className="px-5 py-2">
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0 max-w-[248px]">
               <h2 className="text-xl font-medium text-grey-900 leading-[1.4] tracking-[-0.2px ]">
                 {shop.name}
               </h2>
-            </div>
-            <div className="flex items-center gap-2 ml-3">
-              <button
-                onClick={toggleFavorite}
-                disabled={isFavoriteLoading}
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-grey-50 disabled:opacity-50"
-                aria-label={isFavorite ? "찜 취소" : "찜하기"}
-              >
-                <Heart
-                  size={22}
-                  className={isFavorite ? "fill-main stroke-main" : "stroke-icon-default fill-none"}
-                  strokeWidth={1.5}
-                />
-              </button>
-              <button
-                onClick={handleShare}
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-grey-50"
-                aria-label="공유하기"
-              >
-                <Share2 size={20} className="stroke-icon-default" strokeWidth={1.5} />
-              </button>
             </div>
           </div>
         </section>
@@ -250,19 +265,23 @@ export default function ShopDetailPage() {
           <div className="flex items-start gap-3">
             <div className="flex flex-col min-w-0 gap-2">
               <div className="flex items-center gap-2">
-                <span className="shrink-0 w-16 text-[14px] text-grey-500">주소</span>
-                <p className="text-[15px] text-grey-900 leading-[1.5]">{shop.addressName}</p>
+                <span className="shrink-0 w-16 text-[14px] text-grey-400">주소</span>
+                <p className="text-[14px] text-grey-900 leading-[1.5] tracking-[-0.14px]">
+                  {shop.addressName}
+                </p>
                 <button
                   onClick={handleCopyAddress}
-                  className="shrink-0 flex items-center gap-1 px-2 py-1 rounded text-[12px] text-grey-600"
+                  className="shrink-0 flex items-center gap-1 py-1 rounded text-[12px] text-grey-600"
                 >
                   <Copy size={12} strokeWidth={1.5} />
                 </button>
               </div>
               {shop.locationHint && (
                 <div className="flex items-center gap-2">
-                  <span className="shrink-0 w-16 text-[14px] text-grey-500">위치 힌트</span>
-                  <p className="text-[13px] text-grey-500">{shop.locationHint}</p>
+                  <span className="shrink-0 w-16 text-[14px] text-grey-400">위치 힌트</span>
+                  <p className="text-[14px] text-grey-900 leading-[1.5] tracking-[-0.14px]">
+                    {shop.locationHint}
+                  </p>
                 </div>
               )}
             </div>
@@ -274,7 +293,7 @@ export default function ShopDetailPage() {
           <div className="flex flex-col gap-3">
             {/* 영업 요일 */}
             <div className="flex items-center gap-2">
-              <span className="shrink-0 w-16 text-[14px] text-grey-500">영업일</span>
+              <span className="shrink-0 w-16 text-[14px] text-grey-400">영업일</span>
               <div className="flex gap-1.5">
                 {ALL_DAYS.map((day) => (
                   <DayBadge key={day} day={DAY_MAP[day]} isActive={businessDays.includes(day)} />
@@ -283,7 +302,7 @@ export default function ShopDetailPage() {
             </div>
             {/* 영업 시간 */}
             <div className="flex items-center gap-2">
-              <span className="shrink-0 w-16 text-[14px] text-grey-500">영업시간</span>
+              <span className="shrink-0 w-16 text-[14px] text-grey-400">영업시간</span>
               <span className="text-[14px] text-grey-900">{shop.todayOpenTime || "-"}</span>
               <StatusBadge isOpen={shop.isOpen} />
             </div>
@@ -293,98 +312,122 @@ export default function ShopDetailPage() {
         {/* 지도 */}
         <section className="px-5 pb-4">
           <div className="rounded-xl overflow-hidden border border-grey-100">
-            <KakaoMap
-              height="168px"
-              latitude={shop.latitude}
-              longitude={shop.longitude}
-              level={4}
-              markers={[
-                {
-                  id: shop.id,
-                  name: shop.name,
-                  latitude: shop.latitude,
-                  longitude: shop.longitude,
-                  mainImageUrl: shop.mainImageUrl,
-                  openTime: openTime || {
-                    Mon: null,
-                    Tue: null,
-                    Wed: null,
-                    Thu: null,
-                    Fri: null,
-                    Sat: null,
-                    Sun: null,
+            <div className="relative">
+              <KakaoMap
+                height="168px"
+                latitude={shop.latitude}
+                longitude={shop.longitude}
+                level={4}
+                draggable={false}
+                zoomable={false}
+                markers={[
+                  {
+                    id: shop.id,
+                    name: shop.name,
+                    latitude: shop.latitude,
+                    longitude: shop.longitude,
+                    mainImageUrl: shop.mainImageUrl,
+                    openTime: openTime || {
+                      Mon: null,
+                      Tue: null,
+                      Wed: null,
+                      Thu: null,
+                      Fri: null,
+                      Sat: null,
+                      Sun: null,
+                    },
+                    isOpen: shop.isOpen,
+                    distance: "",
+                    isFavorite: isFavorite,
                   },
-                  isOpen: shop.isOpen,
-                  distance: "",
-                  isFavorite: isFavorite,
-                },
-              ]}
-            />
+                ]}
+              />
+              {/* 지도 확대 버튼 */}
+              <button
+                onClick={() => setIsMapModalOpen(true)}
+                className="absolute z-10 bottom-3 right-3 flex items-center justify-center w-9 h-9 bg-white rounded-lg"
+                aria-label="지도 크게 보기"
+              >
+                <Expand size={24} className="stroke-icon-default" strokeWidth={1.5} />
+              </button>
+            </div>
           </div>
         </section>
 
         {/* 구분선 */}
         <div className="h-2 bg-grey-50" />
 
-        {/* 업체 사진 (리뷰 이미지) */}
+        {/* 업체 사진 (대표 이미지 + 리뷰 이미지) */}
         <section className="py-4">
-          <div className="flex items-center justify-between px-5 mb-3">
-            <div className="flex items-center gap-2">
-              <h3 className="text-[18px] font-medium text-grey-900 leading-[1.5] tracking-[-0.18px]">
-                업체 사진
-              </h3>
-              {shop.totalReviewImageCount > 0 && (
-                <span className="text-[14px] text-main font-medium">
-                  {shop.totalReviewImageCount}
-                </span>
-              )}
-            </div>
-            {shop.recentReviewImages.length > 0 && (
-              <button
-                onClick={handleViewAllImages}
-                className="flex items-center text-[14px] text-grey-500"
-              >
-                전체보기
-                <ChevronRight size={16} />
-              </button>
-            )}
-          </div>
+          {(() => {
+            // mainImageUrl을 첫 번째에 추가
+            const shopImages = [
+              ...(shop.mainImageUrl ? [shop.mainImageUrl] : []),
+              ...shop.recentReviewImages,
+            ];
+            const totalImageCount = shop.totalReviewImageCount + (shop.mainImageUrl ? 1 : 0);
 
-          {shop.recentReviewImages.length === 0 ? (
-            <div className="px-5">
-              <div className="flex items-center justify-center h-32 rounded-xl bg-grey-50">
-                <p className="text-[14px] text-grey-400">등록된 사진이 없습니다</p>
-              </div>
-            </div>
-          ) : (
-            <div className="flex gap-2 overflow-x-auto px-5 pb-2 scrollbar-hide">
-              {shop.recentReviewImages.slice(0, 5).map((imageUrl, index) => (
-                <div
-                  key={index}
-                  className="shrink-0 w-24 h-24 rounded-lg overflow-hidden bg-grey-100"
-                >
-                  <Image
-                    src={imageUrl}
-                    alt={`업체 사진 ${index + 1}`}
-                    width={96}
-                    height={96}
-                    className="w-full h-full object-cover"
-                  />
+            return (
+              <>
+                <div className="flex items-center justify-between px-5 mb-3">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-[18px] font-medium text-grey-900 leading-[1.5] tracking-[-0.18px]">
+                      업체 사진
+                    </h3>
+                    {totalImageCount > 0 && (
+                      <span className="text-[14px] text-main font-medium">{totalImageCount}</span>
+                    )}
+                  </div>
+                  {shopImages.length > 0 && (
+                    <button
+                      onClick={handleViewAllImages}
+                      className="flex items-center text-[14px] text-grey-500"
+                    >
+                      전체보기
+                      <ChevronRight size={16} />
+                    </button>
+                  )}
                 </div>
-              ))}
-              {shop.recentReviewImages.length > 5 && (
-                <button
-                  onClick={handleViewAllImages}
-                  className="shrink-0 w-24 h-24 rounded-lg bg-grey-100 flex flex-col items-center justify-center"
-                >
-                  <span className="text-[16px] font-semibold text-grey-600">
-                    +{shop.recentReviewImages.length - 5}
-                  </span>
-                  <span className="text-[12px] text-grey-500">더보기</span>
-                </button>
-              )}
-            </div>
-          )}
+
+                {shopImages.length === 0 ? (
+                  <div className="px-5">
+                    <div className="flex items-center justify-center h-32 rounded-xl bg-grey-50">
+                      <p className="text-[14px] text-grey-400">등록된 사진이 없습니다</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex gap-2 overflow-x-auto px-5 pb-2 scrollbar-hide">
+                    {shopImages.slice(0, 5).map((imageUrl, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedImageUrl(imageUrl)}
+                        className="shrink-0 w-24 h-24 rounded-lg overflow-hidden bg-grey-100"
+                      >
+                        <Image
+                          src={imageUrl}
+                          alt={`업체 사진 ${index + 1}`}
+                          width={96}
+                          height={96}
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                    ))}
+                    {shopImages.length > 5 && (
+                      <button
+                        onClick={handleViewAllImages}
+                        className="shrink-0 w-24 h-24 rounded-lg bg-grey-100 flex flex-col items-center justify-center"
+                      >
+                        <span className="text-[16px] font-semibold text-grey-600">
+                          +{shopImages.length - 5}
+                        </span>
+                        <span className="text-[12px] text-grey-500">더보기</span>
+                      </button>
+                    )}
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </section>
 
         {/* 구분선 */}
@@ -401,15 +444,27 @@ export default function ShopDetailPage() {
                 {shop.reviews.length > 0 ? shop.reviews.length : ""}
               </span>
             </div>
-            {shop.reviews.length > 0 && (
-              <button
-                onClick={handleViewAllReviews}
-                className="flex items-center text-[14px] text-grey-500"
-              >
-                전체보기
-                <ChevronRight size={16} />
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {shop.reviews.length > 0 && (
+                <>
+                  <button
+                    onClick={handleWriteReview}
+                    className="flex items-center gap-1 text-[14px] text-main font-medium"
+                  >
+                    <PencilLine size={14} strokeWidth={2} />
+                    작성
+                  </button>
+                  <span className="text-grey-300">|</span>
+                  <button
+                    onClick={handleViewAllReviews}
+                    className="flex items-center text-[14px] text-grey-500"
+                  >
+                    전체보기
+                    <ChevronRight size={16} />
+                  </button>
+                </>
+              )}
+            </div>
           </div>
 
           {shop.reviews.length === 0 ? (
@@ -449,6 +504,98 @@ export default function ShopDetailPage() {
         {/* 하단 여백 */}
         <div className="h-8" />
       </div>
+
+      {/* 지도 확대 모달 */}
+      {isMapModalOpen && (
+        <div className="fixed inset-0 z-50 flex flex-col bg-white">
+          {/* 모달 헤더 */}
+          <div className="flex items-center justify-end px-2 py-1 border-b border-grey-100">
+            <button
+              onClick={() => setIsMapModalOpen(false)}
+              className="flex items-center justify-center w-10 h-10"
+              aria-label="닫기"
+            >
+              <X size={24} className="stroke-grey-700" strokeWidth={2} />
+            </button>
+          </div>
+
+          {/* 지도 영역 */}
+          <div className="flex-1">
+            <KakaoMap
+              height="100%"
+              latitude={shop.latitude}
+              longitude={shop.longitude}
+              level={3}
+              markers={[
+                {
+                  id: shop.id,
+                  name: shop.name,
+                  latitude: shop.latitude,
+                  longitude: shop.longitude,
+                  mainImageUrl: shop.mainImageUrl,
+                  openTime: openTime || {
+                    Mon: null,
+                    Tue: null,
+                    Wed: null,
+                    Thu: null,
+                    Fri: null,
+                    Sat: null,
+                    Sun: null,
+                  },
+                  isOpen: shop.isOpen,
+                  distance: "",
+                  isFavorite: isFavorite,
+                },
+              ]}
+            />
+          </div>
+
+          {/* 주소 정보 */}
+          <div className="px-5 py-4 border-t border-grey-100 bg-white">
+            <h2 className="text-[18px] font-semibold text-grey-900">{shop.name}</h2>
+            <p className="text-[14px] text-grey-700">{shop.addressName}</p>
+          </div>
+        </div>
+      )}
+
+      {/* 이미지 뷰어 모달 */}
+      {selectedImageUrl && (
+        <div
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/70"
+          onClick={() => setSelectedImageUrl(null)}
+        >
+          {/* 이미지 */}
+          <div
+            className="relative w-[327px] max-h-[70vh] rounded-3xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Image
+              src={selectedImageUrl}
+              alt="업체 사진"
+              width={327}
+              height={435}
+              className="w-full h-auto object-contain"
+            />
+          </div>
+
+          {/* 닫기 버튼 */}
+          <button
+            onClick={() => setSelectedImageUrl(null)}
+            className="mt-7 flex items-center justify-center w-11 h-11 rounded-full bg-grey-500"
+            aria-label="닫기"
+          >
+            <X size={24} className="stroke-white" strokeWidth={2} />
+          </button>
+        </div>
+      )}
+
+      {/* 리뷰 작성 모달 */}
+      <ReviewWriteModal
+        shopId={validShopId}
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        onSuccess={() => refetch()}
+      />
     </div>
   );
 }
