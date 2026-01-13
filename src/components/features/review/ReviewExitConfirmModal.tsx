@@ -17,7 +17,7 @@ export function ReviewExitConfirmModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70">
       <div className="bg-white rounded-2xl w-[310px] p-4 flex flex-col gap-5">
         {/* Title */}
         <div className="text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900 text-center whitespace-pre-line">

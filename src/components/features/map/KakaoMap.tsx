@@ -137,11 +137,6 @@ export default function KakaoMap({
               const map = new window.kakao.maps.Map(mapContainer.current, options);
               mapInstance.current = map;
 
-              // 줌 컨트롤 비활성화 (zoomable이 false일 때)
-              if (!zoomable) {
-                map.setZoomable(false);
-              }
-
               // 지도 이동 완료 시 bounds 변경 알림
               window.kakao.maps.event.addListener(map, "idle", () => {
                 notifyBoundsChange(map);

@@ -110,10 +110,7 @@ function ReviewItem({
       {/* 닉네임 & 메뉴 */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <span className="text-[12px] text-grey-600 leading-[1.5]">
-            {review.author.nickname}
-            {review.isOwner ? "" : ""}
-          </span>
+          <span className="text-[12px] text-grey-600 leading-[1.5]">{review.author.nickname}</span>
           {review.isOwner && (
             <div className="relative" ref={menuRef}>
               <button
@@ -811,7 +808,7 @@ export default function ShopDetailPage() {
               <OutlineButton
                 onClick={handleViewAllReviews}
                 fullWidth
-                rightIcon={<ChevronRight size={24} className="text-grey-700 stroke-width-[1.5]" />}
+                rightIcon={<ChevronRight size={24} className="text-grey-700" strokeWidth={1.5} />}
                 className="mt-4"
               >
                 리뷰 전체보기
