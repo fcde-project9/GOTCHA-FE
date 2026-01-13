@@ -11,7 +11,7 @@ export const ENDPOINTS = {
   SHOPS: {
     LIST: "/shops",
     DETAIL: (id: string) => `/shops/${id}`,
-    NEARBY: "/shops/nearby",
+    NEARBY: "/api/shops/nearby",
     SAVE: "/api/shops/save",
   },
   // 사용자

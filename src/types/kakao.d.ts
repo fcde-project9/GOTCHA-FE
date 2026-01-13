@@ -29,6 +29,7 @@ declare global {
         };
         services: {
           Places: new () => Places;
+          Geocoder: new () => Geocoder;
           Status: {
             OK: string;
             ZERO_RESULT: string;
@@ -63,6 +64,7 @@ declare global {
     getLevel: () => number;
     setLevel: (level: number) => void;
     getBounds: () => LatLngBounds;
+    panBy: (x: number, y: number) => void;
     setZoomable: (zoomable: boolean) => void;
     setDraggable: (draggable: boolean) => void;
   }
@@ -182,6 +184,48 @@ declare global {
     phone: string;
     place_url: string;
     distance: string;
+  }
+
+  interface GeocoderResult {
+    address: {
+      address_name: string;
+      region_1depth_name: string;
+      region_2depth_name: string;
+      region_3depth_name: string;
+    };
+    road_address: {
+      address_name: string;
+      building_name: string;
+      region_1depth_name: string;
+      region_2depth_name: string;
+      region_3depth_name: string;
+      road_name: string;
+      zone_no: string;
+    } | null;
+  }
+
+  interface Geocoder {
+    coord2Address: (
+      lng: number,
+      lat: number,
+      callback: (result: GeocoderResult[], status: string) => void
+    ) => void;
+  }
+}
+
+// kakao namespace 선언
+declare namespace kakao {
+  namespace maps {
+    class Map {
+      constructor(container: HTMLElement, options: MapOptions);
+      setCenter(latlng: LatLng): void;
+      getCenter(): LatLng;
+      getLevel(): number;
+      setLevel(level: number): void;
+      getBounds(): LatLngBounds;
+      panBy(x: number, y: number): void;
+      panTo(latlng: LatLng): void;
+    }
   }
 }
 
