@@ -741,18 +741,18 @@ export default function ShopDetailPage() {
             >
               <PencilLine size={16} strokeWidth={2} />
               <span className="text-[16px] font-medium text-white leading-[1.5] tracking-[-0.16px]">
-                {shop.reviews.length === 0 ? "첫 리뷰를 작성해주세요" : "리뷰를 작성해주세요"}
+                {shop.reviewCount === 0 ? "첫 리뷰를 작성해주세요" : "리뷰를 작성해주세요"}
               </span>
             </Button>
           </div>
 
-          {shop.reviews.length > 0 && (
+          {shop.reviewCount > 0 && (
             <div className="px-5">
               {/* 총 개수 & 정렬 */}
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center text-[14px] text-grey-900 tracking-[-0.14px]">
                   <span>총&nbsp;</span>
-                  <span>{shop.reviews.length}</span>
+                  <span>{shop.reviewCount}</span>
                   <span>개</span>
                 </div>
                 <div className="relative" ref={sortDropdownRef}>
@@ -816,7 +816,7 @@ export default function ShopDetailPage() {
             </div>
           )}
 
-          {shop.reviews.length === 0 && (
+          {shop.reviewCount === 0 && (
             <div className="px-5 py-8 flex flex-col items-center justify-center">
               <p className="text-[14px] text-grey-400">아직 작성된 리뷰가 없어요.</p>
             </div>

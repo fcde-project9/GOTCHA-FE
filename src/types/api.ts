@@ -109,7 +109,8 @@ export interface ShopDetailResponse {
   longitude: number;
   mainImageUrl: string;
   isFavorite: boolean;
-  reviews: ReviewResponse[];
+  reviews: ReviewResponse[]; // 미리보기 리뷰 (최근 N개)
+  reviewCount: number; // 전체 리뷰 개수
   totalReviewImageCount: number;
   recentReviewImages: string[];
 }
