@@ -1,4 +1,9 @@
-import axios from "axios";
+import axios, { type InternalAxiosRequestConfig } from "axios";
+
+// 커스텀 config 타입 확장
+interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
+  _hadToken?: boolean;
+}
 
 // Axios 인스턴스 생성
 const apiClient = axios.create({
@@ -13,12 +18,14 @@ const apiClient = axios.create({
 
 // 요청 인터셉터
 apiClient.interceptors.request.use(
-  (config) => {
+  (config: CustomAxiosRequestConfig) => {
     // 토큰이 있으면 헤더에 추가
     try {
       const token = localStorage.getItem("accessToken");
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
+        // 요청 시점에 토큰이 있었음을 표시 (내부 속성으로)
+        config._hadToken = true;
       }
     } catch {
       // Private Browsing 등 localStorage 접근 불가 시 무시
@@ -37,15 +44,28 @@ apiClient.interceptors.response.use(
   },
   async (error) => {
     const status = error?.response?.status ?? 0;
+    const config = error?.config as CustomAxiosRequestConfig | undefined;
+    const hadToken = config?._hadToken === true;
 
-    // 401 에러 처리 (인증 실패)
-    if (status === 401) {
+    // 401 에러 처리 (인증 실패) - 토큰이 있었던 경우에만 처리
+    if (status === 401 && hadToken) {
       const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
 
-      // 로그인 관련 페이지에서는 리다이렉트 안 함 (무한 루프 방지)
-      const isAuthPage = ["/login", "/oauth/callback", "/login/nickname"].includes(currentPath);
+      // 리다이렉트하지 않는 페이지 목록
+      // - 로그인 관련 페이지: 무한 루프 방지
+      // - 찜 페이지, 마이페이지: 비로그인 상태에서도 접근 가능 (게스트 UI 표시)
+      const skipRedirectPaths = [
+        "/login",
+        "/oauth/callback",
+        "/login/nickname",
+        "/favorites",
+        "/mypage",
+      ];
+      const shouldSkipRedirect = skipRedirectPaths.some(
+        (path) => currentPath === path || currentPath.startsWith(`${path}/`)
+      );
 
-      if (!isAuthPage) {
+      if (!shouldSkipRedirect) {
         // 스토리지 정리
         try {
           localStorage.removeItem("accessToken");
@@ -56,7 +76,7 @@ apiClient.interceptors.response.use(
         }
 
         // 알림 표시 후 리다이렉트
-        alert("로그인 세션이 만료되었습니다. 다시 로그인해주세요.");
+        alert("로그인 세션이 만료되었어요. 다시 로그인해주세요.");
         window.location.replace("/login");
       }
     }

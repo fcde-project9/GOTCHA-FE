@@ -60,9 +60,13 @@ export function BackHeader({ onBack, title, rightElement, showBorder = false }: 
           className="flex items-center justify-center"
           aria-label="뒤로가기"
         >
-          <ChevronLeft size={24} className="text-grey-800" />
+          <ChevronLeft size={24} strokeWidth={1.75} className="text-grey-800" />
         </button>
-        {title && <span className="text-[16px] font-medium text-grey-900">{title}</span>}
+        {title && (
+          <span className="max-w-48 truncate text-[20px] font-semibold leading-[1.5] tracking-[-0.2px] text-grey-900">
+            {title}
+          </span>
+        )}
       </div>
 
       {/* 우측 영역 */}

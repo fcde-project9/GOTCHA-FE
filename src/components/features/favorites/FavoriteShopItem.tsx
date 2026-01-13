@@ -4,19 +4,11 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { MapPin, Heart } from "lucide-react";
 import StatusBadge from "@/components/features/shop/StatusBadge";
-import { useFavorite } from "@/hooks";
-
-interface FavoriteShop {
-  id: number;
-  name: string;
-  address: string; // 구/동까지 (예: 강남구 역삼동)
-  isOpen: boolean;
-  imageUrl?: string;
-  createdAt: string;
-}
+import { useFavorite, useToast } from "@/hooks";
+import type { FavoriteShopResponse } from "@/types/api";
 
 interface FavoriteShopItemProps {
-  shop: FavoriteShop;
+  shop: FavoriteShopResponse;
 }
 
 /**
@@ -24,9 +16,14 @@ interface FavoriteShopItemProps {
  */
 export function FavoriteShopItem({ shop }: FavoriteShopItemProps) {
   const router = useRouter();
+  const { showToast } = useToast();
+
   const { isFavorite, isLoading, toggleFavorite } = useFavorite({
     shopId: shop.id,
     initialIsFavorite: true, // 찜 목록에 있으므로 초기값 true
+    onUnauthorized: () => {
+      showToast("찜하기는 로그인 후 이용 가능해요.");
+    },
   });
 
   const handleHeartClick = (e: React.MouseEvent) => {
@@ -45,13 +42,12 @@ export function FavoriteShopItem({ shop }: FavoriteShopItemProps) {
     >
       {/* 업체 이미지 */}
       <div className="relative h-[85px] w-[85px] shrink-0 overflow-hidden rounded-[5px]">
-        {shop.imageUrl ? (
-          <Image src={shop.imageUrl} alt={shop.name} fill className="object-cover" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-grey-100">
-            <span className="text-[24px] text-grey-400">?</span>
-          </div>
-        )}
+        <Image
+          src={shop.mainImageUrl || "/images/no-image.png"}
+          alt={shop.name}
+          fill
+          className="object-cover"
+        />
       </div>
 
       {/* 업체 정보 */}

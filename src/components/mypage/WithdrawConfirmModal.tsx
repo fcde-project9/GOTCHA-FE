@@ -23,10 +23,10 @@ export function WithdrawConfirmModal({ isOpen, onClose, onConfirm }: WithdrawCon
           <div className="flex flex-col gap-1">
             <p className="text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-700 text-center">
               탈퇴 버튼을 누르면 계정이{" "}
-              <span className="text-main-500 font-semibold">영구 삭제</span>됩니다
+              <span className="text-main-500 font-semibold">영구 삭제</span>되어요
             </p>
             <p className="text-[12px] font-normal leading-[1.5] tracking-[-0.12px] text-grey-500 text-center">
-              * 서비스 활동 내역도 전부 삭제됩니다
+              * 서비스 활동 내역도 전부 삭제되어요
             </p>
           </div>
         </div>

@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Headset } from "lucide-react";
+import { useLogout } from "@/api/mutations/useLogout";
 import { useUpdateNickname } from "@/api/mutations/useUpdateNickname";
 import { useUpdateProfileImageWithUpload } from "@/api/mutations/useUpdateProfileImageWithUpload";
+import { useWithdraw } from "@/api/mutations/useWithdraw";
 import { useUser } from "@/api/queries/useUser";
 import type { User } from "@/api/types";
-import { Toast } from "@/components/common";
 import Footer from "@/components/common/Footer";
 import { ErrorPage } from "@/components/error/ErrorPage";
 import { LogoutModal } from "@/components/mypage/LogoutModal";
@@ -16,13 +18,19 @@ import { NicknameModal } from "@/components/mypage/NicknameModal";
 import { ProfileSection } from "@/components/mypage/ProfileSection";
 import { WithdrawConfirmModal } from "@/components/mypage/WithdrawConfirmModal";
 import { WithdrawModal } from "@/components/mypage/WithdrawModal";
+import { useToast, useAuth } from "@/hooks";
 import { openInstagramSupport } from "@/utils";
 
 export default function MyPage() {
   const router = useRouter();
-  const { data: user, isLoading, error, refetch } = useUser();
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+  const { isLoggedIn, isLoading: authLoading, logout } = useAuth();
+  const { data: user, isLoading: userLoading, error, refetch } = useUser();
   const updateNicknameMutation = useUpdateNickname();
   const updateProfileImageWithUploadMutation = useUpdateProfileImageWithUpload();
+  const logoutMutation = useLogout();
+  const withdrawMutation = useWithdraw();
 
   const [isNicknameModalOpen, setIsNicknameModalOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
@@ -30,26 +38,13 @@ export default function MyPage() {
   const [isWithdrawConfirmModalOpen, setIsWithdrawConfirmModalOpen] = useState(false);
   const [withdrawReasons, setWithdrawReasons] = useState<string[]>([]);
   const [withdrawOtherReason, setWithdrawOtherReason] = useState<string>();
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("닉네임이 변경되었습니다");
-  const [toastKey, setToastKey] = useState(0);
-
-  // 토스트 재출현을 위한 헬퍼 함수
-  const displayToast = (message: string) => {
-    setToastMessage(message);
-    setShowToast(false); // 먼저 false로 설정
-    setTimeout(() => {
-      setToastKey((prev) => prev + 1); // key 변경으로 강제 리렌더
-      setShowToast(true);
-    }, 0);
-  };
 
   const handleEditProfile = async (file: File) => {
     try {
       await updateProfileImageWithUploadMutation.mutateAsync(file);
-      displayToast("프로필 이미지가 변경되었습니다");
-    } catch (error) {
-      displayToast("프로필 이미지 변경에 실패했습니다");
+      showToast("프로필 이미지가 변경되었어요");
+    } catch {
+      showToast("프로필 이미지 변경에 실패했어요");
     }
   };
 
@@ -61,9 +56,9 @@ export default function MyPage() {
     try {
       await updateNicknameMutation.mutateAsync(newNickname);
       setIsNicknameModalOpen(false);
-      displayToast("닉네임이 변경되었습니다");
-    } catch (error) {
-      displayToast("닉네임 변경에 실패했습니다");
+      showToast("닉네임이 변경되었어요");
+    } catch {
+      showToast("닉네임 변경에 실패했어요");
     }
   };
 
@@ -84,7 +79,7 @@ export default function MyPage() {
   };
 
   const handleLogin = () => {
-    // TODO: 로그인 페이지로 이동
+    router.push("/login");
   };
 
   const handleLogout = () => {
@@ -93,15 +88,13 @@ export default function MyPage() {
 
   const handleLogoutConfirm = async () => {
     try {
-      // TODO: 로그아웃 API 연동
-      // await apiClient.post('/auth/logout');
+      // 로그아웃 API 호출
+      await logoutMutation.mutateAsync();
     } catch {
       // API 실패 시에도 로컬 데이터는 정리
     } finally {
-      // 로컬 스토리지 정리
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("user");
+      // useAuth의 logout으로 토큰 정리 및 상태 업데이트
+      logout();
 
       // 세션 스토리지 정리
       sessionStorage.clear();
@@ -112,10 +105,11 @@ export default function MyPage() {
         document.cookie = `${name.trim()}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
       });
 
-      // TODO: SWR/React Query 캐시 정리
-      // mutate(() => true, undefined, { revalidate: false });
+      // React Query 캐시 정리
+      queryClient.clear();
 
       setIsLogoutModalOpen(false);
+      showToast("로그아웃 되었어요");
       router.push("/");
     }
   };
@@ -133,14 +127,14 @@ export default function MyPage() {
 
   const handleWithdrawConfirm = async () => {
     try {
-      // TODO: 회원탈퇴 API 연동
-      // await apiClient.delete('/user', { data: { reasons: withdrawReasons, otherReason: withdrawOtherReason } });
+      // 회원탈퇴 API 호출
+      await withdrawMutation.mutateAsync({
+        reasons: withdrawReasons,
+        detail: withdrawOtherReason,
+      });
 
-      // API 성공 시에만 상태 정리
-      // 로컬 스토리지 정리
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("user");
+      // useAuth의 logout으로 토큰 정리 및 상태 업데이트
+      logout();
 
       // 세션 스토리지 정리
       sessionStorage.clear();
@@ -151,8 +145,8 @@ export default function MyPage() {
         document.cookie = `${name.trim()}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
       });
 
-      // TODO: SWR/React Query 캐시 정리
-      // mutate(() => true, undefined, { revalidate: false });
+      // React Query 캐시 정리
+      queryClient.clear();
 
       // 회원탈퇴 관련 상태 초기화
       setWithdrawReasons([]);
@@ -160,17 +154,15 @@ export default function MyPage() {
 
       // 모달 닫기 및 홈으로 이동
       setIsWithdrawConfirmModalOpen(false);
+      showToast("회원탈퇴가 완료되었어요");
       router.push("/");
-    } catch (error) {
-      // API 실패 시 에러 로그 및 모달 유지
-      console.error("회원탈퇴 API 호출 실패:", error);
-      // TODO: 에러 토스트 메시지 표시
-      // setShowToast(true);
-      // setToastMessage("회원탈퇴에 실패했습니다. 다시 시도해주세요.");
+    } catch {
+      showToast("회원탈퇴에 실패했어요. 다시 시도해주세요.");
     }
   };
 
   // 로딩 중이면 빈 화면 표시
+  const isLoading = authLoading || userLoading;
   if (isLoading) {
     return (
       <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[70px]">
@@ -195,8 +187,7 @@ export default function MyPage() {
     return <ErrorPage onRetry={refetch} />;
   }
 
-  // 에러 발생 시 게스트 모드로 표시 (401 에러는 이미 인터셉터에서 처리됨)
-  const isLoggedIn = !error && !!user;
+  // useAuth의 isLoggedIn으로 로그인 여부 판별
   const loggedInUser: User | undefined = isLoggedIn ? user : undefined;
 
   // socialType을 socialProvider 형식으로 변환
@@ -284,14 +275,6 @@ export default function MyPage() {
 
       {/* Footer Navigation */}
       <Footer />
-
-      {/* Toast */}
-      <Toast
-        key={toastKey}
-        message={toastMessage}
-        isVisible={showToast}
-        onClose={() => setShowToast(false)}
-      />
     </div>
   );
 }

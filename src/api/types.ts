@@ -28,7 +28,7 @@ export interface ApiResponse<T> {
  * @param error - ApiError 객체 또는 unknown 에러
  * @param fallback - 기본 메시지
  */
-export function getErrorMessage(error: unknown, fallback = "오류가 발생했습니다."): string {
+export function getErrorMessage(error: unknown, fallback = "오류가 발생했어요."): string {
   // ApiError 형태인 경우
   if (error && typeof error === "object" && "message" in error) {
     return (error as ApiError).message || fallback;

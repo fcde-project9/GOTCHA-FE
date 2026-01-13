@@ -34,11 +34,11 @@ export default function NicknamePage() {
       if (response.data.success && response.data.data.nickname) {
         setNickname(response.data.data.nickname);
       } else {
-        setError("닉네임을 불러올 수 없습니다.");
+        setError("닉네임을 불러올 수 없어요.");
       }
     } catch (err) {
       console.error("닉네임 조회 실패:", err);
-      setError("닉네임을 불러오는데 실패했습니다.");
+      setError("닉네임을 불러오는데 실패했어요.");
     } finally {
       setIsLoading(false);
     }

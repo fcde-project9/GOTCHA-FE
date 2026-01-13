@@ -56,10 +56,10 @@ function redirectToOAuth(provider: SocialLoginProvider, providerDisplayName: str
   const apiBaseUrl = getApiBaseUrl();
 
   if (!apiBaseUrl) {
-    const errorMessage = "로그인을 처리할 수 없습니다. 페이지를 새로고침 후 다시 시도해주세요.";
+    const errorMessage = "로그인을 처리할 수 없어요. 페이지를 새로고침 후 다시 시도해주세요.";
     alert(errorMessage);
     throw new Error(
-      "API Base URL이 설정되지 않았습니다. (NEXT_PUBLIC_API_BASE_URL 환경변수 확인 필요)"
+      "API Base URL이 설정되지 않았어요. (NEXT_PUBLIC_API_BASE_URL 환경변수 확인 필요)"
     );
   }
 
@@ -76,7 +76,7 @@ function redirectToOAuth(provider: SocialLoginProvider, providerDisplayName: str
     const oauthUrl = `${apiBaseUrl}/oauth2/authorize/${provider}?state=${encodeURIComponent(state)}&redirect_uri=${encodeURIComponent(callbackUrl)}`;
     window.location.replace(oauthUrl);
   } catch (error) {
-    const errorMessage = `${providerDisplayName} 로그인을 시작할 수 없습니다. 다시 시도해주세요.`;
+    const errorMessage = `${providerDisplayName} 로그인을 시작할 수 없어요. 다시 시도해주세요.`;
     alert(errorMessage);
     throw new Error(`${providerDisplayName} 로그인 실패: ${error}`);
   }
@@ -129,7 +129,7 @@ export function loginWithSocial(provider: SocialLoginProvider): void {
       loginWithGoogle();
       break;
     default: {
-      const errorMessage = "지원하지 않는 로그인 방식입니다.";
+      const errorMessage = "지원하지 않는 로그인 방식이에요.";
       alert(errorMessage);
       throw new Error(`알 수 없는 로그인 제공자: ${provider}`);
     }

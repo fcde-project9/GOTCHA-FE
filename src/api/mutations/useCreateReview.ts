@@ -19,7 +19,7 @@ export const useCreateReview = (shopId: number) => {
         );
 
         if (!data.success || !data.data) {
-          throw new Error(data.error?.message || "리뷰 작성에 실패했습니다.");
+          throw new Error(data.error?.message || "작성에 실패했어요.");
         }
 
         return data.data;
