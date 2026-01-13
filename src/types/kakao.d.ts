@@ -42,6 +42,9 @@ declare global {
   interface MapOptions {
     center: LatLng;
     level: number;
+    draggable?: boolean;
+    scrollwheel?: boolean;
+    disableDoubleClickZoom?: boolean;
   }
 
   interface LatLng {
@@ -60,6 +63,8 @@ declare global {
     getLevel: () => number;
     setLevel: (level: number) => void;
     getBounds: () => LatLngBounds;
+    setZoomable: (zoomable: boolean) => void;
+    setDraggable: (draggable: boolean) => void;
   }
 
   interface Size {

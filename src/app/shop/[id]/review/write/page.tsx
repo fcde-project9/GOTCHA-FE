@@ -51,7 +51,7 @@ export default function ReviewWritePage() {
     const MAX_FILE_SIZE = 20 * 1024 * 1024;
     const validFiles = newFiles.filter((file) => {
       if (file.size > MAX_FILE_SIZE) {
-        alert(`${file.name}은(는) 20MB를 초과합니다.`);
+        alert(`${file.name}은(는) 20MB를 초과해요. 파일 크기를 줄여주세요.`);
         return false;
       }
       return true;
@@ -93,12 +93,12 @@ export default function ReviewWritePage() {
       {
         onSuccess: () => {
           setUploadProgress(null);
-          alert("리뷰가 등록되었습니다.");
+          alert("리뷰가 등록되었어요.");
           router.back();
         },
         onError: (error) => {
           setUploadProgress(null);
-          alert(error.message || "리뷰 등록에 실패했습니다. 다시 시도해주세요.");
+          alert(error.message || "리뷰 등록에 실패했어요. 다시 시도해주세요.");
         },
       }
     );
@@ -110,7 +110,7 @@ export default function ReviewWritePage() {
       <div className="min-h-dvh bg-default flex flex-col">
         <BackHeader showBorder />
         <div className="flex-1 flex flex-col items-center justify-center px-5">
-          <p className="text-[15px] text-grey-500 mb-4">잘못된 접근입니다</p>
+          <p className="text-[15px] text-grey-500 mb-4">잘못된 접근입니다.</p>
           <Button variant="primary" size="small" onClick={() => router.push("/")}>
             홈으로 돌아가기
           </Button>
@@ -132,7 +132,7 @@ export default function ReviewWritePage() {
         {/* 에러 메시지 */}
         {createReviewMutation.isError && (
           <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-600 text-[14px]">
-            {createReviewMutation.error?.message || "리뷰 등록에 실패했습니다."}
+            {createReviewMutation.error?.message || "리뷰 등록에 실패했어요."}
           </div>
         )}
 

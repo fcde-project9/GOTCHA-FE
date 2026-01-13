@@ -84,7 +84,7 @@ export function useKakaoLoader() {
       setState({
         loading: false,
         loaded: false,
-        error: "카카오맵 API 키가 설정되지 않았습니다.",
+        error: "카카오맵 API 키가 설정되지 않았어요.",
       });
       return;
     }

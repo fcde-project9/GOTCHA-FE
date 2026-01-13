@@ -25,7 +25,7 @@ export const useUpdateProfileImage = () => {
 
         // API 응답 검증
         if (!data.success || !data.data) {
-          throw new Error(data.error?.message || "프로필 이미지 변경에 실패했습니다.");
+          throw new Error(data.error?.message || "프로필 이미지 변경에 실패했어요.");
         }
 
         return data.data;

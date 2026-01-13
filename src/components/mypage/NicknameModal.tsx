@@ -14,7 +14,7 @@ interface NicknameModalProps {
  * 닉네임 변경 모달 컴포넌트
  *
  * 규칙:
- * - 특수문자 사용 불가능
+ * - 특수문자 중 '#'만 사용 가능
  * - 2글자 이상 12글자까지만 가능
  * - 중복 닉네임 불가
  */
@@ -40,10 +40,10 @@ export function NicknameModal({ isOpen, currentNickname, onClose, onSave }: Nick
       return "12자 이하로 입력해주세요";
     }
 
-    // 특수문자 체크 (한글 완성형, 자음, 모음, 영문, 숫자만 허용)
-    const specialCharRegex = /[^a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ]/;
+    // 특수문자 체크 (한글 완성형, 자음, 모음, 영문, 숫자, #만 허용)
+    const specialCharRegex = /[^a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ#]/;
     if (specialCharRegex.test(value)) {
-      return "특수문자는 사용할 수 없습니다";
+      return "#을 제외한 특수문자는 사용할 수 없어요.";
     }
 
     return null;
@@ -64,15 +64,6 @@ export function NicknameModal({ isOpen, currentNickname, onClose, onSave }: Nick
       return;
     }
 
-    // TODO: 백엔드 API 연동 - 중복 닉네임 체크
-    // const isDuplicate = await checkNicknameDuplicate(nickname);
-    // if (isDuplicate) {
-    //   setError("중복된 닉네임입니다");
-    //   return;
-    // }
-
-    // TODO: 백엔드 API 연동 - 닉네임 변경
-    // await apiClient.patch('/user/nickname', { nickname });
     onSave(nickname);
     onClose();
   };
@@ -128,7 +119,7 @@ export function NicknameModal({ isOpen, currentNickname, onClose, onSave }: Nick
           </p>
           <ul className="flex flex-col gap-0.5">
             <li className="text-[11px] font-normal leading-[1.5] tracking-[-0.11px] text-grey-500 before:content-['•'] before:mr-1">
-              욕설·비속어, 차별·비방적 내용의 작성은 금지됩니다.
+              욕설·비속어, 차별·비방적 내용의 작성은 금지되어요.
             </li>
             <li className="text-[11px] font-normal leading-[1.5] tracking-[-0.11px] text-grey-500 before:content-['•'] before:mr-1">
               타사의 브랜드 및 제품명을 포함한 단어

@@ -5,6 +5,7 @@ export const ENDPOINTS = {
     LOGIN: "/auth/login",
     LOGOUT: "/auth/logout",
     REFRESH: "/auth/refresh",
+    TOKEN: "/api/auth/token",
   },
   // 매장
   SHOPS: {
@@ -30,5 +31,8 @@ export const ENDPOINTS = {
   REVIEWS: {
     CREATE: (shopId: number) => `/api/shops/${shopId}/reviews`,
     LIST: (shopId: number) => `/api/shops/${shopId}/reviews`,
+    UPDATE: (shopId: number, reviewId: number) => `/api/shops/${shopId}/reviews/${reviewId}`,
+    DELETE: (shopId: number, reviewId: number) => `/api/shops/${shopId}/reviews/${reviewId}`,
+    LIKE: (reviewId: number) => `/api/shops/reviews/${reviewId}/like`,
   },
 } as const;

@@ -1,24 +1,25 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "./useToast";
 
 /**
  * 토스트 메시지를 표시한 후 지연된 리다이렉트를 수행하는 훅
+ * 글로벌 Toast를 사용합니다.
  *
  * @param delay - 리다이렉트 전 대기 시간 (밀리초, 기본값: 2500)
- * @returns 토스트 상태 및 리다이렉트 함수
+ * @returns 리다이렉트 함수
  *
  * @example
  * ```tsx
- * const { toastMessage, showToast, setShowToast, redirectWithToast } = useDelayedRedirectWithToast();
+ * const { redirectWithToast } = useDelayedRedirectWithToast();
  *
  * // 에러 발생 시
- * redirectWithToast("로그인에 실패했습니다.", "/login");
+ * redirectWithToast("로그인에 실패했어요.", "/login");
  * ```
  */
 export function useDelayedRedirectWithToast(delay: number = 2500) {
   const router = useRouter();
-  const [toastMessage, setToastMessage] = useState("");
-  const [showToast, setShowToast] = useState(false);
+  const { showToast } = useToast();
   const timeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /**
@@ -28,8 +29,7 @@ export function useDelayedRedirectWithToast(delay: number = 2500) {
    */
   const redirectWithToast = useCallback(
     (message: string, path: string) => {
-      setToastMessage(message);
-      setShowToast(true);
+      showToast(message, delay);
 
       // 기존 타이머가 있으면 제거
       if (timeoutIdRef.current) {
@@ -42,7 +42,7 @@ export function useDelayedRedirectWithToast(delay: number = 2500) {
         timeoutIdRef.current = null;
       }, delay);
     },
-    [router, delay]
+    [router, delay, showToast]
   );
 
   /**
@@ -58,9 +58,6 @@ export function useDelayedRedirectWithToast(delay: number = 2500) {
   }, []);
 
   return {
-    toastMessage,
-    showToast,
-    setShowToast,
     redirectWithToast,
   };
 }

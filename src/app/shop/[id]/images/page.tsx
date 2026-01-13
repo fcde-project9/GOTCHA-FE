@@ -1,40 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { ChevronLeft, X } from "lucide-react";
+import { useShopDetail } from "@/api/queries/useShopDetail";
 import { BackHeader } from "@/components/common";
-
-// TODO: API 연동
-const MOCK_IMAGES: string[] = [];
 
 export default function ImagesGalleryPage() {
   const params = useParams();
-  const router = useRouter();
   const shopId = Number(params.id);
 
-  const [images, setImages] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
-  useEffect(() => {
-    const fetchImages = async () => {
-      setIsLoading(true);
-      try {
-        // TODO: 실제 API 호출로 교체
-        // const response = await fetchShopImages(shopId);
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        setImages(MOCK_IMAGES);
-      } catch {
-        console.error("이미지 목록 불러오기 실패");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // useShopDetail 훅으로 가게 데이터 조회
+  const { data: shop, isLoading } = useShopDetail(shopId);
 
-    fetchImages();
-  }, [shopId]);
+  // mainImageUrl + recentReviewImages 결합
+  const images = shop
+    ? [...(shop.mainImageUrl ? [shop.mainImageUrl] : []), ...shop.recentReviewImages]
+    : [];
 
   const handleImageClick = (index: number) => {
     setSelectedIndex(index);
@@ -66,7 +51,7 @@ export default function ImagesGalleryPage() {
         </div>
       ) : images.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-64 px-5">
-          <p className="text-[15px] text-grey-500">등록된 사진이 없습니다</p>
+          <p className="text-[15px] text-grey-500">등록된 사진이 없어요.</p>
         </div>
       ) : (
         <div className="p-4">

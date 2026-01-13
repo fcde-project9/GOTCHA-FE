@@ -30,7 +30,7 @@ export const useReviews = (
         );
 
         if (!data.success || !data.data) {
-          throw new Error(data.error?.message || "리뷰 목록을 불러오는데 실패했습니다.");
+          throw new Error(data.error?.message || "리뷰 목록을 불러오는데 실패했어요.");
         }
 
         return data.data;

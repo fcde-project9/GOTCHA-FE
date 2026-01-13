@@ -21,7 +21,7 @@ export const useShopDetail = (shopId: number, sortBy: ReviewSortOption = "LATEST
         );
 
         if (!data.success || !data.data) {
-          throw new Error(data.error?.message || "업체 정보를 불러오는데 실패했습니다.");
+          throw new Error(data.error?.message || "업체 정보를 불러오는데 실패했어요.");
         }
 
         return data.data;

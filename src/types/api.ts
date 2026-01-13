@@ -7,6 +7,28 @@ export interface ApiResponse<T> {
 }
 
 /**
+ * POST /api/auth/token 요청
+ * OAuth 임시 코드를 토큰으로 교환
+ */
+export interface TokenExchangeRequest {
+  code: string;
+}
+
+/**
+ * POST /api/auth/token 응답
+ */
+export interface TokenExchangeResponse {
+  accessToken: string;
+  refreshToken: string;
+  isNewUser: boolean;
+}
+
+/**
+ * POST /api/auth/token 전체 응답
+ */
+export type TokenExchangeApiResponse = ApiResponse<TokenExchangeResponse>;
+
+/**
  * 지도 영역 (bounds) 파라미터
  */
 export interface MapBounds {
@@ -64,17 +86,9 @@ export interface FavoriteShopResponse {
 }
 
 /**
- * GET /api/users/me/favorites 응답
- */
-export interface FavoritesPageResponse {
-  content: FavoriteShopResponse[];
-  totalCount: number;
-}
-
-/**
  * GET /api/users/me/favorites 전체 응답
  */
-export type FavoritesApiResponse = ApiResponse<FavoritesPageResponse>;
+export type FavoritesApiResponse = ApiResponse<FavoriteShopResponse[]>;
 
 /**
  * POST/DELETE /api/shops/{shopId}/favorite 응답
@@ -109,7 +123,8 @@ export interface ShopDetailResponse {
   longitude: number;
   mainImageUrl: string;
   isFavorite: boolean;
-  reviews: ReviewResponse[];
+  reviews: ReviewResponse[]; // 미리보기 리뷰 (최근 N개)
+  reviewCount: number; // 전체 리뷰 개수
   totalReviewImageCount: number;
   recentReviewImages: string[];
 }
@@ -177,6 +192,30 @@ export interface CreateReviewRequest {
  * 생성된 리뷰 정보 반환
  */
 export type CreateReviewApiResponse = ApiResponse<ReviewResponse>;
+
+/**
+ * PUT /api/shops/{shopId}/reviews/{reviewId} 요청
+ * 리뷰 수정 (이미지 0~10개)
+ */
+export interface UpdateReviewRequest {
+  content: string;
+  imageUrls: string[];
+}
+
+/**
+ * PUT /api/shops/{shopId}/reviews/{reviewId} 응답
+ */
+export type UpdateReviewApiResponse = ApiResponse<ReviewResponse>;
+
+/**
+ * POST/DELETE /api/shops/reviews/{reviewId}/like 응답
+ */
+export interface ReviewLikeResponse {
+  reviewId: number;
+  isLiked: boolean;
+}
+
+export type ReviewLikeApiResponse = ApiResponse<ReviewLikeResponse>;
 
 /**
  * GET /api/shops/{shopId}/images 응답

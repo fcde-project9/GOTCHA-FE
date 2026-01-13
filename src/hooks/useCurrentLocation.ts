@@ -43,17 +43,17 @@ export function useCurrentLocation(): UseCurrentLocationReturn {
         longitude: position.coords.longitude,
       });
     } else if (geoError) {
-      let errorMessage = "위치 정보를 가져올 수 없습니다.";
+      let errorMessage = "위치 정보를 가져올 수 없어요.";
 
       switch (geoError.code) {
         case GeolocationErrorCode.PERMISSION_DENIED:
-          errorMessage = "위치 정보 접근이 거부되었습니다.";
+          errorMessage = "위치 정보 접근이 거부되었어요.";
           break;
         case GeolocationErrorCode.POSITION_UNAVAILABLE:
-          errorMessage = "위치 정보를 사용할 수 없습니다.";
+          errorMessage = "위치 정보를 사용할 수 없어요.";
           break;
         case GeolocationErrorCode.TIMEOUT:
-          errorMessage = "위치 정보 요청 시간이 초과되었습니다.";
+          errorMessage = "위치 정보 요청 시간이 초과되었어요.";
           break;
       }
 
