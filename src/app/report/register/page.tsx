@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, Camera, Clock } from "lucide-react";
 import { useCreateShopWithUpload } from "@/api/mutations/useCreateShopWithUpload";
@@ -58,6 +58,16 @@ function ReportRegisterContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const createShopWithUpload = useCreateShopWithUpload();
+  const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 리다이렉트 타이머 cleanup
+  useEffect(() => {
+    return () => {
+      if (redirectTimerRef.current) {
+        clearTimeout(redirectTimerRef.current);
+      }
+    };
+  }, []);
 
   // 토스트 재출현을 위한 헬퍼 함수
   const displayToast = (message: string) => {
@@ -69,10 +79,12 @@ function ReportRegisterContent() {
   };
 
   const hasUserInput =
-    formData.shopName.trim() ||
-    formData.locationHint.trim() ||
+    Boolean(formData.shopName.trim()) ||
+    Boolean(formData.locationHint.trim()) ||
     formData.images.length > 0 ||
-    formData.openDays.length > 0;
+    formData.openDays.length > 0 ||
+    formData.openTime !== "오전 12:00" ||
+    formData.closeTime !== "오전 12:00";
 
   const handleBackClick = () => {
     if (hasUserInput) {
@@ -111,6 +123,8 @@ function ReportRegisterContent() {
         images: [file], // 대표 이미지 1개만
       }));
     }
+    // 같은 파일 재업로드를 위해 input value 초기화
+    e.target.value = "";
   };
 
   const handleRemoveImage = () => {
@@ -134,7 +148,7 @@ function ReportRegisterContent() {
     };
   }, [previewUrl]);
 
-  const isFormValid = formData.shopName.trim() && formData.images.length > 0;
+  const isFormValid = Boolean(formData.shopName.trim()) && formData.images.length > 0;
 
   /**
    * 시간 포맷 변환: "오전 00:00" -> "00:00" (24시간 형식)
@@ -205,7 +219,7 @@ function ReportRegisterContent() {
       });
 
       displayToast("업체 정보가 등록되었습니다.");
-      setTimeout(() => {
+      redirectTimerRef.current = setTimeout(() => {
         router.push("/home");
       }, 2000);
     } catch (error) {

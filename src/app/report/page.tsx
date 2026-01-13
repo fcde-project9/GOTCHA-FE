@@ -59,14 +59,16 @@ export default function ReportLocationPage() {
           await getAddressFromCoords(latitude, longitude);
           setIsLoading(false);
         },
-        () => {
+        async () => {
           // 위치 정보 가져오기 실패 시 기본 위치(강남역) 사용
           setMyLocation({ latitude: 37.4979, longitude: 127.0276 });
+          await getAddressFromCoords(37.4979, 127.0276);
           setIsLoading(false);
         }
       );
     } else {
       setMyLocation({ latitude: 37.4979, longitude: 127.0276 });
+      getAddressFromCoords(37.4979, 127.0276);
       setIsLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

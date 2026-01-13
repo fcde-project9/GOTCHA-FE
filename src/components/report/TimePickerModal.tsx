@@ -20,7 +20,10 @@ export function TimePickerModal({
   const [hour, setHour] = useState(12);
   const [minute, setMinute] = useState(0);
 
+  // isOpen이 true로 바뀔 때마다 initialTime으로 state 리셋 (취소 후 재오픈 시 이전 변경 사항 유지 방지)
   useEffect(() => {
+    if (!isOpen) return;
+
     if (initialTime) {
       const match = initialTime.match(/(오전|오후)\s(\d+):(\d+)/);
       if (match) {
@@ -37,7 +40,7 @@ export function TimePickerModal({
         setMinute(validMinute);
       }
     }
-  }, [initialTime]);
+  }, [isOpen, initialTime]);
 
   // ESC 키로 모달 닫기
   useEffect(() => {
