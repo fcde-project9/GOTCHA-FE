@@ -25,8 +25,16 @@ export function TimePickerModal({
       const match = initialTime.match(/(오전|오후)\s(\d+):(\d+)/);
       if (match) {
         setPeriod(match[1] as "오전" | "오후");
-        setHour(parseInt(match[2]));
-        setMinute(parseInt(match[3]));
+
+        // 시간 파싱 및 유효 범위로 정규화 (1-12)
+        const parsedHour = parseInt(match[2]);
+        const validHour = Number.isNaN(parsedHour) ? 12 : Math.max(1, Math.min(12, parsedHour));
+        setHour(validHour);
+
+        // 분 파싱 및 가장 가까운 옵션으로 정규화 (0 또는 30)
+        const parsedMinute = parseInt(match[3]);
+        const validMinute = Number.isNaN(parsedMinute) ? 0 : parsedMinute < 15 ? 0 : 30;
+        setMinute(validMinute);
       }
     }
   }, [initialTime]);
@@ -46,9 +54,10 @@ export function TimePickerModal({
   // Body 스크롤 방지
   useEffect(() => {
     if (isOpen) {
+      const previousOverflow = document.body.style.overflow;
       document.body.style.overflow = "hidden";
       return () => {
-        document.body.style.overflow = "";
+        document.body.style.overflow = previousOverflow;
       };
     }
   }, [isOpen]);

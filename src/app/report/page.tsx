@@ -33,7 +33,7 @@ export default function ReportLocationPage() {
   const [nearbyShops, setNearbyShops] = useState<NearbyShopsResponse | null>(null);
 
   // 근처 가게 확인 함수
-  const checkNearbyShops = async (latitude: number, longitude: number) => {
+  const checkNearbyShops = useCallback(async (latitude: number, longitude: number) => {
     try {
       const { data } = await apiClient.get<ApiResponse<NearbyShopsResponse>>(
         ENDPOINTS.SHOPS.NEARBY,
@@ -46,7 +46,7 @@ export default function ReportLocationPage() {
       console.error("근처 가게 확인 실패:", error);
       return null;
     }
-  };
+  }, []);
 
   useEffect(() => {
     // 사용자의 현재 위치 가져오기
@@ -72,24 +72,28 @@ export default function ReportLocationPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const getAddressFromCoords = useCallback((lat: number, lng: number) => {
-    // 카카오 지도 SDK의 Geocoder 서비스 사용 (CORS 문제 없음)
-    if (!window.kakao?.maps?.services) {
-      console.error("카카오 지도 서비스가 로드되지 않았습니다");
-      setAddress("주소를 가져올 수 없습니다");
-      return;
-    }
-
-    const geocoder = new window.kakao.maps.services.Geocoder();
-
-    geocoder.coord2Address(lng, lat, (result, status) => {
-      if (status === window.kakao.maps.services.Status.OK && result[0]) {
-        const addr = result[0].address?.address_name || result[0].road_address?.address_name;
-        setAddress(addr || "주소를 가져올 수 없습니다");
-      } else {
-        console.error("주소 변환 실패:", status);
+  const getAddressFromCoords = useCallback((lat: number, lng: number): Promise<void> => {
+    return new Promise((resolve) => {
+      // 카카오 지도 SDK의 Geocoder 서비스 사용 (CORS 문제 없음)
+      if (!window.kakao?.maps?.services) {
+        console.error("카카오 지도 서비스가 로드되지 않았습니다");
         setAddress("주소를 가져올 수 없습니다");
+        resolve();
+        return;
       }
+
+      const geocoder = new window.kakao.maps.services.Geocoder();
+
+      geocoder.coord2Address(lng, lat, (result, status) => {
+        if (status === window.kakao.maps.services.Status.OK && result[0]) {
+          const addr = result[0].address?.address_name || result[0].road_address?.address_name;
+          setAddress(addr || "주소를 가져올 수 없습니다");
+        } else {
+          console.error("주소 변환 실패:", status);
+          setAddress("주소를 가져올 수 없습니다");
+        }
+        resolve();
+      });
     });
   }, []);
 
@@ -107,12 +111,12 @@ export default function ReportLocationPage() {
       const result = await checkNearbyShops(latitude, longitude);
       setNearbyShops(result);
     },
-    [getAddressFromCoords]
+    [getAddressFromCoords, checkNearbyShops]
   );
 
   // 지도 클릭 이벤트 리스너 등록/해제
   useEffect(() => {
-    if (!map) return;
+    if (!map || !window.kakao?.maps?.event) return;
 
     window.kakao.maps.event.addListener(map, "click", handleMapClick);
 

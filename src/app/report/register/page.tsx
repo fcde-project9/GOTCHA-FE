@@ -31,8 +31,17 @@ function ReportRegisterContent() {
   // URL 파라미터에서 주소와 좌표 가져오기
   useEffect(() => {
     const address = searchParams.get("address") || "";
-    const lat = parseFloat(searchParams.get("lat") || "0");
-    const lng = parseFloat(searchParams.get("lng") || "0");
+    const latParam = searchParams.get("lat");
+    const lngParam = searchParams.get("lng");
+
+    const lat = latParam ? parseFloat(latParam) : NaN;
+    const lng = lngParam ? parseFloat(lngParam) : NaN;
+
+    // 좌표가 유효하지 않으면 이전 페이지로 리다이렉트
+    if (!latParam || !lngParam || Number.isNaN(lat) || Number.isNaN(lng)) {
+      router.replace("/report");
+      return;
+    }
 
     setFormData((prev) => ({
       ...prev,
@@ -40,7 +49,7 @@ function ReportRegisterContent() {
       latitude: lat,
       longitude: lng,
     }));
-  }, [searchParams]);
+  }, [searchParams, router]);
   const [isOpenTimeModalOpen, setIsOpenTimeModalOpen] = useState(false);
   const [isCloseTimeModalOpen, setIsCloseTimeModalOpen] = useState(false);
   const [isExitConfirmModalOpen, setIsExitConfirmModalOpen] = useState(false);
