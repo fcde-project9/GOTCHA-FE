@@ -67,9 +67,11 @@ export default function ReportLocationPage() {
         }
       );
     } else {
-      setMyLocation({ latitude: 37.4979, longitude: 127.0276 });
-      getAddressFromCoords(37.4979, 127.0276);
-      setIsLoading(false);
+      (async () => {
+        setMyLocation({ latitude: 37.4979, longitude: 127.0276 });
+        await getAddressFromCoords(37.4979, 127.0276);
+        setIsLoading(false);
+      })();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
