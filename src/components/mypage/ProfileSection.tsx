@@ -25,7 +25,7 @@ export function ProfileSection({
   isLoggedIn = true,
   nickname = "빨간캡슐#21",
   email = "abcd123@gmail.com",
-  profileImage = "/images/default-profile.png",
+  profileImage = DEFAULT_IMAGES.PROFILE,
   socialProvider = "google",
   onEditProfile,
   onEditNickname,

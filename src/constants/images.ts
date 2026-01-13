@@ -40,7 +40,10 @@ export const SOCIAL_LOGO_IMAGES = {
   GOOGLE: "/images/google-logo.svg",
 } as const;
 
+// 소셜 프로바이더 타입
+export type SocialProvider = "kakao" | "naver" | "google";
+
 // 소셜 프로바이더 아이콘 경로 생성
-export const getSocialProviderIcon = (provider: string): string => {
+export const getSocialProviderIcon = (provider: SocialProvider): string => {
   return `/images/icons/${provider}.png`;
 };
