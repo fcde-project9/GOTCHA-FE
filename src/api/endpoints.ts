@@ -18,6 +18,7 @@ export const ENDPOINTS = {
     ME: "/api/users/me",
     UPDATE_NICKNAME: "/api/users/me/nickname",
     UPDATE_PROFILE_IMAGE: "/api/users/me/profile-image",
+    WITHDRAW: "/api/users/me",
     PROFILE: "/user/profile",
     UPDATE: "/user/update",
   },

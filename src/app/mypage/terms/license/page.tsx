@@ -2,9 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
-import { TERMS_OF_SERVICE } from "@/data/terms";
+import { LICENSE } from "@/data/terms";
 
-export default function TermsPage() {
+export default function LicensePage() {
   const router = useRouter();
 
   const handleBack = () => {
@@ -23,7 +23,7 @@ export default function TermsPage() {
           <ChevronLeft size={24} className="stroke-grey-900" strokeWidth={2} />
         </button>
         <h1 className="flex-1 text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900 h-[27px] flex items-center">
-          이용약관
+          라이센스
         </h1>
       </header>
 
@@ -31,7 +31,7 @@ export default function TermsPage() {
       <main className="px-5 py-6">
         <article className="prose prose-sm max-w-none">
           <div className="whitespace-pre-wrap text-[14px] leading-[1.8] tracking-[-0.14px] text-grey-800">
-            {TERMS_OF_SERVICE.replace(/^# .+\n\n/, "")}
+            {LICENSE}
           </div>
         </article>
       </main>

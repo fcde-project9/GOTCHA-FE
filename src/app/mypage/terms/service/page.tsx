@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { TERMS_OF_SERVICE } from "@/data/terms";
 
-export default function TermsPage() {
+export default function TermsServicePage() {
   const router = useRouter();
 
   const handleBack = () => {

@@ -1,4 +1,9 @@
-import axios from "axios";
+import axios, { type InternalAxiosRequestConfig } from "axios";
+
+// 커스텀 config 타입 확장
+interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
+  _hadToken?: boolean;
+}
 
 // Axios 인스턴스 생성
 const apiClient = axios.create({
@@ -13,12 +18,14 @@ const apiClient = axios.create({
 
 // 요청 인터셉터
 apiClient.interceptors.request.use(
-  (config) => {
+  (config: CustomAxiosRequestConfig) => {
     // 토큰이 있으면 헤더에 추가
     try {
       const token = localStorage.getItem("accessToken");
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
+        // 요청 시점에 토큰이 있었음을 표시 (내부 속성으로)
+        config._hadToken = true;
       }
     } catch {
       // Private Browsing 등 localStorage 접근 불가 시 무시
@@ -37,9 +44,11 @@ apiClient.interceptors.response.use(
   },
   async (error) => {
     const status = error?.response?.status ?? 0;
+    const config = error?.config as CustomAxiosRequestConfig | undefined;
+    const hadToken = config?._hadToken === true;
 
-    // 401 에러 처리 (인증 실패)
-    if (status === 401) {
+    // 401 에러 처리 (인증 실패) - 토큰이 있었던 경우에만 처리
+    if (status === 401 && hadToken) {
       const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
 
       // 로그인 관련 페이지에서는 리다이렉트 안 함 (무한 루프 방지)

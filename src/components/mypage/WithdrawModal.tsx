@@ -10,12 +10,12 @@ interface WithdrawModalProps {
 }
 
 const WITHDRAW_REASONS = [
-  "사용을 잘 안하게 돼요",
-  "가챠샵 정보가 부족해요",
-  "가챠샵 정보가 기재된 내용과 달라요",
-  "개인정보 보호를 위해 삭제할래요",
-  "다른 계정이 있어요",
-  "기타",
+  { label: "사용을 잘 안하게 돼요", value: "LOW_USAGE" },
+  { label: "가챠샵 정보가 부족해요", value: "INSUFFICIENT_INFO" },
+  { label: "가챠샵 정보가 기재된 내용과 달라요", value: "INACCURATE_INFO" },
+  { label: "개인정보 보호를 위해 삭제할래요", value: "PRIVACY_CONCERN" },
+  { label: "다른 계정이 있어요", value: "HAS_OTHER_ACCOUNT" },
+  { label: "기타", value: "OTHER" },
 ] as const;
 
 /**
@@ -54,14 +54,14 @@ export function WithdrawModal({ isOpen, onClose, onConfirm }: WithdrawModalProps
     setOtherReason("");
   };
 
-  const isOtherSelected = selectedReasons.includes("기타");
+  const isOtherSelected = selectedReasons.includes("OTHER");
   const isButtonDisabled = selectedReasons.length === 0;
 
   return (
-    <div className="fixed inset-0 z-50 bg-white">
-      <div className="h-full flex flex-col">
+    <div className="fixed inset-0 z-50 flex justify-center bg-white">
+      <div className="h-full w-full max-w-[480px] flex flex-col bg-white">
         {/* Header */}
-        <header className="bg-white h-12 flex items-center px-5 py-2 border-b border-line-100">
+        <header className="bg-white h-12 flex items-center px-5 py-2">
           <h1 className="flex-1 text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900">
             회원탈퇴
           </h1>
@@ -82,13 +82,13 @@ export function WithdrawModal({ isOpen, onClose, onConfirm }: WithdrawModalProps
           {/* Reasons List */}
           <div className="flex flex-col gap-4 mb-6">
             {WITHDRAW_REASONS.map((reason) => (
-              <div key={reason} className="flex items-center justify-between">
+              <div key={reason.value} className="flex items-center justify-between">
                 <span className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-900">
-                  {reason}
+                  {reason.label}
                 </span>
                 <Checkbox
-                  checked={selectedReasons.includes(reason)}
-                  onChange={() => handleReasonToggle(reason)}
+                  checked={selectedReasons.includes(reason.value)}
+                  onChange={() => handleReasonToggle(reason.value)}
                   variant="outlined"
                 />
               </div>
