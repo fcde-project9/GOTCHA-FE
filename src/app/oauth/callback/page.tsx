@@ -2,17 +2,27 @@
 
 import { useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useDelayedRedirectWithToast } from "@/hooks";
+import apiClient from "@/api/client";
+import { ENDPOINTS } from "@/api/endpoints";
+import { useDelayedRedirectWithToast, useAuth } from "@/hooks";
+import type { TokenExchangeApiResponse } from "@/types/api";
 
 /**
  * OAuth 콜백 페이지
- * 백엔드에서 소셜 로그인 성공 후 토큰과 함께 리다이렉트되는 페이지
- * URL 파라미터: accessToken, refreshToken, isNewUser
+ * 백엔드에서 소셜 로그인 성공 후 임시 코드와 함께 리다이렉트되는 페이지
+ * URL 파라미터: code (임시 코드, 30초 TTL, 1회용)
+ *
+ * 플로우:
+ * 1. URL에서 code 추출
+ * 2. POST /api/auth/token 호출하여 토큰 교환
+ * 3. 응답의 accessToken, refreshToken 저장
+ * 4. isNewUser에 따라 닉네임 설정 또는 홈으로 이동
  */
 function OAuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { redirectWithToast } = useDelayedRedirectWithToast();
+  const { login, isLoggedIn } = useAuth();
 
   // 중복 실행 방지 플래그
   const isProcessingRef = useRef(false);
@@ -24,65 +34,68 @@ function OAuthCallbackContent() {
     }
     isProcessingRef.current = true;
 
-    const accessToken = searchParams.get("accessToken")?.trim();
-    const refreshToken = searchParams.get("refreshToken")?.trim();
-    const isNewUser = searchParams.get("isNewUser") === "true";
-    const codeParam = searchParams.get("code");
-
-    // 백엔드 에러 코드 패턴 (A001, A005 등)
-    const isErrorCode = codeParam && /^A\d{3}$/.test(codeParam);
+    const code = searchParams.get("code")?.trim();
 
     // URL에서 파라미터 제거 (새로고침 시 재처리 방지)
-    if (accessToken || refreshToken || codeParam) {
+    if (code) {
       const url = new URL(window.location.href);
       url.search = "";
       window.history.replaceState({}, "", url.pathname);
     }
 
+    // 백엔드 에러 코드 패턴 (A001, A005 등)
+    const isErrorCode = code && /^A\d{3}$/.test(code);
+
     // 에러 코드가 있는 경우 (로그인 실패)
     if (isErrorCode) {
-      console.error("소셜 로그인 실패:", codeParam);
+      console.error("소셜 로그인 실패:", code);
       const errorMessage = searchParams.get("message") || "로그인에 실패했어요. 다시 시도해주세요.";
       redirectWithToast(errorMessage, "/login");
       return;
     }
 
-    // 토큰이 없거나 빈 문자열인 경우
-    if (!accessToken || !refreshToken) {
-      // 이미 로그인된 상태인지 확인 (Private Browsing 대응)
-      try {
-        const existingToken = localStorage.getItem("accessToken");
-        if (existingToken) {
-          router.replace("/home");
-          return;
-        }
-      } catch {
-        // Private Browsing 모드에서 localStorage 접근 실패 시 무시
+    // 코드가 없는 경우
+    if (!code) {
+      // 이미 로그인된 상태인지 확인
+      if (isLoggedIn) {
+        router.replace("/home");
+        return;
       }
-      console.error("토큰이 없어요");
+      console.error("인증 코드가 없어요");
       redirectWithToast("로그인에 실패했어요. 다시 시도해주세요.", "/login");
       return;
     }
 
-    // 토큰 저장 (localStorage 에러 핸들링)
-    try {
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
-      localStorage.setItem("user_type", "member");
-    } catch (error) {
-      console.error("토큰 저장 실패:", error);
-      redirectWithToast("로그인 정보를 저장할 수 없어요. 브라우저 설정을 확인해주세요.", "/login");
-      return;
-    }
+    // 토큰 교환 API 호출
+    const exchangeToken = async () => {
+      try {
+        const { data } = await apiClient.post<TokenExchangeApiResponse>(ENDPOINTS.AUTH.TOKEN, {
+          code,
+        });
 
-    // 신규 사용자면 닉네임 설정 페이지로, 기존 사용자면 홈으로 이동
-    // replace 사용: 뒤로가기 시 콜백 페이지로 돌아오지 않도록 함
-    if (isNewUser) {
-      router.replace("/login/nickname");
-    } else {
-      router.replace("/home");
-    }
-  }, [searchParams, router, redirectWithToast]);
+        if (!data.success || !data.data) {
+          throw new Error("토큰 교환에 실패했어요.");
+        }
+
+        const { accessToken, refreshToken, isNewUser } = data.data;
+
+        // 전역 인증 상태 업데이트 (토큰 저장 포함)
+        login(accessToken, refreshToken);
+
+        // 신규 사용자면 닉네임 설정 페이지로, 기존 사용자면 홈으로 이동
+        if (isNewUser) {
+          router.replace("/login/nickname");
+        } else {
+          router.replace("/home");
+        }
+      } catch (error) {
+        console.error("토큰 교환 실패:", error);
+        redirectWithToast("로그인에 실패했어요. 다시 시도해주세요.", "/login");
+      }
+    };
+
+    exchangeToken();
+  }, [searchParams, router, redirectWithToast, login, isLoggedIn]);
 
   return (
     <div className="flex min-h-[100dvh] w-full items-center justify-center bg-default">

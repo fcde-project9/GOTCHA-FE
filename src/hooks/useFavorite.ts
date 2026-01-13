@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { useAddFavorite, useRemoveFavorite } from "@/api/mutations/useToggleFavorite";
-import type { User } from "@/api/types";
+import { useAuth } from "./useAuth";
 
 interface UseFavoriteOptions {
   shopId: number;
@@ -22,7 +21,7 @@ interface UseFavoriteReturn {
 /**
  * 찜하기 기능을 위한 공통 훅
  * 로그인 체크를 포함하여 비로그인 사용자는 onUnauthorized 콜백을 호출합니다.
- * useUser를 호출하지 않고 QueryClient에서 캐시된 데이터만 확인하여 불필요한 API 호출을 방지합니다.
+ * useAuth를 사용하여 전역 로그인 상태를 확인합니다.
  *
  * @param options - 훅 옵션
  * @param options.shopId - 가게 ID
@@ -53,8 +52,8 @@ export function useFavorite({
 }: UseFavoriteOptions): UseFavoriteReturn {
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
 
-  // QueryClient를 사용하여 캐시된 사용자 정보만 확인 (API 호출 없음)
-  const queryClient = useQueryClient();
+  // 전역 로그인 상태 확인
+  const { isLoggedIn } = useAuth();
 
   const addFavoriteMutation = useAddFavorite();
   const removeFavoriteMutation = useRemoveFavorite();
@@ -69,11 +68,8 @@ export function useFavorite({
   const toggleFavorite = useCallback(() => {
     if (isLoading) return;
 
-    // QueryClient에서 캐시된 사용자 정보만 확인 (API 호출 없음)
-    const cachedUser = queryClient.getQueryData<User>(["user", "me"]);
-
     // 로그인 체크
-    if (!cachedUser) {
+    if (!isLoggedIn) {
       onUnauthorized?.();
       return;
     }
@@ -99,7 +95,7 @@ export function useFavorite({
     shopId,
     isFavorite,
     isLoading,
-    queryClient,
+    isLoggedIn,
     addFavoriteMutation,
     removeFavoriteMutation,
     onSuccess,

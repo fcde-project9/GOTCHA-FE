@@ -5,6 +5,7 @@ export const ENDPOINTS = {
     LOGIN: "/auth/login",
     LOGOUT: "/auth/logout",
     REFRESH: "/auth/refresh",
+    TOKEN: "/api/auth/token",
   },
   // 매장
   SHOPS: {
