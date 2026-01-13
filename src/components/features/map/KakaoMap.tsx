@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { MARKER_IMAGES } from "@/constants";
 import { useKakaoLoader } from "@/hooks/useKakaoLoader";
 import { MapBounds, ShopMapResponse } from "@/types/api";
 
 // 마커 이미지 설정
 const MARKER_IMAGE = {
-  src: "/images/markers/shop-marker.png",
+  src: MARKER_IMAGES.SHOP,
   width: 36,
   height: 48,
   // 마커 이미지의 기준점 (이미지 하단 중앙이 좌표에 위치)

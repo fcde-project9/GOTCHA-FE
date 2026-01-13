@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { MapPin, Heart } from "lucide-react";
 import StatusBadge from "@/components/features/shop/StatusBadge";
+import { DEFAULT_IMAGES } from "@/constants";
 import { useFavorite, useToast } from "@/hooks";
 import type { FavoriteShopResponse } from "@/types/api";
 
@@ -43,7 +44,7 @@ export function FavoriteShopItem({ shop }: FavoriteShopItemProps) {
       {/* 업체 이미지 */}
       <div className="relative h-[85px] w-[85px] shrink-0 overflow-hidden rounded-[5px]">
         <Image
-          src={shop.mainImageUrl || "/images/no-image.png"}
+          src={shop.mainImageUrl || DEFAULT_IMAGES.NO_IMAGE}
           alt={shop.name}
           fill
           className="object-cover"

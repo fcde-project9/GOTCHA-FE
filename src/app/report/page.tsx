@@ -9,15 +9,13 @@ import type { NearbyShopResponse, ApiResponse, NearbyShopsResponse } from "@/api
 import { Button } from "@/components/common";
 import { KakaoMap } from "@/components/features/map";
 import { ShopDuplicateCheckModal } from "@/components/report/ShopDuplicateCheckModal";
+import { MARKER_IMAGES } from "@/constants";
 
 // 카카오맵 타입
 interface KakaoLatLng {
   getLat(): number;
   getLng(): number;
 }
-
-// 위치 핀 이미지
-const LOCATION_PIN_IMAGE = "/images/markers/shop-marker.png";
 
 export default function ReportLocationPage() {
   const router = useRouter();
@@ -236,7 +234,7 @@ export default function ReportLocationPage() {
           className="absolute left-1/2 z-20 flex h-14 w-14 -translate-x-1/2 items-center justify-center px-[7px] pointer-events-none"
           style={{ top: "calc(50% + 40px)", transform: "translate(-50%, -100%)" }}
         >
-          <img src={LOCATION_PIN_IMAGE} alt="위치 핀" width={42} height={56} />
+          <img src={MARKER_IMAGES.SHOP} alt="위치 핀" width={42} height={56} />
         </div>
 
         {/* 현재 위치 버튼 */}

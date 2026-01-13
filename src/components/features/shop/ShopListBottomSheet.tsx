@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { Store } from "lucide-react";
+import { DEFAULT_IMAGES } from "@/constants";
 import { ShopListView } from "@/utils/shop";
 import { BottomSheet } from "../ui";
 import ShopListItem from "./ShopListItem";
@@ -79,7 +79,7 @@ export default function ShopListBottomSheet({
           /* 빈 상태 UI */
           <div className="flex w-full flex-col items-center justify-center h-full">
             <div className="mb-4 flex items-center justify-center flex-shrink-0 w-20">
-              <img src="/images/shop-list-empty.png" alt="shop-list-empty" />
+              <img src={DEFAULT_IMAGES.SHOP_LIST_EMPTY} alt="shop-list-empty" />
             </div>
             <p className="mb-1 text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900">
               이 지역에 등록된 매장이 없어요

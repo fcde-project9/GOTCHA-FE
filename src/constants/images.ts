@@ -7,6 +7,40 @@
 export const DEFAULT_IMAGES = {
   /** 가게 기본 이미지 (이미지 없을 때) */
   NO_IMAGE: "/images/no-image.png",
+  /** 기본 프로필 이미지 */
+  PROFILE: "/images/default-profile.png",
+  /** 가게 아이콘 (빈 상태용) */
+  SHOP: "/images/shop.png",
   /** 내 제보 빈 상태 이미지 */
   MY_SHOP: "/images/my-shop.png",
+  /** 가게 목록 빈 상태 이미지 */
+  SHOP_LIST_EMPTY: "/images/shop-list-empty.png",
+  /** 검색 아이콘 */
+  SEARCH: "/images/search.png",
 } as const;
+
+// 지도 마커 이미지
+export const MARKER_IMAGES = {
+  /** 가게 마커 */
+  SHOP: "/images/markers/shop-marker.png",
+} as const;
+
+// 로고 이미지
+export const LOGO_IMAGES = {
+  /** 메인 로고 */
+  MAIN: "/images/gotcha-logo.png",
+  /** 라이트 로고 (스플래시용) */
+  LIGHT: "/images/gotcha-logo-light.png",
+} as const;
+
+// 소셜 로그인 로고
+export const SOCIAL_LOGO_IMAGES = {
+  KAKAO: "/images/kakao-logo.svg",
+  NAVER: "/images/naver-logo.svg",
+  GOOGLE: "/images/google-logo.svg",
+} as const;
+
+// 소셜 프로바이더 아이콘 경로 생성
+export const getSocialProviderIcon = (provider: string): string => {
+  return `/images/icons/${provider}.png`;
+};

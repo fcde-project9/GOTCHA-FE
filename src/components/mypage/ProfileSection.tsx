@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { ChevronLeft, Plus, SquarePen } from "lucide-react";
+import { DEFAULT_IMAGES, getSocialProviderIcon } from "@/constants";
 
 const SOCIAL_PROVIDER_LABELS = {
   google: "Google",
@@ -50,7 +51,7 @@ export function ProfileSection({
         {/* 기본 프로필 이미지 */}
         <div className="w-[88px] h-[88px] rounded-full bg-main-50 overflow-hidden flex items-center justify-center">
           <Image
-            src="/images/default-profile.png"
+            src={DEFAULT_IMAGES.PROFILE}
             alt="프로필 이미지"
             width={88}
             height={88}
@@ -117,7 +118,7 @@ export function ProfileSection({
           {/* Social Login Info */}
           <div className="bg-grey-50 rounded-md px-2 py-0.5 flex items-center gap-2 w-full justify-center">
             <Image
-              src={`/images/icons/${socialProvider}.png`}
+              src={getSocialProviderIcon(socialProvider)}
               alt={socialProvider ? SOCIAL_PROVIDER_LABELS[socialProvider] : ""}
               width={14}
               height={14}

@@ -8,6 +8,7 @@ import { Footer, LocationPermissionModal } from "@/components/common";
 import { KakaoMap } from "@/components/features/map";
 import { SearchResultItem } from "@/components/features/search";
 import { ShopListBottomSheet } from "@/components/features/shop";
+import { DEFAULT_IMAGES } from "@/constants";
 import { useCurrentLocation, useKakaoPlaces, PlaceSearchResult } from "@/hooks";
 import { MapBounds } from "@/types/api";
 import { shopMapResponsesToViews } from "@/utils/shop";
@@ -378,7 +379,7 @@ export default function Home() {
                   /* 초기 안내 화면 */
                   <div className="flex flex-col items-center justify-center pt-[calc(50vh-300px)]">
                     <div className="mb-6 flex items-center justify-center">
-                      <Image src="/images/search.png" alt="검색" width={72} height={72} />
+                      <Image src={DEFAULT_IMAGES.SEARCH} alt="검색" width={72} height={72} />
                     </div>
                     <div className="flex flex-col gap-2 text-center">
                       <p className="text-[16px] font-semibold leading-[1.5] tracking-[-0.16px] text-grey-900">

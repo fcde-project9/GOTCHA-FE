@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import apiClient from "@/api/client";
+import { DEFAULT_IMAGES } from "@/constants";
 
 interface NicknameResponse {
   success: boolean;
@@ -125,7 +126,7 @@ export default function NicknamePage() {
             {/* 기본 프로필 이미지 */}
             <div className="w-[108px] h-[108px] rounded-full bg-main-50 overflow-hidden flex items-center justify-center">
               <Image
-                src="/images/default-profile.png"
+                src={DEFAULT_IMAGES.PROFILE}
                 alt="프로필 이미지"
                 width={108}
                 height={108}
