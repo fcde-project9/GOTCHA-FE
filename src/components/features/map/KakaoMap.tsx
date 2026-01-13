@@ -112,7 +112,7 @@ export default function KakaoMap({
         // 재시도 횟수 제한
         if (retryCount >= MAX_RETRIES) {
           if (isMounted) {
-            setMapError("지도 컨테이너를 찾을 수 없습니다.");
+            setMapError("지도 컨테이너를 찾을 수 없어요.");
             setIsLoading(false);
           }
           return;

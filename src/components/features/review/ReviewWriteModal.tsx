@@ -4,8 +4,11 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { X, Camera, ImageIcon } from "lucide-react";
 import { useCreateReview } from "@/api/mutations/useCreateReview";
+import { useUpdateReview } from "@/api/mutations/useUpdateReview";
 import { useUploadFile } from "@/api/mutations/useUploadFile";
 import { useToast } from "@/hooks";
+import type { ReviewResponse } from "@/types/api";
+import { ReviewExitConfirmModal } from "./ReviewExitConfirmModal";
 
 const MAX_IMAGES = 10;
 const MAX_CONTENT_LENGTH = 150;
@@ -16,26 +19,43 @@ interface ReviewWriteModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  /** 수정 모드일 때 리뷰 ID */
+  reviewId?: number;
+  /** 수정 모드일 때 기존 리뷰 데이터 */
+  initialData?: Pick<ReviewResponse, "content" | "imageUrls">;
 }
 
 /**
- * 리뷰 작성 모달 (바텀시트 형식)
+ * 리뷰 작성/수정 모달 (바텀시트 형식)
  */
-export function ReviewWriteModal({ shopId, isOpen, onClose, onSuccess }: ReviewWriteModalProps) {
+export function ReviewWriteModal({
+  shopId,
+  isOpen,
+  onClose,
+  onSuccess,
+  reviewId,
+  initialData,
+}: ReviewWriteModalProps) {
   const { showToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+
+  const isEditMode = !!reviewId && !!initialData;
 
   const [content, setContent] = useState("");
   const [imageUrls, setImageUrls] = useState<string[]>([]); // 업로드된 이미지 URL들
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]); // 로컬 미리보기 URL들
   const [isUploading, setIsUploading] = useState(false);
+  const [isExitConfirmOpen, setIsExitConfirmOpen] = useState(false); // 이탈 확인 모달
 
   // 파일 업로드 mutation hook
   const uploadFileMutation = useUploadFile("reviews");
 
   // 리뷰 작성 mutation hook
   const createReviewMutation = useCreateReview(shopId);
+
+  // 리뷰 수정 mutation hook
+  const updateReviewMutation = useUpdateReview(shopId, reviewId ?? 0);
 
   // 모달이 열릴 때 body 스크롤 방지
   useEffect(() => {
@@ -49,13 +69,50 @@ export function ReviewWriteModal({ shopId, isOpen, onClose, onSuccess }: ReviewW
     };
   }, [isOpen]);
 
+  // 수정 모드일 때 초기 데이터 설정
+  useEffect(() => {
+    if (isOpen && isEditMode && initialData) {
+      setContent(initialData.content);
+      setImageUrls(initialData.imageUrls);
+      setImagePreviewUrls(initialData.imageUrls); // 서버 URL을 미리보기로도 사용
+    }
+  }, [isOpen, isEditMode, initialData]);
+
+  // 작성 중인 내용이 있는지 확인
+  const hasUnsavedChanges = () => {
+    if (isEditMode && initialData) {
+      // 수정 모드: 초기 데이터와 비교하여 변경사항 있는지 확인
+      const contentChanged = content.trim() !== initialData.content;
+      const imagesChanged = JSON.stringify(imageUrls) !== JSON.stringify(initialData.imageUrls);
+      return contentChanged || imagesChanged;
+    }
+    // 작성 모드: 내용이나 이미지가 있으면 true
+    return content.trim().length > 0 || imageUrls.length > 0;
+  };
+
+  // 이탈 시도 핸들러 (X 버튼, 오버레이 클릭)
+  const handleExitAttempt = () => {
+    if (isProcessing) return; // 처리 중일 때는 무시
+
+    if (hasUnsavedChanges()) {
+      setIsExitConfirmOpen(true);
+    } else {
+      handleClose();
+    }
+  };
+
   // 모달이 닫힐 때 상태 초기화
   const handleClose = () => {
-    // 미리보기 URL 해제
-    imagePreviewUrls.forEach((url) => URL.revokeObjectURL(url));
+    // 새로 추가된 로컬 미리보기 URL만 해제 (기존 서버 URL은 제외)
+    imagePreviewUrls.forEach((url) => {
+      if (url.startsWith("blob:")) {
+        URL.revokeObjectURL(url);
+      }
+    });
     setContent("");
     setImageUrls([]);
     setImagePreviewUrls([]);
+    setIsExitConfirmOpen(false);
     onClose();
   };
 
@@ -71,7 +128,7 @@ export function ReviewWriteModal({ shopId, isOpen, onClose, onSuccess }: ReviewW
     const MAX_FILE_SIZE = 20 * 1024 * 1024;
     const validFiles = newFiles.filter((file) => {
       if (file.size > MAX_FILE_SIZE) {
-        showToast(`${file.name}은(는) 20MB를 초과합니다.`);
+        showToast(`${file.name}은(는) 20MB를 초과해요. 파일 크기를 줄여주세요.`);
         return false;
       }
       return true;
@@ -97,7 +154,7 @@ export function ReviewWriteModal({ shopId, isOpen, onClose, onSuccess }: ReviewW
       // 업로드 실패 시 미리보기 URL 제거
       newPreviewUrls.forEach((url) => URL.revokeObjectURL(url));
       setImagePreviewUrls((prev) => prev.slice(0, prev.length - newPreviewUrls.length));
-      showToast("이미지 업로드에 실패했습니다.");
+      showToast("이미지 업로드에 실패했어요.");
     } finally {
       setIsUploading(false);
     }
@@ -108,47 +165,65 @@ export function ReviewWriteModal({ shopId, isOpen, onClose, onSuccess }: ReviewW
 
   // 이미지 삭제
   const handleImageRemove = (index: number) => {
-    // 미리보기 URL 해제
-    URL.revokeObjectURL(imagePreviewUrls[index]);
+    // 새로 추가된 로컬 미리보기 URL만 해제 (기존 서버 URL은 제외)
+    const urlToRemove = imagePreviewUrls[index];
+    if (urlToRemove.startsWith("blob:")) {
+      URL.revokeObjectURL(urlToRemove);
+    }
 
     setImageUrls((prev) => prev.filter((_, i) => i !== index));
     setImagePreviewUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // 리뷰 작성 제출
+  // 리뷰 작성/수정 제출
   const handleSubmit = () => {
     if (content.trim().length < MIN_CONTENT_LENGTH) {
-      showToast(`리뷰는 ${MIN_CONTENT_LENGTH}자 이상 작성해주세요.`);
+      showToast(`${MIN_CONTENT_LENGTH}자 이상 작성해주세요.`);
       return;
     }
 
-    createReviewMutation.mutate(
-      {
-        content: content.trim(),
-        imageUrls,
-      },
-      {
+    const requestData = {
+      content: content.trim(),
+      imageUrls,
+    };
+
+    if (isEditMode) {
+      // 수정 모드
+      updateReviewMutation.mutate(requestData, {
         onSuccess: () => {
-          showToast("리뷰가 등록되었습니다.");
+          showToast("수정이 완료되었어요!");
           handleClose();
           onSuccess?.();
         },
         onError: (error) => {
-          showToast(error.message || "리뷰 등록에 실패했습니다.");
+          showToast(error.message || "수정에 실패했어요.");
         },
-      }
-    );
+      });
+    } else {
+      // 작성 모드
+      createReviewMutation.mutate(requestData, {
+        onSuccess: () => {
+          showToast("등록이 완료되었어요!");
+          handleClose();
+          onSuccess?.();
+        },
+        onError: (error) => {
+          showToast(error.message || "등록에 실패했어요.");
+        },
+      });
+    }
   };
 
   const isValid = content.trim().length >= MIN_CONTENT_LENGTH;
-  const isProcessing = createReviewMutation.isPending || isUploading;
+  const isProcessing =
+    createReviewMutation.isPending || updateReviewMutation.isPending || isUploading;
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col justify-end">
       {/* 오버레이 */}
-      <div className="absolute inset-0 bg-black/50" onClick={handleClose} />
+      <div className="absolute inset-0 bg-black/50" onClick={handleExitAttempt} />
 
       {/* 모달 컨텐츠 */}
       <div className="relative bg-white rounded-t-[20px] max-h-[580px] flex flex-col animate-slide-up">
@@ -156,7 +231,7 @@ export function ReviewWriteModal({ shopId, isOpen, onClose, onSuccess }: ReviewW
         <div className="flex items-center justify-between px-5 py-5">
           {/* X 버튼 */}
           <button
-            onClick={handleClose}
+            onClick={handleExitAttempt}
             disabled={isProcessing}
             className="w-6 h-6 flex items-center justify-center disabled:opacity-50"
             aria-label="닫기"
@@ -167,11 +242,11 @@ export function ReviewWriteModal({ shopId, isOpen, onClose, onSuccess }: ReviewW
           {/* 타이틀 */}
           <div className="flex items-center gap-2">
             <span className="text-[20px] font-semibold leading-[1.5] tracking-[-0.2px] text-grey-900 ml-[30px]">
-              리뷰 작성
+              {isEditMode ? "리뷰 수정" : "리뷰 작성"}
             </span>
           </div>
 
-          {/* 등록 버튼 */}
+          {/* 등록/수정 버튼 */}
           <button
             onClick={handleSubmit}
             disabled={!isValid || isProcessing}
@@ -179,7 +254,7 @@ export function ReviewWriteModal({ shopId, isOpen, onClose, onSuccess }: ReviewW
               isValid && !isProcessing ? "text-white bg-main" : "text-grey-500 bg-grey-200"
             } disabled:opacity-50`}
           >
-            {isUploading ? "업로드 중..." : "등록"}
+            {isUploading ? "업로드 중..." : isEditMode ? "수정" : "등록"}
           </button>
         </div>
 
@@ -277,6 +352,13 @@ export function ReviewWriteModal({ shopId, isOpen, onClose, onSuccess }: ReviewW
           />
         </div>
       </div>
+
+      {/* 이탈 확인 모달 */}
+      <ReviewExitConfirmModal
+        isOpen={isExitConfirmOpen}
+        onCancel={() => setIsExitConfirmOpen(false)}
+        onConfirm={handleClose}
+      />
     </div>
   );
 }

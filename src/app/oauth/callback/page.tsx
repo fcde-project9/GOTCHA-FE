@@ -42,8 +42,7 @@ function OAuthCallbackContent() {
     // 에러 코드가 있는 경우 (로그인 실패)
     if (isErrorCode) {
       console.error("소셜 로그인 실패:", codeParam);
-      const errorMessage =
-        searchParams.get("message") || "로그인에 실패했습니다. 다시 시도해주세요.";
+      const errorMessage = searchParams.get("message") || "로그인에 실패했어요. 다시 시도해주세요.";
       redirectWithToast(errorMessage, "/login");
       return;
     }
@@ -60,8 +59,8 @@ function OAuthCallbackContent() {
       } catch {
         // Private Browsing 모드에서 localStorage 접근 실패 시 무시
       }
-      console.error("토큰이 없습니다");
-      redirectWithToast("로그인에 실패했습니다. 다시 시도해주세요.", "/login");
+      console.error("토큰이 없어요");
+      redirectWithToast("로그인에 실패했어요. 다시 시도해주세요.", "/login");
       return;
     }
 
@@ -72,10 +71,7 @@ function OAuthCallbackContent() {
       localStorage.setItem("user_type", "member");
     } catch (error) {
       console.error("토큰 저장 실패:", error);
-      redirectWithToast(
-        "로그인 정보를 저장할 수 없습니다. 브라우저 설정을 확인해주세요.",
-        "/login"
-      );
+      redirectWithToast("로그인 정보를 저장할 수 없어요. 브라우저 설정을 확인해주세요.", "/login");
       return;
     }
 

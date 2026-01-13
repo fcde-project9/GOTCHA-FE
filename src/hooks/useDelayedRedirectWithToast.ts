@@ -14,7 +14,7 @@ import { useToast } from "./useToast";
  * const { redirectWithToast } = useDelayedRedirectWithToast();
  *
  * // 에러 발생 시
- * redirectWithToast("로그인에 실패했습니다.", "/login");
+ * redirectWithToast("로그인에 실패했어요.", "/login");
  * ```
  */
 export function useDelayedRedirectWithToast(delay: number = 2500) {

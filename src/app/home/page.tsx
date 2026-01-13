@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
+import Image from "next/image";
 import { Search, LocateFixed, RefreshCcw, ChevronLeft, CircleX } from "lucide-react";
 import { useShopsInBounds } from "@/api/queries/useShopsInBounds";
 import { Footer, LocationPermissionModal } from "@/components/common";
@@ -32,7 +33,7 @@ export default function Home() {
   } | null>(null);
 
   // React Query로 가게 목록 조회
-  const { data: shopsData } = useShopsInBounds(activeBounds);
+  const { data: shopsData, isLoading: isShopsLoading } = useShopsInBounds(activeBounds);
 
   // API 응답을 UI용 데이터로 변환
   const shops = useMemo(() => {
@@ -132,7 +133,7 @@ export default function Home() {
   const handleCurrentLocation = () => {
     // 현재 위치를 다시 가져오고, 가져온 후 지도 중심 업데이트
     if (!navigator.geolocation) {
-      console.error("브라우저가 위치 정보를 지원하지 않습니다.");
+      console.error("브라우저가 위치 정보를 지원하지 않아요.");
       return;
     }
 
@@ -157,7 +158,7 @@ export default function Home() {
         startDeviceOrientationTracking(newLocation);
       },
       (err) => {
-        console.error("위치 정보를 가져올 수 없습니다:", err);
+        console.error("위치 정보를 가져올 수 없어요:", err);
 
         // 위치 권한 거부 시만 설정 안내 모달 표시
         if (err.code === err.PERMISSION_DENIED) {
@@ -376,8 +377,8 @@ export default function Home() {
                 {searchQuery.trim() === "" ? (
                   /* 초기 안내 화면 */
                   <div className="flex flex-col items-center justify-center pt-[calc(50vh-300px)]">
-                    <div className="mb-6 flex size-[72px] items-center justify-center">
-                      <Search size={48} className="stroke-error" strokeWidth={2} />
+                    <div className="mb-6 flex items-center justify-center">
+                      <Image src="/images/search.png" alt="검색" width={72} height={72} />
                     </div>
                     <div className="flex flex-col gap-2 text-center">
                       <p className="text-[16px] font-semibold leading-[1.5] tracking-[-0.16px] text-grey-900">
@@ -414,7 +415,11 @@ export default function Home() {
 
           {/* 바텀시트 */}
           {!isSearching && (
-            <ShopListBottomSheet shops={shops} onHeightChange={handleBottomSheetHeightChange} />
+            <ShopListBottomSheet
+              shops={shops}
+              isLoading={isShopsLoading}
+              onHeightChange={handleBottomSheetHeightChange}
+            />
           )}
         </div>
       </main>

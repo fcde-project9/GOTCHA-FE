@@ -67,7 +67,7 @@ apiClient.interceptors.response.use(
         }
 
         // 알림 표시 후 리다이렉트
-        alert("로그인 세션이 만료되었습니다. 다시 로그인해주세요.");
+        alert("로그인 세션이 만료되었어요. 다시 로그인해주세요.");
         window.location.replace("/login");
       }
     }

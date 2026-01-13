@@ -29,7 +29,7 @@ export const useUploadFile = (folder: string) => {
 
         // API 응답 검증
         if (!data.success || !data.data) {
-          throw new Error(data.error?.message || "파일 업로드에 실패했습니다.");
+          throw new Error(data.error?.message || "업로드에 실패했어요.");
         }
 
         return data.data;

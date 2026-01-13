@@ -4,8 +4,12 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { ChevronDown, ThumbsUp, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { useDeleteReview } from "@/api/mutations/useDeleteReview";
+import { useToggleReviewLike } from "@/api/mutations/useToggleReviewLike";
 import { useInfiniteReviews } from "@/api/queries/useInfiniteReviews";
 import { Button, BackHeader } from "@/components/common";
+import { ReviewDeleteConfirmModal } from "@/components/features/review/ReviewDeleteConfirmModal";
+import { ReviewWriteModal } from "@/components/features/review/ReviewWriteModal";
 import { useToast } from "@/hooks";
 import type { ReviewResponse, ReviewSortOption } from "@/types/api";
 
@@ -54,7 +58,7 @@ function ReviewListItem({
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="flex items-center justify-center w-6 h-6"
+                className="flex items-center justify-center h-6"
                 aria-label="메뉴"
               >
                 <MoreVertical size={16} className="text-grey-500" />
@@ -178,12 +182,24 @@ export default function ReviewsListPage() {
   }, [isSortDropdownOpen]);
 
   // React Query 무한 스크롤 훅
-  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, error } =
+  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, error, refetch } =
     useInfiniteReviews(validShopId, sortBy);
 
   // 모든 페이지의 리뷰를 평탄화
   const reviews = data?.pages.flatMap((page) => page.content) ?? [];
   const totalCount = data?.pages[0]?.totalCount ?? 0;
+
+  // 리뷰 수정 상태 (수정할 리뷰 데이터)
+  const [editingReview, setEditingReview] = useState<ReviewResponse | null>(null);
+
+  // 리뷰 삭제 상태 (삭제할 리뷰 ID)
+  const [deletingReviewId, setDeletingReviewId] = useState<number | null>(null);
+
+  // 리뷰 삭제 mutation hook
+  const deleteReviewMutation = useDeleteReview(validShopId, deletingReviewId ?? 0);
+
+  // 리뷰 좋아요 토글 mutation hook
+  const toggleReviewLikeMutation = useToggleReviewLike();
 
   // 무한 스크롤 Intersection Observer
   useEffect(() => {
@@ -212,20 +228,50 @@ export default function ReviewsListPage() {
   };
 
   // 좋아요 토글
-  const handleLikeToggle = async (_reviewId: number) => {
-    // TODO: API 연동 후 구현
-    showToast("좋아요 기능 준비 중입니다");
+  const handleLikeToggle = (reviewId: number) => {
+    const review = reviews.find((r) => r.id === reviewId);
+    if (!review) return;
+
+    toggleReviewLikeMutation.mutate(
+      { reviewId, isLiked: review.isLiked },
+      {
+        onSuccess: () => {
+          refetch();
+        },
+        onError: (error) => {
+          showToast(error.message || "좋아요 처리에 실패했어요.");
+        },
+      }
+    );
   };
 
-  // 리뷰 수정
+  // 리뷰 수정 모달 열기
   const handleEditReview = (reviewId: number) => {
-    router.push(`/shop/${validShopId}/review/${reviewId}/edit`);
+    const reviewToEdit = reviews.find((r) => r.id === reviewId);
+    if (reviewToEdit) {
+      setEditingReview(reviewToEdit);
+    }
   };
 
-  // 리뷰 삭제
-  const handleDeleteReview = async (_reviewId: number) => {
-    // TODO: 삭제 확인 모달 및 API 연동
-    showToast("삭제 기능 준비 중입니다");
+  // 리뷰 삭제 확인 모달 열기
+  const handleDeleteReview = (reviewId: number) => {
+    setDeletingReviewId(reviewId);
+  };
+
+  // 리뷰 삭제 실행
+  const handleConfirmDelete = () => {
+    if (!deletingReviewId) return;
+
+    deleteReviewMutation.mutate(undefined, {
+      onSuccess: () => {
+        showToast("리뷰가 삭제되었어요.");
+        setDeletingReviewId(null);
+        refetch();
+      },
+      onError: (error) => {
+        showToast(error.message || "리뷰 삭제에 실패했어요.");
+      },
+    });
   };
 
   // 유효하지 않은 shopId 처리
@@ -256,14 +302,14 @@ export default function ReviewsListPage() {
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center h-64 px-5">
-            <p className="text-[15px] text-grey-500 mb-4">리뷰를 불러오는데 실패했습니다</p>
+            <p className="text-[15px] text-grey-500 mb-4">리뷰를 불러오는데 실패했어요.</p>
             <Button variant="primary" size="small" onClick={() => router.back()}>
               돌아가기
             </Button>
           </div>
         ) : reviews.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 px-5">
-            <p className="text-[15px] text-grey-500 mb-4">아직 작성된 리뷰가 없어요</p>
+            <p className="text-[15px] text-grey-500 mb-4">아직 작성된 리뷰가 없어요.</p>
             <Button variant="primary" size="small" onClick={() => router.back()}>
               돌아가기
             </Button>
@@ -336,6 +382,29 @@ export default function ReviewsListPage() {
           </div>
         )}
       </div>
+
+      {/* 리뷰 수정 모달 */}
+      {editingReview && (
+        <ReviewWriteModal
+          shopId={validShopId}
+          isOpen={!!editingReview}
+          onClose={() => setEditingReview(null)}
+          onSuccess={() => refetch()}
+          reviewId={editingReview.id}
+          initialData={{
+            content: editingReview.content,
+            imageUrls: editingReview.imageUrls,
+          }}
+        />
+      )}
+
+      {/* 리뷰 삭제 확인 모달 */}
+      <ReviewDeleteConfirmModal
+        isOpen={!!deletingReviewId}
+        isLoading={deleteReviewMutation.isPending}
+        onClose={() => setDeletingReviewId(null)}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }

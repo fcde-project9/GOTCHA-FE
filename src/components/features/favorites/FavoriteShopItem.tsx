@@ -30,7 +30,7 @@ export function FavoriteShopItem({ shop }: FavoriteShopItemProps) {
     shopId: shop.id,
     initialIsFavorite: true, // 찜 목록에 있으므로 초기값 true
     onUnauthorized: () => {
-      showToast("찜하기는 로그인 후 이용 가능합니다");
+      showToast("찜하기는 로그인 후 이용 가능해요.");
     },
   });
 

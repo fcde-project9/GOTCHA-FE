@@ -75,7 +75,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
  * const { showToast } = useToast();
  *
  * const handleClick = () => {
- *   showToast("저장되었습니다");
+ *   showToast("저장되었어요.");
  * };
  *
  * // 커스텀 duration

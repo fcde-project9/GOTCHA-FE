@@ -21,7 +21,7 @@ export default function NotFound() {
             </p>
             <div className="flex flex-col items-center gap-1 text-center">
               <p className="text-[16px] font-semibold leading-[1.5] tracking-[-0.16px] text-grey-900">
-                요청한 페이지를 찾을 수 없습니다
+                요청한 페이지를 찾을 수 없어요
               </p>
               <p className="text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-500">
                 서비스 관리자에게 문의해 주세요

@@ -8,10 +8,15 @@ import ShopListItem from "./ShopListItem";
 
 interface ShopListBottomSheetProps {
   shops: ShopListView[];
+  isLoading?: boolean;
   onHeightChange?: (height: number, isDragging: boolean) => void;
 }
 
-export default function ShopListBottomSheet({ shops, onHeightChange }: ShopListBottomSheetProps) {
+export default function ShopListBottomSheet({
+  shops,
+  isLoading,
+  onHeightChange,
+}: ShopListBottomSheetProps) {
   const hasShops = shops.length > 0;
   const [scrollTrigger, setScrollTrigger] = useState(0);
 
@@ -33,7 +38,12 @@ export default function ShopListBottomSheet({ shops, onHeightChange }: ShopListB
       scrollToTop={scrollTrigger}
     >
       <div className="flex flex-col items-center gap-2 px-5 h-full">
-        {hasShops ? (
+        {isLoading ? (
+          /* 로딩 상태 UI */
+          <div className="flex w-full flex-col items-center justify-center h-full">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
+          </div>
+        ) : hasShops ? (
           <>
             {/* 헤더 섹션 */}
             <div className="flex w-full items-center justify-between">

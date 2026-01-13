@@ -28,7 +28,7 @@ export function ErrorPage({ onRetry }: ErrorPageProps) {
             </p>
             <div className="flex flex-col items-center gap-1 text-center">
               <p className="text-[16px] font-semibold leading-[1.5] tracking-[-0.16px] text-grey-900">
-                일시적인 문제가 발생했습니다
+                일시적인 문제가 발생했어요.
               </p>
               <p className="text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-500">
                 다시 시도해 주세요 문제가 지속될

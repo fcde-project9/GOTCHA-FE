@@ -51,7 +51,7 @@ export const useShopsInBounds = (bounds: MapBounds | null, enabled: boolean = tr
         });
 
         if (!data.success || !data.data) {
-          throw new Error("가게 목록을 불러오는데 실패했습니다.");
+          throw new Error("가게 목록을 불러오는데 실패했어요.");
         }
 
         return data.data;

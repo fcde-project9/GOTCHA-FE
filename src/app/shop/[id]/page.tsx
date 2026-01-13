@@ -16,10 +16,14 @@ import {
   MoreVertical,
   Pencil,
   Trash2,
+  Images,
 } from "lucide-react";
+import { useDeleteReview } from "@/api/mutations/useDeleteReview";
+import { useToggleReviewLike } from "@/api/mutations/useToggleReviewLike";
 import { useShopDetail } from "@/api/queries/useShopDetail";
 import { Button, BackHeader, OutlineButton } from "@/components/common";
 import KakaoMap from "@/components/features/map/KakaoMap";
+import { ReviewDeleteConfirmModal } from "@/components/features/review/ReviewDeleteConfirmModal";
 import { ReviewWriteModal } from "@/components/features/review/ReviewWriteModal";
 import { StatusBadge } from "@/components/features/shop";
 import { useFavorite, useToast } from "@/hooks";
@@ -114,7 +118,7 @@ function ReviewItem({
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="flex items-center justify-center w-6 h-6"
+                className="flex items-center justify-center h-6"
                 aria-label="메뉴"
               >
                 <MoreVertical size={16} className="text-grey-500" />
@@ -249,7 +253,7 @@ export default function ShopDetailPage() {
     shopId: validShopId,
     initialIsFavorite: shop?.isFavorite ?? false,
     onUnauthorized: () => {
-      showToast("찜하기는 로그인 후 이용 가능합니다");
+      showToast("찜하기는 로그인 후 이용 가능해요.");
     },
   });
 
@@ -266,6 +270,18 @@ export default function ShopDetailPage() {
   // 리뷰 작성 모달 상태
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
+  // 리뷰 수정 상태 (수정할 리뷰 데이터)
+  const [editingReview, setEditingReview] = useState<ReviewResponse | null>(null);
+
+  // 리뷰 삭제 상태 (삭제할 리뷰 ID)
+  const [deletingReviewId, setDeletingReviewId] = useState<number | null>(null);
+
+  // 리뷰 삭제 mutation hook
+  const deleteReviewMutation = useDeleteReview(validShopId, deletingReviewId ?? 0);
+
+  // 리뷰 좋아요 토글 mutation hook
+  const toggleReviewLikeMutation = useToggleReviewLike();
+
   // 주소 복사
   const handleCopyAddress = async () => {
     if (!shop) return;
@@ -273,7 +289,7 @@ export default function ShopDetailPage() {
       await navigator.clipboard.writeText(shop.addressName);
       showToast("주소를 복사했어요!");
     } catch {
-      showToast("주소 복사에 실패했습니다");
+      showToast("주소 복사에 실패했어요.");
     }
   };
 
@@ -289,7 +305,7 @@ export default function ShopDetailPage() {
         });
       } else {
         await navigator.clipboard.writeText(window.location.href);
-        showToast("링크가 복사되었습니다");
+        showToast("링크가 복사되었어요.");
       }
     } catch {
       // 공유 취소 시 무시
@@ -307,20 +323,50 @@ export default function ShopDetailPage() {
   };
 
   // 리뷰 좋아요 토글
-  const handleLikeToggle = async (_reviewId: number) => {
-    // TODO: API 연동 후 구현
-    showToast("좋아요 기능 준비 중입니다");
+  const handleLikeToggle = (reviewId: number) => {
+    const review = shop?.reviews.find((r) => r.id === reviewId);
+    if (!review) return;
+
+    toggleReviewLikeMutation.mutate(
+      { reviewId, isLiked: review.isLiked },
+      {
+        onSuccess: () => {
+          refetch();
+        },
+        onError: (error) => {
+          showToast(error.message || "좋아요 처리에 실패했어요.");
+        },
+      }
+    );
   };
 
-  // 리뷰 수정
+  // 리뷰 수정 모달 열기
   const handleEditReview = (reviewId: number) => {
-    router.push(`/shop/${validShopId}/review/${reviewId}/edit`);
+    const reviewToEdit = shop?.reviews.find((r) => r.id === reviewId);
+    if (reviewToEdit) {
+      setEditingReview(reviewToEdit);
+    }
   };
 
-  // 리뷰 삭제
-  const handleDeleteReview = async (_reviewId: number) => {
-    // TODO: 삭제 확인 모달 및 API 연동
-    showToast("삭제 기능 준비 중입니다");
+  // 리뷰 삭제 확인 모달 열기
+  const handleDeleteReview = (reviewId: number) => {
+    setDeletingReviewId(reviewId);
+  };
+
+  // 리뷰 삭제 실행
+  const handleConfirmDelete = () => {
+    if (!deletingReviewId) return;
+
+    deleteReviewMutation.mutate(undefined, {
+      onSuccess: () => {
+        showToast("리뷰가 삭제되었어요.");
+        setDeletingReviewId(null);
+        refetch();
+      },
+      onError: (error) => {
+        showToast(error.message || "리뷰 삭제에 실패했어요.");
+      },
+    });
   };
 
   // 정렬 변경
@@ -363,7 +409,7 @@ export default function ShopDetailPage() {
     return (
       <div className="h-dvh flex flex-col items-center justify-center gap-4 bg-default px-5">
         <p className="text-[16px] text-grey-600">
-          {error instanceof Error ? error.message : "업체를 찾을 수 없습니다."}
+          {error instanceof Error ? error.message : "업체를 찾을 수 없어요."}
         </p>
         <Button variant="primary" size="medium" onClick={() => router.back()}>
           돌아가기
@@ -456,8 +502,10 @@ export default function ShopDetailPage() {
             {/* 영업 시간 */}
             <div className="flex items-center gap-2">
               <span className="shrink-0 w-16 text-[14px] text-grey-400">영업시간</span>
-              <span className="text-[14px] text-grey-900">{shop.todayOpenTime || "-"}</span>
-              <StatusBadge isOpen={shop.isOpen} />
+              <span className="text-[14px] text-grey-900">
+                {shop.todayOpenTime || "영업시간 정보 없음"}
+              </span>
+              <StatusBadge isOpen={shop.isOpen} isDayOff={!shop.todayOpenTime} />
             </div>
           </div>
         </section>
@@ -519,6 +567,8 @@ export default function ShopDetailPage() {
               ...shop.recentReviewImages,
             ];
             const totalImageCount = shop.totalReviewImageCount + (shop.mainImageUrl ? 1 : 0);
+            // 5개 이상일 때 더보기 오버레이에 표시할 남은 개수
+            const remainingCount = totalImageCount > 5 ? totalImageCount - 4 : 0;
 
             return (
               <>
@@ -545,37 +595,125 @@ export default function ShopDetailPage() {
                 {shopImages.length === 0 ? (
                   <div className="px-5">
                     <div className="flex items-center justify-center h-32 rounded-xl bg-grey-50">
-                      <p className="text-[14px] text-grey-400">등록된 사진이 없습니다</p>
+                      <p className="text-[14px] text-grey-400">등록된 사진이 없어요</p>
                     </div>
                   </div>
+                ) : shopImages.length === 1 ? (
+                  /* 사진 1개: 전체 너비 이미지 */
+                  <div className="px-5">
+                    <button
+                      onClick={() => setSelectedImageUrl(shopImages[0])}
+                      className="w-full aspect-[335/167] rounded-lg overflow-hidden bg-grey-100"
+                    >
+                      <Image
+                        src={shopImages[0]}
+                        alt="업체 사진"
+                        width={335}
+                        height={167}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  </div>
                 ) : (
-                  <div className="flex gap-2 overflow-x-auto px-5 pb-2 scrollbar-hide">
-                    {shopImages.slice(0, 5).map((imageUrl, index) => (
+                  /* 사진 여러 개: 왼쪽 큰 이미지 + 오른쪽 2x2 그리드 */
+                  <div className="px-5">
+                    <div className="flex gap-px">
+                      {/* 왼쪽 큰 이미지 */}
                       <button
-                        key={index}
-                        onClick={() => setSelectedImageUrl(imageUrl)}
-                        className="shrink-0 w-24 h-24 rounded-lg overflow-hidden bg-grey-100"
+                        onClick={() => setSelectedImageUrl(shopImages[0])}
+                        className="flex-1 aspect-square rounded-l-lg overflow-hidden bg-grey-100"
                       >
                         <Image
-                          src={imageUrl}
-                          alt={`업체 사진 ${index + 1}`}
-                          width={96}
-                          height={96}
+                          src={shopImages[0]}
+                          alt="업체 사진 1"
+                          width={167}
+                          height={167}
                           className="w-full h-full object-cover"
                         />
                       </button>
-                    ))}
-                    {shopImages.length > 5 && (
-                      <button
-                        onClick={handleViewAllImages}
-                        className="shrink-0 w-24 h-24 rounded-lg bg-grey-100 flex flex-col items-center justify-center"
-                      >
-                        <span className="text-[16px] font-semibold text-grey-600">
-                          +{shopImages.length - 5}
-                        </span>
-                        <span className="text-[12px] text-grey-500">더보기</span>
-                      </button>
-                    )}
+
+                      {/* 오른쪽 2x2 그리드 */}
+                      <div className="flex-1 flex flex-wrap gap-px content-end">
+                        {/* 상단 왼쪽 (인덱스 1) */}
+                        {shopImages[1] && (
+                          <button
+                            onClick={() => setSelectedImageUrl(shopImages[1])}
+                            className="w-[calc(50%-0.5px)] aspect-square overflow-hidden bg-grey-100"
+                          >
+                            <Image
+                              src={shopImages[1]}
+                              alt="업체 사진 2"
+                              width={83}
+                              height={83}
+                              className="w-full h-full object-cover"
+                            />
+                          </button>
+                        )}
+
+                        {/* 상단 오른쪽 (인덱스 2) */}
+                        {shopImages[2] && (
+                          <button
+                            onClick={() => setSelectedImageUrl(shopImages[2])}
+                            className="w-[calc(50%-0.5px)] aspect-square rounded-tr-lg overflow-hidden bg-grey-100"
+                          >
+                            <Image
+                              src={shopImages[2]}
+                              alt="업체 사진 3"
+                              width={83}
+                              height={83}
+                              className="w-full h-full object-cover"
+                            />
+                          </button>
+                        )}
+
+                        {/* 하단 왼쪽 (인덱스 3) */}
+                        {shopImages[3] && (
+                          <button
+                            onClick={() => setSelectedImageUrl(shopImages[3])}
+                            className="w-[calc(50%-0.5px)] aspect-square overflow-hidden bg-grey-100"
+                          >
+                            <Image
+                              src={shopImages[3]}
+                              alt="업체 사진 4"
+                              width={83}
+                              height={83}
+                              className="w-full h-full object-cover"
+                            />
+                          </button>
+                        )}
+
+                        {/* 하단 오른쪽 (인덱스 4) - 더보기 오버레이 포함 */}
+                        {shopImages[4] ? (
+                          <button
+                            onClick={handleViewAllImages}
+                            className="relative w-[calc(50%-0.5px)] aspect-square rounded-br-lg overflow-hidden bg-grey-100"
+                          >
+                            <Image
+                              src={shopImages[4]}
+                              alt="업체 사진 5"
+                              width={83}
+                              height={83}
+                              className="w-full h-full object-cover"
+                            />
+                            {/* 더보기 오버레이 */}
+                            {remainingCount > 0 && (
+                              <div className="absolute inset-0 bg-black/55 flex flex-col items-center justify-center rounded-br-lg">
+                                <Images size={24} className="text-white" strokeWidth={1.5} />
+                                <div className="flex items-center justify-center">
+                                  <span className="text-[12px] text-white leading-[1.5] tracking-[-0.12px]">
+                                    {remainingCount}
+                                  </span>
+                                  <ChevronRight size={10} className="text-white" />
+                                </div>
+                              </div>
+                            )}
+                          </button>
+                        ) : (
+                          /* 4번째 이미지가 없는 경우 (2~4개만 있을 때) 빈 공간 */
+                          <div className="w-[calc(50%-0.5px)] aspect-square rounded-br-lg bg-grey-100" />
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
               </>
@@ -673,7 +811,7 @@ export default function ShopDetailPage() {
               <OutlineButton
                 onClick={handleViewAllReviews}
                 fullWidth
-                rightIcon={<ChevronRight size={24} className="text-grey-700" />}
+                rightIcon={<ChevronRight size={24} className="text-grey-700 stroke-width-[1.5]" />}
                 className="mt-4"
               >
                 리뷰 전체보기
@@ -683,7 +821,7 @@ export default function ShopDetailPage() {
 
           {shop.reviews.length === 0 && (
             <div className="px-5 py-8 flex flex-col items-center justify-center">
-              <p className="text-[14px] text-grey-400">아직 작성된 리뷰가 없어요</p>
+              <p className="text-[14px] text-grey-400">아직 작성된 리뷰가 없어요.</p>
             </div>
           )}
         </section>
@@ -782,6 +920,29 @@ export default function ShopDetailPage() {
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
         onSuccess={() => refetch()}
+      />
+
+      {/* 리뷰 수정 모달 */}
+      {editingReview && (
+        <ReviewWriteModal
+          shopId={validShopId}
+          isOpen={!!editingReview}
+          onClose={() => setEditingReview(null)}
+          onSuccess={() => refetch()}
+          reviewId={editingReview.id}
+          initialData={{
+            content: editingReview.content,
+            imageUrls: editingReview.imageUrls,
+          }}
+        />
+      )}
+
+      {/* 리뷰 삭제 확인 모달 */}
+      <ReviewDeleteConfirmModal
+        isOpen={!!deletingReviewId}
+        isLoading={deleteReviewMutation.isPending}
+        onClose={() => setDeletingReviewId(null)}
+        onConfirm={handleConfirmDelete}
       />
     </div>
   );

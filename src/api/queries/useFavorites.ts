@@ -20,7 +20,7 @@ export const useFavorites = () => {
           await apiClient.get<ApiResponse<FavoritesPageResponse>>("/api/users/me/favorites");
 
         if (!data.success || !data.data) {
-          throw new Error(data.error?.message || "찜 목록을 불러오는데 실패했습니다.");
+          throw new Error(data.error?.message || "찜 목록을 불러오는데 실패했어요.");
         }
 
         // React Query는 undefined를 허용하지 않으므로 빈 배열로 대체

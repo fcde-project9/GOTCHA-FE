@@ -16,7 +16,7 @@ export const useUser = () => {
         const { data } = await apiClient.get<ApiResponse<User>>(ENDPOINTS.USER.ME);
 
         if (!data.success || !data.data) {
-          throw new Error(data.error?.message || "사용자 정보를 불러올 수 없습니다.");
+          throw new Error(data.error?.message || "사용자 정보를 불러올 수 없어요.");
         }
 
         return data.data;

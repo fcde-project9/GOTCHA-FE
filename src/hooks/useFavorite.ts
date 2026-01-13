@@ -92,7 +92,7 @@ export function useFavorite({
       onError: (error) => {
         // 에러 시 롤백
         setIsFavorite(previousState);
-        onError?.(error instanceof Error ? error : new Error("찜하기에 실패했습니다."));
+        onError?.(error instanceof Error ? error : new Error("찜하기에 실패했어요."));
       },
     });
   }, [

@@ -179,6 +179,30 @@ export interface CreateReviewRequest {
 export type CreateReviewApiResponse = ApiResponse<ReviewResponse>;
 
 /**
+ * PUT /api/shops/{shopId}/reviews/{reviewId} 요청
+ * 리뷰 수정 (이미지 0~10개)
+ */
+export interface UpdateReviewRequest {
+  content: string;
+  imageUrls: string[];
+}
+
+/**
+ * PUT /api/shops/{shopId}/reviews/{reviewId} 응답
+ */
+export type UpdateReviewApiResponse = ApiResponse<ReviewResponse>;
+
+/**
+ * POST/DELETE /api/shops/reviews/{reviewId}/like 응답
+ */
+export interface ReviewLikeResponse {
+  reviewId: number;
+  isLiked: boolean;
+}
+
+export type ReviewLikeApiResponse = ApiResponse<ReviewLikeResponse>;
+
+/**
  * GET /api/shops/{shopId}/images 응답
  */
 export interface ShopImagesResponse {
