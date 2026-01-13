@@ -12,13 +12,11 @@ export default function TermsPage() {
   };
 
   const handleTermsClick = () => {
-    // TODO: 이용약관 페이지로 이동
-    // router.push("/mypage/terms/service");
+    router.push("/mypage/terms/service");
   };
 
   const handleLicenseClick = () => {
-    // TODO: 라이센스 페이지로 이동
-    // router.push("/mypage/terms/license");
+    router.push("/mypage/terms/license");
   };
 
   return (
