@@ -18,14 +18,15 @@ import { NicknameModal } from "@/components/mypage/NicknameModal";
 import { ProfileSection } from "@/components/mypage/ProfileSection";
 import { WithdrawConfirmModal } from "@/components/mypage/WithdrawConfirmModal";
 import { WithdrawModal } from "@/components/mypage/WithdrawModal";
-import { useToast } from "@/hooks";
+import { useToast, useAuth } from "@/hooks";
 import { openInstagramSupport } from "@/utils";
 
 export default function MyPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { showToast } = useToast();
-  const { data: user, isLoading, error, refetch } = useUser();
+  const { isLoggedIn, isLoading: authLoading, logout } = useAuth();
+  const { data: user, isLoading: userLoading, error, refetch } = useUser();
   const updateNicknameMutation = useUpdateNickname();
   const updateProfileImageWithUploadMutation = useUpdateProfileImageWithUpload();
   const logoutMutation = useLogout();
@@ -92,10 +93,8 @@ export default function MyPage() {
     } catch {
       // API 실패 시에도 로컬 데이터는 정리
     } finally {
-      // 로컬 스토리지 정리
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("user");
+      // useAuth의 logout으로 토큰 정리 및 상태 업데이트
+      logout();
 
       // 세션 스토리지 정리
       sessionStorage.clear();
@@ -134,11 +133,8 @@ export default function MyPage() {
         detail: withdrawOtherReason,
       });
 
-      // API 성공 시에만 상태 정리
-      // 로컬 스토리지 정리
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("user");
+      // useAuth의 logout으로 토큰 정리 및 상태 업데이트
+      logout();
 
       // 세션 스토리지 정리
       sessionStorage.clear();
@@ -166,6 +162,7 @@ export default function MyPage() {
   };
 
   // 로딩 중이면 빈 화면 표시
+  const isLoading = authLoading || userLoading;
   if (isLoading) {
     return (
       <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[70px]">
@@ -190,8 +187,7 @@ export default function MyPage() {
     return <ErrorPage onRetry={refetch} />;
   }
 
-  // 에러 발생 시 게스트 모드로 표시 (401 에러는 이미 인터셉터에서 처리됨)
-  const isLoggedIn = !error && !!user;
+  // useAuth의 isLoggedIn으로 로그인 여부 판별
   const loggedInUser: User | undefined = isLoggedIn ? user : undefined;
 
   // socialType을 socialProvider 형식으로 변환
