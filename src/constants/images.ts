@@ -33,17 +33,25 @@ export const LOGO_IMAGES = {
   LIGHT: "/images/gotcha-logo-light.png",
 } as const;
 
-// 소셜 로그인 로고
+/**
+ * 소셜 로그인 버튼용 로고 (SVG)
+ * - 용도: 로그인 페이지의 소셜 로그인 버튼
+ * - 경로: /images/{provider}-logo.svg
+ */
 export const SOCIAL_LOGO_IMAGES = {
   KAKAO: "/images/kakao-logo.svg",
   NAVER: "/images/naver-logo.svg",
   GOOGLE: "/images/google-logo.svg",
 } as const;
 
-// 소셜 프로바이더 타입
-export type SocialProvider = "kakao" | "naver" | "google";
+/** 소셜 프로바이더 타입 - SOCIAL_LOGO_IMAGES 키에서 파생 */
+export type SocialProvider = Lowercase<keyof typeof SOCIAL_LOGO_IMAGES>;
 
-// 소셜 프로바이더 아이콘 경로 생성
+/**
+ * 마이페이지 프로필용 소셜 아이콘 경로 생성 (PNG)
+ * - 용도: 마이페이지 프로필 섹션의 소셜 프로바이더 표시
+ * - 경로: /images/icons/{provider}.png
+ */
 export const getSocialProviderIcon = (provider: SocialProvider): string => {
   return `/images/icons/${provider}.png`;
 };
