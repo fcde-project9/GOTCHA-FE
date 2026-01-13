@@ -22,6 +22,7 @@ export const ENDPOINTS = {
     WITHDRAW: "/api/users/me",
     PROFILE: "/user/profile",
     UPDATE: "/user/update",
+    MY_SHOPS: "/api/users/me/shops",
   },
   // 파일
   FILE: {
