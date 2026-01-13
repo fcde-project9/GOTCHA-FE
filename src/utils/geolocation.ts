@@ -88,7 +88,7 @@ export async function getCurrentLocationWithError(
         position: null,
         error: {
           code: GeolocationErrorCode.POSITION_UNAVAILABLE,
-          message: "브라우저가 위치 정보를 지원하지 않습니다.",
+          message: "브라우저가 위치 정보를 지원하지 않아요.",
         },
       });
       return;

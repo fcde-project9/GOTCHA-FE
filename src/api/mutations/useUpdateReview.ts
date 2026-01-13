@@ -3,23 +3,24 @@ import apiClient from "@/api/client";
 import { ENDPOINTS } from "@/api/endpoints";
 import type { ApiResponse } from "@/api/types";
 import { extractApiError } from "@/api/types";
-import type { CreateReviewRequest, ReviewResponse } from "@/types/api";
+import type { UpdateReviewRequest, ReviewResponse } from "@/types/api";
 
 /**
- * 리뷰 작성 Mutation Hook
+ * 리뷰 수정 Mutation Hook
  * @param shopId - 가게 ID
+ * @param reviewId - 리뷰 ID
  */
-export const useCreateReview = (shopId: number) => {
+export const useUpdateReview = (shopId: number, reviewId: number) => {
   return useMutation({
-    mutationFn: async (request: CreateReviewRequest) => {
+    mutationFn: async (request: UpdateReviewRequest) => {
       try {
-        const { data } = await apiClient.post<ApiResponse<ReviewResponse>>(
-          ENDPOINTS.REVIEWS.CREATE(shopId),
+        const { data } = await apiClient.put<ApiResponse<ReviewResponse>>(
+          ENDPOINTS.REVIEWS.UPDATE(shopId, reviewId),
           request
         );
 
         if (!data.success || !data.data) {
-          throw new Error(data.error?.message || "작성에 실패했어요.");
+          throw new Error(data.error?.message || "수정에 실패했어요.");
         }
 
         return data.data;

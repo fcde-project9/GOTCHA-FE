@@ -264,7 +264,7 @@ export function useKakaoPlaces(): UseKakaoPlacesReturn {
           maps: !!window.kakao?.maps,
           services: !!window.kakao?.maps?.services,
         });
-        setError("Kakao Maps API가 로드되지 않았습니다.");
+        setError("Kakao Maps API가 로드되지 않았어요.");
         return;
       }
 
@@ -323,7 +323,7 @@ export function useKakaoPlaces(): UseKakaoPlacesReturn {
                   if (allResults.length === 0) {
                     setIsLoading(false);
                     setResults([]);
-                    setError("검색 결과가 없습니다.");
+                    setError("검색 결과가 없어요.");
                   } else {
                     processResults(allResults, keyword);
                   }
@@ -335,7 +335,7 @@ export function useKakaoPlaces(): UseKakaoPlacesReturn {
                   if (allResults.length === 0) {
                     setIsLoading(false);
                     setResults([]);
-                    setError("검색 중 오류가 발생했습니다.");
+                    setError("검색 중 오류가 발생했어요.");
                   } else {
                     processResults(allResults, keyword);
                   }
@@ -416,7 +416,7 @@ export function useKakaoPlaces(): UseKakaoPlacesReturn {
         setResults(topResults);
 
         if (topResults.length === 0) {
-          setError("지역 또는 지하철역 검색 결과가 없습니다.");
+          setError("지역 또는 지하철역 검색 결과가 없어요.");
         }
       };
 

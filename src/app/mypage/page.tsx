@@ -7,7 +7,6 @@ import { useUpdateNickname } from "@/api/mutations/useUpdateNickname";
 import { useUpdateProfileImageWithUpload } from "@/api/mutations/useUpdateProfileImageWithUpload";
 import { useUser } from "@/api/queries/useUser";
 import type { User } from "@/api/types";
-import { Toast } from "@/components/common";
 import Footer from "@/components/common/Footer";
 import { ErrorPage } from "@/components/error/ErrorPage";
 import { LogoutModal } from "@/components/mypage/LogoutModal";
@@ -16,10 +15,12 @@ import { NicknameModal } from "@/components/mypage/NicknameModal";
 import { ProfileSection } from "@/components/mypage/ProfileSection";
 import { WithdrawConfirmModal } from "@/components/mypage/WithdrawConfirmModal";
 import { WithdrawModal } from "@/components/mypage/WithdrawModal";
+import { useToast } from "@/hooks";
 import { openInstagramSupport } from "@/utils";
 
 export default function MyPage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const { data: user, isLoading, error, refetch } = useUser();
   const updateNicknameMutation = useUpdateNickname();
   const updateProfileImageWithUploadMutation = useUpdateProfileImageWithUpload();
@@ -30,26 +31,13 @@ export default function MyPage() {
   const [isWithdrawConfirmModalOpen, setIsWithdrawConfirmModalOpen] = useState(false);
   const [withdrawReasons, setWithdrawReasons] = useState<string[]>([]);
   const [withdrawOtherReason, setWithdrawOtherReason] = useState<string>();
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("닉네임이 변경되었습니다");
-  const [toastKey, setToastKey] = useState(0);
-
-  // 토스트 재출현을 위한 헬퍼 함수
-  const displayToast = (message: string) => {
-    setToastMessage(message);
-    setShowToast(false); // 먼저 false로 설정
-    setTimeout(() => {
-      setToastKey((prev) => prev + 1); // key 변경으로 강제 리렌더
-      setShowToast(true);
-    }, 0);
-  };
 
   const handleEditProfile = async (file: File) => {
     try {
       await updateProfileImageWithUploadMutation.mutateAsync(file);
-      displayToast("프로필 이미지가 변경되었습니다");
-    } catch (error) {
-      displayToast("프로필 이미지 변경에 실패했습니다");
+      showToast("프로필 이미지가 변경되었습니다");
+    } catch {
+      showToast("프로필 이미지 변경에 실패했습니다");
     }
   };
 
@@ -61,9 +49,9 @@ export default function MyPage() {
     try {
       await updateNicknameMutation.mutateAsync(newNickname);
       setIsNicknameModalOpen(false);
-      displayToast("닉네임이 변경되었습니다");
-    } catch (error) {
-      displayToast("닉네임 변경에 실패했습니다");
+      showToast("닉네임이 변경되었습니다");
+    } catch {
+      showToast("닉네임 변경에 실패했습니다");
     }
   };
 
@@ -284,14 +272,6 @@ export default function MyPage() {
 
       {/* Footer Navigation */}
       <Footer />
-
-      {/* Toast */}
-      <Toast
-        key={toastKey}
-        message={toastMessage}
-        isVisible={showToast}
-        onClose={() => setShowToast(false)}
-      />
     </div>
   );
 }

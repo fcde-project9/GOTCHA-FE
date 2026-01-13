@@ -166,6 +166,7 @@ const fetchData = async () => {
   - Grey 컬러: `bg-grey-900`, `text-grey-800`
   - Line 컬러: `border-line-100`, `border-line-300`
 - 컬러/간격 등 반복 스타일은 `tailwind.config.ts`에 먼저 정의 후 활용
+- `!important` 사용 금지
 
 ## 모달 (Modal) 표준
 

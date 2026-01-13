@@ -1,8 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Heart, Navigation } from "lucide-react";
-import { useFavorite } from "@/hooks";
+import { useFavorite, useToast } from "@/hooks";
 import StatusBadge from "./StatusBadge";
 
 interface ShopListItemProps {
@@ -23,9 +24,14 @@ export default function ShopListItem({
   isFavorite: initialIsFavorite = false,
 }: ShopListItemProps) {
   const router = useRouter();
+  const { showToast } = useToast();
+
   const { isFavorite, isLoading, toggleFavorite } = useFavorite({
     shopId,
     initialIsFavorite,
+    onUnauthorized: () => {
+      showToast("찜하기는 로그인 후 이용 가능해요.");
+    },
   });
 
   const handleItemClick = () => {
@@ -38,19 +44,14 @@ export default function ShopListItem({
         {/* 이미지 */}
         <button
           onClick={handleItemClick}
-          className="relative rounded-[5px] shrink-0 size-[85px] bg-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-main"
+          className="relative rounded-[5px] shrink-0 size-[85px] overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-main"
         >
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt={name}
-              className="absolute inset-0 w-full h-full object-cover rounded-[5px]"
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-xs">
-              No Image
-            </div>
-          )}
+          <Image
+            src={imageUrl || "/images/no-image.png"}
+            alt={name}
+            fill
+            className="object-cover"
+          />
         </button>
 
         {/* 정보 */}
@@ -88,19 +89,21 @@ export default function ShopListItem({
           </button>
 
           {/* 거리 정보 */}
-          <div className="flex gap-[4px] items-center">
-            <Navigation
-              size={16}
-              className="fill-grey-700 stroke-grey-700 shrink-0"
-              strokeWidth={1.25}
-            />
-            <span className="text-[14px] font-normal text-grey-700 tracking-[-0.14px] font-pretendard leading-[150%]">
-              현재 위치에서
-            </span>
-            <span className="text-[14px] font-medium text-grey-800 tracking-[-0.14px] font-pretendard leading-[150%]">
-              {distance}
-            </span>
-          </div>
+          {distance && (
+            <div className="flex gap-[4px] items-center">
+              <Navigation
+                size={16}
+                className="fill-grey-700 stroke-grey-700 shrink-0"
+                strokeWidth={1.25}
+              />
+              <span className="text-[14px] font-normal text-grey-700 tracking-[-0.14px] font-pretendard leading-[150%]">
+                현재 위치에서
+              </span>
+              <span className="text-[14px] font-medium text-grey-800 tracking-[-0.14px] font-pretendard leading-[150%]">
+                {distance}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 

@@ -35,35 +35,22 @@ function favoriteResponseToShop(response: FavoriteShopResponse): FavoriteShop {
   };
 }
 
-/**
- * 로그인 여부 확인
- */
-function checkLoginStatus(): boolean {
-  try {
-    const accessToken = localStorage.getItem("accessToken");
-    const userType = localStorage.getItem("user_type");
-    return !!(accessToken && userType === "member");
-  } catch {
-    return false;
-  }
-}
-
 export default function FavoritesPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState<SortOption>("latest");
 
-  // 로그인 상태 확인
-  const isLoggedIn = useMemo(() => checkLoginStatus(), []);
-
-  // React Query로 찜 목록 조회 (로그인 상태일 때만)
+  // React Query로 찜 목록 조회
   const { data: favoritesData, isLoading, error, refetch } = useFavorites();
+
+  // 로그인 여부 판단 (null이면 비로그인, 배열이면 로그인)
+  const isLoggedIn = favoritesData !== null && favoritesData !== undefined;
 
   // API 응답을 UI용 타입으로 변환
   const favorites: FavoriteShop[] = useMemo(() => {
-    if (!favoritesData || !isLoggedIn) return [];
-    return (favoritesData as unknown as FavoriteShopResponse[]).map(favoriteResponseToShop);
-  }, [favoritesData, isLoggedIn]);
+    if (!favoritesData) return [];
+    return favoritesData.map(favoriteResponseToShop);
+  }, [favoritesData]);
 
   // 검색 필터링
   const filteredFavorites = useMemo(
@@ -95,9 +82,9 @@ export default function FavoritesPage() {
     setSearchQuery("");
   };
 
-  // 비로그인 또는 로딩/에러 상태 결정
-  const showLoading = isLoggedIn && isLoading;
-  const showError = isLoggedIn && error;
+  // 로딩/에러 상태 결정
+  const showLoading = isLoading;
+  const showError = error && !isLoading;
 
   return (
     <>

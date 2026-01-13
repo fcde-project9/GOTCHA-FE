@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Toast } from "@/components/common";
 import { useDelayedRedirectWithToast } from "@/hooks";
 
 /**
@@ -13,8 +12,7 @@ import { useDelayedRedirectWithToast } from "@/hooks";
 function OAuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { toastMessage, showToast, setShowToast, redirectWithToast } =
-    useDelayedRedirectWithToast();
+  const { redirectWithToast } = useDelayedRedirectWithToast();
 
   // 중복 실행 방지 플래그
   const isProcessingRef = useRef(false);
@@ -44,8 +42,7 @@ function OAuthCallbackContent() {
     // 에러 코드가 있는 경우 (로그인 실패)
     if (isErrorCode) {
       console.error("소셜 로그인 실패:", codeParam);
-      const errorMessage =
-        searchParams.get("message") || "로그인에 실패했습니다. 다시 시도해주세요.";
+      const errorMessage = searchParams.get("message") || "로그인에 실패했어요. 다시 시도해주세요.";
       redirectWithToast(errorMessage, "/login");
       return;
     }
@@ -62,8 +59,8 @@ function OAuthCallbackContent() {
       } catch {
         // Private Browsing 모드에서 localStorage 접근 실패 시 무시
       }
-      console.error("토큰이 없습니다");
-      redirectWithToast("로그인에 실패했습니다. 다시 시도해주세요.", "/login");
+      console.error("토큰이 없어요");
+      redirectWithToast("로그인에 실패했어요. 다시 시도해주세요.", "/login");
       return;
     }
 
@@ -74,10 +71,7 @@ function OAuthCallbackContent() {
       localStorage.setItem("user_type", "member");
     } catch (error) {
       console.error("토큰 저장 실패:", error);
-      redirectWithToast(
-        "로그인 정보를 저장할 수 없습니다. 브라우저 설정을 확인해주세요.",
-        "/login"
-      );
+      redirectWithToast("로그인 정보를 저장할 수 없어요. 브라우저 설정을 확인해주세요.", "/login");
       return;
     }
 
@@ -91,15 +85,12 @@ function OAuthCallbackContent() {
   }, [searchParams, router, redirectWithToast]);
 
   return (
-    <>
-      <div className="flex min-h-[100dvh] w-full items-center justify-center bg-default">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
-          <p className="text-[16px] font-medium text-grey-700">로그인 처리 중...</p>
-        </div>
+    <div className="flex min-h-[100dvh] w-full items-center justify-center bg-default">
+      <div className="flex flex-col items-center gap-4">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
+        <p className="text-[16px] font-medium text-grey-700">로그인 처리 중...</p>
       </div>
-      <Toast message={toastMessage} isVisible={showToast} onClose={() => setShowToast(false)} />
-    </>
+    </div>
   );
 }
 

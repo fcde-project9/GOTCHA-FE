@@ -21,7 +21,7 @@ export const useAddFavorite = () => {
         );
 
         if (!data.success || !data.data) {
-          throw new Error(data.error?.message || "찜 추가에 실패했습니다.");
+          throw new Error(data.error?.message || "찜 추가에 실패했어요.");
         }
 
         return data.data;
@@ -54,7 +54,7 @@ export const useRemoveFavorite = () => {
         );
 
         if (!data.success || !data.data) {
-          throw new Error(data.error?.message || "찜 해제에 실패했습니다.");
+          throw new Error(data.error?.message || "찜 해제에 실패했어요.");
         }
 
         return data.data;
