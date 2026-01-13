@@ -19,17 +19,29 @@ const apiClient = axios.create({
 
 // 토큰 재발급 상태 관리 (동시 요청 처리)
 let isRefreshing = false;
-let refreshSubscribers: ((token: string) => void)[] = [];
+let refreshSubscribers: {
+  onSuccess: (token: string) => void;
+  onFail: (error: Error) => void;
+}[] = [];
 
 // 재발급 완료 후 대기 중인 요청들 처리
 const onRefreshed = (token: string) => {
-  refreshSubscribers.forEach((callback) => callback(token));
+  refreshSubscribers.forEach(({ onSuccess }) => onSuccess(token));
+  refreshSubscribers = [];
+};
+
+// 재발급 실패 시 대기 중인 요청들 에러 처리
+const onRefreshFailed = (error: Error) => {
+  refreshSubscribers.forEach(({ onFail }) => onFail(error));
   refreshSubscribers = [];
 };
 
 // 재발급 대기 큐에 요청 추가
-const addRefreshSubscriber = (callback: (token: string) => void) => {
-  refreshSubscribers.push(callback);
+const addRefreshSubscriber = (
+  onSuccess: (token: string) => void,
+  onFail: (error: Error) => void
+) => {
+  refreshSubscribers.push({ onSuccess, onFail });
 };
 
 // 로그아웃 처리
@@ -63,10 +75,17 @@ const refreshAccessToken = async (): Promise<string | null> => {
         headers: {
           "Content-Type": "application/json",
         },
+        timeout: 10000,
       }
     );
 
-    const { accessToken, refreshToken: newRefreshToken } = response.data.data;
+    // 응답 데이터 검증
+    const data = response.data?.data;
+    if (!data?.accessToken || !data?.refreshToken) {
+      return null;
+    }
+
+    const { accessToken, refreshToken: newRefreshToken } = data;
 
     // 새 토큰 저장
     localStorage.setItem("accessToken", accessToken);
@@ -138,11 +157,16 @@ apiClient.interceptors.response.use(
 
       // 이미 재발급 진행 중이면 대기
       if (isRefreshing) {
-        return new Promise((resolve) => {
-          addRefreshSubscriber((token: string) => {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
-            resolve(apiClient(originalRequest));
-          });
+        return new Promise((resolve, reject) => {
+          addRefreshSubscriber(
+            (token: string) => {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+              resolve(apiClient(originalRequest));
+            },
+            (err: Error) => {
+              reject(err);
+            }
+          );
         });
       }
 
@@ -155,19 +179,22 @@ apiClient.interceptors.response.use(
 
         if (newToken) {
           // 재발급 성공 → 대기 중인 요청들 처리
+          isRefreshing = false;
           onRefreshed(newToken);
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
           return apiClient(originalRequest);
         } else {
-          // 재발급 실패 → 로그아웃
+          // 재발급 실패 → 대기 중인 요청들 에러 처리 후 로그아웃
+          isRefreshing = false;
+          onRefreshFailed(new Error("Token refresh failed"));
           handleLogout();
           return Promise.reject(error);
         }
       } catch {
+        isRefreshing = false;
+        onRefreshFailed(new Error("Token refresh failed"));
         handleLogout();
         return Promise.reject(error);
-      } finally {
-        isRefreshing = false;
       }
     }
 
