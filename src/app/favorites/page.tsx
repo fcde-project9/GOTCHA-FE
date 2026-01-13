@@ -3,74 +3,29 @@
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Search, ArrowUpDown, CircleX } from "lucide-react";
+import { Search, CircleX } from "lucide-react";
 import { useFavorites } from "@/api/queries/useFavorites";
 import { Footer, Button } from "@/components/common";
 import { FavoriteShopItem } from "@/components/features/favorites";
-import { FavoriteShopResponse } from "@/types/api";
-
-// 찜한 업체 UI 표시용 타입
-interface FavoriteShop {
-  id: number;
-  name: string;
-  address: string;
-  isOpen: boolean;
-  imageUrl?: string;
-  createdAt: string; // 찜 등록일
-}
-
-type SortOption = "latest" | "oldest";
-
-/**
- * API 응답을 UI 표시용 타입으로 변환
- */
-function favoriteResponseToShop(response: FavoriteShopResponse): FavoriteShop {
-  return {
-    id: response.id,
-    name: response.name,
-    address: response.address,
-    isOpen: response.isOpen,
-    imageUrl: response.mainImageUrl,
-    createdAt: response.favoritedAt,
-  };
-}
+import { useAuth } from "@/hooks";
 
 export default function FavoritesPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortOption, setSortOption] = useState<SortOption>("latest");
+
+  // 전역 로그인 상태
+  const { isLoggedIn, isLoading: isAuthLoading } = useAuth();
 
   // React Query로 찜 목록 조회
   const { data: favoritesData, isLoading, error, refetch } = useFavorites();
 
-  // 로그인 여부 판단 (null이면 비로그인, 배열이면 로그인)
-  const isLoggedIn = favoritesData !== null && favoritesData !== undefined;
-
-  // API 응답을 UI용 타입으로 변환
-  const favorites: FavoriteShop[] = useMemo(() => {
-    if (!favoritesData) return [];
-    return favoritesData.map(favoriteResponseToShop);
-  }, [favoritesData]);
-
   // 검색 필터링
-  const filteredFavorites = useMemo(
-    () => favorites.filter((shop) => shop.name.toLowerCase().includes(searchQuery.toLowerCase())),
-    [favorites, searchQuery]
-  );
-
-  // 정렬
-  const sortedFavorites = useMemo(() => {
-    return [...filteredFavorites].sort((a, b) => {
-      const dateA = new Date(a.createdAt).getTime();
-      const dateB = new Date(b.createdAt).getTime();
-      return sortOption === "latest" ? dateB - dateA : dateA - dateB;
-    });
-  }, [filteredFavorites, sortOption]);
-
-  // 정렬 옵션 토글
-  const handleSortToggle = () => {
-    setSortOption((prev) => (prev === "latest" ? "oldest" : "latest"));
-  };
+  const filteredFavorites = useMemo(() => {
+    if (!favoritesData) return [];
+    return favoritesData.filter((shop) =>
+      shop.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [favoritesData, searchQuery]);
 
   // 새로고침
   const handleRefresh = () => {
@@ -82,9 +37,9 @@ export default function FavoritesPage() {
     setSearchQuery("");
   };
 
-  // 로딩/에러 상태 결정
-  const showLoading = isLoading;
-  const showError = error && !isLoading;
+  // 로딩/에러 상태 결정 (인증 로딩 또는 데이터 로딩)
+  const showLoading = isAuthLoading || isLoading;
+  const showError = error && !isLoading && !isAuthLoading;
 
   return (
     <>
@@ -97,7 +52,7 @@ export default function FavoritesPage() {
         </header>
 
         {/* 검색창 - 찜한 업체가 있을 때만 표시 */}
-        {favorites.length > 0 && (
+        {favoritesData && favoritesData.length > 0 && (
           <div className="flex-shrink-0 px-5 pt-3">
             <div className="flex h-11 items-center justify-between rounded-lg bg-grey-50 px-3 py-2.5">
               <input
@@ -137,7 +92,7 @@ export default function FavoritesPage() {
               다시 시도
             </button>
           </div>
-        ) : sortedFavorites.length === 0 ? (
+        ) : filteredFavorites.length === 0 ? (
           // Empty State
           <div className="flex flex-1 flex-col items-center justify-center gap-7 px-5">
             <div>
@@ -171,26 +126,18 @@ export default function FavoritesPage() {
           </div>
         ) : (
           <>
-            {/* 총 개수 & 정렬 - 고정 */}
+            {/* 총 개수 - 고정 */}
             <div className="flex-shrink-0 mt-4 mb-3 flex items-center justify-between px-5">
               <div className="flex items-center text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-900">
                 <span>총&nbsp;</span>
-                <span>{sortedFavorites.length}개</span>
+                <span>{filteredFavorites.length}개</span>
               </div>
-              <button
-                type="button"
-                onClick={handleSortToggle}
-                className="flex items-center gap-1 text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-700"
-              >
-                <span>{sortOption === "latest" ? "최신순" : "오래된순"}</span>
-                <ArrowUpDown size={16} className="stroke-grey-700" strokeWidth={2} />
-              </button>
             </div>
 
             {/* 찜한 업체 리스트 - 스크롤 영역 */}
             <div className="flex-1 overflow-y-auto px-5 pb-4">
               <div className="flex flex-col">
-                {sortedFavorites.map((shop) => (
+                {filteredFavorites.map((shop) => (
                   <FavoriteShopItem key={shop.id} shop={shop} />
                 ))}
               </div>

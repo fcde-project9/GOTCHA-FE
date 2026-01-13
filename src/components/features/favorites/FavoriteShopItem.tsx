@@ -5,18 +5,10 @@ import { useRouter } from "next/navigation";
 import { MapPin, Heart } from "lucide-react";
 import StatusBadge from "@/components/features/shop/StatusBadge";
 import { useFavorite, useToast } from "@/hooks";
-
-interface FavoriteShop {
-  id: number;
-  name: string;
-  address: string; // 구/동까지 (예: 강남구 역삼동)
-  isOpen: boolean;
-  imageUrl?: string;
-  createdAt: string;
-}
+import type { FavoriteShopResponse } from "@/types/api";
 
 interface FavoriteShopItemProps {
-  shop: FavoriteShop;
+  shop: FavoriteShopResponse;
 }
 
 /**
@@ -51,7 +43,7 @@ export function FavoriteShopItem({ shop }: FavoriteShopItemProps) {
       {/* 업체 이미지 */}
       <div className="relative h-[85px] w-[85px] shrink-0 overflow-hidden rounded-[5px]">
         <Image
-          src={shop.imageUrl || "/images/no-image.png"}
+          src={shop.mainImageUrl || "/images/no-image.png"}
           alt={shop.name}
           fill
           className="object-cover"
