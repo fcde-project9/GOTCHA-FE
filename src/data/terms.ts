@@ -182,85 +182,30 @@ GOTCHA!는 개인정보 보유기간의 경과, 처리목적 달성 등 개인�
 
 이 개인정보 처리방침은 2024.1.1부터 적용됩니다.`;
 
-export const LICENSE = `OSS Notice | KakaoTalk-iOS
-This application is Copyright © Kakao Corp. All rights reserved.
-
+/**
+ * OSS Notice - 앱 저작권 및 서드파티 소프트웨어 안내
+ */
+export const OSS_NOTICE = {
+  title: "OSS Notice | GOTCHA!",
+  content: `This application is Copyright © Want. All rights reserved.
 The following sets forth attribution notices for third party software that may be contained in this application.
+If you have any questions about these notices, please email us at `,
+  email: "fcdegotcha@gmail.com",
+};
 
-If you have any questions about these notices, please email us at opensource@kakaocorp.com
+/**
+ * Lucide 라이선스 (ISC License + MIT License for Feather portions)
+ */
+export const LICENSE = `Lucide License ISC License & MIT License (for portions of Feather)
+Copyright (c) 2013-2023 Cole Bemis, 2025 Lucide Contributors.
 
-100DaysOfSwiftUI
-https://github.com/regonoshi/100daysofswiftui/
-Copyright (c) 2020 Massimo Omodei
-MIT License
-AA-GRDB-Prebuilt
-https://github.daumkakao.com/kakaotalk-iphone-dev/AA-GRDB-Prebuilt
-abseil-cpp
-https://github.com/abseil/abseil-cpp
-Copyright 2017 The Abseil Authors.
-Apache License 2.0
-Alamofire
-https://github.com/alamofire/alamofire
-Copyright 2014-2018 Alamofire Software Foundation (http://alamofire.org/)
-MIT License
-Android - platform - bionic
-https://android.googlesource.com/platform/bionic/
-Copyright 2014 The Android Open Source Project
-Apache License 2.0
-Android - platform - frameworks - support
-https://android.googlesource.com/platform/frameworks/support
-Copyright 2014 The Android Open Source Project
-Apache License 2.0
-Android - platform - ndk (Native Development Kit)
-https://android.googlesource.com/platform/ndk
-Copyright 2016 The Android Open Source Project
-Apache License 2.0
-Android Databinding Library
-https://developer.android.com/reference/android/databinding/packages
-Copyright 2018 The Android Open Source Project
-Apache License 2.0
-Anti-Grain Geometry Library
-https://github.com/ghaerr/agg-2.6
-Copyright 2002-2004 Maxim Shemanarev (McSeem)
-Anti-Grain Geometry Public License
-APNGKit
-https://github.com/onevcat/apngkit
-Copyright 2015 Wei Wang
-MIT License
-Appcelerator Titanium Mobile
-https://github.com/appcelerator/titanium_mobile/
-Copyright 2008-2017 Appcelerator, Inc.
-Apache License 2.0
-Apple Frameworks
-https://developer.apple.com/documentation
-Copyright 2018 Apple Inc.
-Apple MIT License
-Apple iOS Developer - Sample Code
-https://developer.apple.com/library/archive/navigation/#section=Resource%20Types&topic=Sample%20Code
-Copyright 2016 Apple Inc
-Apple MIT License
-Asio C++ Library
-https://github.com/chriskohlhoff/asio
-Copyright 2003-2016 Christopher M. Kohlhoff (chris at kohlhoff dot com)
-Boost Software License 1.0
-Atomic
-https://github.com/adlai-holler/atomic
-Copyright 2015 Adlai Holler
-MIT License
-auto-changelog
-https://github.com/cookpete/auto-changelog
-Copyright 2017 Pete Cook https://cookpete.com
-MIT License
-Better Codable through Property Wrappers
-https://github.com/marksands/bettercodable
-Copyright (c) 2019 Mark Sands
-MIT License
-CachingPlayerItem
-https://github.com/neekeetab/CachingPlayerItem
-Copyright 2016 Nikita Belousov, neekeetab@gmail.com
-MIT License
-Chromium
-https://github.com/chromium/chromium
-Copyright 2015 The Chromium Authors.
-BSD 3-Clause "New" or "Revised" License
-`;
+Lucide License
+ISC License
+Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+The MIT License (MIT) (for portions derived from Feather)
+Copyright (c) 2013-2023 Cole Bemis
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.`;
