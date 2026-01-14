@@ -55,10 +55,10 @@ export default function MyPage() {
   const handleSaveNickname = async (newNickname: string) => {
     try {
       await updateNicknameMutation.mutateAsync(newNickname);
-      setIsNicknameModalOpen(false);
-      showToast("닉네임이 변경되었어요");
-    } catch {
-      showToast("닉네임 변경에 실패했어요");
+      showToast("닉네임이 변경되었어요!");
+    } catch (error) {
+      // 에러를 다시 throw하여 NicknameModal에서 처리하도록 함
+      throw error;
     }
   };
 
