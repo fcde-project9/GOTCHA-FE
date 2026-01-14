@@ -43,5 +43,6 @@ export const useReviews = (
       }
     },
     enabled: shopId > 0,
+    staleTime: 0, // 항상 최신 데이터 조회
   });
 };

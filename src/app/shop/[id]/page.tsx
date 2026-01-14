@@ -28,6 +28,7 @@ import { ReviewWriteModal } from "@/components/features/review/ReviewWriteModal"
 import { StatusBadge } from "@/components/features/shop";
 import { useFavorite, useToast } from "@/hooks";
 import type { ReviewResponse, OpenTime, ReviewSortOption } from "@/types/api";
+import { formatDate } from "@/utils";
 
 // 요일 매핑 (API 응답 키 -> 한글)
 const DAY_MAP: Record<keyof OpenTime, string> = {
@@ -98,12 +99,6 @@ function ReviewItem({
       return () => document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [isMenuOpen]);
-
-  // createdAt 포맷팅
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
-  };
 
   return (
     <div className="bg-grey-50 rounded-[10px] p-[14px] flex flex-col gap-4">
