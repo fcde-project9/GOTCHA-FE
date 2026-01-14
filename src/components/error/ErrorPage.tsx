@@ -14,6 +14,8 @@ interface ErrorPageProps {
  * 네트워크 오류나 5xx 서버 오류 등 재시도 가능한 에러를 표시합니다.
  */
 export function ErrorPage({ onRetry }: ErrorPageProps) {
+  const handleRetry = onRetry ?? (() => window.location.reload());
+
   return (
     <div className="relative flex min-h-[100dvh] w-full bg-default">
       <div className="relative mx-auto flex w-full max-w-[480px] flex-col">
@@ -53,7 +55,7 @@ export function ErrorPage({ onRetry }: ErrorPageProps) {
             >
               문의하기
             </Button>
-            <Button variant="primary" size="small" className="h-11 flex-1" onClick={onRetry}>
+            <Button variant="primary" size="small" className="h-11 flex-1" onClick={handleRetry}>
               다시 시도
             </Button>
           </div>
