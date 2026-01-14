@@ -20,7 +20,7 @@ export const useWithdraw = () => {
       });
 
       if (!response.data.success) {
-        throw new Error(response.data.error?.message || "회원탈퇴에 실패했습니다.");
+        throw new Error(response.data.error?.message || "회원탈퇴에 실패했어요.");
       }
 
       return response.data;

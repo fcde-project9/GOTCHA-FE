@@ -218,12 +218,12 @@ function ReportRegisterContent() {
         coordinate,
       });
 
-      displayToast("업체 정보가 등록되었습니다.");
+      displayToast("업체 정보가 등록되었어요.");
       redirectTimerRef.current = setTimeout(() => {
         router.push("/home");
       }, 2000);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "업체 등록에 실패했습니다.";
+      const errorMessage = error instanceof Error ? error.message : "업체 등록에 실패했어요.";
       displayToast(errorMessage);
       setIsSubmitting(false);
     }
