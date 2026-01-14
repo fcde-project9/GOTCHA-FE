@@ -88,7 +88,7 @@ export interface CreateShopRequest {
   addressName?: string; // 주소 (선택)
   mainImageUrl?: string;
   locationHint?: string;
-  openTime?: Record<string, string>; // {"mon": "10:00-22:00", "tue": "10:00-22:00", ...} (영업하는 날만 포함)
+  openTime?: Record<string, string>; // {"Mon": "10:00-22:00", "Tue": "10:00-22:00", ...} (영업하는 날만 포함)
 }
 
 /**

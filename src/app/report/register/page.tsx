@@ -173,13 +173,13 @@ function ReportRegisterContent() {
   /**
    * 영업 시간 데이터 변환
    * openDays 배열과 시간을 Record<string, string> 형태로 변환
-   * 백엔드 스펙: {"mon": "10:00-22:00", "tue": "10:00-22:00", ...}
+   * 백엔드 스펙: {"Mon": "10:00-22:00", "Tue": "10:00-22:00", ...}
    * null 값은 제외하고 영업하는 날만 포함
    */
   const convertOpenTime = (): Record<string, string> | undefined => {
     if (formData.openDays.length === 0) return undefined;
 
-    const dayNames = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+    const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     const openTimeRecord: Record<string, string> = {};
 
     dayNames.forEach((dayName, index) => {
