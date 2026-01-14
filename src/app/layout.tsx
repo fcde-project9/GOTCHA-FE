@@ -120,7 +120,7 @@ export const metadata: Metadata = {
     locale: "ko_KR",
     images: [
       {
-        url: "/images/og-image.png", // 1200x630 권장
+        url: `${siteUrl}/images/og-image.png`, // 1200x630 권장
         width: 1200,
         height: 630,
         alt: "가챠 덕후들의 아지트 GOTCHA!",
