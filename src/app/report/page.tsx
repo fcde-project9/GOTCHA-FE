@@ -116,16 +116,35 @@ export default function ReportLocationPage() {
     [getAddressFromCoords, checkNearbyShops]
   );
 
-  // 지도 클릭 이벤트 리스너 등록/해제
+  // 지도 드래그 종료 이벤트 핸들러
+  const handleDragEnd = useCallback(async () => {
+    if (!map) return;
+    // 줌 레벨이 4 초과(축소 상태)면 주소 업데이트 안 함
+    if (map.getLevel() > 4) return;
+
+    const mapCenter = map.getCenter();
+    const latitude = mapCenter.getLat();
+    const longitude = mapCenter.getLng();
+    setCenter({ latitude, longitude });
+    await getAddressFromCoords(latitude, longitude);
+
+    // 자동으로 근처 가게 확인 (새 좌표로)
+    const result = await checkNearbyShops(latitude, longitude);
+    setNearbyShops(result);
+  }, [map, getAddressFromCoords, checkNearbyShops]);
+
+  // 지도 클릭 및 드래그 이벤트 리스너 등록/해제
   useEffect(() => {
     if (!map || !window.kakao?.maps?.event) return;
 
     window.kakao.maps.event.addListener(map, "click", handleMapClick);
+    window.kakao.maps.event.addListener(map, "dragend", handleDragEnd);
 
     return () => {
       window.kakao.maps.event.removeListener(map, "click", handleMapClick);
+      window.kakao.maps.event.removeListener(map, "dragend", handleDragEnd);
     };
-  }, [map, handleMapClick]);
+  }, [map, handleMapClick, handleDragEnd]);
 
   const navigateToRegister = () => {
     router.push(
