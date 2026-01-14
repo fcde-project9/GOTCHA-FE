@@ -21,7 +21,7 @@ import {
 import { useDeleteReview } from "@/api/mutations/useDeleteReview";
 import { useToggleReviewLike } from "@/api/mutations/useToggleReviewLike";
 import { useShopDetail } from "@/api/queries/useShopDetail";
-import { Button, BackHeader, OutlineButton } from "@/components/common";
+import { Button, BackHeader, OutlineButton, ImageViewerModal } from "@/components/common";
 import KakaoMap from "@/components/features/map/KakaoMap";
 import { ReviewDeleteConfirmModal } from "@/components/features/review/ReviewDeleteConfirmModal";
 import { ReviewWriteModal } from "@/components/features/review/ReviewWriteModal";
@@ -77,11 +77,13 @@ function ReviewItem({
   onLikeToggle,
   onEdit,
   onDelete,
+  onImageClick,
 }: {
   review: ReviewResponse;
   onLikeToggle: (reviewId: number) => void;
   onEdit: (reviewId: number) => void;
   onDelete: (reviewId: number) => void;
+  onImageClick?: (imageUrl: string) => void;
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -154,8 +156,9 @@ function ReviewItem({
         {review.imageUrls && review.imageUrls.length > 0 && (
           <div className="flex gap-2 overflow-x-auto scrollbar-hide">
             {review.imageUrls.map((imageUrl, index) => (
-              <div
+              <button
                 key={index}
+                onClick={() => onImageClick?.(imageUrl)}
                 className="shrink-0 w-[105px] h-[105px] rounded-lg overflow-hidden bg-grey-100"
               >
                 <Image
@@ -165,7 +168,7 @@ function ReviewItem({
                   height={105}
                   className="w-full h-full object-cover"
                 />
-              </div>
+              </button>
             ))}
           </div>
         )}
@@ -795,6 +798,7 @@ export default function ShopDetailPage() {
                     onLikeToggle={handleLikeToggle}
                     onEdit={handleEditReview}
                     onDelete={handleDeleteReview}
+                    onImageClick={setSelectedImageUrl}
                   />
                 ))}
               </div>
@@ -876,35 +880,11 @@ export default function ShopDetailPage() {
       )}
 
       {/* 이미지 뷰어 모달 */}
-      {selectedImageUrl && (
-        <div
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/70"
-          onClick={() => setSelectedImageUrl(null)}
-        >
-          {/* 이미지 */}
-          <div
-            className="relative w-[327px] max-h-[70vh] rounded-3xl overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Image
-              src={selectedImageUrl}
-              alt="업체 사진"
-              width={327}
-              height={435}
-              className="w-full h-auto object-contain"
-            />
-          </div>
-
-          {/* 닫기 버튼 */}
-          <button
-            onClick={() => setSelectedImageUrl(null)}
-            className="mt-7 flex items-center justify-center w-11 h-11 rounded-full bg-grey-500"
-            aria-label="닫기"
-          >
-            <X size={24} className="stroke-white" strokeWidth={2} />
-          </button>
-        </div>
-      )}
+      <ImageViewerModal
+        imageUrl={selectedImageUrl}
+        onClose={() => setSelectedImageUrl(null)}
+        alt="업체 사진"
+      />
 
       {/* 리뷰 작성 모달 */}
       <ReviewWriteModal
