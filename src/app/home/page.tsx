@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import Image from "next/image";
 import { Search, LocateFixed, RefreshCcw, ChevronLeft, CircleX } from "lucide-react";
 import { useShopsInBounds } from "@/api/queries/useShopsInBounds";
@@ -26,7 +26,10 @@ export default function Home() {
   const [currentBounds, setCurrentBounds] = useState<MapBounds | null>(null);
   const [activeBounds, setActiveBounds] = useState<MapBounds | null>(null); // 실제 조회할 bounds
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const shouldAutoReloadRef = useRef(false);
+  const [centerUpdateTrigger, setCenterUpdateTrigger] = useState(0);
   const [locationDenied, setLocationDenied] = useState(false);
+  const [hasReceivedLocation, setHasReceivedLocation] = useState(false);
   const [showCurrentLocation, setShowCurrentLocation] = useState<{
     latitude: number;
     longitude: number;
@@ -67,6 +70,17 @@ export default function Home() {
     getCurrentLocation();
   }, [getCurrentLocation]);
 
+  // 사용자 위치를 처음 받았을 때 지도 이동 + 자동 재검색
+  useEffect(() => {
+    if (location && !hasReceivedLocation) {
+      setHasReceivedLocation(true);
+      // ref를 먼저 설정 (동기적으로 즉시 반영됨)
+      shouldAutoReloadRef.current = true;
+      setMapCenter(location);
+      setCenterUpdateTrigger((prev) => prev + 1);
+    }
+  }, [location, hasReceivedLocation]);
+
   // 검색어 변경 시 자동 검색
   useEffect(() => {
     if (searchQuery.trim()) {
@@ -80,7 +94,7 @@ export default function Home() {
     }
   }, [searchQuery, searchPlaces, clearResults]);
 
-  // 지도 영역 변경 시 처리
+  // 지도 영역 변경 시 처리 (ref를 사용해서 항상 최신 값 참조)
   const handleBoundsChange = useCallback(
     (bounds: MapBounds) => {
       // 현재 bounds 저장
@@ -90,6 +104,11 @@ export default function Home() {
         // 최초 로드 시 자동으로 가게 목록 조회
         setActiveBounds(bounds);
         setHasInitialLoad(true);
+      } else if (shouldAutoReloadRef.current) {
+        // 현재 위치 버튼 클릭 또는 위치 수신 시 자동 재검색
+        setActiveBounds(bounds);
+        shouldAutoReloadRef.current = false;
+        setShowReloadButton(false);
       } else {
         // 이후 지도 이동 시 재검색 버튼 표시
         setShowReloadButton(true);
@@ -134,7 +153,6 @@ export default function Home() {
   const handleCurrentLocation = () => {
     // 현재 위치를 다시 가져오고, 가져온 후 지도 중심 업데이트
     if (!navigator.geolocation) {
-      console.error("브라우저가 위치 정보를 지원하지 않아요.");
       return;
     }
 
@@ -146,6 +164,10 @@ export default function Home() {
         };
         // 지도 중심을 현재 위치로 즉시 업데이트
         setMapCenter(newLocation);
+        // 중심 좌표 업데이트 트리거
+        setCenterUpdateTrigger((prev) => prev + 1);
+        // 자동 재검색 플래그 설정
+        shouldAutoReloadRef.current = true;
 
         // 현재 위치 마커 표시 (heading이 있으면 사용)
         const heading = position.coords.heading;
@@ -281,8 +303,9 @@ export default function Home() {
             <KakaoMap
               width="100%"
               height="100%"
-              latitude={mapCenter?.latitude || location?.latitude}
-              longitude={mapCenter?.longitude || location?.longitude}
+              latitude={mapCenter?.latitude}
+              longitude={mapCenter?.longitude}
+              centerUpdateTrigger={centerUpdateTrigger}
               markers={markers}
               onBoundsChange={handleBoundsChange}
               currentLocation={showCurrentLocation}
