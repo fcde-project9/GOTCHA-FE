@@ -52,10 +52,10 @@ function parseOpenTime(openTimeStr: string): OpenTime | null {
   }
 }
 
-// 영업일 배열 추출 (null이 아닌 요일들)
+// 영업일 배열 추출 (openTime 객체에 키가 존재하는 요일들)
 function getBusinessDays(openTime: OpenTime | null): (keyof OpenTime)[] {
   if (!openTime) return [];
-  return ALL_DAYS.filter((day) => openTime[day] !== null);
+  return ALL_DAYS.filter((day) => day in openTime);
 }
 
 // 요일 배지 컴포넌트
@@ -252,6 +252,13 @@ export default function ShopDetailPage() {
   // openTime 파싱
   const openTime = shop ? parseOpenTime(shop.openTime) : null;
   const businessDays = getBusinessDays(openTime);
+
+  // 오늘이 영업일인지 확인 (openTime 객체에 오늘 요일이 있는지)
+  const getTodayDayKey = (): keyof OpenTime => {
+    const dayIndex = new Date().getDay(); // 0=일, 1=월, ...
+    return ALL_DAYS[dayIndex === 0 ? 6 : dayIndex - 1];
+  };
+  const isTodayBusinessDay = businessDays.includes(getTodayDayKey());
 
   // 지도 확대 모달 상태
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
@@ -497,7 +504,11 @@ export default function ShopDetailPage() {
               <span className="text-[14px] text-grey-900">
                 {shop.todayOpenTime || "영업시간 정보 없음"}
               </span>
-              <StatusBadge isOpen={shop.isOpen} isDayOff={!shop.todayOpenTime} />
+              {shop.todayOpenTime ? (
+                <StatusBadge isOpen={shop.isOpen} />
+              ) : (
+                !isTodayBusinessDay && <StatusBadge isOpen={false} isDayOff />
+              )}
             </div>
           </div>
         </section>

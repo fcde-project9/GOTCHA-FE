@@ -172,21 +172,30 @@ function ReportRegisterContent() {
 
   /**
    * 영업 시간 데이터 변환
-   * openDays 배열과 시간을 Record<string, string> 형태로 변환
-   * 백엔드 스펙: {"Mon": "10:00-22:00", "Tue": "10:00-22:00", ...}
-   * null 값은 제외하고 영업하는 날만 포함
+   * openDays 배열과 시간을 Record<string, string | null> 형태로 변환
+   * - 영업일이 선택되지 않으면 null 반환
+   * - 선택된 요일만 포함
+   * - 선택된 요일 + 시간 설정 → "HH:MM~HH:MM"
+   * - 선택된 요일 + 시간 미설정 → null
    */
-  const convertOpenTime = (): Record<string, string> | undefined => {
-    if (formData.openDays.length === 0) return undefined;
+  const convertOpenTime = (): Record<string, string | null> | null => {
+    if (formData.openDays.length === 0) return null;
+
+    // 시간이 기본값(오전 12:00)이면 시간 미설정으로 판단
+    const isDefaultTime = formData.openTime === "오전 12:00" && formData.closeTime === "오전 12:00";
 
     const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    const openTimeRecord: Record<string, string> = {};
+    const openTimeRecord: Record<string, string | null> = {};
 
     dayNames.forEach((dayName, index) => {
       if (formData.openDays.includes(index)) {
-        const open = convertTimeFormat(formData.openTime);
-        const close = convertTimeFormat(formData.closeTime);
-        openTimeRecord[dayName] = `${open}-${close}`;
+        if (isDefaultTime) {
+          openTimeRecord[dayName] = null;
+        } else {
+          const open = convertTimeFormat(formData.openTime);
+          const close = convertTimeFormat(formData.closeTime);
+          openTimeRecord[dayName] = `${open}~${close}`;
+        }
       }
     });
 
