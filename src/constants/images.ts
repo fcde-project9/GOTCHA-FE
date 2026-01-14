@@ -25,6 +25,12 @@ export const MARKER_IMAGES = {
   SHOP: "/images/markers/shop-marker.png",
 } as const;
 
+// 에러 페이지 이미지
+export const ERROR_IMAGES = {
+  /** 에러 페이지 멤버 캐릭터 이미지 */
+  MEMBERS: "/images/members-error.jpg",
+} as const;
+
 // 로고 이미지
 export const LOGO_IMAGES = {
   /** 메인 로고 */
