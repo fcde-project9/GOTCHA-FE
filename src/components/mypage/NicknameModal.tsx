@@ -7,7 +7,7 @@ interface NicknameModalProps {
   isOpen: boolean;
   currentNickname: string;
   onClose: () => void;
-  onSave: (newNickname: string) => void;
+  onSave: (newNickname: string) => Promise<void>;
 }
 
 /**
@@ -35,8 +35,8 @@ export function NicknameModal({ isOpen, currentNickname, onClose, onSave }: Nick
       return "2자 이상 입력해주세요";
     }
 
-    // 길이 체크 (12자 초과)
-    if (value.length > 12) {
+    // 길이 체크 (12자 이상)
+    if (value.length >= 12) {
       return "12자 이하로 입력해주세요";
     }
 
@@ -64,8 +64,18 @@ export function NicknameModal({ isOpen, currentNickname, onClose, onSave }: Nick
       return;
     }
 
-    onSave(nickname);
-    onClose();
+    try {
+      await onSave(nickname);
+      onClose();
+    } catch (err) {
+      const serverMessage = err instanceof Error ? err.message : "";
+      // 중복 닉네임 에러인 경우 사용자 친화적 메시지로 변환
+      const isDuplicateError =
+        serverMessage.includes("중복") ||
+        serverMessage.includes("이미 사용") ||
+        serverMessage.includes("U001");
+      setError(isDuplicateError ? "이미 사용 중인 닉네임이에요" : "닉네임 변경에 실패했어요.");
+    }
   };
 
   const isButtonDisabled = !nickname || nickname.trim() === "" || !!error;
@@ -96,13 +106,13 @@ export function NicknameModal({ isOpen, currentNickname, onClose, onSave }: Nick
             placeholder={currentNickname}
             maxLength={12}
             className={`w-full h-12 px-4 rounded-lg border ${
-              error ? "border-main-500" : "border-line-100"
+              error ? "border-error" : "border-line-100"
             } text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-900 placeholder:text-grey-400 focus:outline-none ${
-              error ? "focus:border-main-500" : "focus:border-line-100"
+              error ? "focus:border-error" : "focus:border-line-100"
             }`}
           />
           {error ? (
-            <p className="text-[12px] font-normal leading-[1.5] tracking-[-0.12px] text-main-500">
+            <p className="text-[12px] font-normal leading-[1.5] tracking-[-0.12px] text-error">
               {error}
             </p>
           ) : (
