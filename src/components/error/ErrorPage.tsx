@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { Button } from "@/components/common";
+import { ERROR_IMAGES } from "@/constants/images";
 import { openInstagramSupport } from "@/utils";
 
 interface ErrorPageProps {
@@ -37,13 +38,7 @@ export function ErrorPage({ onRetry }: ErrorPageProps) {
 
           {/* 멤버 이미지 */}
           <div className="mt-6">
-            <Image
-              src="/images/members-error.jpg"
-              alt="멤버 캐릭터"
-              width={306}
-              height={171}
-              priority
-            />
+            <Image src={ERROR_IMAGES.MEMBERS} alt="멤버 캐릭터" width={306} height={171} priority />
           </div>
         </div>
 
