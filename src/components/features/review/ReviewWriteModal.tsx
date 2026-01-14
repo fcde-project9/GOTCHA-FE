@@ -226,7 +226,7 @@ export function ReviewWriteModal({
       <div className="absolute inset-0 bg-black/50" onClick={handleExitAttempt} />
 
       {/* 모달 컨텐츠 */}
-      <div className="relative bg-white rounded-t-[20px] max-h-[580px] flex flex-col animate-slide-up">
+      <div className="relative w-full max-w-[480px] mx-auto bg-white rounded-t-[20px] max-h-[580px] flex flex-col animate-slide-up">
         {/* 헤더 */}
         <div className="relative flex items-center justify-between px-5 py-5">
           {/* X 버튼 */}
