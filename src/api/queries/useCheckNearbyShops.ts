@@ -20,7 +20,7 @@ export const useCheckNearbyShops = (latitude: number, longitude: number, enabled
 
       // success 플래그 검증
       if (!data.success || !data.data) {
-        throw new Error(data.error?.message || "근처 가게 조회에 실패했습니다.");
+        throw new Error(data.error?.message || "근처 가게 조회에 실패했어요.");
       }
 
       return data.data;

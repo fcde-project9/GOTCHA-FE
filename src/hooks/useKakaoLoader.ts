@@ -62,7 +62,7 @@ function loadKakaoSDK(apiKey: string) {
   };
 
   script.onerror = () => {
-    kakaoLoaderState.error = "카카오맵 SDK 로드에 실패했습니다.";
+    kakaoLoaderState.error = "카카오맵 SDK 로드에 실패했어요.";
     kakaoLoaderState.loading = false;
     notifyListeners();
   };

@@ -83,7 +83,7 @@ export default function FavoritesPage() {
           // Error State
           <div className="flex flex-1 flex-col items-center justify-center gap-4 px-5">
             <p className="text-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-600">
-              {error instanceof Error ? error.message : "찜한 업체 목록을 불러올 수 없습니다."}
+              {error instanceof Error ? error.message : "찜한 업체 목록을 불러올 수 없어요."}
             </p>
             <button
               type="button"

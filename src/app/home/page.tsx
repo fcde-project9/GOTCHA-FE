@@ -406,7 +406,7 @@ export default function Home() {
                   /* 검색 결과 없음 */
                   <div className="flex items-center justify-center pt-8">
                     <p className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-500">
-                      검색 결과가 없습니다.
+                      검색 결과가 없어요.
                     </p>
                   </div>
                 )}

@@ -275,7 +275,7 @@ export default function ReviewsListPage() {
       <div className="min-h-dvh bg-default flex flex-col">
         <BackHeader title="방문 리뷰 상세" />
         <div className="flex-1 flex flex-col items-center justify-center px-5">
-          <p className="text-[15px] text-grey-500 mb-4">잘못된 접근입니다</p>
+          <p className="text-[15px] text-grey-500 mb-4">잘못된 접근이에요</p>
           <Button variant="primary" size="small" onClick={() => router.push("/")}>
             홈으로 돌아가기
           </Button>

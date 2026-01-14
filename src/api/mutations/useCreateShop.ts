@@ -27,13 +27,13 @@ export const useCreateShop = () => {
 
         // success 플래그 검증
         if (!data.success || !data.data) {
-          throw new Error(data.error?.message || "가게 등록에 실패했습니다.");
+          throw new Error(data.error?.message || "가게 등록에 실패했어요.");
         }
 
         return data.data;
       } catch (error) {
         const apiError = extractApiError(error);
-        throw new Error(apiError?.message || "가게 등록에 실패했습니다.");
+        throw new Error(apiError?.message || "가게 등록에 실패했어요.");
       }
     },
   });

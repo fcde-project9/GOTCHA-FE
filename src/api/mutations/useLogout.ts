@@ -13,7 +13,7 @@ export const useLogout = () => {
       const response = await apiClient.post<ApiResponse<null>>(ENDPOINTS.AUTH.LOGOUT);
 
       if (!response.data.success) {
-        throw new Error(response.data.error?.message || "로그아웃에 실패했습니다.");
+        throw new Error(response.data.error?.message || "로그아웃에 실패했어요.");
       }
 
       return response.data;

@@ -79,7 +79,7 @@ export default function ReportLocationPage() {
       // 카카오 지도 SDK의 Geocoder 서비스 사용 (CORS 문제 없음)
       if (!window.kakao?.maps?.services) {
         console.error("카카오 지도 서비스가 로드되지 않았습니다");
-        setAddress("주소를 가져올 수 없습니다");
+        setAddress("주소를 가져올 수 없어요");
         resolve();
         return;
       }
@@ -89,10 +89,10 @@ export default function ReportLocationPage() {
       geocoder.coord2Address(lng, lat, (result, status) => {
         if (status === window.kakao.maps.services.Status.OK && result[0]) {
           const addr = result[0].address?.address_name || result[0].road_address?.address_name;
-          setAddress(addr || "주소를 가져올 수 없습니다");
+          setAddress(addr || "주소를 가져올 수 없어요");
         } else {
           console.error("주소 변환 실패:", status);
-          setAddress("주소를 가져올 수 없습니다");
+          setAddress("주소를 가져올 수 없어요");
         }
         resolve();
       });
