@@ -113,11 +113,11 @@ const config: Config = {
         },
         success: {
           DEFAULT: "#02BD79",
-          light: "#E0F7EF",
+          light: "#ECFCF4",
         },
         error: {
-          DEFAULT: "#FF3E27",
-          light: "#FFEBEE",
+          DEFAULT: "#FF2115",
+          light: "#FFF5F7",
         },
         icon: {
           DEFAULT: "#3F4044",
