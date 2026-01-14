@@ -35,8 +35,8 @@ export function NicknameModal({ isOpen, currentNickname, onClose, onSave }: Nick
       return "2자 이상 입력해주세요";
     }
 
-    // 길이 체크 (12자 이상)
-    if (value.length >= 12) {
+    // 길이 체크 (12자 초과)
+    if (value.length > 12) {
       return "12자 이하로 입력해주세요";
     }
 
