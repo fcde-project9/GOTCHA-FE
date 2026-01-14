@@ -7,7 +7,7 @@ import { ChevronDown, ThumbsUp, MoreVertical, Pencil, Trash2 } from "lucide-reac
 import { useDeleteReview } from "@/api/mutations/useDeleteReview";
 import { useToggleReviewLike } from "@/api/mutations/useToggleReviewLike";
 import { useInfiniteReviews } from "@/api/queries/useInfiniteReviews";
-import { Button, BackHeader } from "@/components/common";
+import { Button, BackHeader, ImageViewerModal } from "@/components/common";
 import { ReviewDeleteConfirmModal } from "@/components/features/review/ReviewDeleteConfirmModal";
 import { ReviewWriteModal } from "@/components/features/review/ReviewWriteModal";
 import { useToast } from "@/hooks";
@@ -20,11 +20,13 @@ function ReviewListItem({
   onLikeToggle,
   onEdit,
   onDelete,
+  onImageClick,
 }: {
   review: ReviewResponse;
   onLikeToggle: (reviewId: number) => void;
   onEdit: (reviewId: number) => void;
   onDelete: (reviewId: number) => void;
+  onImageClick?: (imageUrl: string) => void;
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -97,8 +99,9 @@ function ReviewListItem({
         {review.imageUrls && review.imageUrls.length > 0 && (
           <div className="flex gap-2 overflow-x-auto scrollbar-hide">
             {review.imageUrls.map((imageUrl, index) => (
-              <div
+              <button
                 key={index}
+                onClick={() => onImageClick?.(imageUrl)}
                 className="shrink-0 w-[105px] h-[105px] rounded-lg overflow-hidden bg-grey-100"
               >
                 <Image
@@ -108,7 +111,7 @@ function ReviewListItem({
                   height={105}
                   className="w-full h-full object-cover"
                 />
-              </div>
+              </button>
             ))}
           </div>
         )}
@@ -183,6 +186,9 @@ export default function ReviewsListPage() {
   // 모든 페이지의 리뷰를 평탄화
   const reviews = data?.pages.flatMap((page) => page.content) ?? [];
   const totalCount = data?.pages[0]?.totalCount ?? 0;
+
+  // 이미지 뷰어 모달 상태
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
 
   // 리뷰 수정 상태 (수정할 리뷰 데이터)
   const [editingReview, setEditingReview] = useState<ReviewResponse | null>(null);
@@ -362,6 +368,7 @@ export default function ReviewsListPage() {
                   onLikeToggle={handleLikeToggle}
                   onEdit={handleEditReview}
                   onDelete={handleDeleteReview}
+                  onImageClick={setSelectedImageUrl}
                 />
               ))}
             </div>
@@ -399,6 +406,13 @@ export default function ReviewsListPage() {
         isLoading={deleteReviewMutation.isPending}
         onClose={() => setDeletingReviewId(null)}
         onConfirm={handleConfirmDelete}
+      />
+
+      {/* 이미지 뷰어 모달 */}
+      <ImageViewerModal
+        imageUrl={selectedImageUrl}
+        onClose={() => setSelectedImageUrl(null)}
+        alt="리뷰 이미지"
       />
     </div>
   );
