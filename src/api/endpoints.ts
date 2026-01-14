@@ -3,7 +3,7 @@ export const ENDPOINTS = {
   // 인증
   AUTH: {
     LOGIN: "/auth/login",
-    LOGOUT: "/api/auth/logout",
+    LOGOUT: "/auth/logout",
     REFRESH: "/auth/refresh",
     TOKEN: "/api/auth/token",
   },
