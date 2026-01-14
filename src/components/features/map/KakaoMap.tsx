@@ -85,8 +85,8 @@ export default function KakaoMap({
       northEastLng: bounds.getNorthEast().getLng(),
       southWestLat: bounds.getSouthWest().getLat(),
       southWestLng: bounds.getSouthWest().getLng(),
-      centerLat: center.getLat(),
-      centerLng: center.getLng(),
+      latitude: center.getLat(),
+      longitude: center.getLng(),
     };
 
     onBoundsChangeRef.current(mapBounds);

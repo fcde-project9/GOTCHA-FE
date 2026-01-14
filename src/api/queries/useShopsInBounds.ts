@@ -11,7 +11,7 @@ import { getCurrentLocation } from "@/utils/geolocation";
  * @param bounds - 지도 영역 (northEast, southWest)
  * @param enabled - 쿼리 활성화 여부
  *
- * @note centerLat, centerLng는 사용자의 현재 위치로 고정됩니다.
+ * @note latitude, longitude는 사용자의 현재 위치로 고정됩니다.
  *       현재 위치를 가져올 수 없는 경우 null을 전송합니다.
  */
 export const useShopsInBounds = (bounds: MapBounds | null, enabled: boolean = true) => {
@@ -23,8 +23,8 @@ export const useShopsInBounds = (bounds: MapBounds | null, enabled: boolean = tr
       }
 
       // 사용자의 현재 위치 가져오기 (5분간 캐시 사용, 실패 시 null)
-      let centerLat: number | null = null;
-      let centerLng: number | null = null;
+      let latitude: number | null = null;
+      let longitude: number | null = null;
 
       try {
         const userLocation = await getCurrentLocation({
@@ -32,8 +32,8 @@ export const useShopsInBounds = (bounds: MapBounds | null, enabled: boolean = tr
           timeout: 5000,
           maximumAge: 300000,
         });
-        centerLat = userLocation?.latitude ?? null;
-        centerLng = userLocation?.longitude ?? null;
+        latitude = userLocation?.latitude ?? null;
+        longitude = userLocation?.longitude ?? null;
       } catch {
         // 위치 정보를 가져올 수 없는 경우 null 유지
       }
@@ -45,8 +45,8 @@ export const useShopsInBounds = (bounds: MapBounds | null, enabled: boolean = tr
             northEastLng: bounds.northEastLng,
             southWestLat: bounds.southWestLat,
             southWestLng: bounds.southWestLng,
-            centerLat,
-            centerLng,
+            latitude,
+            longitude,
           },
         });
 
