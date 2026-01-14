@@ -13,7 +13,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           queries: {
             staleTime: 60 * 1000, // 1분
             retry: 1,
-            refetchOnWindowFocus: false,
+            refetchOnWindowFocus: true, // 탭 복귀 시 자동 갱신
           },
         },
       })

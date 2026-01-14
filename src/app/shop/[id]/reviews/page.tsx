@@ -12,12 +12,7 @@ import { ReviewDeleteConfirmModal } from "@/components/features/review/ReviewDel
 import { ReviewWriteModal } from "@/components/features/review/ReviewWriteModal";
 import { useToast } from "@/hooks";
 import type { ReviewResponse, ReviewSortOption } from "@/types/api";
-
-// 날짜 포맷팅
-function formatDate(dateStr: string) {
-  const date = new Date(dateStr);
-  return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
-}
+import { formatDate } from "@/utils";
 
 // 리뷰 아이템 컴포넌트
 function ReviewListItem({
