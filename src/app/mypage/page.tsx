@@ -136,6 +136,9 @@ export default function MyPage() {
       // useAuth의 logout으로 토큰 정리 및 상태 업데이트
       logout();
 
+      // 약관 동의 정보 삭제 (재가입 시 동의 화면 표시를 위해)
+      localStorage.removeItem("agreed_to_terms");
+
       // 세션 스토리지 정리
       sessionStorage.clear();
 
