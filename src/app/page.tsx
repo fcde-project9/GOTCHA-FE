@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { LOGO_IMAGES } from "@/constants";
 
 export default function SplashPage() {
   const router = useRouter();
@@ -47,13 +48,7 @@ export default function SplashPage() {
     >
       {/* 로고 */}
       <div className="mb-8">
-        <Image
-          src="/images/gotcha-logo-light.png"
-          alt="GOTCHA 로고"
-          width={163}
-          height={114}
-          priority
-        />
+        <Image src={LOGO_IMAGES.LIGHT} alt="GOTCHA 로고" width={163} height={114} priority />
       </div>
 
       {/* 슬로건 */}

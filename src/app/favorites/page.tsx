@@ -7,6 +7,7 @@ import { Search, CircleX } from "lucide-react";
 import { useFavorites } from "@/api/queries/useFavorites";
 import { Footer, Button } from "@/components/common";
 import { FavoriteShopItem } from "@/components/features/favorites";
+import { DEFAULT_IMAGES } from "@/constants";
 import { useAuth } from "@/hooks";
 
 export default function FavoritesPage() {
@@ -97,7 +98,7 @@ export default function FavoritesPage() {
           <div className="flex flex-1 flex-col items-center justify-center gap-7 px-5">
             <div>
               <Image
-                src="/images/shop.png"
+                src={DEFAULT_IMAGES.SHOP}
                 alt="찜한 업체 없음"
                 width={80}
                 height={80}

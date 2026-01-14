@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { Checkbox } from "@/components/common";
+import { LOGO_IMAGES, SOCIAL_LOGO_IMAGES } from "@/constants";
 import { loginWithKakao, loginWithNaver, loginWithGoogle } from "@/utils";
 
 export default function LoginPage() {
@@ -53,13 +54,7 @@ export default function LoginPage() {
         <div className="mx-auto flex h-full flex-col w-full max-w-[480px] overflow-y-auto">
           {/* 로고 - 남은 영역에서 가운데 */}
           <div className="flex flex-1 items-center justify-center">
-            <Image
-              src="/images/gotcha-logo.png"
-              alt="GOTCHA 로고"
-              width={130}
-              height={90}
-              priority
-            />
+            <Image src={LOGO_IMAGES.MAIN} alt="GOTCHA 로고" width={130} height={90} priority />
           </div>
 
           {/* 소셜 로그인 버튼 영역 - 하단 32px 여백 */}
@@ -72,7 +67,7 @@ export default function LoginPage() {
                 disabled={showTermsSheet}
                 className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#FEE500] transition-opacity hover:opacity-90 active:opacity-80 disabled:opacity-50"
               >
-                <Image src="/images/kakao-logo.svg" alt="카카오" width={20} height={20} />
+                <Image src={SOCIAL_LOGO_IMAGES.KAKAO} alt="카카오" width={20} height={20} />
                 <span className="text-[16px] font-semibold leading-[1.5] text-[rgba(0,0,0,0.85)]">
                   카카오 로그인
                 </span>
@@ -84,7 +79,7 @@ export default function LoginPage() {
                 disabled={showTermsSheet}
                 className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#03C75A] transition-opacity hover:opacity-90 active:opacity-80 disabled:opacity-50"
               >
-                <Image src="/images/naver-logo.svg" alt="네이버" width={20} height={20} />
+                <Image src={SOCIAL_LOGO_IMAGES.NAVER} alt="네이버" width={20} height={20} />
                 <span className="text-[16px] font-semibold leading-[1.5] text-white">
                   네이버 로그인
                 </span>
@@ -96,7 +91,7 @@ export default function LoginPage() {
                 disabled={showTermsSheet}
                 className="flex h-12 w-full items-center justify-center gap-2 rounded-lg border border-grey-200 bg-white transition-colors hover:bg-grey-50 active:bg-grey-100 disabled:opacity-50"
               >
-                <Image src="/images/google-logo.svg" alt="구글" width={20} height={20} />
+                <Image src={SOCIAL_LOGO_IMAGES.GOOGLE} alt="구글" width={20} height={20} />
                 <span className="text-[16px] font-semibold leading-[1.5] text-[#1F1F1F]">
                   Google 로그인
                 </span>

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Heart, Navigation } from "lucide-react";
+import { DEFAULT_IMAGES } from "@/constants";
 import { useFavorite, useToast } from "@/hooks";
 import StatusBadge from "./StatusBadge";
 
@@ -47,7 +48,7 @@ export default function ShopListItem({
           className="relative rounded-[5px] shrink-0 size-[85px] overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-main"
         >
           <Image
-            src={imageUrl || "/images/no-image.png"}
+            src={imageUrl || DEFAULT_IMAGES.NO_IMAGE}
             alt={name}
             fill
             className="object-cover"
