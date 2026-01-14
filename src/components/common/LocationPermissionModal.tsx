@@ -240,7 +240,7 @@ export function LocationPermissionModal({
         >
           내 주변 매장을 찾기 위해
           <br />
-          위치 권한이 필요합니다.
+          위치 권한이 필요해요.
         </p>
 
         {/* 권한이 완전히 차단된 경우 설정 안내 표시 */}

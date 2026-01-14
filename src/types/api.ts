@@ -36,8 +36,8 @@ export interface MapBounds {
   northEastLng: number;
   southWestLat: number;
   southWestLng: number;
-  centerLat: number;
-  centerLng: number;
+  latitude: number;
+  longitude: number;
 }
 
 /**
