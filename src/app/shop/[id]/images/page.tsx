@@ -16,9 +16,12 @@ export default function ImagesGalleryPage() {
   // useShopDetail 훅으로 가게 데이터 조회
   const { data: shop, isLoading } = useShopDetail(shopId);
 
-  // mainImageUrl + recentReviewImages 결합
+  // mainImageUrl + reviews(배열)의 모든 imageUrls 결합
   const images = shop
-    ? [...(shop.mainImageUrl ? [shop.mainImageUrl] : []), ...shop.recentReviewImages]
+    ? [
+        ...(shop.mainImageUrl ? [shop.mainImageUrl] : []),
+        ...shop.reviews.flatMap((review) => review.imageUrls),
+      ]
     : [];
 
   const handleImageClick = (index: number) => {
