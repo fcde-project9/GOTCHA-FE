@@ -228,7 +228,7 @@ export function ReviewWriteModal({
       {/* 모달 컨텐츠 */}
       <div className="relative bg-white rounded-t-[20px] max-h-[580px] flex flex-col animate-slide-up">
         {/* 헤더 */}
-        <div className="flex items-center justify-between px-5 py-5">
+        <div className="relative flex items-center justify-between px-5 py-5">
           {/* X 버튼 */}
           <button
             onClick={handleExitAttempt}
@@ -239,9 +239,9 @@ export function ReviewWriteModal({
             <X size={24} className="stroke-grey-900" strokeWidth={2} />
           </button>
 
-          {/* 타이틀 */}
-          <div className="flex items-center gap-2">
-            <span className="text-[20px] font-semibold leading-[1.5] tracking-[-0.2px] text-grey-900 ml-[30px]">
+          {/* 타이틀 - 항상 가운데 고정 */}
+          <div className="absolute left-1/2 -translate-x-1/2">
+            <span className="text-[20px] font-semibold leading-[1.5] tracking-[-0.2px] text-grey-900">
               {isEditMode ? "리뷰 수정" : "리뷰 작성"}
             </span>
           </div>
@@ -259,7 +259,7 @@ export function ReviewWriteModal({
         </div>
 
         {/* 텍스트 입력 영역 */}
-        <div className="px-5 pb-4">
+        <div className="px-5 pb-4 flex flex-col gap-5">
           <div className="border border-[#CFCFD1] rounded-[10px] p-3 flex flex-col gap-3">
             <textarea
               value={content}
@@ -273,9 +273,17 @@ export function ReviewWriteModal({
               className="w-full h-[88px] text-[14px] leading-[1.5] tracking-[-0.14px] text-grey-900 placeholder:text-grey-400 resize-none focus:outline-none disabled:opacity-50"
             />
             <div className="flex justify-end text-[13px] tracking-[-0.286px]">
-              <span className="text-main">{content.length}</span>
-              <span className="text-[#8A8A8B]"> /{MAX_CONTENT_LENGTH}</span>
+              <span className="text-main">{content.length}&nbsp;</span>
+              <span className="text-grey-500"> /{MAX_CONTENT_LENGTH}</span>
             </div>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-[20px] leading-[1.4] tracking-[-0.2px] text-grey-900 font-semibold">
+              사진
+            </span>
+            <span className="text-[13px] leading-[1.5] tracking-[-0.13px] text-grey-600">
+              (최대 10장)
+            </span>
           </div>
         </div>
 
