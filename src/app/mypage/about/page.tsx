@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import Footer from "@/components/common/Footer";
+import { SOCIAL_URLS } from "@/constants";
 
 export default function AboutPage() {
   const router = useRouter();
@@ -13,12 +14,11 @@ export default function AboutPage() {
   };
 
   const handleInstagramClick = () => {
-    // TODO: 인스타그램 계정 연동
-    // window.open("https://instagram.com/gatcha_map", "_blank");
+    window.open(SOCIAL_URLS.INSTAGRAM, "_blank");
   };
 
   return (
-    <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[70px]">
+    <div className="bg-default h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[70px] overflow-hidden">
       {/* Header */}
       <header className="bg-default h-12 flex items-center pl-3 pr-5 py-2 gap-0">
         <button
@@ -34,9 +34,9 @@ export default function AboutPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex flex-col items-center px-5 pt-[51px] relative">
+      <main className="flex flex-col justify-between h-full items-center px-5 pt-12 pb-[78px] relative">
         {/* Speech Bubble */}
-        <div className="relative mb-6 flex flex-col items-center">
+        <div className="relative flex flex-col items-center">
           <div className="relative w-[207px] h-[110px]">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -55,21 +55,24 @@ export default function AboutPage() {
               />
             </svg>
             <div className="absolute inset-0 flex items-start justify-center pt-8">
-              <p className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-800 border-b border-grey-900">
+              <button
+                onClick={handleInstagramClick}
+                className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-800 border-b border-grey-900"
+              >
                 우리 인스타 한번 볼래요?
-              </p>
+              </button>
             </div>
           </div>
         </div>
 
         {/* Team Members Image */}
-        <div className="relative w-full max-w-[375px] h-[380px] flex items-center justify-center mb-8">
-          <div className="relative w-[280px] h-[380px]">
+        <div className="relative w-full max-w-[375px] flex items-center justify-center">
+          <div className="relative w-[280px] h-[282.36px]">
             <Image
               src="/images/members.jpg"
               alt="팀 멤버들"
               fill
-              className="object-contain"
+              className="object-cover"
               priority
             />
           </div>
