@@ -70,7 +70,7 @@ export default function Home() {
     getCurrentLocation();
   }, [getCurrentLocation]);
 
-  // 사용자 위치를 처음 받았을 때 지도 이동 + 자동 재검색
+  // 사용자 위치를 처음 받았을 때 지도 이동 + 자동 재검색 + 현재 위치 마커 표시
   useEffect(() => {
     if (location && !hasReceivedLocation) {
       setHasReceivedLocation(true);
@@ -78,6 +78,12 @@ export default function Home() {
       shouldAutoReloadRef.current = true;
       setMapCenter(location);
       setCenterUpdateTrigger((prev) => prev + 1);
+      // 현재 위치 마커 표시
+      setShowCurrentLocation({
+        latitude: location.latitude,
+        longitude: location.longitude,
+        heading: null,
+      });
     }
   }, [location, hasReceivedLocation]);
 
