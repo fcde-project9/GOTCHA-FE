@@ -166,7 +166,7 @@ export default function BottomSheet({
   return (
     <div
       ref={sheetRef}
-      className="absolute bottom-0 left-0 right-0 bg-white rounded-t-[24px] overflow-hidden z-10"
+      className="absolute bottom-0 left-0 right-0 bg-white rounded-t-[24px] overflow-hidden z-20"
       style={{
         height: `${currentHeight - 72}px`,
         transition: isDragging ? "none" : "height 0.3s ease-out",
