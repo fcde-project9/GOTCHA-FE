@@ -33,7 +33,8 @@ export default function ShopListBottomSheet({
   return (
     <BottomSheet
       // Uses default snap points from BottomSheet (SSR-safe)
-      defaultSnapPoint={0}
+      // 0: collapsed (Grabber만), 1: default (헤더+2개), 2: expanded (전체)
+      defaultSnapPoint={1}
       onHeightChange={onHeightChange}
       scrollToTop={scrollTrigger}
     >

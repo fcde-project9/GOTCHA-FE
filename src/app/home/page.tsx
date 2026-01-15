@@ -16,7 +16,7 @@ import { shopMapResponsesToViews } from "@/utils/shop";
 export default function Home() {
   const { location, getCurrentLocation } = useCurrentLocation();
   const { results, searchPlaces, clearResults } = useKakaoPlaces();
-  const [bottomSheetHeight, setBottomSheetHeight] = useState(215); // 기본 높이
+  const [bottomSheetHeight, setBottomSheetHeight] = useState(290); // 기본 높이 (헤더 + 약 2개 아이템)
   const [isSheetDragging, setIsSheetDragging] = useState(false);
   const [mapCenter, setMapCenter] = useState<{ latitude: number; longitude: number } | null>(null);
   const [showReloadButton, setShowReloadButton] = useState(false);
