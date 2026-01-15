@@ -9,7 +9,7 @@ import type { NearbyShopResponse, ApiResponse, NearbyShopsResponse } from "@/api
 import { Button, CenterTitleHeader } from "@/components/common";
 import { KakaoMap } from "@/components/features/map";
 import { ShopDuplicateCheckModal } from "@/components/report/ShopDuplicateCheckModal";
-import { MARKER_IMAGES } from "@/constants";
+import { MARKER_IMAGES, DEFAULT_LOCATION } from "@/constants";
 
 // 카카오맵 타입
 interface KakaoLatLng {
@@ -20,7 +20,7 @@ interface KakaoLatLng {
 export default function ReportLocationPage() {
   const router = useRouter();
   const [address, setAddress] = useState("위치를 선택해주세요");
-  const [center, setCenter] = useState({ latitude: 37.4979, longitude: 127.0276 }); // 강남역 기본값
+  const [center, setCenter] = useState({ ...DEFAULT_LOCATION });
   const [myLocation, setMyLocation] = useState<{ latitude: number; longitude: number } | null>(
     null
   );
@@ -58,16 +58,16 @@ export default function ReportLocationPage() {
           setIsLoading(false);
         },
         async () => {
-          // 위치 정보 가져오기 실패 시 기본 위치(강남역) 사용
-          setMyLocation({ latitude: 37.4979, longitude: 127.0276 });
-          await getAddressFromCoords(37.4979, 127.0276);
+          // 위치 정보 가져오기 실패 시 기본 위치 사용
+          setMyLocation({ ...DEFAULT_LOCATION });
+          await getAddressFromCoords(DEFAULT_LOCATION.latitude, DEFAULT_LOCATION.longitude);
           setIsLoading(false);
         }
       );
     } else {
       (async () => {
-        setMyLocation({ latitude: 37.4979, longitude: 127.0276 });
-        await getAddressFromCoords(37.4979, 127.0276);
+        setMyLocation({ ...DEFAULT_LOCATION });
+        await getAddressFromCoords(DEFAULT_LOCATION.latitude, DEFAULT_LOCATION.longitude);
         setIsLoading(false);
       })();
     }
