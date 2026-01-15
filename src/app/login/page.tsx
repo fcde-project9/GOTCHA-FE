@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { Checkbox } from "@/components/common";
 import { LOGO_IMAGES, SOCIAL_LOGO_IMAGES } from "@/constants";
-import { loginWithKakao, loginWithNaver, loginWithGoogle } from "@/utils";
+import { loginWithKakao, loginWithGoogle } from "@/utils";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -73,8 +73,8 @@ export default function LoginPage() {
                 </span>
               </button>
 
-              {/* 네이버 로그인 */}
-              <button
+              {/* 네이버 로그인 - 승인 대기 중으로 임시 주석처리 */}
+              {/* <button
                 onClick={loginWithNaver}
                 disabled={showTermsSheet}
                 className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#03C75A] transition-opacity hover:opacity-90 active:opacity-80 disabled:opacity-50"
@@ -83,7 +83,7 @@ export default function LoginPage() {
                 <span className="text-[16px] font-semibold leading-[1.5] text-white">
                   네이버 로그인
                 </span>
-              </button>
+              </button> */}
 
               {/* 구글 로그인 */}
               <button
