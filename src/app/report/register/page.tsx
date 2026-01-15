@@ -2,11 +2,13 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Camera, Clock } from "lucide-react";
+import { Camera, Clock, Plus } from "lucide-react";
 import { useCreateShopWithUpload } from "@/api/mutations/useCreateShopWithUpload";
-import { Button, CenterTitleHeader } from "@/components/common";
+import { Button, CenterTitleHeader, Checkbox } from "@/components/common";
 import { Toast } from "@/components/common/Toast";
 import { ExitConfirmModal } from "@/components/report/ExitConfirmModal";
+import { OperatingHoursItem } from "@/components/report/OperatingHoursItem";
+import { OperatingHoursEntry } from "@/components/report/OperatingHoursModal";
 import { TimePickerModal } from "@/components/report/TimePickerModal";
 
 const DAYS_OF_WEEK = ["월", "화", "수", "목", "금", "토", "일"] as const;
@@ -21,12 +23,19 @@ function ReportRegisterContent() {
     longitude: 0,
     shopName: "",
     locationHint: "",
-    openDays: [] as number[],
-    openTime: "오전 12:00",
-    closeTime: "오전 12:00",
     images: [] as File[],
   });
+  const [operatingHours, setOperatingHours] = useState<OperatingHoursEntry[]>([]);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  // 영업시간 입력 상태
+  const [selectedDays, setSelectedDays] = useState<number[]>([]);
+  const [isEveryDay, setIsEveryDay] = useState(false);
+  const [openTime, setOpenTime] = useState("오전 10:00");
+  const [closeTime, setCloseTime] = useState("오후 10:00");
+  const [isUnknown, setIsUnknown] = useState(false);
+  const [isOpenTimeModalOpen, setIsOpenTimeModalOpen] = useState(false);
+  const [isCloseTimeModalOpen, setIsCloseTimeModalOpen] = useState(false);
 
   // URL 파라미터에서 주소와 좌표 가져오기
   useEffect(() => {
@@ -50,8 +59,6 @@ function ReportRegisterContent() {
       longitude: lng,
     }));
   }, [searchParams, router]);
-  const [isOpenTimeModalOpen, setIsOpenTimeModalOpen] = useState(false);
-  const [isCloseTimeModalOpen, setIsCloseTimeModalOpen] = useState(false);
   const [isExitConfirmModalOpen, setIsExitConfirmModalOpen] = useState(false);
   const [toast, setToast] = useState({ message: "", isVisible: false });
   const [toastKey, setToastKey] = useState(0);
@@ -72,9 +79,8 @@ function ReportRegisterContent() {
     Boolean(formData.shopName.trim()) ||
     Boolean(formData.locationHint.trim()) ||
     formData.images.length > 0 ||
-    formData.openDays.length > 0 ||
-    formData.openTime !== "오전 12:00" ||
-    formData.closeTime !== "오전 12:00";
+    operatingHours.length > 0 ||
+    selectedDays.length > 0;
 
   const handleBackClick = () => {
     if (hasUserInput) {
@@ -89,13 +95,61 @@ function ReportRegisterContent() {
     router.push("/report");
   };
 
+  // 이미 선택된 모든 요일 목록
+  const existingDays = operatingHours.flatMap((entry) => entry.days);
+
+  // 선택 가능한 요일 (이미 등록된 요일 제외)
+  const availableDays = [0, 1, 2, 3, 4, 5, 6].filter((day) => !existingDays.includes(day));
+
+  // 요일 토글
   const handleDayToggle = (dayIndex: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      openDays: prev.openDays.includes(dayIndex)
-        ? prev.openDays.filter((d) => d !== dayIndex)
-        : [...prev.openDays, dayIndex],
-    }));
+    if (existingDays.includes(dayIndex)) return;
+
+    setSelectedDays((prev) =>
+      prev.includes(dayIndex) ? prev.filter((d) => d !== dayIndex) : [...prev, dayIndex]
+    );
+  };
+
+  // 매일 체크박스 토글
+  const handleEveryDayToggle = (checked: boolean) => {
+    setIsEveryDay(checked);
+    if (checked) {
+      setSelectedDays(availableDays);
+    } else {
+      setSelectedDays([]);
+    }
+  };
+
+  // 모름 체크박스 토글
+  const handleUnknownToggle = (checked: boolean) => {
+    setIsUnknown(checked);
+  };
+
+  // 영업시간 추가
+  const handleAddOperatingHours = () => {
+    if (selectedDays.length === 0) return;
+
+    const entry: OperatingHoursEntry = {
+      id: Date.now().toString(),
+      days: [...selectedDays].sort((a, b) => a - b),
+      openTime,
+      closeTime,
+      isUnknown,
+    };
+
+    setOperatingHours((prev) => [...prev, entry]);
+
+    // 입력 상태 초기화
+    setSelectedDays([]);
+    setIsEveryDay(false);
+    setOpenTime("오전 10:00");
+    setCloseTime("오후 10:00");
+    setIsUnknown(false);
+  };
+
+  // 영업시간 삭제
+  const handleDeleteOperatingHours = (id: string) => {
+    setOperatingHours((prev) => prev.filter((entry) => entry.id !== id));
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -162,21 +216,40 @@ function ReportRegisterContent() {
 
   /**
    * 영업 시간 데이터 변환
-   * openDays 배열과 시간을 Record<string, string> 형태로 변환
-   * 백엔드 스펙: {"Mon": "10:00-22:00", "Tue": "10:00-22:00", ...}
-   * null 값은 제외하고 영업하는 날만 포함
+   * 백엔드 정책:
+   * - 모든 요일의 key 존재 (Mon, Tue, Wed, Thu, Fri, Sat, Sun)
+   * - 영업 시간: "10:00~20:00" 형식
+   * - "00:00~00:00" 금지 → null 사용
+   * - 휴무: ""
+   * - 모름: null
+   * - 아무것도 등록 안 함: 모든 요일 null
    */
-  const convertOpenTime = (): Record<string, string> | undefined => {
-    if (formData.openDays.length === 0) return undefined;
+  const convertOpenTime = (): Record<string, string | null> => {
+    const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
+    const openTimeRecord: Record<string, string | null> = {};
 
-    const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    const openTimeRecord: Record<string, string> = {};
-
+    // 모든 요일에 대해 기본값 설정
     dayNames.forEach((dayName, index) => {
-      if (formData.openDays.includes(index)) {
-        const open = convertTimeFormat(formData.openTime);
-        const close = convertTimeFormat(formData.closeTime);
-        openTimeRecord[dayName] = `${open}-${close}`;
+      // 해당 요일이 등록된 entry 찾기
+      const entry = operatingHours.find((e) => e.days.includes(index));
+
+      if (!entry) {
+        // 등록되지 않은 요일 = 아무것도 등록 안 한 경우 모름(null), 일부만 등록한 경우 휴무("")
+        openTimeRecord[dayName] = operatingHours.length === 0 ? null : "";
+      } else if (entry.isUnknown) {
+        // 모름
+        openTimeRecord[dayName] = null;
+      } else {
+        const open = convertTimeFormat(entry.openTime);
+        const close = convertTimeFormat(entry.closeTime);
+        const timeValue = `${open}~${close}`;
+
+        // "00:00~00:00"은 null로 처리
+        if (timeValue === "00:00~00:00") {
+          openTimeRecord[dayName] = null;
+        } else {
+          openTimeRecord[dayName] = timeValue;
+        }
       }
     });
 
@@ -218,7 +291,7 @@ function ReportRegisterContent() {
   };
 
   return (
-    <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[120px]">
+    <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative">
       {/* Header */}
       <CenterTitleHeader title="업체 정보 등록" onBack={handleBackClick} />
 
@@ -274,56 +347,152 @@ function ReportRegisterContent() {
           />
         </div>
 
-        {/* 영업일 */}
-        <div className="flex flex-col gap-2">
-          <label className="text-[18px] font-medium leading-[1.5] tracking-[-0.18px] text-grey-900">
-            영업일
-          </label>
-          <div className="flex gap-2">
-            {DAYS_OF_WEEK.map((day, index) => (
-              <button
-                key={day}
-                onClick={() => handleDayToggle(index)}
-                className={`w-10 h-10 rounded-full flex items-center justify-center text-[16px] font-medium leading-[1.5] tracking-[-0.16px] transition-colors ${
-                  formData.openDays.includes(index)
-                    ? "bg-grey-600 text-white"
-                    : "bg-grey-100 text-grey-400"
-                }`}
-              >
-                {day}
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* 영업시간 */}
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-4">
           <label className="text-[18px] font-medium leading-[1.5] tracking-[-0.18px] text-grey-900">
             영업시간
           </label>
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => setIsOpenTimeModalOpen(true)}
-              className="flex-1 bg-grey-50 h-11 flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-grey-100 transition-colors"
-            >
-              <Clock size={24} className="stroke-grey-500" />
-              <span className="flex-1 text-left text-[14px] leading-[1.5] tracking-[-0.14px] text-grey-500">
-                {formData.openTime}
-              </span>
-            </button>
-            <span className="text-[16px] leading-[1.5] tracking-[-0.16px] text-grey-900">~</span>
-            <button
-              type="button"
-              onClick={() => setIsCloseTimeModalOpen(true)}
-              className="flex-1 bg-grey-50 h-11 flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-grey-100 transition-colors"
-            >
-              <Clock size={24} className="stroke-grey-500" />
-              <span className="flex-1 text-left text-[14px] leading-[1.5] tracking-[-0.14px] text-grey-500">
-                {formData.closeTime}
-              </span>
-            </button>
-          </div>
+
+          {/* 영업시간 입력 영역 - 모든 요일이 등록되지 않았을 때만 표시 */}
+          {existingDays.length < 7 && (
+            <div className="flex flex-col gap-4 p-4 bg-grey-50 rounded-lg">
+              {/* 영업일 */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[14px] font-medium leading-[1.5] tracking-[-0.14px] text-grey-900">
+                    영업일
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  {DAYS_OF_WEEK.map((day, index) => {
+                    const isDisabled = existingDays.includes(index);
+                    const isSelected = selectedDays.includes(index);
+                    return (
+                      <button
+                        key={day}
+                        type="button"
+                        onClick={() => handleDayToggle(index)}
+                        disabled={isDisabled}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center text-[16px] font-medium leading-[1.5] tracking-[-0.16px] transition-colors ${
+                          isDisabled
+                            ? "bg-grey-200 text-grey-300 cursor-not-allowed"
+                            : isSelected
+                              ? "bg-grey-600 text-white"
+                              : "bg-white text-grey-400 border border-grey-200"
+                        }`}
+                      >
+                        {day}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="flex items-center justify-end pt-2">
+                  <Checkbox
+                    checked={isEveryDay}
+                    onChange={handleEveryDayToggle}
+                    label="매일"
+                    variant="filled"
+                    size="small"
+                  />
+                </div>
+              </div>
+
+              {/* 영업시간 */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[14px] font-medium leading-[1.5] tracking-[-0.14px] text-grey-900">
+                    시간
+                  </span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => !isUnknown && setIsOpenTimeModalOpen(true)}
+                    disabled={isUnknown}
+                    className={`flex-1 h-11 flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                      isUnknown ? "bg-grey-100 cursor-not-allowed" : "bg-white hover:bg-grey-100"
+                    }`}
+                  >
+                    <Clock
+                      size={16}
+                      className={isUnknown ? "stroke-grey-300" : "stroke-grey-500"}
+                    />
+                    <span
+                      className={`flex-1 text-left text-[14px] leading-[1.5] tracking-[-0.14px] ${
+                        isUnknown ? "text-grey-300" : "text-grey-600"
+                      }`}
+                    >
+                      {isUnknown ? "-" : openTime}
+                    </span>
+                  </button>
+                  <span
+                    className={`text-[14px] leading-[1.5] tracking-[-0.14px] ${isUnknown ? "text-grey-300" : "text-grey-600"}`}
+                  >
+                    ~
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => !isUnknown && setIsCloseTimeModalOpen(true)}
+                    disabled={isUnknown}
+                    className={`flex-1 h-11 flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                      isUnknown ? "bg-grey-100 cursor-not-allowed" : "bg-white hover:bg-grey-100"
+                    }`}
+                  >
+                    <Clock
+                      size={16}
+                      className={isUnknown ? "stroke-grey-300" : "stroke-grey-500"}
+                    />
+                    <span
+                      className={`flex-1 text-left text-[14px] leading-[1.5] tracking-[-0.14px] ${
+                        isUnknown ? "text-grey-300" : "text-grey-600"
+                      }`}
+                    >
+                      {isUnknown ? "-" : closeTime}
+                    </span>
+                  </button>
+                </div>
+                <div className="flex items-center justify-end pt-2">
+                  <Checkbox
+                    checked={isUnknown}
+                    onChange={handleUnknownToggle}
+                    label="모름"
+                    variant="filled"
+                    size="small"
+                  />
+                </div>
+              </div>
+
+              {/* 추가 버튼 */}
+              <button
+                type="button"
+                onClick={handleAddOperatingHours}
+                disabled={selectedDays.length === 0}
+                className={`flex items-center justify-center gap-1 h-10 rounded-lg transition-colors ${
+                  selectedDays.length === 0
+                    ? "bg-grey-200 text-grey-400 cursor-not-allowed"
+                    : "bg-grey-600 text-white hover:bg-grey-700"
+                }`}
+              >
+                <Plus size={18} />
+                <span className="text-[14px] font-medium leading-[1.5] tracking-[-0.14px]">
+                  추가
+                </span>
+              </button>
+            </div>
+          )}
+
+          {/* 영업시간 리스트 */}
+          {operatingHours.length > 0 && (
+            <div className="flex flex-col gap-2">
+              {operatingHours.map((entry) => (
+                <OperatingHoursItem
+                  key={entry.id}
+                  entry={entry}
+                  onDelete={handleDeleteOperatingHours}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* 업체 사진 */}
@@ -371,7 +540,7 @@ function ReportRegisterContent() {
       </main>
 
       {/* Submit Button */}
-      <div className="fixed bottom-[52px] left-1/2 -translate-x-1/2 w-full max-w-[480px] px-5">
+      <div className="sticky bottom-0 pt-3 pb-[52px] w-full max-w-[480px] px-5 bg-white">
         <Button
           variant="primary"
           size="medium"
@@ -387,15 +556,15 @@ function ReportRegisterContent() {
       {/* Time Picker Modals */}
       <TimePickerModal
         isOpen={isOpenTimeModalOpen}
-        initialTime={formData.openTime}
+        initialTime={openTime}
         onClose={() => setIsOpenTimeModalOpen(false)}
-        onSelect={(time) => setFormData((prev) => ({ ...prev, openTime: time }))}
+        onSelect={(time) => setOpenTime(time)}
       />
       <TimePickerModal
         isOpen={isCloseTimeModalOpen}
-        initialTime={formData.closeTime}
+        initialTime={closeTime}
         onClose={() => setIsCloseTimeModalOpen(false)}
-        onSelect={(time) => setFormData((prev) => ({ ...prev, closeTime: time }))}
+        onSelect={(time) => setCloseTime(time)}
       />
 
       {/* Exit Confirm Modal */}

@@ -44,7 +44,7 @@ export function Checkbox({
         >
           {checked && (
             <svg
-              width="14"
+              width="10"
               height="10"
               viewBox="0 0 14 10"
               fill="none"
