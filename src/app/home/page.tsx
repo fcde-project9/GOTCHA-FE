@@ -139,12 +139,19 @@ export default function Home() {
   };
 
   const handleResultClick = (result: PlaceSearchResult) => {
+    // 자동 재검색 플래그 설정 (지도 이동 후 매장 핀 자동 표시)
+    shouldAutoReloadRef.current = true;
+
     // 선택한 위치로 지도 이동
     setMapCenter({
       latitude: parseFloat(result.y),
       longitude: parseFloat(result.x),
     });
-    // 검색 모드 종료 (검색어는 유지)
+
+    // 검색어를 선택한 장소명으로 업데이트
+    setSearchQuery(result.place_name);
+
+    // 검색 모드 종료
     setIsSearching(false);
     clearResults();
   };
