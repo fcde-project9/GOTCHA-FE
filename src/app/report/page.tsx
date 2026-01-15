@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, LocateFixed } from "lucide-react";
+import { LocateFixed } from "lucide-react";
 import apiClient from "@/api/client";
 import { ENDPOINTS } from "@/api/endpoints";
 import type { NearbyShopResponse, ApiResponse, NearbyShopsResponse } from "@/api/types";
-import { Button } from "@/components/common";
+import { Button, CenterTitleHeader } from "@/components/common";
 import { KakaoMap } from "@/components/features/map";
 import { ShopDuplicateCheckModal } from "@/components/report/ShopDuplicateCheckModal";
 import { MARKER_IMAGES } from "@/constants";
@@ -213,21 +213,10 @@ export default function ReportLocationPage() {
   return (
     <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative">
       {/* Header */}
-      <header className="absolute top-0 left-0 right-0 bg-white h-12 flex items-center px-5 py-2 z-10">
-        <button
-          onClick={() => router.push("/home")}
-          className="w-6 h-6 flex items-center justify-center"
-        >
-          <ChevronLeft size={24} className="stroke-grey-900" strokeWidth={2} />
-        </button>
-        <h1 className="flex-1 text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900 text-center">
-          제보
-        </h1>
-        <div className="w-6" />
-      </header>
+      <CenterTitleHeader title="제보" onBack={() => router.push("/home")} absolute />
 
       {/* Map */}
-      <div className="relative h-[100dvh] pt-12">
+      <div className="relative h-[100dvh] pt-14">
         <KakaoMap
           width="100%"
           height="100%"

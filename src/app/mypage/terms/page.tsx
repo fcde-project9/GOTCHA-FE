@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
+import { BackHeader } from "@/components/common";
 import Footer from "@/components/common/Footer";
 
 export default function TermsPage() {
@@ -22,18 +23,7 @@ export default function TermsPage() {
   return (
     <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[70px]">
       {/* Header */}
-      <header className="bg-white h-12 flex items-center pl-3 pr-5 py-2 gap-0">
-        <button
-          onClick={handleBack}
-          className="w-6 h-6 flex items-center justify-center"
-          aria-label="뒤로가기"
-        >
-          <ChevronLeft size={24} className="stroke-grey-900" strokeWidth={2} />
-        </button>
-        <h1 className="flex-1 text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900 h-[27px] flex items-center">
-          약관/라이센스
-        </h1>
-      </header>
+      <BackHeader title="약관/라이센스" onBack={handleBack} />
 
       {/* Main Content */}
       <main className="flex flex-col px-5 pt-[7px]">

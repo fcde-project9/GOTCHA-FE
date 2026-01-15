@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
 import apiClient from "@/api/client";
+import { BackHeader } from "@/components/common";
 import { DEFAULT_IMAGES } from "@/constants";
 
 interface NicknameResponse {
@@ -113,11 +113,7 @@ export default function NicknamePage() {
     <div className="relative flex min-h-[100dvh] w-full flex-col bg-default">
       <div className="mx-auto flex min-h-[100dvh] w-full max-w-[480px] flex-col">
         {/* 헤더 */}
-        <header className="flex h-12 items-center px-5 py-2">
-          <button onClick={handleBack} className="flex items-center justify-center">
-            <ChevronLeft size={24} className="stroke-grey-900" strokeWidth={2} />
-          </button>
-        </header>
+        <BackHeader onBack={handleBack} />
 
         {/* 컨텐츠 */}
         <main className="flex flex-1 flex-col items-center justify-center px-5">

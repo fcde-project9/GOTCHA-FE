@@ -10,6 +10,7 @@ import { useUpdateProfileImageWithUpload } from "@/api/mutations/useUpdateProfil
 import { useWithdraw } from "@/api/mutations/useWithdraw";
 import { useUser } from "@/api/queries/useUser";
 import type { User } from "@/api/types";
+import { SimpleHeader } from "@/components/common";
 import Footer from "@/components/common/Footer";
 import { ErrorPage } from "@/components/error/ErrorPage";
 import { LogoutModal } from "@/components/mypage/LogoutModal";
@@ -169,11 +170,7 @@ export default function MyPage() {
   if (isLoading) {
     return (
       <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[70px]">
-        <header className="bg-white h-12 flex items-center px-5 py-2">
-          <h1 className="flex-1 text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900 h-6 flex items-center">
-            마이
-          </h1>
-        </header>
+        <SimpleHeader title="마이" />
       </div>
     );
   }
@@ -203,18 +200,18 @@ export default function MyPage() {
   return (
     <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[70px]">
       {/* Header */}
-      <header className="bg-white h-12 flex items-center px-5 py-2">
-        <h1 className="flex-1 text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900 h-6 flex items-center">
-          마이
-        </h1>
-        <button
-          onClick={handleSupport}
-          className="w-6 h-6 flex items-center justify-center"
-          aria-label="문의하기"
-        >
-          <Headset size={24} className="stroke-icon" strokeWidth={2} />
-        </button>
-      </header>
+      <SimpleHeader
+        title="마이"
+        rightElement={
+          <button
+            onClick={handleSupport}
+            className="w-6 h-6 flex items-center justify-center"
+            aria-label="문의하기"
+          >
+            <Headset size={24} className="stroke-icon" strokeWidth={2} />
+          </button>
+        }
+      />
 
       {/* Main Content */}
       <main className="flex flex-col gap-7 pt-[60px] px-5">

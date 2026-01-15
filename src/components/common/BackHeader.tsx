@@ -48,7 +48,7 @@ export function BackHeader({ onBack, title, rightElement, showBorder = false }: 
 
   return (
     <header
-      className={`shrink-0 flex h-12 items-center justify-between bg-default px-4 ${
+      className={`shrink-0 flex h-14 items-center justify-between bg-default px-4 ${
         showBorder ? "border-b border-grey-100" : ""
       }`}
     >

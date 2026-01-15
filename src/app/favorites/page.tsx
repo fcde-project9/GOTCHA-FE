@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Search, CircleX, RefreshCcw } from "lucide-react";
 import { useFavorites } from "@/api/queries/useFavorites";
-import { Footer, Button } from "@/components/common";
+import { Footer, Button, SimpleHeader } from "@/components/common";
 import { FavoriteShopItem } from "@/components/features/favorites";
 import { DEFAULT_IMAGES } from "@/constants";
 import { useAuth } from "@/hooks";
@@ -46,11 +46,7 @@ export default function FavoritesPage() {
     <>
       <main className="h-[calc(100dvh-70px)] overflow-hidden relative bg-default flex flex-col">
         {/* 헤더 */}
-        <header className="flex-shrink-0 flex h-12 items-center bg-default px-5 py-2">
-          <h1 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900">
-            찜한 업체
-          </h1>
-        </header>
+        <SimpleHeader title="찜한 업체" />
 
         {/* 검색창 - 찜한 업체가 있을 때만 표시 */}
         {favoritesData && favoritesData.length > 0 && (
