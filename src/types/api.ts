@@ -117,8 +117,8 @@ export interface ShopDetailResponse {
   addressName: string; // 예: "서울 송파구 잠실동 40-1"
   locationHint: string; // 예: "롯데월드건물 지하1층 감성교복 앞"
   openTime: string; // JSON 문자열: {"Mon": "10:00~22:00", "Tue": null, ...}
-  todayOpenTime: string; // 예: "10:00~22:00"
-  isOpen: boolean;
+  todayOpenTime: string | null; // 예: "10:00~22:00" 또는 "" 또는 null
+  openStatus: string; // "영업 중", "영업 종료", "휴무", "" 등
   latitude: number;
   longitude: number;
   mainImageUrl: string;
