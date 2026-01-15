@@ -107,13 +107,20 @@ export default function ReportLocationPage() {
       const latitude = latlng.getLat();
       const longitude = latlng.getLng();
       setCenter({ latitude, longitude });
+
+      // 클릭한 위치로 지도 중심 이동
+      if (map && window.kakao?.maps) {
+        const moveLatLng = new window.kakao.maps.LatLng(latitude, longitude);
+        map.setCenter(moveLatLng);
+      }
+
       await getAddressFromCoords(latitude, longitude);
 
       // 자동으로 근처 가게 확인 (새 좌표로)
       const result = await checkNearbyShops(latitude, longitude);
       setNearbyShops(result);
     },
-    [getAddressFromCoords, checkNearbyShops]
+    [map, getAddressFromCoords, checkNearbyShops]
   );
 
   // 지도 드래그 종료 이벤트 핸들러
@@ -189,7 +196,18 @@ export default function ReportLocationPage() {
         const { latitude, longitude } = position.coords;
         setCenter({ latitude, longitude });
         setMyLocation({ latitude, longitude });
+
+        // 지도 중심을 현재 위치로 이동
+        if (map && window.kakao?.maps) {
+          const moveLatLng = new window.kakao.maps.LatLng(latitude, longitude);
+          map.setCenter(moveLatLng);
+        }
+
         await getAddressFromCoords(latitude, longitude);
+
+        // 근처 가게 확인
+        const result = await checkNearbyShops(latitude, longitude);
+        setNearbyShops(result);
       },
       (error) => {
         console.error("위치 정보를 가져올 수 없습니다:", error);
@@ -215,8 +233,8 @@ export default function ReportLocationPage() {
       {/* Header */}
       <CenterTitleHeader title="제보" onBack={() => router.push("/home")} absolute />
 
-      {/* Map */}
-      <div className="relative h-[100dvh] pt-14">
+      {/* Map - 헤더(56px)와 바텀시트를 고려한 높이, 바텀시트가 살짝 걸치도록 */}
+      <div className="relative h-[100dvh] pt-14 pb-[150px]">
         <KakaoMap
           width="100%"
           height="100%"
@@ -237,16 +255,20 @@ export default function ReportLocationPage() {
           }}
         />
 
-        {/* Center Pin - positioned at center of visible map area (between header and bottom card) */}
+        {/* Center Pin */}
         <div
           className="absolute left-1/2 z-20 flex h-14 w-14 -translate-x-1/2 items-center justify-center px-[7px] pointer-events-none"
-          style={{ top: "calc(50% + 40px)", transform: "translate(-50%, -100%)" }}
+          style={{ top: "calc(50% - 40px)", transform: "translate(-50%, -100%)" }}
         >
           <img src={MARKER_IMAGES.SHOP} alt="위치 핀" width={42} height={56} />
         </div>
 
         {/* 현재 위치 버튼 */}
-        <div className="absolute bottom-[200px] right-0 z-10 mx-auto w-full max-w-[480px] px-5">
+        <div
+          className={`absolute right-0 z-10 mx-auto w-full max-w-[480px] px-5 ${
+            nearbyShops && nearbyShops.count > 0 ? "bottom-[270px]" : "bottom-[200px]"
+          }`}
+        >
           <div className="flex justify-end">
             <button
               onClick={handleCurrentLocation}
