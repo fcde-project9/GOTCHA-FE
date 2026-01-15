@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Search, CircleX } from "lucide-react";
+import { Search, CircleX, RefreshCcw } from "lucide-react";
 import { useFavorites } from "@/api/queries/useFavorites";
 import { Footer, Button } from "@/components/common";
 import { FavoriteShopItem } from "@/components/features/favorites";
@@ -88,9 +88,12 @@ export default function FavoritesPage() {
             <button
               type="button"
               onClick={handleRefresh}
-              className="rounded-lg bg-main px-6 py-3 text-[15px] font-semibold text-white"
+              className="rounded-lg bg-grey-900 w-[174px] h-[44px] flex items-center justify-center gap-1 text-white"
             >
-              다시 시도
+              <span className="text-[16px] text-white font-normal leading-[1.5] tracking-[-0.16px]">
+                다시 시도
+              </span>
+              <RefreshCcw size={16} className="stroke-white" strokeWidth={2} />
             </button>
           </div>
         ) : filteredFavorites.length === 0 ? (
