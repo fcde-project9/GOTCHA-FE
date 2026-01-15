@@ -509,7 +509,7 @@ export default function ShopDetailPage() {
               <span className="text-[14px] text-grey-900">
                 {shop.todayOpenTime || "영업시간 정보 없음"}
               </span>
-              <StatusBadge isOpen={shop.isOpen} isDayOff={!shop.todayOpenTime} />
+              <StatusBadge openStatus={shop.openStatus} />
             </div>
           </div>
         </section>
@@ -541,7 +541,7 @@ export default function ShopDetailPage() {
                       Sat: null,
                       Sun: null,
                     },
-                    isOpen: shop.isOpen,
+                    isOpen: shop.openStatus === "영업 중",
                     distance: "",
                     isFavorite: isFavorite,
                   },
@@ -873,7 +873,7 @@ export default function ShopDetailPage() {
                       Sat: null,
                       Sun: null,
                     },
-                    isOpen: shop.isOpen,
+                    isOpen: shop.openStatus === "영업 중",
                     distance: "",
                     isFavorite: isFavorite,
                   },
