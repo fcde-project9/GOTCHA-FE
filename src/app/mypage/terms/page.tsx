@@ -37,7 +37,21 @@ export default function TermsPage() {
               이용약관
             </span>
             <div className="w-6 h-6 flex items-center justify-center">
-              <ChevronRight size={14} className="stroke-grey-600" strokeWidth={1.5} />
+              <svg
+                width="7"
+                height="14"
+                viewBox="0 0 7 14"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M1 13L6 7L1 1"
+                  stroke="#626264"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </div>
           </button>
 
@@ -50,7 +64,21 @@ export default function TermsPage() {
               라이센스
             </span>
             <div className="w-6 h-6 flex items-center justify-center">
-              <ChevronRight size={14} className="stroke-grey-600" strokeWidth={1.5} />
+              <svg
+                width="7"
+                height="14"
+                viewBox="0 0 7 14"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M1 13L6 7L1 1"
+                  stroke="#626264"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </div>
           </button>
         </div>
