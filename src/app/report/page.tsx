@@ -244,8 +244,8 @@ export default function ReportLocationPage() {
         <div className="w-6" />
       </header>
 
-      {/* Map - 헤더(48px)와 바텀시트를 고려한 높이, 바텀시트가 살짝 걸치도록 */}
-      <div className="relative h-[100dvh] pt-12 pb-[150px]">
+      {/* Map - 헤더(56px)와 바텀시트를 고려한 높이, 바텀시트가 살짝 걸치도록 */}
+      <div className="relative h-[100dvh] pt-14 pb-[150px]">
         <KakaoMap
           width="100%"
           height="100%"
@@ -269,7 +269,7 @@ export default function ReportLocationPage() {
         {/* Center Pin */}
         <div
           className="absolute left-1/2 z-20 flex h-14 w-14 -translate-x-1/2 items-center justify-center px-[7px] pointer-events-none"
-          style={{ top: "calc(50% - 38px)", transform: "translate(-50%, -100%)" }}
+          style={{ top: "calc(50% - 40px)", transform: "translate(-50%, -100%)" }}
         >
           <img src={MARKER_IMAGES.SHOP} alt="위치 핀" width={42} height={56} />
         </div>
