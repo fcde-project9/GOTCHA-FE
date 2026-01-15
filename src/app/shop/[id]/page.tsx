@@ -375,11 +375,20 @@ export default function ShopDetailPage() {
     router.push(`/shop/${validShopId}/images`);
   };
 
+  // history가 없으면 /home으로 이동
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/home");
+    }
+  };
+
   // 유효하지 않은 shopId 처리
   if (!isValidShopId) {
     return (
       <div className="h-dvh bg-default flex flex-col">
-        <BackHeader title="업체 상세정보" />
+        <BackHeader title="업체 상세정보" onBack={handleBack} />
         <div className="flex-1 flex flex-col items-center justify-center px-5">
           <p className="text-[15px] text-grey-500 mb-4">잘못된 접근이에요</p>
           <Button variant="primary" size="small" onClick={() => router.push("/")}>
@@ -417,7 +426,7 @@ export default function ShopDetailPage() {
     <div className="h-dvh bg-default flex flex-col overflow-hidden">
       {/* 헤더 */}
       <div className="flex items-center justify-between pr-5">
-        <BackHeader title={shop.name} />
+        <BackHeader title={shop.name} onBack={handleBack} />
         <div className="flex items-center gap-1 ml-3">
           <button
             onClick={toggleFavorite}
