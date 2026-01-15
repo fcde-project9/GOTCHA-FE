@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { MARKER_IMAGES } from "@/constants";
+import { MARKER_IMAGES, DEFAULT_LOCATION } from "@/constants";
 import { useKakaoLoader } from "@/hooks/useKakaoLoader";
 import { MapBounds, ShopMapResponse } from "@/types/api";
 
@@ -44,8 +44,8 @@ interface KakaoMapProps {
 export default function KakaoMap({
   width = "100%",
   height = "400px",
-  latitude = 37.497942, // 기본 위치: 강남역
-  longitude = 127.027621,
+  latitude = DEFAULT_LOCATION.latitude,
+  longitude = DEFAULT_LOCATION.longitude,
   level = 5,
   markers = [],
   onBoundsChange,
