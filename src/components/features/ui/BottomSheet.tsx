@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 
 interface BottomSheetProps {
   children: React.ReactNode;
@@ -10,19 +10,8 @@ interface BottomSheetProps {
   scrollToTop?: number; // 스크롤을 맨 위로 이동시키기
 }
 
-/**
- * Get default snap points with SSR-safe window height calculation
- * - snapPoints[0]: collapsed (Grabber만 보임)
- * - snapPoints[1]: default (헤더 + 약 2개 아이템)
- * - snapPoints[2]: expanded (전체 리스트)
- */
-function getDefaultSnapPoints(): number[] {
-  if (typeof window !== "undefined") {
-    return [106, 290, window.innerHeight - 100];
-  }
-  // SSR fallback: use reasonable defaults
-  return [106, 290, 700];
-}
+/** 확장 시 상단에서 유지할 여백 (검색창 + 재검색 버튼 영역) */
+const EXPANDED_TOP_MARGIN = 14;
 
 export default function BottomSheet({
   children,
@@ -31,14 +20,37 @@ export default function BottomSheet({
   onHeightChange,
   scrollToTop,
 }: BottomSheetProps) {
-  // Compute snapPoints client-side if not provided (memoized to prevent recreation)
-  const computedSnapPoints = useMemo(() => snapPoints ?? getDefaultSnapPoints(), [snapPoints]);
+  const [containerHeight, setContainerHeight] = useState<number | null>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
+
+  // 컨테이너 높이 측정
+  const measureContainer = useCallback(() => {
+    if (sheetRef.current?.parentElement) {
+      setContainerHeight(sheetRef.current.parentElement.clientHeight);
+    }
+  }, []);
+
+  // 마운트 시 및 리사이즈 시 컨테이너 높이 측정
+  useEffect(() => {
+    measureContainer();
+    window.addEventListener("resize", measureContainer);
+    return () => window.removeEventListener("resize", measureContainer);
+  }, [measureContainer]);
+
+  // 컨테이너 높이 기반으로 스냅 포인트 계산
+  const computedSnapPoints = useMemo(() => {
+    if (snapPoints) return snapPoints;
+
+    // 컨테이너 높이가 측정되기 전에는 기본값 사용
+    const expandedHeight = containerHeight ? containerHeight - EXPANDED_TOP_MARGIN : 715;
+
+    return [106, 290, expandedHeight];
+  }, [snapPoints, containerHeight]);
 
   const [currentSnapIndex, setCurrentSnapIndex] = useState(defaultSnapPoint);
   const [isDragging, setIsDragging] = useState(false);
   const [startY, setStartY] = useState(0);
   const [currentY, setCurrentY] = useState(0);
-  const sheetRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const currentHeight = isDragging
@@ -166,7 +178,7 @@ export default function BottomSheet({
   return (
     <div
       ref={sheetRef}
-      className="absolute bottom-0 left-0 right-0 bg-white rounded-t-[24px] overflow-hidden z-20"
+      className="absolute bottom-0 left-0 right-0 bg-white rounded-t-[24px] overflow-hidden z-10"
       style={{
         height: `${currentHeight - 72}px`,
         transition: isDragging ? "none" : "height 0.3s ease-out",
