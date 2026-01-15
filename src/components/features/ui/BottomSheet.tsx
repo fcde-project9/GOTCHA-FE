@@ -12,13 +12,16 @@ interface BottomSheetProps {
 
 /**
  * Get default snap points with SSR-safe window height calculation
+ * - snapPoints[0]: collapsed (Grabber만 보임)
+ * - snapPoints[1]: default (헤더 + 약 2개 아이템)
+ * - snapPoints[2]: expanded (전체 리스트)
  */
 function getDefaultSnapPoints(): number[] {
   if (typeof window !== "undefined") {
-    return [215, 400, window.innerHeight - 100];
+    return [106, 290, window.innerHeight - 100];
   }
   // SSR fallback: use reasonable defaults
-  return [215, 400, 700];
+  return [106, 290, 700];
 }
 
 export default function BottomSheet({
@@ -64,21 +67,31 @@ export default function BottomSheet({
     setIsDragging(false);
 
     const deltaY = currentY - startY;
-    const newHeight = computedSnapPoints[currentSnapIndex] - deltaY;
+    const threshold = 30; // 드래그 임계값 (px)
 
-    // 가장 가까운 스냅 포인트 찾기
-    let closestIndex = 0;
-    let minDiff = Math.abs(newHeight - computedSnapPoints[0]);
+    let newIndex = currentSnapIndex;
 
-    computedSnapPoints.forEach((point, index) => {
-      const diff = Math.abs(newHeight - point);
-      if (diff < minDiff) {
-        minDiff = diff;
-        closestIndex = index;
+    if (deltaY > threshold) {
+      // 아래로 드래그
+      if (currentSnapIndex === computedSnapPoints.length - 1) {
+        // 맨 위에서 내리면 → 가운데로 (default)
+        newIndex = 1;
+      } else {
+        // 그 외에는 → 최소 상태로 (collapsed)
+        newIndex = 0;
       }
-    });
+    } else if (deltaY < -threshold) {
+      // 위로 드래그
+      if (currentSnapIndex === 0) {
+        // 맨 아래에서 올리면 → 가운데로 (default)
+        newIndex = 1;
+      } else {
+        // 그 외에는 → 최대 상태로 (expanded)
+        newIndex = computedSnapPoints.length - 1;
+      }
+    }
 
-    setCurrentSnapIndex(closestIndex);
+    setCurrentSnapIndex(newIndex);
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -97,20 +110,31 @@ export default function BottomSheet({
     setIsDragging(false);
 
     const deltaY = currentY - startY;
-    const newHeight = computedSnapPoints[currentSnapIndex] - deltaY;
+    const threshold = 30; // 드래그 임계값 (px)
 
-    let closestIndex = 0;
-    let minDiff = Math.abs(newHeight - computedSnapPoints[0]);
+    let newIndex = currentSnapIndex;
 
-    computedSnapPoints.forEach((point, index) => {
-      const diff = Math.abs(newHeight - point);
-      if (diff < minDiff) {
-        minDiff = diff;
-        closestIndex = index;
+    if (deltaY > threshold) {
+      // 아래로 드래그
+      if (currentSnapIndex === computedSnapPoints.length - 1) {
+        // 맨 위에서 내리면 → 가운데로 (default)
+        newIndex = 1;
+      } else {
+        // 그 외에는 → 최소 상태로 (collapsed)
+        newIndex = 0;
       }
-    });
+    } else if (deltaY < -threshold) {
+      // 위로 드래그
+      if (currentSnapIndex === 0) {
+        // 맨 아래에서 올리면 → 가운데로 (default)
+        newIndex = 1;
+      } else {
+        // 그 외에는 → 최대 상태로 (expanded)
+        newIndex = computedSnapPoints.length - 1;
+      }
+    }
 
-    setCurrentSnapIndex(closestIndex);
+    setCurrentSnapIndex(newIndex);
   };
 
   useEffect(() => {
