@@ -5,6 +5,8 @@ export { Toast } from "./Toast";
 export { Checkbox } from "./Checkbox";
 export { LocationPermissionModal } from "./LocationPermissionModal";
 export { BackHeader } from "./BackHeader";
+export { CenterTitleHeader } from "./CenterTitleHeader";
+export { SimpleHeader } from "./SimpleHeader";
 export { ImageViewerModal } from "./ImageViewerModal";
 export type { ButtonProps, ButtonVariant, ButtonSize } from "./Button";
 export type { OutlineButtonProps, OutlineButtonSize } from "./OutlineButton";
