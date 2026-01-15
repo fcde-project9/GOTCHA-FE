@@ -1,0 +1,49 @@
+/**
+ * Mock shop data for development
+ * Uses ShopListView format with computed fields (distance, isOpen)
+ * TODO: Replace with API data that transforms canonical Shop to ShopListView
+ */
+export const mockShops = [
+  {
+    id: 1,
+    name: "가챠샵 강남점",
+    distance: "200m",
+    isOpen: true,
+    imageUrl: undefined,
+  },
+  {
+    id: 2,
+    name: "토이샵 신촌",
+    distance: "350m",
+    isOpen: true,
+    imageUrl: undefined,
+  },
+  {
+    id: 3,
+    name: "피규어샵 홍대",
+    distance: "500m",
+    isOpen: false,
+    imageUrl: undefined,
+  },
+  {
+    id: 4,
+    name: "가챠월드 명동점",
+    distance: "750m",
+    isOpen: true,
+    imageUrl: undefined,
+  },
+  {
+    id: 5,
+    name: "토이스토리 잠실",
+    distance: "1.2km",
+    isOpen: false,
+    imageUrl: undefined,
+  },
+  {
+    id: 6,
+    name: "가챠샵 대박나자 우왕 강남 미왕빌딩에서 두줄 테스트입니당",
+    distance: "3.2km",
+    isOpen: false,
+    imageUrl: undefined,
+  },
+];
