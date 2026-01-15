@@ -22,6 +22,11 @@ interface BackHeaderProps {
    * @default false
    */
   showBorder?: boolean;
+  /**
+   * sticky 포지션 사용 여부
+   * @default false
+   */
+  sticky?: boolean;
 }
 
 /**
@@ -35,7 +40,13 @@ interface BackHeaderProps {
  * <BackHeader rightElement={<button>저장</button>} />
  * ```
  */
-export function BackHeader({ onBack, title, rightElement, showBorder = false }: BackHeaderProps) {
+export function BackHeader({
+  onBack,
+  title,
+  rightElement,
+  showBorder = false,
+  sticky = false,
+}: BackHeaderProps) {
   const router = useRouter();
 
   const handleBack = () => {
@@ -48,9 +59,9 @@ export function BackHeader({ onBack, title, rightElement, showBorder = false }: 
 
   return (
     <header
-      className={`shrink-0 flex h-14 items-center justify-between bg-default px-4 ${
-        showBorder ? "border-b border-grey-100" : ""
-      }`}
+      className={`flex h-14 items-center justify-between bg-default px-4 ${
+        sticky ? "sticky top-0 z-10" : "shrink-0"
+      } ${showBorder ? "border-b border-grey-100" : ""}`}
     >
       {/* 뒤로가기 버튼 & 타이틀 */}
       <div className="flex items-center gap-2">
