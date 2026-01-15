@@ -333,7 +333,7 @@ export function TimePickerModal({
                     minute === m ? "text-grey-900" : "text-grey-300"
                   }`}
                 >
-                  <span className="text-[16x] font-normal leading-[1.5] tracking-[-0.16px]">
+                  <span className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px]">
                     {String(m).padStart(2, "0")}
                   </span>
                 </button>
