@@ -550,10 +550,10 @@ export default function ShopDetailPage() {
               {/* 지도 확대 버튼 */}
               <button
                 onClick={() => setIsMapModalOpen(true)}
-                className="absolute z-10 bottom-3 right-3 flex items-center justify-center w-9 h-9 bg-white rounded-lg"
+                className="absolute z-10 bottom-3 right-3 flex items-center justify-center w-8 h-8 bg-white rounded-lg"
                 aria-label="지도 크게 보기"
               >
-                <Expand size={24} className="stroke-icon-default" strokeWidth={1.5} />
+                <Expand size={20} className="stroke-icon-default" strokeWidth={1.5} />
               </button>
             </div>
           </div>

@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronLeft, Camera, Clock } from "lucide-react";
+import { Camera, Clock } from "lucide-react";
 import { useCreateShopWithUpload } from "@/api/mutations/useCreateShopWithUpload";
-import { Button } from "@/components/common";
+import { Button, CenterTitleHeader } from "@/components/common";
 import { Toast } from "@/components/common/Toast";
 import { ExitConfirmModal } from "@/components/report/ExitConfirmModal";
 import { TimePickerModal } from "@/components/report/TimePickerModal";
@@ -232,15 +232,7 @@ function ReportRegisterContent() {
   return (
     <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[120px]">
       {/* Header */}
-      <header className="bg-white h-12 flex items-center px-5 py-2">
-        <button onClick={handleBackClick} className="w-6 h-6 flex items-center justify-center">
-          <ChevronLeft size={24} className="stroke-grey-900" strokeWidth={2} />
-        </button>
-        <h1 className="flex-1 text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900 text-center">
-          업체 정보 등록
-        </h1>
-        <div className="w-6" /> {/* Spacer for centering */}
-      </header>
+      <CenterTitleHeader title="업체 정보 등록" onBack={handleBackClick} />
 
       {/* Main Content */}
       <main className="flex flex-col gap-7 pt-3 px-5">

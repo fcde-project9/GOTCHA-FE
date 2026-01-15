@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { BackHeader } from "@/components/common";
 import Footer from "@/components/common/Footer";
 import { SOCIAL_URLS } from "@/constants";
 
@@ -18,20 +18,9 @@ export default function AboutPage() {
   };
 
   return (
-    <div className="bg-default h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[70px] overflow-hidden">
+    <div className="bg-default h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[70px]">
       {/* Header */}
-      <header className="bg-default h-12 flex items-center pl-3 pr-5 py-2 gap-0">
-        <button
-          onClick={handleBack}
-          className="w-6 h-6 flex items-center justify-center"
-          aria-label="뒤로가기"
-        >
-          <ChevronLeft size={24} className="stroke-grey-900" strokeWidth={2} />
-        </button>
-        <h1 className="flex-1 text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900 h-6 flex items-center">
-          이 앱을 만든 녀석들
-        </h1>
-      </header>
+      <BackHeader title="이 앱을 만든 녀석들" onBack={handleBack} />
 
       {/* Main Content */}
       <main className="flex flex-col justify-between h-full items-center px-5 pt-12 pb-[78px] relative">
