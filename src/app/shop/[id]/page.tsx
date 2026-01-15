@@ -837,53 +837,55 @@ export default function ShopDetailPage() {
 
       {/* 지도 확대 모달 */}
       {isMapModalOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-white">
-          {/* 모달 헤더 */}
-          <div className="flex items-center justify-end px-2 py-1 border-b border-grey-100">
-            <button
-              onClick={() => setIsMapModalOpen(false)}
-              className="flex items-center justify-center w-10 h-10"
-              aria-label="닫기"
-            >
-              <X size={24} className="stroke-grey-700" strokeWidth={2} />
-            </button>
-          </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="w-full h-full max-w-[480px] flex flex-col bg-white">
+            {/* 모달 헤더 */}
+            <div className="flex items-center justify-end px-2 py-1 border-b border-grey-100">
+              <button
+                onClick={() => setIsMapModalOpen(false)}
+                className="flex items-center justify-center w-10 h-10"
+                aria-label="닫기"
+              >
+                <X size={24} className="stroke-grey-700" strokeWidth={2} />
+              </button>
+            </div>
 
-          {/* 지도 영역 */}
-          <div className="flex-1">
-            <KakaoMap
-              height="100%"
-              latitude={shop.latitude}
-              longitude={shop.longitude}
-              level={3}
-              markers={[
-                {
-                  id: shop.id,
-                  name: shop.name,
-                  latitude: shop.latitude,
-                  longitude: shop.longitude,
-                  mainImageUrl: shop.mainImageUrl,
-                  openTime: openTime || {
-                    Mon: null,
-                    Tue: null,
-                    Wed: null,
-                    Thu: null,
-                    Fri: null,
-                    Sat: null,
-                    Sun: null,
+            {/* 지도 영역 */}
+            <div className="flex-1">
+              <KakaoMap
+                height="100%"
+                latitude={shop.latitude}
+                longitude={shop.longitude}
+                level={3}
+                markers={[
+                  {
+                    id: shop.id,
+                    name: shop.name,
+                    latitude: shop.latitude,
+                    longitude: shop.longitude,
+                    mainImageUrl: shop.mainImageUrl,
+                    openTime: openTime || {
+                      Mon: null,
+                      Tue: null,
+                      Wed: null,
+                      Thu: null,
+                      Fri: null,
+                      Sat: null,
+                      Sun: null,
+                    },
+                    isOpen: shop.isOpen,
+                    distance: "",
+                    isFavorite: isFavorite,
                   },
-                  isOpen: shop.isOpen,
-                  distance: "",
-                  isFavorite: isFavorite,
-                },
-              ]}
-            />
-          </div>
+                ]}
+              />
+            </div>
 
-          {/* 주소 정보 */}
-          <div className="px-5 py-4 border-t border-grey-100 bg-white">
-            <h2 className="text-[18px] font-semibold text-grey-900">{shop.name}</h2>
-            <p className="text-[14px] text-grey-700">{shop.addressName}</p>
+            {/* 주소 정보 */}
+            <div className="px-5 py-4 border-t border-grey-100 bg-white">
+              <h2 className="text-[18px] font-semibold text-grey-900">{shop.name}</h2>
+              <p className="text-[14px] text-grey-700">{shop.addressName}</p>
+            </div>
           </div>
         </div>
       )}
