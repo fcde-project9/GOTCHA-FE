@@ -117,7 +117,7 @@ export function NicknameModal({ isOpen, currentNickname, onClose, onSave }: Nick
             </p>
           ) : (
             <p className="text-[12px] font-normal leading-[1.5] tracking-[-0.12px] text-grey-400">
-              2자 이상 입력해주세요
+              한글, 영문 2~12자 닉네임을 입력해주세요
             </p>
           )}
         </div>
@@ -125,11 +125,11 @@ export function NicknameModal({ isOpen, currentNickname, onClose, onSave }: Nick
         {/* Guide */}
         <div className="flex flex-col gap-2">
           <p className="text-[12px] font-semibold leading-[1.5] tracking-[-0.12px] text-grey-900">
-            닉네임 등록 및 사용안내
+            닉네임 등록 및 사용 시 금지사항
           </p>
           <ul className="flex flex-col gap-0.5">
             <li className="text-[11px] font-normal leading-[1.5] tracking-[-0.11px] text-grey-500 before:content-['•'] before:mr-1">
-              욕설·비속어, 차별·비방적 내용의 작성은 금지되어요.
+              욕설/비속어 및 혐오/차별/비방성 표현이 포함된 단어
             </li>
             <li className="text-[11px] font-normal leading-[1.5] tracking-[-0.11px] text-grey-500 before:content-['•'] before:mr-1">
               타사의 브랜드 및 제품명을 포함한 단어
