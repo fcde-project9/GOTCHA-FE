@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Camera, Clock } from "lucide-react";
 import { useCreateShopWithUpload } from "@/api/mutations/useCreateShopWithUpload";
@@ -58,16 +58,6 @@ function ReportRegisterContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const createShopWithUpload = useCreateShopWithUpload();
-  const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // 리다이렉트 타이머 cleanup
-  useEffect(() => {
-    return () => {
-      if (redirectTimerRef.current) {
-        clearTimeout(redirectTimerRef.current);
-      }
-    };
-  }, []);
 
   // 토스트 재출현을 위한 헬퍼 함수
   const displayToast = (message: string) => {
@@ -218,10 +208,8 @@ function ReportRegisterContent() {
         coordinate,
       });
 
-      displayToast("업체 정보가 등록되었어요.");
-      redirectTimerRef.current = setTimeout(() => {
-        router.push("/home");
-      }, 2000);
+      // 제보 완료 페이지로 이동
+      router.push("/report/complete");
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "업체 등록에 실패했어요.";
       displayToast(errorMessage);

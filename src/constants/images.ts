@@ -17,6 +17,8 @@ export const DEFAULT_IMAGES = {
   SHOP_LIST_EMPTY: "/images/shop-list-empty.png",
   /** 검색 아이콘 */
   SEARCH: "/images/search.png",
+  /** 제보 완료 이미지 */
+  REPORT_COMPLETE: "/images/report-complete.png",
 } as const;
 
 // 지도 마커 이미지
