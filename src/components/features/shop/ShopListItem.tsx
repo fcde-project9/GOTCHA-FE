@@ -11,7 +11,7 @@ interface ShopListItemProps {
   shopId: number;
   name: string;
   distance: string;
-  isOpen: boolean;
+  openStatus: string; // "영업 중", "영업 종료", "휴무", ""
   imageUrl?: string;
   isFavorite?: boolean;
 }
@@ -20,7 +20,7 @@ export default function ShopListItem({
   shopId,
   name,
   distance,
-  isOpen,
+  openStatus,
   imageUrl,
   isFavorite: initialIsFavorite = false,
 }: ShopListItemProps) {
@@ -59,7 +59,7 @@ export default function ShopListItem({
         <div className="flex flex-col gap-[4px] h-[85px] flex-1 min-w-0">
           {/* 상단: 영업상태 & 좋아요 */}
           <div className="flex items-center justify-between w-full">
-            <StatusBadge isOpen={isOpen} />
+            <StatusBadge openStatus={openStatus} />
 
             {/* 하트 아이콘 */}
             <button

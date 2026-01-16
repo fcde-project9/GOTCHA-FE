@@ -10,7 +10,7 @@ export interface MyReportedShopResponse {
   name: string;
   mainImageUrl: string | null;
   addressName: string;
-  isOpen: boolean;
+  openStatus: string; // "영업 중", "영업 종료", "휴무", ""
   createdAt: string; // YYYY-MM-DD
 }
 

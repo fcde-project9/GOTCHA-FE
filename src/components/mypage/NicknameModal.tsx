@@ -69,12 +69,19 @@ export function NicknameModal({ isOpen, currentNickname, onClose, onSave }: Nick
       onClose();
     } catch (err) {
       const serverMessage = err instanceof Error ? err.message : "";
-      // 중복 닉네임 에러인 경우 사용자 친화적 메시지로 변환
+      // 에러 코드별 사용자 친화적 메시지 변환
       const isDuplicateError =
-        serverMessage.includes("중복") ||
-        serverMessage.includes("이미 사용") ||
-        serverMessage.includes("U001");
-      setError(isDuplicateError ? "이미 사용 중인 닉네임이에요" : "닉네임 변경에 실패했어요.");
+        serverMessage.includes("U001") || serverMessage.includes("이미 사용");
+      const isForbiddenError =
+        serverMessage.includes("U003") || serverMessage.includes("사용할 수 없는");
+
+      if (isDuplicateError) {
+        setError("이미 사용 중인 닉네임이에요");
+      } else if (isForbiddenError) {
+        setError("사용할 수 없는 닉네임이에요");
+      } else {
+        setError("닉네임 변경에 실패했어요.");
+      }
     }
   };
 

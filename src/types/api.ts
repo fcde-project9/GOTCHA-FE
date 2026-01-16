@@ -63,7 +63,7 @@ export interface ShopMapResponse {
   longitude: number;
   mainImageUrl: string;
   openTime: OpenTime;
-  isOpen: boolean;
+  openStatus: string; // "영업 중", "영업 종료", "휴무", ""
   distance: string;
   isFavorite: boolean;
 }
@@ -81,7 +81,7 @@ export interface FavoriteShopResponse {
   name: string;
   address: string;
   mainImageUrl: string;
-  isOpen: boolean;
+  openStatus: string; // "영업 중", "영업 종료", "휴무", ""
   favoritedAt: string; // ISO 8601 형식
 }
 

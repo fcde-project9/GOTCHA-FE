@@ -69,7 +69,7 @@ export default function ShopListBottomSheet({
                   shopId={shop.id}
                   name={shop.name}
                   distance={shop.distance}
-                  isOpen={shop.isOpen}
+                  openStatus={shop.openStatus}
                   imageUrl={shop.imageUrl}
                   isFavorite={shop.isFavorite}
                 />
