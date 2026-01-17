@@ -56,7 +56,7 @@ export function FavoriteShopItem({ shop }: FavoriteShopItemProps) {
         {/* 상단: 영업상태 & 찜 버튼 */}
         <div className="flex items-center justify-between">
           {/* 영업상태 뱃지 */}
-          <StatusBadge isOpen={shop.isOpen} />
+          <StatusBadge openStatus={shop.openStatus} />
 
           {/* 찜 토글 버튼 */}
           <button

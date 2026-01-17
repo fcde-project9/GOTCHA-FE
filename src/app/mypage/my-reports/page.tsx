@@ -50,7 +50,7 @@ export default function MyReportsPage() {
       id: shop.id,
       name: shop.name,
       imageUrl: shop.mainImageUrl,
-      isOpen: shop.isOpen,
+      openStatus: shop.openStatus,
       address: formatAddress(shop.addressName),
       // YYYY-MM-DD -> YYYY.MM.DD 형식 변환
       reportedAt: shop.createdAt.replace(/-/g, "."),
@@ -218,7 +218,7 @@ export default function MyReportsPage() {
                       <div className="flex flex-col gap-1 h-[85px] flex-1 min-w-0">
                         {/* 상단: 영업상태 & 날짜 */}
                         <div className="flex items-center justify-between w-full">
-                          <StatusBadge isOpen={shop.isOpen} />
+                          <StatusBadge openStatus={shop.openStatus} />
                           <span className="text-[12px] font-normal leading-[1.5] tracking-[-0.12px] text-grey-400">
                             {shop.reportedAt}
                           </span>

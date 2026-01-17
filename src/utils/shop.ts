@@ -9,7 +9,7 @@ export interface ShopListView {
   id: number;
   name: string;
   distance: string; // Computed field (e.g., "200m", "1.2km")
-  isOpen: boolean; // Computed field based on opening hours
+  openStatus: string; // "영업 중", "영업 종료", "휴무", ""
   imageUrl?: string;
   isFavorite?: boolean;
 }
@@ -46,17 +46,6 @@ export function formatDistance(meters: number): string {
 }
 
 /**
- * Check if shop is currently open based on opening hours
- * TODO: Implement actual opening hours check when API provides this data
- * For now, returns true as placeholder
- */
-function checkIsOpen(_shop: Shop): boolean {
-  // TODO: Parse opening hours from shop data
-  // For now, return true as placeholder
-  return true;
-}
-
-/**
  * Transform canonical Shop to ShopListView for list display
  * Computes distance and opening status for UI
  *
@@ -81,7 +70,7 @@ export function toShopListView(
     id: shop.id,
     name: shop.name,
     distance: formatDistance(distanceInMeters),
-    isOpen: checkIsOpen(shop),
+    openStatus: "", // Legacy: Shop 타입에는 openStatus가 없으므로 빈 문자열 반환
     imageUrl: shop.imageUrl,
   };
 }
@@ -108,7 +97,7 @@ export function shopMapResponseToView(shopResponse: ShopMapResponse): ShopListVi
     id: shopResponse.id,
     name: shopResponse.name,
     distance: shopResponse.distance,
-    isOpen: shopResponse.isOpen,
+    openStatus: shopResponse.openStatus,
     imageUrl: shopResponse.mainImageUrl,
     isFavorite: shopResponse.isFavorite,
   };
