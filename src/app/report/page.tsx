@@ -29,6 +29,7 @@ export default function ReportLocationPage() {
   const [checkingNearby, setCheckingNearby] = useState(false);
   const [map, setMap] = useState<KakaoMap | null>(null);
   const [nearbyShops, setNearbyShops] = useState<NearbyShopsResponse | null>(null);
+  const [mapLevel, setMapLevel] = useState(3); // 줌 레벨 상태 관리
 
   // 근처 가게 확인 함수
   const checkNearbyShops = useCallback(async (latitude: number, longitude: number) => {
@@ -106,6 +107,11 @@ export default function ReportLocationPage() {
       const latlng = mouseEvent.latLng;
       const latitude = latlng.getLat();
       const longitude = latlng.getLng();
+
+      // 현재 줌 레벨 저장 후 center 변경
+      if (map) {
+        setMapLevel(map.getLevel());
+      }
       setCenter({ latitude, longitude });
 
       // 클릭한 위치로 지도 중심 이동
@@ -126,8 +132,6 @@ export default function ReportLocationPage() {
   // 지도 드래그 종료 이벤트 핸들러
   const handleDragEnd = useCallback(async () => {
     if (!map) return;
-    // 줌 레벨이 4 초과(축소 상태)면 주소 업데이트 안 함
-    if (map.getLevel() > 4) return;
 
     const mapCenter = map.getCenter();
     const latitude = mapCenter.getLat();
@@ -240,7 +244,8 @@ export default function ReportLocationPage() {
           height="100%"
           latitude={center.latitude}
           longitude={center.longitude}
-          level={3}
+          level={mapLevel}
+          disableDoubleClickZoom
           currentLocation={
             myLocation
               ? {
@@ -265,14 +270,14 @@ export default function ReportLocationPage() {
 
         {/* 현재 위치 버튼 */}
         <div
-          className={`absolute right-0 z-10 mx-auto w-full max-w-[480px] px-5 ${
+          className={`absolute right-0 z-10 mx-auto w-full max-w-[480px] px-5 pointer-events-none ${
             nearbyShops && nearbyShops.count > 0 ? "bottom-[270px]" : "bottom-[200px]"
           }`}
         >
           <div className="flex justify-end">
             <button
               onClick={handleCurrentLocation}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-white p-2 shadow-[0px_0px_5px_0px_rgba(0,0,0,0.2)]"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-white p-2 shadow-[0px_0px_5px_0px_rgba(0,0,0,0.2)] pointer-events-auto"
               aria-label="현재 위치"
             >
               <LocateFixed size={16} className="stroke-grey-800" strokeWidth={2} />
