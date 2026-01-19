@@ -108,10 +108,6 @@ export default function ReportLocationPage() {
       const latitude = latlng.getLat();
       const longitude = latlng.getLng();
 
-      // 현재 줌 레벨 저장 후 center 변경
-      if (map) {
-        setMapLevel(map.getLevel());
-      }
       setCenter({ latitude, longitude });
 
       // 클릭한 위치로 지도 중심 이동
@@ -144,18 +140,27 @@ export default function ReportLocationPage() {
     setNearbyShops(result);
   }, [map, getAddressFromCoords, checkNearbyShops]);
 
-  // 지도 클릭 및 드래그 이벤트 리스너 등록/해제
+  // 줌 레벨 변경 이벤트 핸들러
+  const handleZoomChanged = useCallback(() => {
+    if (map) {
+      setMapLevel(map.getLevel());
+    }
+  }, [map]);
+
+  // 지도 클릭, 드래그, 줌 이벤트 리스너 등록/해제
   useEffect(() => {
     if (!map || !window.kakao?.maps?.event) return;
 
     window.kakao.maps.event.addListener(map, "click", handleMapClick);
     window.kakao.maps.event.addListener(map, "dragend", handleDragEnd);
+    window.kakao.maps.event.addListener(map, "zoom_changed", handleZoomChanged);
 
     return () => {
       window.kakao.maps.event.removeListener(map, "click", handleMapClick);
       window.kakao.maps.event.removeListener(map, "dragend", handleDragEnd);
+      window.kakao.maps.event.removeListener(map, "zoom_changed", handleZoomChanged);
     };
-  }, [map, handleMapClick, handleDragEnd]);
+  }, [map, handleMapClick, handleDragEnd, handleZoomChanged]);
 
   const navigateToRegister = () => {
     router.push(
