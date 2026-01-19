@@ -37,6 +37,7 @@ export default function Home() {
     longitude: number;
     heading: number | null;
   } | null>(null);
+  const [mapLevel, setMapLevel] = useState(5); // 지도 줌 레벨 (기본값 5)
 
   // React Query로 가게 목록 조회
   const { data: shopsData, isLoading: isShopsLoading } = useShopsInBounds(activeBounds);
@@ -144,11 +145,13 @@ export default function Home() {
     // 자동 재검색 플래그 설정 (지도 이동 후 매장 핀 자동 표시)
     shouldAutoReloadRef.current = true;
 
-    // 선택한 위치로 지도 이동
+    // 선택한 위치로 지도 이동 + 줌 레벨 설정 (200-300m 범위가 보이도록)
     setMapCenter({
       latitude: parseFloat(result.y),
       longitude: parseFloat(result.x),
     });
+    setMapLevel(3); // 검색 결과 선택 시 확대
+    setCenterUpdateTrigger((prev) => prev + 1);
 
     // 검색어를 선택한 장소명으로 업데이트
     setSearchQuery(result.place_name);
@@ -324,6 +327,7 @@ export default function Home() {
               height="100%"
               latitude={mapCenter?.latitude}
               longitude={mapCenter?.longitude}
+              level={mapLevel}
               centerUpdateTrigger={centerUpdateTrigger}
               markers={markers}
               onBoundsChange={handleBoundsChange}
