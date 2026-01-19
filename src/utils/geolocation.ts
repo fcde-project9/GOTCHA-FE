@@ -23,8 +23,8 @@ export interface GeolocationError {
 }
 
 const DEFAULT_OPTIONS: GeolocationOptions = {
-  enableHighAccuracy: true,
-  timeout: 5000,
+  enableHighAccuracy: false,
+  timeout: 10000,
   maximumAge: 0,
 };
 
