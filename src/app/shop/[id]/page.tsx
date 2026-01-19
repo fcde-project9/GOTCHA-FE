@@ -52,10 +52,10 @@ function parseOpenTime(openTimeStr: string): OpenTime | null {
   }
 }
 
-// 영업일 배열 추출 (null이 아닌 요일들)
+// 영업일 배열 추출 (빈 문자열("")만 휴일, 나머지는 영업일)
 function getBusinessDays(openTime: OpenTime | null): (keyof OpenTime)[] {
   if (!openTime) return [];
-  return ALL_DAYS.filter((day) => openTime[day] !== null);
+  return ALL_DAYS.filter((day) => openTime[day] !== "");
 }
 
 // 요일 배지 컴포넌트
