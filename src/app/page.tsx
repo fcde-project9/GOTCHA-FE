@@ -26,13 +26,20 @@ export default function SplashPage() {
   }, [fadeOut]);
 
   useEffect(() => {
+    // 2.5초 후 페이드아웃 시작
     const fadeTimer = setTimeout(() => {
       setFadeOut(true);
-    }, 1200);
+    }, 2500);
 
+    // 3초 후 로그인 상태에 따라 분기
     const navigateTimer = setTimeout(() => {
-      router.push("/login");
-    }, 1800);
+      const accessToken = localStorage.getItem("accessToken");
+      if (accessToken) {
+        router.replace("/home");
+      } else {
+        router.push("/login");
+      }
+    }, 3000);
 
     return () => {
       clearTimeout(fadeTimer);
