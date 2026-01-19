@@ -34,6 +34,7 @@ interface KakaoMapProps {
   onMapLoad?: (map: KakaoMap) => void; // 지도 로드 완료 시 콜백
   draggable?: boolean; // 드래그 가능 여부 (기본값: true)
   zoomable?: boolean; // 줌 가능 여부 (기본값: true)
+  disableDoubleClickZoom?: boolean; // 더블클릭 확대 비활성화 (기본값: false)
   centerUpdateTrigger?: number; // 중심 좌표 업데이트 트리거
 }
 
@@ -54,6 +55,7 @@ export default function KakaoMap({
   onMapLoad,
   draggable = true,
   zoomable = true,
+  disableDoubleClickZoom = false,
   centerUpdateTrigger,
 }: KakaoMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -136,7 +138,7 @@ export default function KakaoMap({
                 level: level,
                 draggable: draggable,
                 scrollwheel: zoomable,
-                disableDoubleClickZoom: !zoomable,
+                disableDoubleClickZoom: disableDoubleClickZoom || !zoomable,
               };
               const map = new window.kakao.maps.Map(mapContainer.current, options);
               mapInstance.current = map;
