@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Search, LocateFixed, RefreshCcw, ChevronLeft, CircleX } from "lucide-react";
 import { useShopsInBounds } from "@/api/queries/useShopsInBounds";
 import { Footer, LocationPermissionModal } from "@/components/common";
@@ -10,10 +11,11 @@ import { SearchResultItem } from "@/components/features/search";
 import { ShopListBottomSheet } from "@/components/features/shop";
 import { DEFAULT_IMAGES } from "@/constants";
 import { useCurrentLocation, useKakaoPlaces, PlaceSearchResult } from "@/hooks";
-import { MapBounds } from "@/types/api";
+import { MapBounds, ShopMapResponse } from "@/types/api";
 import { shopMapResponsesToViews } from "@/utils/shop";
 
 export default function Home() {
+  const router = useRouter();
   const { location, getCurrentLocation } = useCurrentLocation();
   const { results, searchPlaces, clearResults } = useKakaoPlaces();
   const [bottomSheetHeight, setBottomSheetHeight] = useState(290); // 기본 높이 (헤더 + 약 2개 아이템)
@@ -268,6 +270,10 @@ export default function Home() {
     setIsSheetDragging(isDragging);
   };
 
+  const handleMarkerClick = (marker: ShopMapResponse) => {
+    router.push(`/shop/${marker.id}`);
+  };
+
   // 바텀시트 높이에 따른 버튼 위치 계산
   // BottomSheet의 실제 DOM 높이는 currentHeight - 72px
   // 버튼은 바텀시트 위에 16px 여백을 두고 위치
@@ -321,6 +327,7 @@ export default function Home() {
               centerUpdateTrigger={centerUpdateTrigger}
               markers={markers}
               onBoundsChange={handleBoundsChange}
+              onMarkerClick={handleMarkerClick}
               currentLocation={showCurrentLocation}
             />
 
