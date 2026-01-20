@@ -291,8 +291,8 @@ export default function ReportLocationPage() {
         </div>
       </div>
 
-      {/* Bottom Card */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl px-5 pt-5 pb-8 shadow-[0px_-4px_12px_rgba(0,0,0,0.1)] z-30">
+      {/* Bottom Sheet */}
+      <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl px-5 pt-5 pb-8 shadow-[0_-4px_10px_rgba(0,0,0,0.2)] z-30">
         <div className="flex flex-col gap-4">
           {/* Address */}
           <div className="flex flex-col gap-2">
