@@ -103,7 +103,7 @@ export function ProfileSection({
         <div className="flex flex-col items-center gap-1 w-full">
           {/* Nickname with edit icon */}
           <div className="flex items-center gap-[3px]">
-            <h2 className="text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
+            <h2 className="text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900 whitespace-nowrap">
               {nickname}
             </h2>
             <button
