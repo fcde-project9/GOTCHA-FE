@@ -510,7 +510,7 @@ export default function ShopDetailPage() {
             <div className="flex items-center gap-2">
               <span className="shrink-0 w-16 text-[14px] text-grey-400">영업시간</span>
               <span className="text-[14px] text-grey-900">
-                {shop.todayOpenTime || "영업시간 정보 없음"}
+                {shop.todayOpenTime ?? "영업시간 정보 없음"}
               </span>
               <StatusBadge openStatus={shop.openStatus} />
             </div>
