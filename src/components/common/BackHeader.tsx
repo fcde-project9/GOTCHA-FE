@@ -27,6 +27,11 @@ interface BackHeaderProps {
    * @default false
    */
   sticky?: boolean;
+  /**
+   * absolute 포지션 사용 여부 (지도 위 overlay 등)
+   * @default false
+   */
+  absolute?: boolean;
 }
 
 /**
@@ -46,6 +51,7 @@ export function BackHeader({
   rightElement,
   showBorder = false,
   sticky = false,
+  absolute = false,
 }: BackHeaderProps) {
   const router = useRouter();
 
@@ -59,8 +65,8 @@ export function BackHeader({
 
   return (
     <header
-      className={`flex h-14 items-center justify-between bg-default px-4 ${
-        sticky ? "sticky top-0 z-10" : "shrink-0"
+      className={`flex h-14 items-center justify-between bg-white px-4 ${
+        absolute ? "absolute top-0 left-0 right-0 z-10" : sticky ? "sticky top-0 z-10" : "shrink-0"
       } ${showBorder ? "border-b border-grey-100" : ""}`}
     >
       {/* 뒤로가기 버튼 & 타이틀 */}

@@ -6,7 +6,7 @@ import { LocateFixed } from "lucide-react";
 import apiClient from "@/api/client";
 import { ENDPOINTS } from "@/api/endpoints";
 import type { NearbyShopResponse, ApiResponse, NearbyShopsResponse } from "@/api/types";
-import { Button, CenterTitleHeader } from "@/components/common";
+import { Button, BackHeader } from "@/components/common";
 import { KakaoMap } from "@/components/features/map";
 import { ShopDuplicateCheckModal } from "@/components/report/ShopDuplicateCheckModal";
 import { MARKER_IMAGES, DEFAULT_LOCATION } from "@/constants";
@@ -240,7 +240,7 @@ export default function ReportLocationPage() {
   return (
     <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative">
       {/* Header */}
-      <CenterTitleHeader title="제보" onBack={() => router.push("/home")} absolute />
+      <BackHeader title="제보" onBack={() => router.push("/home")} absolute />
 
       {/* Map - 헤더(56px)와 바텀시트를 고려한 높이, 바텀시트가 살짝 걸치도록 */}
       <div className="relative h-[100dvh] pt-14 pb-[150px]">
@@ -291,16 +291,16 @@ export default function ReportLocationPage() {
         </div>
       </div>
 
-      {/* Bottom Card */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl px-5 pt-5 pb-8 shadow-[0px_-4px_12px_rgba(0,0,0,0.1)] z-30">
+      {/* Bottom Sheet */}
+      <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl px-5 pt-5 pb-8 shadow-[0_-4px_10px_rgba(0,0,0,0.2)] z-30">
         <div className="flex flex-col gap-4">
           {/* Address */}
           <div className="flex flex-col gap-2">
-            <label className="text-[14px] font-medium leading-[1.5] tracking-[-0.14px] text-grey-600">
-              제보할 위치
+            <label className="text-[14px] font-medium leading-[1.5] tracking-[-0.14px] text-grey-600 text-center">
+              업체 주소
             </label>
-            <div className="bg-grey-100 min-h-11 flex items-center px-3 py-2 rounded-lg">
-              <p className="text-[15px] font-semibold leading-[1.5] tracking-[-0.15px] text-grey-700">
+            <div className="bg-grey-100 min-h-11 flex items-center justify-center px-3 py-2 rounded-lg">
+              <p className="text-[15px] font-semibold leading-[1.5] tracking-[-0.15px] text-grey-700 text-center">
                 {address}
               </p>
             </div>
