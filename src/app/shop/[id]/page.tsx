@@ -119,7 +119,7 @@ function ReviewItem({
               </button>
               {/* 드롭다운 메뉴 */}
               {isMenuOpen && (
-                <div className="absolute right-0 top-6 z-10 bg-white rounded-lg shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden">
+                <div className="absolute right-[calc(50%_+_2px)] top-[20px] z-10 bg-white rounded-lg rounded-tr-none shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden">
                   <button
                     onClick={() => {
                       setIsMenuOpen(false);
