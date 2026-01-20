@@ -282,10 +282,10 @@ export default function ReportLocationPage() {
           <div className="flex justify-end">
             <button
               onClick={handleCurrentLocation}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-white p-2 shadow-[0px_0px_5px_0px_rgba(0,0,0,0.2)] pointer-events-auto"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-[0px_0px_5px_0px_rgba(0,0,0,0.2)] pointer-events-auto"
               aria-label="현재 위치"
             >
-              <LocateFixed size={16} className="stroke-grey-800" strokeWidth={2} />
+              <LocateFixed size={20} className="stroke-grey-800" strokeWidth={1.5} />
             </button>
           </div>
         </div>
