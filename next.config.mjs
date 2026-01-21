@@ -15,12 +15,11 @@ const nextConfig = {
   },
 
   // 이미지 최적화 도메인
-  // TODO: 배포 전에 도메인 수정
   images: {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**",
+        hostname: "gotcha-prod-files.s3.ap-northeast-2.amazonaws.com",
       },
       {
         protocol: "http",
