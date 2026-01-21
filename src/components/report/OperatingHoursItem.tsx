@@ -1,7 +1,7 @@
 "use client";
 
 import { Minus } from "lucide-react";
-import { OperatingHoursEntry } from "./OperatingHoursModal";
+import { OperatingHoursEntry } from "@/types/report";
 
 const DAYS_OF_WEEK = ["월", "화", "수", "목", "금", "토", "일"] as const;
 
@@ -23,6 +23,9 @@ export function OperatingHoursItem({ entry, onDelete }: OperatingHoursItemProps)
   const formatTime = (): string => {
     if (entry.isUnknown) {
       return "시간 모름";
+    }
+    if (entry.is24Hours) {
+      return "24시간";
     }
     return `${entry.openTime} ~ ${entry.closeTime}`;
   };
