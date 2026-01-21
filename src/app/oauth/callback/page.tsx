@@ -58,7 +58,7 @@ function OAuthCallbackContent() {
     if (!code) {
       // 이미 로그인된 상태인지 확인
       if (isLoggedIn) {
-        router.replace("/home");
+        router.replace("/");
         return;
       }
       console.error("인증 코드가 없어요");
@@ -82,11 +82,11 @@ function OAuthCallbackContent() {
         // 전역 인증 상태 업데이트 (토큰 저장 포함)
         login(accessToken, refreshToken);
 
-        // 신규 사용자면 닉네임 설정 페이지로, 기존 사용자면 홈으로 이동
+        // 신규 사용자면 닉네임 설정 페이지로, 기존 사용자면 스플래시 후 홈으로 이동
         if (isNewUser) {
           router.replace("/login/nickname");
         } else {
-          router.replace("/home");
+          router.replace("/");
         }
       } catch (error) {
         console.error("토큰 교환 실패:", error);

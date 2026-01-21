@@ -40,10 +40,10 @@ export function NicknameModal({ isOpen, currentNickname, onClose, onSave }: Nick
       return "12자 이하로 입력해주세요";
     }
 
-    // 특수문자 체크 (한글 완성형, 자음, 모음, 영문, 숫자, #만 허용)
-    const specialCharRegex = /[^a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ#]/;
+    // 특수문자 체크 (한글 완성형, 영문, 숫자, #만 허용 - 초성/모음 제외)
+    const specialCharRegex = /[^a-zA-Z0-9가-힣#]/;
     if (specialCharRegex.test(value)) {
-      return "#을 제외한 특수문자는 사용할 수 없어요.";
+      return "한글, 영문, 숫자, #만 사용할 수 있어요 (초성/모음 제외)";
     }
 
     return null;
@@ -124,7 +124,7 @@ export function NicknameModal({ isOpen, currentNickname, onClose, onSave }: Nick
             </p>
           ) : (
             <p className="text-[12px] font-normal leading-[1.5] tracking-[-0.12px] text-grey-400">
-              한글, 영문 2~12자 닉네임을 입력해주세요
+              한글, 영문, 숫자, # 2~12자 (초성/모음 제외)
             </p>
           )}
         </div>

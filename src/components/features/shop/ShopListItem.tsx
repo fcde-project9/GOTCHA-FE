@@ -65,7 +65,7 @@ export default function ShopListItem({
             <button
               onClick={toggleFavorite}
               disabled={isLoading}
-              className="w-6 h-6 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-main rounded-sm disabled:opacity-50"
+              className="ml-auto w-6 h-6 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-main rounded-sm disabled:opacity-50"
               aria-label={isFavorite ? `${name} 찜 취소` : `${name} 찜하기`}
               aria-pressed={isFavorite}
               type="button"

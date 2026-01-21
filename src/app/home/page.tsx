@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Search, LocateFixed, RefreshCcw, ChevronLeft, CircleX } from "lucide-react";
 import { useShopsInBounds } from "@/api/queries/useShopsInBounds";
 import { Footer, LocationPermissionModal } from "@/components/common";
@@ -10,10 +11,11 @@ import { SearchResultItem } from "@/components/features/search";
 import { ShopListBottomSheet } from "@/components/features/shop";
 import { DEFAULT_IMAGES } from "@/constants";
 import { useCurrentLocation, useKakaoPlaces, PlaceSearchResult } from "@/hooks";
-import { MapBounds } from "@/types/api";
+import { MapBounds, ShopMapResponse } from "@/types/api";
 import { shopMapResponsesToViews } from "@/utils/shop";
 
 export default function Home() {
+  const router = useRouter();
   const { location, getCurrentLocation } = useCurrentLocation();
   const { results, searchPlaces, clearResults } = useKakaoPlaces();
   const [bottomSheetHeight, setBottomSheetHeight] = useState(290); // 기본 높이 (헤더 + 약 2개 아이템)
@@ -35,6 +37,7 @@ export default function Home() {
     longitude: number;
     heading: number | null;
   } | null>(null);
+  const [mapLevel, setMapLevel] = useState(5); // 지도 줌 레벨 (기본값 5)
 
   // React Query로 가게 목록 조회
   const { data: shopsData, isLoading: isShopsLoading } = useShopsInBounds(activeBounds);
@@ -142,11 +145,13 @@ export default function Home() {
     // 자동 재검색 플래그 설정 (지도 이동 후 매장 핀 자동 표시)
     shouldAutoReloadRef.current = true;
 
-    // 선택한 위치로 지도 이동
+    // 선택한 위치로 지도 이동 + 줌 레벨 설정 (200-300m 범위가 보이도록)
     setMapCenter({
       latitude: parseFloat(result.y),
       longitude: parseFloat(result.x),
     });
+    setMapLevel(3); // 검색 결과 선택 시 확대
+    setCenterUpdateTrigger((prev) => prev + 1);
 
     // 검색어를 선택한 장소명으로 업데이트
     setSearchQuery(result.place_name);
@@ -268,6 +273,10 @@ export default function Home() {
     setIsSheetDragging(isDragging);
   };
 
+  const handleMarkerClick = (marker: ShopMapResponse) => {
+    router.push(`/shop/${marker.id}`);
+  };
+
   // 바텀시트 높이에 따른 버튼 위치 계산
   // BottomSheet의 실제 DOM 높이는 currentHeight - 72px
   // 버튼은 바텀시트 위에 16px 여백을 두고 위치
@@ -318,9 +327,11 @@ export default function Home() {
               height="100%"
               latitude={mapCenter?.latitude}
               longitude={mapCenter?.longitude}
+              level={mapLevel}
               centerUpdateTrigger={centerUpdateTrigger}
               markers={markers}
               onBoundsChange={handleBoundsChange}
+              onMarkerClick={handleMarkerClick}
               currentLocation={showCurrentLocation}
             />
 

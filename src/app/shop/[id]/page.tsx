@@ -52,10 +52,10 @@ function parseOpenTime(openTimeStr: string): OpenTime | null {
   }
 }
 
-// 영업일 배열 추출 (null이 아닌 요일들)
+// 영업일 배열 추출 (빈 문자열("")만 휴일, 나머지는 영업일)
 function getBusinessDays(openTime: OpenTime | null): (keyof OpenTime)[] {
   if (!openTime) return [];
-  return ALL_DAYS.filter((day) => openTime[day] !== null);
+  return ALL_DAYS.filter((day) => openTime[day] !== "");
 }
 
 // 요일 배지 컴포넌트
@@ -83,7 +83,7 @@ function ReviewItem({
   onLikeToggle: (reviewId: number) => void;
   onEdit: (reviewId: number) => void;
   onDelete: (reviewId: number) => void;
-  onImageClick?: (imageUrl: string) => void;
+  onImageClick?: (images: string[], index: number) => void;
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -119,7 +119,7 @@ function ReviewItem({
               </button>
               {/* 드롭다운 메뉴 */}
               {isMenuOpen && (
-                <div className="absolute right-0 top-6 z-10 bg-white rounded-lg shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden">
+                <div className="absolute right-[calc(50%_+_2px)] top-[20px] z-10 bg-white rounded-lg rounded-tr-none shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden">
                   <button
                     onClick={() => {
                       setIsMenuOpen(false);
@@ -158,7 +158,7 @@ function ReviewItem({
             {review.imageUrls.map((imageUrl, index) => (
               <button
                 key={index}
-                onClick={() => onImageClick?.(imageUrl)}
+                onClick={() => onImageClick?.(review.imageUrls, index)}
                 className="shrink-0 w-[105px] h-[105px] rounded-lg overflow-hidden bg-grey-100"
               >
                 <Image
@@ -259,8 +259,11 @@ export default function ShopDetailPage() {
   // 지도 확대 모달 상태
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
 
-  // 이미지 뷰어 모달 상태
-  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
+  // 이미지 뷰어 모달 상태 (갤러리 모드)
+  const [galleryState, setGalleryState] = useState<{
+    images: string[];
+    initialIndex: number;
+  } | null>(null);
 
   // 리뷰 작성 모달 상태
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
@@ -507,7 +510,7 @@ export default function ShopDetailPage() {
             <div className="flex items-center gap-2">
               <span className="shrink-0 w-16 text-[14px] text-grey-400">영업시간</span>
               <span className="text-[14px] text-grey-900">
-                {shop.todayOpenTime || "영업시간 정보 없음"}
+                {shop.todayOpenTime ?? "영업시간 정보 없음"}
               </span>
               <StatusBadge openStatus={shop.openStatus} />
             </div>
@@ -606,7 +609,7 @@ export default function ShopDetailPage() {
                   /* 사진 1개: 전체 너비 이미지 */
                   <div className="px-5">
                     <button
-                      onClick={() => setSelectedImageUrl(shopImages[0])}
+                      onClick={() => setGalleryState({ images: shopImages, initialIndex: 0 })}
                       className="w-full aspect-[335/167] rounded-lg overflow-hidden bg-grey-100"
                     >
                       <Image
@@ -624,7 +627,7 @@ export default function ShopDetailPage() {
                     <div className="flex gap-px">
                       {/* 왼쪽 큰 이미지 */}
                       <button
-                        onClick={() => setSelectedImageUrl(shopImages[0])}
+                        onClick={() => setGalleryState({ images: shopImages, initialIndex: 0 })}
                         className="flex-1 aspect-square rounded-l-lg overflow-hidden bg-grey-100"
                       >
                         <Image
@@ -641,7 +644,7 @@ export default function ShopDetailPage() {
                         {/* 상단 왼쪽 (인덱스 1) */}
                         {shopImages[1] && (
                           <button
-                            onClick={() => setSelectedImageUrl(shopImages[1])}
+                            onClick={() => setGalleryState({ images: shopImages, initialIndex: 1 })}
                             className="w-[calc(50%-0.5px)] aspect-square overflow-hidden bg-grey-100"
                           >
                             <Image
@@ -657,7 +660,7 @@ export default function ShopDetailPage() {
                         {/* 상단 오른쪽 (인덱스 2) */}
                         {shopImages[2] && (
                           <button
-                            onClick={() => setSelectedImageUrl(shopImages[2])}
+                            onClick={() => setGalleryState({ images: shopImages, initialIndex: 2 })}
                             className="w-[calc(50%-0.5px)] aspect-square rounded-tr-lg overflow-hidden bg-grey-100"
                           >
                             <Image
@@ -673,7 +676,7 @@ export default function ShopDetailPage() {
                         {/* 하단 왼쪽 (인덱스 3) */}
                         {shopImages[3] && (
                           <button
-                            onClick={() => setSelectedImageUrl(shopImages[3])}
+                            onClick={() => setGalleryState({ images: shopImages, initialIndex: 3 })}
                             className="w-[calc(50%-0.5px)] aspect-square overflow-hidden bg-grey-100"
                           >
                             <Image
@@ -807,7 +810,9 @@ export default function ShopDetailPage() {
                     onLikeToggle={handleLikeToggle}
                     onEdit={handleEditReview}
                     onDelete={handleDeleteReview}
-                    onImageClick={setSelectedImageUrl}
+                    onImageClick={(images, index) =>
+                      setGalleryState({ images, initialIndex: index })
+                    }
                   />
                 ))}
               </div>
@@ -891,11 +896,14 @@ export default function ShopDetailPage() {
       )}
 
       {/* 이미지 뷰어 모달 */}
-      <ImageViewerModal
-        imageUrl={selectedImageUrl}
-        onClose={() => setSelectedImageUrl(null)}
-        alt="업체 사진"
-      />
+      {galleryState && (
+        <ImageViewerModal
+          images={galleryState.images}
+          initialIndex={galleryState.initialIndex}
+          onClose={() => setGalleryState(null)}
+          alt="이미지"
+        />
+      )}
 
       {/* 리뷰 작성 모달 */}
       <ReviewWriteModal
