@@ -8,8 +8,8 @@ import { Button, CenterTitleHeader, Checkbox } from "@/components/common";
 import { Toast } from "@/components/common/Toast";
 import { ExitConfirmModal } from "@/components/report/ExitConfirmModal";
 import { OperatingHoursItem } from "@/components/report/OperatingHoursItem";
-import { OperatingHoursEntry } from "@/components/report/OperatingHoursModal";
 import { TimePickerModal } from "@/components/report/TimePickerModal";
+import { OperatingHoursEntry } from "@/types/report";
 
 const DAYS_OF_WEEK = ["월", "화", "수", "목", "금", "토", "일"] as const;
 
@@ -34,6 +34,7 @@ function ReportRegisterContent() {
   const [openTime, setOpenTime] = useState("오전 10:00");
   const [closeTime, setCloseTime] = useState("오후 10:00");
   const [isUnknown, setIsUnknown] = useState(false);
+  const [is24Hours, setIs24Hours] = useState(false);
   const [isOpenTimeModalOpen, setIsOpenTimeModalOpen] = useState(false);
   const [isCloseTimeModalOpen, setIsCloseTimeModalOpen] = useState(false);
 
@@ -123,6 +124,17 @@ function ReportRegisterContent() {
   // 모름 체크박스 토글
   const handleUnknownToggle = (checked: boolean) => {
     setIsUnknown(checked);
+    if (checked) {
+      setIs24Hours(false);
+    }
+  };
+
+  // 24시간 체크박스 토글
+  const handle24HoursToggle = (checked: boolean) => {
+    setIs24Hours(checked);
+    if (checked) {
+      setIsUnknown(false);
+    }
   };
 
   // 영업시간 추가
@@ -132,9 +144,10 @@ function ReportRegisterContent() {
     const entry: OperatingHoursEntry = {
       id: Date.now().toString(),
       days: [...selectedDays].sort((a, b) => a - b),
-      openTime,
-      closeTime,
+      openTime: is24Hours ? "00:00" : openTime,
+      closeTime: is24Hours ? "24:00" : closeTime,
       isUnknown,
+      is24Hours,
     };
 
     setOperatingHours((prev) => [...prev, entry]);
@@ -145,6 +158,7 @@ function ReportRegisterContent() {
     setOpenTime("오전 10:00");
     setCloseTime("오후 10:00");
     setIsUnknown(false);
+    setIs24Hours(false);
   };
 
   // 영업시간 삭제
@@ -239,6 +253,9 @@ function ReportRegisterContent() {
       } else if (entry.isUnknown) {
         // 모름
         openTimeRecord[dayName] = null;
+      } else if (entry.is24Hours) {
+        // 24시간
+        openTimeRecord[dayName] = "00:00~24:00";
       } else {
         const open = convertTimeFormat(entry.openTime);
         const close = convertTimeFormat(entry.closeTime);
@@ -407,51 +424,62 @@ function ReportRegisterContent() {
                 <div className="flex items-center gap-4">
                   <button
                     type="button"
-                    onClick={() => !isUnknown && setIsOpenTimeModalOpen(true)}
-                    disabled={isUnknown}
+                    onClick={() => !isUnknown && !is24Hours && setIsOpenTimeModalOpen(true)}
+                    disabled={isUnknown || is24Hours}
                     className={`flex-1 h-11 flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                      isUnknown ? "bg-grey-100 cursor-not-allowed" : "bg-white hover:bg-grey-100"
+                      isUnknown || is24Hours
+                        ? "bg-grey-100 cursor-not-allowed"
+                        : "bg-white hover:bg-grey-100"
                     }`}
                   >
                     <Clock
                       size={16}
-                      className={isUnknown ? "stroke-grey-300" : "stroke-grey-500"}
+                      className={isUnknown || is24Hours ? "stroke-grey-300" : "stroke-grey-500"}
                     />
                     <span
                       className={`flex-1 text-left text-[14px] leading-[1.5] tracking-[-0.14px] ${
-                        isUnknown ? "text-grey-300" : "text-grey-600"
+                        isUnknown || is24Hours ? "text-grey-300" : "text-grey-600"
                       }`}
                     >
-                      {isUnknown ? "-" : openTime}
+                      {isUnknown ? "-" : is24Hours ? "00:00" : openTime}
                     </span>
                   </button>
                   <span
-                    className={`text-[14px] leading-[1.5] tracking-[-0.14px] ${isUnknown ? "text-grey-300" : "text-grey-600"}`}
+                    className={`text-[14px] leading-[1.5] tracking-[-0.14px] ${isUnknown || is24Hours ? "text-grey-300" : "text-grey-600"}`}
                   >
                     ~
                   </span>
                   <button
                     type="button"
-                    onClick={() => !isUnknown && setIsCloseTimeModalOpen(true)}
-                    disabled={isUnknown}
+                    onClick={() => !isUnknown && !is24Hours && setIsCloseTimeModalOpen(true)}
+                    disabled={isUnknown || is24Hours}
                     className={`flex-1 h-11 flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                      isUnknown ? "bg-grey-100 cursor-not-allowed" : "bg-white hover:bg-grey-100"
+                      isUnknown || is24Hours
+                        ? "bg-grey-100 cursor-not-allowed"
+                        : "bg-white hover:bg-grey-100"
                     }`}
                   >
                     <Clock
                       size={16}
-                      className={isUnknown ? "stroke-grey-300" : "stroke-grey-500"}
+                      className={isUnknown || is24Hours ? "stroke-grey-300" : "stroke-grey-500"}
                     />
                     <span
                       className={`flex-1 text-left text-[14px] leading-[1.5] tracking-[-0.14px] ${
-                        isUnknown ? "text-grey-300" : "text-grey-600"
+                        isUnknown || is24Hours ? "text-grey-300" : "text-grey-600"
                       }`}
                     >
-                      {isUnknown ? "-" : closeTime}
+                      {isUnknown ? "-" : is24Hours ? "24:00" : closeTime}
                     </span>
                   </button>
                 </div>
-                <div className="flex items-center justify-end pt-2">
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  <Checkbox
+                    checked={is24Hours}
+                    onChange={handle24HoursToggle}
+                    label="24시간"
+                    variant="filled"
+                    size="small"
+                  />
                   <Checkbox
                     checked={isUnknown}
                     onChange={handleUnknownToggle}
@@ -482,17 +510,23 @@ function ReportRegisterContent() {
           )}
 
           {/* 영업시간 리스트 */}
-          {operatingHours.length > 0 && (
-            <div className="flex flex-col gap-2">
-              {operatingHours.map((entry) => (
+          <div className="flex flex-col gap-2">
+            {operatingHours.length === 0 ? (
+              <div className="flex items-center bg-grey-50 rounded-lg px-5 py-4">
+                <span className="text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-400">
+                  영업시간 정보 없음 (+ 추가 버튼을 눌러주세요)
+                </span>
+              </div>
+            ) : (
+              operatingHours.map((entry) => (
                 <OperatingHoursItem
                   key={entry.id}
                   entry={entry}
                   onDelete={handleDeleteOperatingHours}
                 />
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
         </div>
 
         {/* 업체 사진 */}
