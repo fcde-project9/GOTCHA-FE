@@ -25,6 +25,7 @@ export default function Home() {
     mapCenter: storedMapCenter,
     mapLevel: storedMapLevel,
     searchQuery: storedSearchQuery,
+    hasHydrated,
     setMapCenter: setStoredMapCenter,
     setMapLevel: setStoredMapLevel,
     setSearchQuery: setStoredSearchQuery,
@@ -65,8 +66,11 @@ export default function Home() {
 
   const markers = shopsData ?? [];
 
-  // 스토어에서 지도 상태 복원 (클라이언트에서만, 최초 1회)
+  // 스토어에서 지도 상태 복원 (hydration 완료 후, 최초 1회)
   useEffect(() => {
+    // hydration이 완료되지 않았으면 대기
+    if (!hasHydrated) return;
+    // 이미 복원했으면 스킵
     if (hasRestoredFromStore.current) return;
     hasRestoredFromStore.current = true;
 
@@ -86,7 +90,7 @@ export default function Home() {
     if (storedSearchQuery) {
       setSearchQueryState(storedSearchQuery);
     }
-  }, [storedMapCenter, storedMapLevel, storedSearchQuery]);
+  }, [hasHydrated, storedMapCenter, storedMapLevel, storedSearchQuery]);
 
   // 지도 중심 변경 시 스토어에 저장
   const setMapCenter = useCallback(
@@ -141,6 +145,8 @@ export default function Home() {
   // 사용자 위치를 처음 받았을 때 지도 이동 + 자동 재검색 + 현재 위치 마커 표시
   // 단, 스토어에 저장된 위치가 있으면 현재 위치로 이동하지 않음
   useEffect(() => {
+    // hydration이 완료되지 않았으면 대기 (storedMapCenter 확인을 위해)
+    if (!hasHydrated) return;
     if (location && !hasReceivedLocation) {
       setHasReceivedLocation(true);
 
@@ -159,7 +165,7 @@ export default function Home() {
         heading: null,
       });
     }
-  }, [location, hasReceivedLocation, storedMapCenter, setMapCenter]);
+  }, [hasHydrated, location, hasReceivedLocation, storedMapCenter, setMapCenter]);
 
   // 검색어 변경 시 자동 검색
   useEffect(() => {
