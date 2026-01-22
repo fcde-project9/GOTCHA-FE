@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Camera, Clock, Plus } from "lucide-react";
 import { useCreateShopWithUpload } from "@/api/mutations/useCreateShopWithUpload";
-import { Button, CenterTitleHeader, Checkbox } from "@/components/common";
+import { BackHeader, Button, Checkbox } from "@/components/common";
 import { Toast } from "@/components/common/Toast";
 import { ExitConfirmModal } from "@/components/report/ExitConfirmModal";
 import { OperatingHoursItem } from "@/components/report/OperatingHoursItem";
@@ -310,7 +310,7 @@ function ReportRegisterContent() {
   return (
     <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative">
       {/* Header */}
-      <CenterTitleHeader title="업체 정보 등록" onBack={handleBackClick} />
+      <BackHeader title="업체 정보 등록" onBack={handleBackClick} />
 
       {/* Main Content */}
       <main className="flex flex-col gap-7 pt-3 px-5">
