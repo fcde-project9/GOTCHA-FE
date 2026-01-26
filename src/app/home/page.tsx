@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Search, LocateFixed, RefreshCcw, ChevronLeft, CircleX } from "lucide-react";
 import { useShopsInBounds } from "@/api/queries/useShopsInBounds";
-import { Footer, LocationPermissionModal } from "@/components/common";
+import { Footer, LocationPermissionModal, SplashScreen } from "@/components/common";
 import { KakaoMap } from "@/components/features/map";
 import { SearchResultItem } from "@/components/features/search";
 import { ShopListBottomSheet } from "@/components/features/shop";
@@ -55,6 +55,10 @@ export default function Home() {
   const [mapLevel, setMapLevelState] = useState(5); // 지도 줌 레벨 (기본값 5)
   const hasRestoredFromStore = useRef(false); // 스토어에서 복원 완료 여부
 
+  // 스플래시 상태 - sessionStorage로 세션 당 한 번만 표시
+  // null: 초기 로딩 중, true: 스플래시 표시, false: 스플래시 숨김
+  const [showSplash, setShowSplash] = useState<boolean | null>(null);
+
   // React Query로 가게 목록 조회
   const { data: shopsData, isLoading: isShopsLoading } = useShopsInBounds(activeBounds);
 
@@ -65,6 +69,12 @@ export default function Home() {
   }, [shopsData]);
 
   const markers = shopsData ?? [];
+
+  // 스플래시 표시 여부 결정 (클라이언트에서만 실행)
+  useEffect(() => {
+    const splashShown = sessionStorage.getItem("splashShown") === "true";
+    setShowSplash(!splashShown);
+  }, []);
 
   // 스토어에서 지도 상태 복원 (hydration 완료 후, 최초 1회)
   useEffect(() => {
@@ -361,6 +371,17 @@ export default function Home() {
 
   // 바텀시트가 500px 이상일 때 버튼 숨기기 (최대 높이에 가까울 때)
   const isButtonVisible = bottomSheetHeight < 500;
+
+  // 스플래시 완료 핸들러
+  const handleSplashComplete = useCallback(() => {
+    setShowSplash(false);
+    sessionStorage.setItem("splashShown", "true");
+  }, []);
+
+  // 스플래시 표시 중일 때 (null: 초기 로딩, true: 스플래시 표시)
+  if (showSplash === null || showSplash === true) {
+    return <SplashScreen duration={2500} onComplete={handleSplashComplete} />;
+  }
 
   return (
     <>
