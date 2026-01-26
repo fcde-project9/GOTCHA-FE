@@ -34,11 +34,12 @@ export function SplashScreen({ duration = 2000, onComplete }: SplashScreenProps)
     const originalBgColor = document.documentElement.style.backgroundColor;
     document.documentElement.style.backgroundColor = "#EF4444";
 
-    // 페이드아웃 시작 (duration - 500ms)
+    // 페이드아웃 시작 (duration - 500ms, 최소 0ms)
+    const fadeDelay = Math.max(0, duration - 500);
     const fadeTimer = setTimeout(() => {
       setFadeOut(true);
       document.documentElement.style.backgroundColor = "#ffffff";
-    }, duration - 500);
+    }, fadeDelay);
 
     // 스플래시 완료
     const completeTimer = setTimeout(() => {
