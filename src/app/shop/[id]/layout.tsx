@@ -94,6 +94,14 @@ function parseAddress(addressName: string): ParsedAddress {
   };
 }
 
+/**
+ * JSON-LD를 안전하게 직렬화 (XSS 방지)
+ * '<' 문자를 '\u003c'로 escape하여 script 태그 내 XSS 공격 방지
+ */
+function safeJsonLdStringify(data: object): string {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
+}
+
 // 서버에서 가게 정보 조회
 async function getShopDetail(shopId: number): Promise<ShopDetailResponse | null> {
   try {
@@ -184,7 +192,7 @@ export default async function ShopLayout({ children, params }: ShopLayoutProps) 
       {jsonLd && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: safeJsonLdStringify(jsonLd) }}
         />
       )}
       {children}
