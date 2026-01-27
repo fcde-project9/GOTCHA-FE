@@ -49,12 +49,12 @@ export function ProfileSection({
     return (
       <div className="flex flex-col items-center gap-3 w-full px-5">
         {/* 기본 프로필 이미지 */}
-        <div className="w-[88px] h-[88px] rounded-full bg-main-50 overflow-hidden flex items-center justify-center">
+        <div className="w-[100px] h-[100px] rounded-full bg-main-50 overflow-hidden flex items-center justify-center">
           <Image
             src={DEFAULT_IMAGES.PROFILE}
             alt="프로필 이미지"
-            width={88}
-            height={88}
+            width={100}
+            height={100}
             className="object-contain"
           />
         </div>
@@ -85,7 +85,7 @@ export function ProfileSection({
     <div className="flex flex-col items-center gap-7 w-full px-5">
       {/* Profile Image */}
       <div className="flex flex-col items-center gap-3 w-[168px]">
-        <div className="relative w-[88px] h-[88px]">
+        <div className="relative w-[100px] h-[100px]">
           <div className="relative w-full h-full rounded-full overflow-hidden">
             <Image src={profileImage} alt="프로필 이미지" fill className="object-cover" />
           </div>
