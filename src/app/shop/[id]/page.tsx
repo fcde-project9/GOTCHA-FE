@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -22,13 +23,22 @@ import { useDeleteReview } from "@/api/mutations/useDeleteReview";
 import { useToggleReviewLike } from "@/api/mutations/useToggleReviewLike";
 import { useShopDetail } from "@/api/queries/useShopDetail";
 import { Button, BackHeader, OutlineButton, ImageViewerModal } from "@/components/common";
-import KakaoMap from "@/components/features/map/KakaoMap";
 import { ReviewDeleteConfirmModal } from "@/components/features/review/ReviewDeleteConfirmModal";
 import { ReviewWriteModal } from "@/components/features/review/ReviewWriteModal";
 import { StatusBadge } from "@/components/features/shop";
 import { useFavorite, useToast } from "@/hooks";
 import type { ReviewResponse, OpenTime, ReviewSortOption } from "@/types/api";
 import { formatDate } from "@/utils";
+
+// KakaoMap 동적 로드 - SSR 제외
+const KakaoMap = dynamic(() => import("@/components/features/map/KakaoMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[200px] flex items-center justify-center bg-grey-100 rounded-lg">
+      <span className="text-grey-500">지도 로딩 중...</span>
+    </div>
+  ),
+});
 
 // 요일 매핑 (API 응답 키 -> 한글)
 const DAY_MAP: Record<keyof OpenTime, string> = {

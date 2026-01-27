@@ -34,6 +34,7 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "critters": "^0.0.25",
     "eslint": "^8",
     "eslint-config-next": "14.2.18",
     "eslint-config-prettier": "^10.1.8",
@@ -53,5 +54,13 @@
     "*.{json,css,md}": [
       "prettier --write"
     ]
-  }
+  },
+  "browserslist": [
+    "Chrome >= 80",
+    "Safari >= 14",
+    "Firefox >= 80",
+    "Edge >= 80",
+    "iOS >= 14",
+    "not dead"
+  ]
 }

@@ -60,7 +60,7 @@ export function SplashScreen({ duration = 2000, onComplete }: SplashScreenProps)
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-main transition-all duration-500 ${
+      className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-main transition-opacity duration-500 ${
         fadeOut ? "opacity-0" : "opacity-100"
       }`}
     >

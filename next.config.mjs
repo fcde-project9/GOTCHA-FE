@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Critical CSS 인라인화 (렌더링 차단 CSS 제거)
+  experimental: {
+    optimizeCss: true,
+  },
+
   // API 프록시 설정
   async rewrites() {
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
