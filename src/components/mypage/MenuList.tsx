@@ -14,7 +14,7 @@ function MenuItem({ label, onClick, showBorder = true }: MenuItemProps) {
         showBorder ? "border-b border-line-100" : ""
       }`}
     >
-      <span className="flex-1 text-left text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-900 h-6">
+      <span className="flex-1 text-left text-[18px] font-normal leading-[1.5] tracking-[-0.18px] text-grey-900 h-6">
         {label}
       </span>
       <div className="w-6 h-6 flex items-center justify-center">
@@ -49,7 +49,7 @@ export function MenuList({ onMyReports, onTerms, onAbout }: MenuListProps) {
     <div className="flex flex-col items-start w-full">
       <MenuItem label="내가 제보한 업체" onClick={onMyReports} />
       <MenuItem label="약관/라이센스" onClick={onTerms} />
-      <MenuItem label="이 앱을 만든 녀석들" onClick={onAbout} showBorder={false} />
+      <MenuItem label="이 서비스를 만든 녀석들" onClick={onAbout} showBorder={false} />
     </div>
   );
 }
