@@ -1,20 +1,58 @@
 "use client";
 
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { House, Megaphone, Heart, UserRound } from "lucide-react";
+import { UserRound } from "lucide-react";
 
-interface NavItem {
-  id: string;
-  label: string;
-  path: string;
-  icon: typeof House;
-}
+type NavItem =
+  | {
+      id: string;
+      label: string;
+      path: string;
+      type: "svg";
+      activeIcon: string;
+      inactiveIcon: string;
+    }
+  | {
+      id: string;
+      label: string;
+      path: string;
+      type: "lucide";
+      icon: typeof UserRound;
+    };
 
 const navItems: NavItem[] = [
-  { id: "home", label: "홈", path: "/home", icon: House },
-  { id: "report", label: "제보", path: "/report", icon: Megaphone },
-  { id: "favorites", label: "찜", path: "/favorites", icon: Heart },
-  { id: "mypage", label: "마이", path: "/mypage", icon: UserRound },
+  {
+    id: "home",
+    label: "홈",
+    path: "/home",
+    type: "svg",
+    activeIcon: "/images/icons/home_fill.svg",
+    inactiveIcon: "/images/icons/home_blank.svg",
+  },
+  {
+    id: "report",
+    label: "제보하기",
+    path: "/report",
+    type: "svg",
+    activeIcon: "/images/icons/report_fill.svg",
+    inactiveIcon: "/images/icons/report_blank.svg",
+  },
+  {
+    id: "favorites",
+    label: "찜한업체",
+    path: "/favorites",
+    type: "svg",
+    activeIcon: "/images/icons/favorites_fill.svg",
+    inactiveIcon: "/images/icons/favorites_blank.svg",
+  },
+  {
+    id: "mypage",
+    label: "마이페이지",
+    path: "/mypage",
+    type: "lucide",
+    icon: UserRound,
+  },
 ];
 
 export default function Footer() {
@@ -38,7 +76,6 @@ export default function Footer() {
     >
       <nav className="flex h-[60px] px-12 items-center justify-between">
         {navItems.map((item) => {
-          const Icon = item.icon;
           const active = isActive(item.path);
 
           return (
@@ -49,12 +86,22 @@ export default function Footer() {
               aria-label={item.label}
               aria-current={active ? "page" : undefined}
             >
-              <Icon
-                size={24}
-                className={active ? "stroke-grey-800 fill-grey-800" : "stroke-grey-500 fill-none"}
-                strokeWidth={active ? 2 : 1.5}
-                aria-hidden="true"
-              />
+              {item.type === "svg" ? (
+                <Image
+                  src={active ? item.activeIcon : item.inactiveIcon}
+                  alt={item.label}
+                  width={24}
+                  height={24}
+                  aria-hidden="true"
+                />
+              ) : (
+                <item.icon
+                  size={24}
+                  className={active ? "stroke-grey-800 fill-grey-800" : "stroke-grey-500 fill-none"}
+                  strokeWidth={1.25}
+                  aria-hidden="true"
+                />
+              )}
               <span
                 className={`text-center font-medium text-[11px] leading-[1.5] tracking-[-0.11px] ${
                   active ? "text-grey-800" : "text-grey-500"
