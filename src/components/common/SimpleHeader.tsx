@@ -37,7 +37,7 @@ export function SimpleHeader({ title, rightElement, showBorder = false }: Simple
       }`}
     >
       {/* 타이틀 */}
-      <h1 className="text-[20px] font-semibold leading-[1.5] tracking-[-0.20px] text-grey-900">
+      <h1 className="text-[20px] font-semibold leading-[1.4] tracking-[-0.20px] text-grey-900">
         {title}
       </h1>
 
