@@ -6,5 +6,7 @@
 // 소셜 미디어 URL
 export const SOCIAL_URLS = {
   /** 공식 인스타그램 계정 */
-  INSTAGRAM: "https://www.instagram.com/gotcha_map",
+  INSTAGRAM: "https://www.instagram.com/gotcha_finder",
+  /** 인스타그램 DM (고객지원) */
+  INSTAGRAM_DM: "https://ig.me/m/gotcha_finder",
 } as const;
