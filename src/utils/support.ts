@@ -2,17 +2,15 @@
  * 고객 지원 및 인증 관련 유틸리티 함수
  */
 
+import { SOCIAL_URLS } from "@/constants";
+
 /**
  * Instagram DM으로 문의하기
  * - 새 창에서 Instagram Direct Message를 엽니다
  * - Tabnabbing 방지를 위해 opener를 null로 설정합니다
- * - 환경변수 NEXT_PUBLIC_SUPPORT_INSTAGRAM_URL이 없으면 기본값(gotcha_map) 사용
  */
 export function openInstagramSupport(): void {
-  const instagramDmUrl =
-    process.env.NEXT_PUBLIC_SUPPORT_INSTAGRAM_URL || "https://ig.me/m/gotcha_map";
-
-  const newWindow = window.open(instagramDmUrl, "_blank", "noopener,noreferrer");
+  const newWindow = window.open(SOCIAL_URLS.INSTAGRAM_DM, "_blank", "noopener,noreferrer");
 
   // Tabnabbing 방지: opener를 null로 설정
   if (newWindow) {
