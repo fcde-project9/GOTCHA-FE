@@ -240,7 +240,7 @@ export default function ReportLocationPage() {
   return (
     <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative">
       {/* Header */}
-      <BackHeader title="제보" onBack={() => router.push("/home")} absolute />
+      <BackHeader title="제보하기" onBack={() => router.push("/home")} absolute />
 
       {/* Map - 헤더(56px)와 바텀시트를 고려한 높이, 바텀시트가 살짝 걸치도록 */}
       <div className="relative h-[100dvh] pt-14 pb-[150px]">
@@ -297,7 +297,7 @@ export default function ReportLocationPage() {
           {/* Address */}
           <div className="flex flex-col gap-2">
             <label className="text-[14px] font-medium leading-[1.5] tracking-[-0.14px] text-grey-600 text-center">
-              업체 주소
+              제보 할 위치
             </label>
             <div className="bg-grey-100 min-h-11 flex items-center justify-center px-3 py-2 rounded-lg">
               <p className="text-[15px] font-semibold leading-[1.5] tracking-[-0.15px] text-grey-700 text-center">
@@ -320,7 +320,7 @@ export default function ReportLocationPage() {
 
           {/* Submit Button */}
           <Button
-            variant="secondary"
+            variant="primary"
             size="medium"
             fullWidth
             loading={checkingNearby}
