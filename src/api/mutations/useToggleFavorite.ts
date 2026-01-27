@@ -34,8 +34,9 @@ export const useAddFavorite = () => {
       }
     },
     onSuccess: () => {
-      // 찜 목록 캐시 무효화
+      // 찜 목록 및 지도 가게 목록 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ["favorites"] });
+      queryClient.invalidateQueries({ queryKey: ["shops", "map"] });
     },
   });
 };
@@ -67,8 +68,9 @@ export const useRemoveFavorite = () => {
       }
     },
     onSuccess: () => {
-      // 찜 목록 캐시 무효화
+      // 찜 목록 및 지도 가게 목록 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ["favorites"] });
+      queryClient.invalidateQueries({ queryKey: ["shops", "map"] });
     },
   });
 };

@@ -62,7 +62,7 @@ export function FavoriteShopItem({ shop }: FavoriteShopItemProps) {
           <button
             onClick={handleHeartClick}
             disabled={isLoading}
-            className="flex h-6 w-6 items-center justify-center disabled:opacity-50"
+            className="ml-auto flex h-6 w-6 items-center justify-center disabled:opacity-50"
             aria-label={isFavorite ? "찜 해제" : "찜하기"}
           >
             <Heart
