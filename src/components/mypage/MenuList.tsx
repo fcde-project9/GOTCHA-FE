@@ -14,7 +14,7 @@ function MenuItem({ label, onClick, showBorder = true }: MenuItemProps) {
         showBorder ? "border-b border-line-100" : ""
       }`}
     >
-      <span className="flex-1 text-left text-[18px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-900 h-6">
+      <span className="flex-1 text-left text-[18px] font-normal leading-[1.5] tracking-[-0.18px] text-grey-900 h-6">
         {label}
       </span>
       <div className="w-6 h-6 flex items-center justify-center">
