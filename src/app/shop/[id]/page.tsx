@@ -62,10 +62,12 @@ function parseOpenTime(openTimeStr: string): OpenTime | null {
   }
 }
 
-// 영업일 배열 추출 (빈 문자열("")만 휴일, 나머지는 영업일)
+// 영업일 배열 추출 (시간 값이 있는 요일만 영업일)
 function getBusinessDays(openTime: OpenTime | null): (keyof OpenTime)[] {
   if (!openTime) return [];
-  return ALL_DAYS.filter((day) => openTime[day] !== "");
+  return ALL_DAYS.filter(
+    (day) => openTime[day] !== null && openTime[day] !== "" && openTime[day] !== "휴무"
+  );
 }
 
 // 요일 배지 컴포넌트
@@ -519,9 +521,9 @@ export default function ShopDetailPage() {
             {/* 영업 시간 */}
             <div className="flex items-center gap-2">
               <span className="shrink-0 w-16 text-[14px] text-grey-400">영업시간</span>
-              <span className="text-[14px] text-grey-900">
-                {shop.todayOpenTime ?? "영업시간 정보 없음"}
-              </span>
+              {shop.todayOpenTime && (
+                <span className="text-[14px] text-grey-900">{shop.todayOpenTime}</span>
+              )}
               <StatusBadge openStatus={shop.openStatus} />
             </div>
           </div>
