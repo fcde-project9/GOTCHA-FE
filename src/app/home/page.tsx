@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Search, LocateFixed, RefreshCcw, ChevronLeft, CircleX } from "lucide-react";
 import { useShopsInBounds } from "@/api/queries/useShopsInBounds";
 import { Footer, LocationPermissionModal, SplashScreen } from "@/components/common";
-import { KakaoMap } from "@/components/features/map";
 import { SearchResultItem } from "@/components/features/search";
 import { ShopListBottomSheet } from "@/components/features/shop";
 import { DEFAULT_IMAGES } from "@/constants";
@@ -14,6 +14,16 @@ import { useCurrentLocation, useKakaoPlaces, PlaceSearchResult } from "@/hooks";
 import { useMapStore } from "@/stores";
 import { MapBounds, ShopMapResponse } from "@/types/api";
 import { shopMapResponsesToViews } from "@/utils/shop";
+
+// KakaoMap 동적 로드 - SSR 제외, 초기 번들에서 분리
+const KakaoMap = dynamic(() => import("@/components/features/map/KakaoMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-grey-100">
+      <span className="text-grey-500">지도 로딩 중...</span>
+    </div>
+  ),
+});
 
 export default function Home() {
   const router = useRouter();
