@@ -1,13 +1,8 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "홈 - 내 주변 가챠샵 찾기",
-  description:
-    "지도에서 내 주변 가챠샵을 찾아보세요. 가챠샵 위치, 영업시간, 리뷰 정보를 한눈에 확인할 수 있습니다.",
-  openGraph: {
-    title: "GOTCHA! - 내 주변 가챠샵 찾기",
-    description: "지도에서 내 주변 가챠샵을 찾아보세요.",
-  },
+  title: "가챠 덕후들의 아지트 GOTCHA!",
+  description: "지도 기반 가챠샵 정보 서비스",
   alternates: {
     canonical: "/home",
   },
