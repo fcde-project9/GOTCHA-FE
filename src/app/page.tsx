@@ -1,67 +1,16 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { LOGO_IMAGES } from "@/constants";
-
-export default function SplashPage() {
-  const router = useRouter();
-  const [fadeOut, setFadeOut] = useState(false);
-
-  // 스플래시 화면일 때 html 배경색을 main으로, fadeOut 시 흰색으로 변경
-  useEffect(() => {
-    document.documentElement.style.backgroundColor = "#EF4444"; // main color
-
-    return () => {
-      document.documentElement.style.backgroundColor = "#ffffff";
-    };
-  }, []);
-
-  // fadeOut 시작 시 배경색을 흰색으로 변경
-  useEffect(() => {
-    if (fadeOut) {
-      document.documentElement.style.backgroundColor = "#ffffff";
-    }
-  }, [fadeOut]);
-
-  useEffect(() => {
-    // 2.5초 후 페이드아웃 시작
-    const fadeTimer = setTimeout(() => {
-      setFadeOut(true);
-    }, 2500);
-
-    // 3초 후 로그인 상태에 따라 분기
-    const navigateTimer = setTimeout(() => {
-      const accessToken = localStorage.getItem("accessToken");
-      if (accessToken) {
-        router.replace("/home");
-      } else {
-        router.push("/login");
-      }
-    }, 3000);
-
-    return () => {
-      clearTimeout(fadeTimer);
-      clearTimeout(navigateTimer);
-    };
-  }, [router]);
-
-  return (
-    <div
-      className={`fixed inset-0 flex flex-col items-center justify-center bg-main transition-all duration-500 ${
-        fadeOut ? "opacity-0 bg-white" : "opacity-100"
-      }`}
-    >
-      {/* 로고 */}
-      <div className="mb-8">
-        <Image src={LOGO_IMAGES.LIGHT} alt="GOTCHA 로고" width={163} height={114} priority />
-      </div>
-
-      {/* 슬로건 */}
-      <p className="text-center text-lg font-semibold tracking-tight text-white">
-        가챠샵 정보를 한곳에서 갓차!
-      </p>
-    </div>
-  );
+/**
+ * 루트 페이지 - /home으로 서버 사이드 리디렉션
+ *
+ * SEO 최적화:
+ * - 클라이언트 JS 리디렉션 대신 서버 리디렉션 사용
+ * - Google 크롤러가 올바르게 색인할 수 있도록 함
+ * - middleware.ts에서도 처리하지만 fallback으로 유지
+ *
+ * 스플래시 화면:
+ * - 기존 스플래시 애니메이션이 필요한 경우 /home 페이지에서 처리
+ */
+export default function RootPage() {
+  redirect("/home");
 }

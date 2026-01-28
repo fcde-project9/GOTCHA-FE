@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -22,13 +23,22 @@ import { useDeleteReview } from "@/api/mutations/useDeleteReview";
 import { useToggleReviewLike } from "@/api/mutations/useToggleReviewLike";
 import { useShopDetail } from "@/api/queries/useShopDetail";
 import { Button, BackHeader, OutlineButton, ImageViewerModal } from "@/components/common";
-import KakaoMap from "@/components/features/map/KakaoMap";
 import { ReviewDeleteConfirmModal } from "@/components/features/review/ReviewDeleteConfirmModal";
 import { ReviewWriteModal } from "@/components/features/review/ReviewWriteModal";
 import { StatusBadge } from "@/components/features/shop";
 import { useFavorite, useToast } from "@/hooks";
 import type { ReviewResponse, OpenTime, ReviewSortOption } from "@/types/api";
 import { formatDate } from "@/utils";
+
+// KakaoMap 동적 로드 - SSR 제외
+const KakaoMap = dynamic(() => import("@/components/features/map/KakaoMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[200px] flex items-center justify-center bg-grey-100 rounded-lg">
+      <span className="text-grey-500">지도 로딩 중...</span>
+    </div>
+  ),
+});
 
 // 요일 매핑 (API 응답 키 -> 한글)
 const DAY_MAP: Record<keyof OpenTime, string> = {
@@ -52,10 +62,12 @@ function parseOpenTime(openTimeStr: string): OpenTime | null {
   }
 }
 
-// 영업일 배열 추출 (빈 문자열("")만 휴일, 나머지는 영업일)
+// 영업일 배열 추출 (시간 값이 있는 요일만 영업일)
 function getBusinessDays(openTime: OpenTime | null): (keyof OpenTime)[] {
   if (!openTime) return [];
-  return ALL_DAYS.filter((day) => openTime[day] !== "");
+  return ALL_DAYS.filter(
+    (day) => openTime[day] !== null && openTime[day] !== "" && openTime[day] !== "휴무"
+  );
 }
 
 // 요일 배지 컴포넌트
@@ -509,9 +521,9 @@ export default function ShopDetailPage() {
             {/* 영업 시간 */}
             <div className="flex items-center gap-2">
               <span className="shrink-0 w-16 text-[14px] text-grey-400">영업시간</span>
-              <span className="text-[14px] text-grey-900">
-                {shop.todayOpenTime ?? "영업시간 정보 없음"}
-              </span>
+              {shop.todayOpenTime && (
+                <span className="text-[14px] text-grey-900">{shop.todayOpenTime}</span>
+              )}
               <StatusBadge openStatus={shop.openStatus} />
             </div>
           </div>

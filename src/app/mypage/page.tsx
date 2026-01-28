@@ -201,7 +201,7 @@ export default function MyPage() {
     <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[70px]">
       {/* Header */}
       <SimpleHeader
-        title="마이"
+        title="마이페이지"
         rightElement={
           <button
             onClick={handleSupport}

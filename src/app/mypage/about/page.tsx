@@ -72,7 +72,7 @@ export default function AboutPage() {
           onClick={handleInstagramClick}
           className="text-[16px] font-medium leading-[2] tracking-[-0.16px] text-grey-900"
         >
-          @gatcha_map
+          @gotcha_finder
         </button>
       </main>
 

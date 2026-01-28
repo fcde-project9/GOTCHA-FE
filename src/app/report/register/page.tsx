@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Camera, Clock, Plus } from "lucide-react";
 import { useCreateShopWithUpload } from "@/api/mutations/useCreateShopWithUpload";
-import { Button, CenterTitleHeader, Checkbox } from "@/components/common";
+import { BackHeader, Button, Checkbox } from "@/components/common";
 import { Toast } from "@/components/common/Toast";
 import { ExitConfirmModal } from "@/components/report/ExitConfirmModal";
 import { OperatingHoursItem } from "@/components/report/OperatingHoursItem";
@@ -106,9 +106,13 @@ function ReportRegisterContent() {
   const handleDayToggle = (dayIndex: number) => {
     if (existingDays.includes(dayIndex)) return;
 
-    setSelectedDays((prev) =>
-      prev.includes(dayIndex) ? prev.filter((d) => d !== dayIndex) : [...prev, dayIndex]
-    );
+    setSelectedDays((prev) => {
+      const next = prev.includes(dayIndex)
+        ? prev.filter((d) => d !== dayIndex)
+        : [...prev, dayIndex];
+      setIsEveryDay(next.length === availableDays.length);
+      return next;
+    });
   };
 
   // 매일 체크박스 토글
@@ -206,7 +210,8 @@ function ReportRegisterContent() {
     };
   }, [previewUrl]);
 
-  const isFormValid = Boolean(formData.shopName.trim()) && formData.images.length > 0;
+  const isFormValid =
+    Boolean(formData.shopName.trim()) && formData.images.length > 0 && operatingHours.length > 0;
 
   /**
    * 시간 포맷 변환: "오전 00:00" -> "00:00" (24시간 형식)
@@ -234,8 +239,8 @@ function ReportRegisterContent() {
    * - 모든 요일의 key 존재 (Mon, Tue, Wed, Thu, Fri, Sat, Sun)
    * - 영업 시간: "10:00~20:00" 형식
    * - "00:00~00:00" 금지 → null 사용
-   * - 휴무: ""
-   * - 모름: null
+   * - 휴무: "휴무"
+   * - 모름: null 또는 ""
    * - 아무것도 등록 안 함: 모든 요일 null
    */
   const convertOpenTime = (): Record<string, string | null> => {
@@ -248,8 +253,8 @@ function ReportRegisterContent() {
       const entry = operatingHours.find((e) => e.days.includes(index));
 
       if (!entry) {
-        // 등록되지 않은 요일 = 아무것도 등록 안 한 경우 모름(null), 일부만 등록한 경우 휴무("")
-        openTimeRecord[dayName] = operatingHours.length === 0 ? null : "";
+        // 등록되지 않은 요일 = 아무것도 등록 안 한 경우 모름(null), 일부만 등록한 경우 휴무("휴무")
+        openTimeRecord[dayName] = operatingHours.length === 0 ? null : "휴무";
       } else if (entry.isUnknown) {
         // 모름
         openTimeRecord[dayName] = null;
@@ -310,7 +315,7 @@ function ReportRegisterContent() {
   return (
     <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative">
       {/* Header */}
-      <CenterTitleHeader title="업체 정보 등록" onBack={handleBackClick} />
+      <BackHeader title="업체 정보 등록" onBack={handleBackClick} />
 
       {/* Main Content */}
       <main className="flex flex-col gap-7 pt-3 px-5">
@@ -365,11 +370,15 @@ function ReportRegisterContent() {
         </div>
 
         {/* 영업시간 */}
-        <div className="flex flex-col gap-4">
-          <label className="text-[18px] font-medium leading-[1.5] tracking-[-0.18px] text-grey-900">
-            영업시간
-          </label>
-
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-[2px]">
+            <label className="text-[18px] font-medium leading-[1.5] tracking-[-0.18px] text-grey-900">
+              영업시간
+            </label>
+            <span className="text-[18px] font-medium leading-[1.5] tracking-[-0.18px] text-main">
+              *
+            </span>
+          </div>
           {/* 영업시간 입력 영역 - 모든 요일이 등록되지 않았을 때만 표시 */}
           {existingDays.length < 7 && (
             <div className="flex flex-col gap-4 p-4 bg-grey-50 rounded-lg">

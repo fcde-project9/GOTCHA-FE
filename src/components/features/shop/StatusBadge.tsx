@@ -3,16 +3,11 @@ interface StatusBadgeProps {
   isOpen?: boolean;
   /** @deprecated Use openStatus instead */
   isDayOff?: boolean;
-  /** 영업 상태 문자열 ("영업 중", "휴무", "" 등). 빈 문자열이면 배지 숨김 */
+  /** 영업 상태 문자열 ("영업 중", "휴무", "" 등). 빈 문자열이면 "영업시간 모름" 표시 */
   openStatus?: string;
 }
 
 export default function StatusBadge({ isOpen, isDayOff = false, openStatus }: StatusBadgeProps) {
-  // openStatus가 빈 문자열이면 배지 숨김
-  if (openStatus === "") {
-    return null;
-  }
-
   // 상태 결정
   const getStatus = () => {
     // openStatus 문자열이 있으면 우선 사용
@@ -20,6 +15,7 @@ export default function StatusBadge({ isOpen, isDayOff = false, openStatus }: St
       if (openStatus === "영업 중") return "open";
       if (openStatus === "휴무") return "dayOff";
       if (openStatus === "영업 종료") return "closed";
+      if (openStatus === "") return "unknown";
       // 기타 상태는 그대로 표시
       return "custom";
     }
@@ -47,6 +43,11 @@ export default function StatusBadge({ isOpen, isDayOff = false, openStatus }: St
       bgColor: "bg-grey-100",
       textColor: "text-grey-500",
       label: "휴무",
+    },
+    unknown: {
+      bgColor: "bg-grey-100",
+      textColor: "text-grey-500",
+      label: "영업정보 없음",
     },
     custom: {
       bgColor: "bg-grey-100",

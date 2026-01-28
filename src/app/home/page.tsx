@@ -1,29 +1,54 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Search, LocateFixed, RefreshCcw, ChevronLeft, CircleX } from "lucide-react";
 import { useShopsInBounds } from "@/api/queries/useShopsInBounds";
-import { Footer, LocationPermissionModal } from "@/components/common";
-import { KakaoMap } from "@/components/features/map";
+import { Footer, LocationPermissionModal, SplashScreen } from "@/components/common";
 import { SearchResultItem } from "@/components/features/search";
 import { ShopListBottomSheet } from "@/components/features/shop";
 import { DEFAULT_IMAGES } from "@/constants";
 import { useCurrentLocation, useKakaoPlaces, PlaceSearchResult } from "@/hooks";
+import { useMapStore } from "@/stores";
 import { MapBounds, ShopMapResponse } from "@/types/api";
 import { shopMapResponsesToViews } from "@/utils/shop";
+
+// KakaoMap 동적 로드 - SSR 제외, 초기 번들에서 분리
+const KakaoMap = dynamic(() => import("@/components/features/map/KakaoMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-grey-100">
+      <span className="text-grey-500">지도 로딩 중...</span>
+    </div>
+  ),
+});
 
 export default function Home() {
   const router = useRouter();
   const { location, getCurrentLocation } = useCurrentLocation();
   const { results, searchPlaces, clearResults } = useKakaoPlaces();
+
+  // Zustand 스토어에서 지도 상태 가져오기
+  const {
+    mapCenter: storedMapCenter,
+    mapLevel: storedMapLevel,
+    searchQuery: storedSearchQuery,
+    hasHydrated,
+    setMapCenter: setStoredMapCenter,
+    setMapLevel: setStoredMapLevel,
+    setSearchQuery: setStoredSearchQuery,
+  } = useMapStore();
+
   const [bottomSheetHeight, setBottomSheetHeight] = useState(290); // 기본 높이 (헤더 + 약 2개 아이템)
   const [isSheetDragging, setIsSheetDragging] = useState(false);
-  const [mapCenter, setMapCenter] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [mapCenter, setMapCenterState] = useState<{ latitude: number; longitude: number } | null>(
+    null
+  );
   const [showReloadButton, setShowReloadButton] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQueryState] = useState("");
   const [hasInitialLoad, setHasInitialLoad] = useState(false);
   const [currentBounds, setCurrentBounds] = useState<MapBounds | null>(null);
   const [activeBounds, setActiveBounds] = useState<MapBounds | null>(null); // 실제 조회할 bounds
@@ -37,7 +62,12 @@ export default function Home() {
     longitude: number;
     heading: number | null;
   } | null>(null);
-  const [mapLevel, setMapLevel] = useState(5); // 지도 줌 레벨 (기본값 5)
+  const [mapLevel, setMapLevelState] = useState(5); // 지도 줌 레벨 (기본값 5)
+  const hasRestoredFromStore = useRef(false); // 스토어에서 복원 완료 여부
+
+  // 스플래시 상태 - sessionStorage로 세션 당 한 번만 표시
+  // null: 초기 로딩 중, true: 스플래시 표시, false: 스플래시 숨김
+  const [showSplash, setShowSplash] = useState<boolean | null>(null);
 
   // React Query로 가게 목록 조회
   const { data: shopsData, isLoading: isShopsLoading } = useShopsInBounds(activeBounds);
@@ -49,6 +79,65 @@ export default function Home() {
   }, [shopsData]);
 
   const markers = shopsData ?? [];
+
+  // 스플래시 표시 여부 결정 (클라이언트에서만 실행)
+  useEffect(() => {
+    const splashShown = sessionStorage.getItem("splashShown") === "true";
+    setShowSplash(!splashShown);
+  }, []);
+
+  // 스토어에서 지도 상태 복원 (hydration 완료 후, 최초 1회)
+  useEffect(() => {
+    // hydration이 완료되지 않았으면 대기
+    if (!hasHydrated) return;
+    // 이미 복원했으면 스킵
+    if (hasRestoredFromStore.current) return;
+    hasRestoredFromStore.current = true;
+
+    // 저장된 지도 중심이 있으면 복원
+    if (storedMapCenter) {
+      setMapCenterState(storedMapCenter);
+      setCenterUpdateTrigger((prev) => prev + 1);
+      shouldAutoReloadRef.current = true;
+    }
+
+    // 저장된 줌 레벨 복원
+    if (storedMapLevel) {
+      setMapLevelState(storedMapLevel);
+    }
+
+    // 저장된 검색어 복원
+    if (storedSearchQuery) {
+      setSearchQueryState(storedSearchQuery);
+    }
+  }, [hasHydrated, storedMapCenter, storedMapLevel, storedSearchQuery]);
+
+  // 지도 중심 변경 시 스토어에 저장
+  const setMapCenter = useCallback(
+    (center: { latitude: number; longitude: number } | null) => {
+      setMapCenterState(center);
+      setStoredMapCenter(center);
+    },
+    [setStoredMapCenter]
+  );
+
+  // 지도 줌 레벨 변경 시 스토어에 저장
+  const setMapLevel = useCallback(
+    (level: number) => {
+      setMapLevelState(level);
+      setStoredMapLevel(level);
+    },
+    [setStoredMapLevel]
+  );
+
+  // 검색어 변경 시 스토어에 저장
+  const setSearchQuery = useCallback(
+    (query: string) => {
+      setSearchQueryState(query);
+      setStoredSearchQuery(query);
+    },
+    [setStoredSearchQuery]
+  );
 
   // 홈페이지에서 pull-to-refresh 비활성화
   useEffect(() => {
@@ -74,21 +163,29 @@ export default function Home() {
   }, [getCurrentLocation]);
 
   // 사용자 위치를 처음 받았을 때 지도 이동 + 자동 재검색 + 현재 위치 마커 표시
+  // 단, 스토어에 저장된 위치가 있으면 현재 위치로 이동하지 않음
   useEffect(() => {
+    // hydration이 완료되지 않았으면 대기 (storedMapCenter 확인을 위해)
+    if (!hasHydrated) return;
     if (location && !hasReceivedLocation) {
       setHasReceivedLocation(true);
-      // ref를 먼저 설정 (동기적으로 즉시 반영됨)
-      shouldAutoReloadRef.current = true;
-      setMapCenter(location);
-      setCenterUpdateTrigger((prev) => prev + 1);
-      // 현재 위치 마커 표시
+
+      // 스토어에 저장된 위치가 없을 때만 현재 위치로 이동
+      if (!storedMapCenter) {
+        // ref를 먼저 설정 (동기적으로 즉시 반영됨)
+        shouldAutoReloadRef.current = true;
+        setMapCenter(location);
+        setCenterUpdateTrigger((prev) => prev + 1);
+      }
+
+      // 현재 위치 마커는 항상 표시
       setShowCurrentLocation({
         latitude: location.latitude,
         longitude: location.longitude,
         heading: null,
       });
     }
-  }, [location, hasReceivedLocation]);
+  }, [hasHydrated, location, hasReceivedLocation, storedMapCenter, setMapCenter]);
 
   // 검색어 변경 시 자동 검색
   useEffect(() => {
@@ -284,6 +381,17 @@ export default function Home() {
 
   // 바텀시트가 500px 이상일 때 버튼 숨기기 (최대 높이에 가까울 때)
   const isButtonVisible = bottomSheetHeight < 500;
+
+  // 스플래시 완료 핸들러
+  const handleSplashComplete = useCallback(() => {
+    setShowSplash(false);
+    sessionStorage.setItem("splashShown", "true");
+  }, []);
+
+  // 스플래시 표시 중일 때 (null: 초기 로딩, true: 스플래시 표시)
+  if (showSplash === null || showSplash === true) {
+    return <SplashScreen duration={2500} onComplete={handleSplashComplete} />;
+  }
 
   return (
     <>

@@ -5,7 +5,7 @@ import "./globals.css";
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  // maximumScale 제거 - 접근성을 위해 핀치 줌 허용
   themeColor: "#ffffff", // Safe area 배경색 흰색
 };
 
@@ -151,6 +151,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className="bg-white">
+      <head>
+        {/* 폰트 CSS preload - 렌더링 차단 방지 */}
+        <link rel="preload" href="/fonts/pretendard.css" as="style" />
+        <link rel="stylesheet" href="/fonts/pretendard.css" />
+        {/* Preconnect - 외부 리소스 연결 시간 단축 */}
+        <link rel="preconnect" href="https://gotcha-prod-files.s3.ap-northeast-2.amazonaws.com" />
+        <link rel="preconnect" href="https://dapi.kakao.com" />
+        <link rel="preconnect" href="https://t1.daumcdn.net" crossOrigin="anonymous" />
+      </head>
       <body className="w-full max-w-[480px] mx-auto bg-white">
         <Providers>{children}</Providers>
       </body>
