@@ -187,12 +187,15 @@ npm install -D eslint-config-next@latest
 ```json
 {
   "dependencies": {
-    "next": "^16.0.0",
-    "react": "^18",
-    "react-dom": "^18"
+    "next": "^16.1.6",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
   },
   "devDependencies": {
-    "eslint-config-next": "^16.0.0"
+    "eslint": "^9.39.2",
+    "eslint-config-next": "^16.1.6",
+    "@types/react": "^19",
+    "@types/react-dom": "^19"
   }
 }
 ```

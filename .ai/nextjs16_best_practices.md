@@ -82,8 +82,9 @@ async function getShopData(shopId: number) {
   return response.json();
 }
 
-// Server Action에서 캐시 무효화
+// Server Action에서 캐시 무효화 (actions/shop.ts)
 ("use server");
+
 import { revalidateTag } from "next/cache";
 
 export async function updateShop(shopId: number, data: ShopData) {
@@ -110,7 +111,7 @@ async function ShopReviews({ id }: { id: number }) {
 }
 
 // 조합
-export default function ShopPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ShopPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   return (
     <>
@@ -336,8 +337,9 @@ export async function deleteShop(shopId: number) {
   <button type="submit">생성</button>
 </form>;
 
-// 방법 2: 클라이언트에서 호출
+// 방법 2: 클라이언트에서 호출 (components/CreateButton.tsx)
 ("use client");
+
 import { createShop } from "@/actions/shop";
 
 function CreateButton() {
