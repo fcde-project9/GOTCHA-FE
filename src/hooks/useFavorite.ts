@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useOptimistic, startTransition } from "react";
 import { useAddFavorite, useRemoveFavorite } from "@/api/mutations/useToggleFavorite";
 import { useAuth } from "./useAuth";
 
@@ -50,9 +50,14 @@ export function useFavorite({
   onError,
   onUnauthorized,
 }: UseFavoriteOptions): UseFavoriteReturn {
-  const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
+  // 실제 상태 (API/props에서 동기화)
+  const [actualFavorite, setActualFavorite] = useState(initialIsFavorite);
 
-  // 전역 로그인 상태 확인
+  // React 19 useOptimistic: 낙관적 상태 자동 관리
+  // - 즉시 UI 업데이트
+  // - 트랜지션 종료 시 actualFavorite으로 자동 동기화 (에러 시 자동 롤백)
+  const [optimisticFavorite, setOptimisticFavorite] = useOptimistic(actualFavorite);
+
   const { isLoggedIn } = useAuth();
 
   const addFavoriteMutation = useAddFavorite();
@@ -62,49 +67,49 @@ export function useFavorite({
 
   // initialIsFavorite 변경 시 상태 동기화 (API 응답 후 shop 데이터가 로드되었을 때)
   useEffect(() => {
-    setIsFavorite(initialIsFavorite);
+    setActualFavorite(initialIsFavorite);
   }, [initialIsFavorite]);
 
   const toggleFavorite = useCallback(() => {
     if (isLoading) return;
 
-    // 로그인 체크
     if (!isLoggedIn) {
       onUnauthorized?.();
       return;
     }
 
-    const previousState = isFavorite;
-    // Optimistic update
-    setIsFavorite(!previousState);
+    const newValue = !actualFavorite;
+    const mutation = actualFavorite ? removeFavoriteMutation : addFavoriteMutation;
 
-    const mutation = previousState ? removeFavoriteMutation : addFavoriteMutation;
+    // startTransition 내에서 useOptimistic 사용
+    // 트랜지션 완료 시 optimistic 상태가 actual 상태로 자동 동기화됨
+    startTransition(async () => {
+      setOptimisticFavorite(newValue);
 
-    mutation.mutate(shopId, {
-      onSuccess: (data) => {
-        setIsFavorite(data.isFavorite);
+      try {
+        const data = await mutation.mutateAsync(shopId);
+        setActualFavorite(data.isFavorite);
         onSuccess?.(data.isFavorite);
-      },
-      onError: (error) => {
-        // 에러 시 롤백
-        setIsFavorite(previousState);
+      } catch (error) {
+        // 에러 시 트랜지션 종료 → optimistic 상태가 actualFavorite으로 자동 롤백
         onError?.(error instanceof Error ? error : new Error("찜하기에 실패했어요."));
-      },
+      }
     });
   }, [
     shopId,
-    isFavorite,
+    actualFavorite,
     isLoading,
     isLoggedIn,
     addFavoriteMutation,
     removeFavoriteMutation,
+    setOptimisticFavorite,
     onSuccess,
     onError,
     onUnauthorized,
   ]);
 
   return {
-    isFavorite,
+    isFavorite: optimisticFavorite,
     isLoading,
     toggleFavorite,
   };
