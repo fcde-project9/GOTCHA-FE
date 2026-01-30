@@ -1,5 +1,8 @@
 # Coding Standards (Frontend)
 
+> **Next.js 16 환경**: 본 프로젝트는 Next.js 16 + React 19를 사용합니다.
+> 코드 작성 시 [`.ai/nextjs16_best_practices.md`](./nextjs16_best_practices.md)를 참고하세요.
+
 ## 네이밍
 
 - 함수/컴포넌트는 의도를 드러내는 완전한 단어 사용
@@ -12,7 +15,7 @@
 - `any`/unsafe 캐스팅 지양
 - 유틸/도메인 타입은 재사용 고려해 분리
 
-## React
+## React / Next.js 16
 
 - 가드클로즈(early return) 선호, 깊은 중첩 지양
 - 불필요한 try/catch 금지(의미 있는 처리 시에만)
@@ -22,6 +25,21 @@
 - components와 utils를 먼저 확인하고 재사용할 수 있는 코드는 재사용하기
 - import할때는 최대한 절대경로 ('@') 사용
 - useEffect 사용 시 정리(cleanup) 함수 추가와 이벤트 리스너 정리 패턴
+
+### Next.js 16 필수 패턴
+
+- **서버 컴포넌트 기본**: 클라이언트 상태가 필요할 때만 `"use client"` 추가
+- **params/searchParams 비동기**: `const { id } = await params;`
+- **cookies/headers 비동기**: `const cookieStore = await cookies();`
+- **캐싱**: 필요한 컴포넌트에 `"use cache"` + `cacheTag()` 적용
+- **데이터 변경**: Server Actions + `revalidateTag()` 사용
+
+### React 19 권장 Hook
+
+- `useOptimistic`: 낙관적 업데이트 (즐겨찾기, 좋아요 등)
+- `useFormStatus`: 폼 제출 로딩 상태
+- `useActionState`: Server Action 상태 관리
+- `use`: Promise/Context 직접 읽기
 
 ## 유틸 함수
 

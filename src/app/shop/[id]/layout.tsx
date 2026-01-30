@@ -3,7 +3,7 @@ import { ShopDetailResponse } from "@/types/api";
 
 interface ShopLayoutProps {
   children: React.ReactNode;
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 interface ParsedAddress {
@@ -109,7 +109,7 @@ async function getShopDetail(shopId: number): Promise<ShopDetailResponse | null>
     if (!apiBaseUrl) return null;
 
     const response = await fetch(`${apiBaseUrl}/api/shops/${shopId}`, {
-      next: { revalidate: 3600 },
+      next: { revalidate: 3600 }, // 1시간 캐시
     });
 
     if (!response.ok) return null;
@@ -123,7 +123,8 @@ async function getShopDetail(shopId: number): Promise<ShopDetailResponse | null>
 
 // 동적 메타데이터 생성
 export async function generateMetadata({ params }: ShopLayoutProps): Promise<Metadata> {
-  const shopId = parseInt(params.id, 10);
+  const { id } = await params;
+  const shopId = parseInt(id, 10);
 
   if (isNaN(shopId)) {
     return { title: "가게를 찾을 수 없음" };
@@ -159,7 +160,8 @@ export async function generateMetadata({ params }: ShopLayoutProps): Promise<Met
 }
 
 export default async function ShopLayout({ children, params }: ShopLayoutProps) {
-  const shopId = parseInt(params.id, 10);
+  const { id } = await params;
+  const shopId = parseInt(id, 10);
   const shop = !isNaN(shopId) ? await getShopDetail(shopId) : null;
 
   // JSON-LD 구조화된 데이터 (LocalBusiness 스키마)
