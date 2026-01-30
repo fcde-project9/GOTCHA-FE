@@ -83,7 +83,8 @@ async function getShopData(shopId: number) {
 }
 
 // Server Action에서 캐시 무효화 (actions/shop.ts)
-("use server");
+// prettier-ignore
+"use server";
 
 import { revalidateTag } from "next/cache";
 
@@ -338,7 +339,8 @@ export async function deleteShop(shopId: number) {
 </form>;
 
 // 방법 2: 클라이언트에서 호출 (components/CreateButton.tsx)
-("use client");
+// prettier-ignore
+"use client";
 
 import { createShop } from "@/actions/shop";
 
