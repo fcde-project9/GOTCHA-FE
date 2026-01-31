@@ -92,7 +92,8 @@ function ReportRegisterContent() {
     Boolean(formData.locationHint.trim()) ||
     formData.images.length > 0 ||
     operatingHours.length > 0 ||
-    selectedDays.length > 0;
+    (isInitialized && selectedDays.length !== 7) ||
+    (!isInitialized && selectedDays.length > 0);
 
   const handleBackClick = () => {
     if (hasUserInput) {
