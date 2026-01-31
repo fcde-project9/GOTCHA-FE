@@ -25,6 +25,11 @@ self.addEventListener("activate", (event) => {
 
 // 네트워크 우선, 실패 시 캐시 사용
 self.addEventListener("fetch", (event) => {
+  // GET 요청만 캐시 (Cache API는 GET만 지원)
+  if (event.request.method !== "GET") {
+    return;
+  }
+
   // API 요청은 캐시하지 않음
   if (event.request.url.includes("/api/")) {
     return;
@@ -34,7 +39,7 @@ self.addEventListener("fetch", (event) => {
   if (event.request.mode === "navigate") {
     event.respondWith(
       fetch(event.request).catch(() => {
-        return caches.match("/offline") || caches.match("/");
+        return caches.match("/offline").then((res) => res || caches.match("/"));
       })
     );
     return;
