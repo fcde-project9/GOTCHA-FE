@@ -4,7 +4,7 @@
 
 가챠샵(Gacha Shop)을 지도 기반으로 탐색하고, 리스트 및 상세 페이지를 통해 매장 정보를 확인할 수 있는 모바일 웹 서비스입니다.
 
-🔗 배포 주소: https://gotcha.it.com
+🔗 배포 주소: [https://gotcha.it.com](https://gotcha.it.com)
 
 ---
 
@@ -47,7 +47,7 @@
 - Swagger
 - AWS EC2 / S3
 
-🔗 백엔드 깃헙 레포지토리: https://github.com/fcde-project9/GOTCHA-BE
+🔗 백엔드 깃헙 레포지토리: [GOTCHA-BE](https://github.com/fcde-project9/GOTCHA-BE)
 
 ---
 
@@ -55,10 +55,10 @@
 
 GitHub Actions + Vercel을 사용한 자동 배포 파이프라인
 
-| 브랜치 | 환경       | URL               |
-| ------ | ---------- | ----------------- |
-| `dev`  | Preview    | dev.gotcha.it.com |
-| `main` | Production | gotcha.it.com     |
+| 브랜치 | 환경       | URL                                            |
+| ------ | ---------- | ---------------------------------------------- |
+| `dev`  | Preview    | [dev.gotcha.it.com](https://dev.gotcha.it.com) |
+| `main` | Production | [gotcha.it.com](https://gotcha.it.com)         |
 
 **배포 프로세스**: 코드 푸시 → 린트 검사 → 빌드 → Vercel 배포
 
