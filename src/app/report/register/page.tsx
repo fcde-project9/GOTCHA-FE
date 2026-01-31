@@ -37,6 +37,17 @@ function ReportRegisterContent() {
   const [is24Hours, setIs24Hours] = useState(false);
   const [isOpenTimeModalOpen, setIsOpenTimeModalOpen] = useState(false);
   const [isCloseTimeModalOpen, setIsCloseTimeModalOpen] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // 영업시간 기본값 설정: 매일, 시간 모름
+  useEffect(() => {
+    if (!isInitialized && operatingHours.length === 0) {
+      setSelectedDays([0, 1, 2, 3, 4, 5, 6]);
+      setIsEveryDay(true);
+      setIsUnknown(true);
+      setIsInitialized(true);
+    }
+  }, [isInitialized, operatingHours.length]);
 
   // URL 파라미터에서 주소와 좌표 가져오기
   useEffect(() => {
@@ -210,8 +221,7 @@ function ReportRegisterContent() {
     };
   }, [previewUrl]);
 
-  const isFormValid =
-    Boolean(formData.shopName.trim()) && formData.images.length > 0 && operatingHours.length > 0;
+  const isFormValid = Boolean(formData.shopName.trim()) && formData.images.length > 0;
 
   /**
    * 시간 포맷 변환: "오전 00:00" -> "00:00" (24시간 형식)
@@ -280,6 +290,12 @@ function ReportRegisterContent() {
 
   const handleSubmit = async () => {
     if (!isFormValid || isSubmitting) return;
+
+    // 영업시간이 추가되지 않은 경우 토스트 표시
+    if (operatingHours.length === 0) {
+      displayToast("영업시간을 추가해주세요");
+      return;
+    }
 
     setIsSubmitting(true);
 
