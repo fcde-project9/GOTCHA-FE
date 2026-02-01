@@ -7,6 +7,7 @@ import { ChevronRight } from "lucide-react";
 import { Checkbox } from "@/components/common";
 import { LOGO_IMAGES, SOCIAL_LOGO_IMAGES } from "@/constants";
 import { loginWithKakao, loginWithGoogle } from "@/utils";
+import { trackGuestModeStart } from "@/utils/analytics";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -33,6 +34,9 @@ export default function LoginPage() {
     if (!agreedToTerms) {
       return;
     }
+
+    // GA 이벤트: 게스트 모드 시작
+    trackGuestModeStart();
 
     // 게스트 모드는 로컬 상태만 관리
     localStorage.setItem("user_type", "guest");

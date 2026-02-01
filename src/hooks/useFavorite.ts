@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useOptimistic, startTransition } from "react";
 import { useAddFavorite, useRemoveFavorite } from "@/api/mutations/useToggleFavorite";
+import { trackFavoriteToggle } from "@/utils/analytics";
 import { useAuth } from "./useAuth";
 
 interface UseFavoriteOptions {
@@ -89,6 +90,10 @@ export function useFavorite({
       try {
         const data = await mutation.mutateAsync(shopId);
         setActualFavorite(data.isFavorite);
+
+        // GA 이벤트: 찜하기/해제
+        trackFavoriteToggle(shopId, data.isFavorite);
+
         onSuccess?.(data.isFavorite);
       } catch (error) {
         // 에러 시 트랜지션 종료 → optimistic 상태가 actualFavorite으로 자동 롤백

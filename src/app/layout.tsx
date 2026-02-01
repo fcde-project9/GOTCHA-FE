@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import Providers from "./providers";
 import "./globals.css";
 
@@ -165,6 +166,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://t1.daumcdn.net" crossOrigin="anonymous" />
       </head>
       <body className="w-full max-w-[480px] mx-auto bg-white">
+        <GoogleAnalytics />
         <Providers>{children}</Providers>
       </body>
     </html>

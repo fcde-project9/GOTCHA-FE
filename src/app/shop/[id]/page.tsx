@@ -27,6 +27,7 @@ import { StatusBadge } from "@/components/features/shop";
 import { useFavorite, useToast } from "@/hooks";
 import type { ReviewResponse, OpenTime, ReviewSortOption } from "@/types/api";
 import { formatDate } from "@/utils";
+import { trackShopView, trackShareClick } from "@/utils/analytics";
 
 // 요일 매핑 (API 응답 키 -> 한글)
 const DAY_MAP: Record<keyof OpenTime, string> = {
@@ -239,6 +240,13 @@ export default function ShopDetailPage() {
   // React Query로 shop 상세 조회
   const { data: shop, isLoading, error, refetch } = useShopDetail(validShopId, sortBy);
 
+  // GA 이벤트: 매장 상세 페이지 조회
+  useEffect(() => {
+    if (shop) {
+      trackShopView(shop.id, shop.name);
+    }
+  }, [shop?.id, shop?.name]);
+
   // 찜하기 훅 (shop 데이터 로드 후 초기값 동기화)
   const {
     isFavorite,
@@ -291,6 +299,10 @@ export default function ShopDetailPage() {
   // 공유하기
   const handleShare = async () => {
     if (!shop) return;
+
+    // GA 이벤트: 공유 버튼 클릭
+    trackShareClick(shop.id);
+
     try {
       if (navigator.share) {
         await navigator.share({

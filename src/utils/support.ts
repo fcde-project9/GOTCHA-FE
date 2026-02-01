@@ -66,6 +66,9 @@ function redirectToOAuth(provider: SocialLoginProvider, providerDisplayName: str
     const state = generateSecureState();
     sessionStorage.setItem(`${provider}_oauth_state`, state);
 
+    // GA 이벤트 추적을 위해 provider 저장
+    sessionStorage.setItem("oauth_provider", provider);
+
     // 현재 도메인의 콜백 URL 생성 (로컬/배포 환경 자동 대응)
     const callbackUrl = `${window.location.origin}/oauth/callback`;
 

@@ -10,6 +10,7 @@ import { Button, BackHeader } from "@/components/common";
 import { KakaoMap } from "@/components/features/map";
 import { ShopDuplicateCheckModal } from "@/components/report/ShopDuplicateCheckModal";
 import { MARKER_IMAGES, DEFAULT_LOCATION } from "@/constants";
+import { trackShopReportStart, trackShopReportExit } from "@/utils/analytics";
 
 // 카카오맵 타입
 interface KakaoLatLng {
@@ -45,6 +46,11 @@ export default function ReportLocationPage() {
       console.error("근처 가게 확인 실패:", error);
       return null;
     }
+  }, []);
+
+  // GA 이벤트: 제보하기 진입
+  useEffect(() => {
+    trackShopReportStart();
   }, []);
 
   useEffect(() => {
@@ -240,7 +246,14 @@ export default function ReportLocationPage() {
   return (
     <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative">
       {/* Header */}
-      <BackHeader title="제보하기" onBack={() => router.push("/home")} absolute />
+      <BackHeader
+        title="제보하기"
+        onBack={() => {
+          trackShopReportExit("location");
+          router.push("/home");
+        }}
+        absolute
+      />
 
       {/* Map - 헤더(56px)와 바텀시트를 고려한 높이, 바텀시트가 살짝 걸치도록 */}
       <div className="relative h-[100dvh] pt-14 pb-[150px]">

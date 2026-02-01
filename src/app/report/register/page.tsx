@@ -10,6 +10,7 @@ import { ExitConfirmModal } from "@/components/report/ExitConfirmModal";
 import { OperatingHoursItem } from "@/components/report/OperatingHoursItem";
 import { TimePickerModal } from "@/components/report/TimePickerModal";
 import { OperatingHoursEntry } from "@/types/report";
+import { trackShopReportExit } from "@/utils/analytics";
 
 const DAYS_OF_WEEK = ["월", "화", "수", "목", "금", "토", "일"] as const;
 
@@ -104,6 +105,9 @@ function ReportRegisterContent() {
   };
 
   const handleConfirmExit = () => {
+    // GA 이벤트: 제보 중도 이탈 (정보 등록 단계)
+    trackShopReportExit("register");
+
     setIsExitConfirmModalOpen(false);
     router.push("/report");
   };
