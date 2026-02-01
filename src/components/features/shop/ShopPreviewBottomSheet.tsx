@@ -765,100 +765,104 @@ export default function ShopPreviewBottomSheet({ shopId, onClose }: ShopPreviewB
               </>
             )}
 
-            {/* 방문 리뷰 */}
-            <div className="py-4">
-              <h3 className="text-[20px] font-semibold text-grey-900 leading-[1.4] tracking-[-0.2px] mb-4">
-                방문리뷰
-              </h3>
+            {/* 방문 리뷰 (확장 시에만 표시) */}
+            {isExpanded && (
+              <>
+                <div className="py-4">
+                  <h3 className="text-[20px] font-semibold text-grey-900 leading-[1.4] tracking-[-0.2px] mb-4">
+                    방문리뷰
+                  </h3>
 
-              <Button
-                variant="primary"
-                size="medium"
-                fullWidth
-                onClick={() => setIsReviewModalOpen(true)}
-                className="!bg-grey-700 hover:!bg-grey-800 active:!bg-grey-900 gap-1.5 mb-4"
-              >
-                <PencilLine size={16} strokeWidth={2} />
-                <span className="text-[16px] font-medium text-white leading-[1.5] tracking-[-0.16px]">
-                  {shop.reviewCount === 0 ? "첫 리뷰를 작성해주세요" : "리뷰를 작성해주세요"}
-                </span>
-              </Button>
-
-              {shop.reviewCount > 0 && (
-                <>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center text-[14px] text-grey-900 tracking-[-0.14px]">
-                      <span>총&nbsp;</span>
-                      <span>{shop.reviewCount}</span>
-                      <span>개</span>
-                    </div>
-                    <div className="relative" ref={sortDropdownRef}>
-                      <button
-                        onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
-                        className="flex items-center gap-1 text-[14px] text-grey-700"
-                      >
-                        <span>{sortBy === "LATEST" ? "최신순" : "좋아요순"}</span>
-                        <ChevronDown
-                          size={16}
-                          className={`text-grey-700 transition-transform ${isSortDropdownOpen ? "rotate-180" : ""}`}
-                        />
-                      </button>
-                      {isSortDropdownOpen && (
-                        <div className="absolute right-0 top-6 z-10 bg-white rounded-lg shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden min-w-[80px]">
-                          <button
-                            onClick={() => handleSortChange("LATEST")}
-                            className={`flex items-center px-3 py-2 w-full text-[14px] ${sortBy === "LATEST" ? "text-main font-medium" : "text-grey-700"} hover:bg-grey-50`}
-                          >
-                            최신순
-                          </button>
-                          <div className="border-t border-grey-100" />
-                          <button
-                            onClick={() => handleSortChange("LIKE_COUNT")}
-                            className={`flex items-center px-3 py-2 w-full text-[14px] ${sortBy === "LIKE_COUNT" ? "text-main font-medium" : "text-grey-700"} hover:bg-grey-50`}
-                          >
-                            좋아요순
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    {shop.reviews.slice(0, 3).map((review) => (
-                      <ReviewItem
-                        key={review.id}
-                        review={review}
-                        onLikeToggle={handleLikeToggle}
-                        onEdit={handleEditReview}
-                        onDelete={handleDeleteReview}
-                        onImageClick={(images, index) =>
-                          setGalleryState({ images, initialIndex: index })
-                        }
-                      />
-                    ))}
-                  </div>
-
-                  <OutlineButton
-                    onClick={handleViewAllReviews}
+                  <Button
+                    variant="primary"
+                    size="medium"
                     fullWidth
-                    rightIcon={
-                      <ChevronRight size={24} className="text-grey-700" strokeWidth={1.5} />
-                    }
-                    className="mt-4"
+                    onClick={() => setIsReviewModalOpen(true)}
+                    className="!bg-grey-700 hover:!bg-grey-800 active:!bg-grey-900 gap-1.5 mb-4"
                   >
-                    리뷰 전체보기
-                  </OutlineButton>
-                </>
-              )}
+                    <PencilLine size={16} strokeWidth={2} />
+                    <span className="text-[16px] font-medium text-white leading-[1.5] tracking-[-0.16px]">
+                      {shop.reviewCount === 0 ? "첫 리뷰를 작성해주세요" : "리뷰를 작성해주세요"}
+                    </span>
+                  </Button>
 
-              {shop.reviewCount === 0 && (
-                <div className="py-8 flex flex-col items-center justify-center">
-                  <p className="text-[14px] text-grey-400">아직 작성된 리뷰가 없어요.</p>
+                  {shop.reviewCount > 0 && (
+                    <>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center text-[14px] text-grey-900 tracking-[-0.14px]">
+                          <span>총&nbsp;</span>
+                          <span>{shop.reviewCount}</span>
+                          <span>개</span>
+                        </div>
+                        <div className="relative" ref={sortDropdownRef}>
+                          <button
+                            onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                            className="flex items-center gap-1 text-[14px] text-grey-700"
+                          >
+                            <span>{sortBy === "LATEST" ? "최신순" : "좋아요순"}</span>
+                            <ChevronDown
+                              size={16}
+                              className={`text-grey-700 transition-transform ${isSortDropdownOpen ? "rotate-180" : ""}`}
+                            />
+                          </button>
+                          {isSortDropdownOpen && (
+                            <div className="absolute right-0 top-6 z-10 bg-white rounded-lg shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden min-w-[80px]">
+                              <button
+                                onClick={() => handleSortChange("LATEST")}
+                                className={`flex items-center px-3 py-2 w-full text-[14px] ${sortBy === "LATEST" ? "text-main font-medium" : "text-grey-700"} hover:bg-grey-50`}
+                              >
+                                최신순
+                              </button>
+                              <div className="border-t border-grey-100" />
+                              <button
+                                onClick={() => handleSortChange("LIKE_COUNT")}
+                                className={`flex items-center px-3 py-2 w-full text-[14px] ${sortBy === "LIKE_COUNT" ? "text-main font-medium" : "text-grey-700"} hover:bg-grey-50`}
+                              >
+                                좋아요순
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        {shop.reviews.slice(0, 3).map((review) => (
+                          <ReviewItem
+                            key={review.id}
+                            review={review}
+                            onLikeToggle={handleLikeToggle}
+                            onEdit={handleEditReview}
+                            onDelete={handleDeleteReview}
+                            onImageClick={(images, index) =>
+                              setGalleryState({ images, initialIndex: index })
+                            }
+                          />
+                        ))}
+                      </div>
+
+                      <OutlineButton
+                        onClick={handleViewAllReviews}
+                        fullWidth
+                        rightIcon={
+                          <ChevronRight size={24} className="text-grey-700" strokeWidth={1.5} />
+                        }
+                        className="mt-4"
+                      >
+                        리뷰 전체보기
+                      </OutlineButton>
+                    </>
+                  )}
+
+                  {shop.reviewCount === 0 && (
+                    <div className="py-8 flex flex-col items-center justify-center">
+                      <p className="text-[14px] text-grey-400">아직 작성된 리뷰가 없어요.</p>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            <div className="h-8" />
+                <div className="h-8" />
+              </>
+            )}
           </div>
         </div>
       </div>
