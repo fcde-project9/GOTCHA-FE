@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
 import { ToastProvider, AuthProvider } from "@/hooks";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -24,6 +25,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <AuthProvider>
         <ToastProvider>{children}</ToastProvider>
       </AuthProvider>
+      <ServiceWorkerRegistration />
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );

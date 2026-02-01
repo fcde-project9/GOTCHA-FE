@@ -152,6 +152,10 @@ export default function RootLayout({
   return (
     <html lang="ko" className="bg-white">
       <head>
+        {/* PWA - Apple 메타태그 */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="GOTCHA!" />
         {/* 폰트 CSS preload - 렌더링 차단 방지 */}
         <link rel="preload" href="/fonts/pretendard.css" as="style" />
         <link rel="stylesheet" href="/fonts/pretendard.css" />
