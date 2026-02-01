@@ -3,7 +3,11 @@ export const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 // 페이지뷰 추적
 export const pageview = (url: string) => {
   if (typeof window.gtag === "undefined") return;
-  window.gtag("config", GA_ID!, {
+  if (!GA_ID) {
+    console.warn("GA_ID가 설정되지 않아 페이지뷰를 추적할 수 없습니다.");
+    return;
+  }
+  window.gtag("config", GA_ID, {
     page_path: url,
   });
 };
