@@ -303,7 +303,7 @@ export default function ShopPreviewBottomSheet({ shopId, onClose }: ShopPreviewB
 
       if (delta > threshold) {
         setSheetHeight(0);
-        setTimeout(() => onClose(), 300);
+        setTimeout(() => onClose(), 550);
       } else if (delta < -threshold) {
         {
           setHasExpandedOnce(true);
@@ -373,8 +373,12 @@ export default function ShopPreviewBottomSheet({ shopId, onClose }: ShopPreviewB
         /* 취소 */
       }
     } else {
-      await navigator.clipboard.writeText(url);
-      showToast("링크가 복사되었어요.");
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast("링크가 복사되었어요.");
+      } catch {
+        showToast("링크 복사에 실패했어요.");
+      }
     }
   };
 
@@ -439,7 +443,13 @@ export default function ShopPreviewBottomSheet({ shopId, onClose }: ShopPreviewB
 
         {/* 확장 시 헤더 (위에서 아래로 슬라이드) */}
         {(isExpanded || isCollapsing) && (
-          <div className="flex items-center justify-between pr-5 animate-slide-down-header">
+          <div
+            className="flex items-center justify-between pr-5 animate-slide-down-header cursor-grab active:cursor-grabbing"
+            onTouchStart={(e) => handleDragStart(e.touches[0].clientY)}
+            onTouchMove={(e) => handleDragMove(e.touches[0].clientY)}
+            onTouchEnd={handleDragEnd}
+            onMouseDown={(e) => handleDragStart(e.clientY)}
+          >
             <BackHeader onBack={collapseToPreview} />
             <div className="flex items-center gap-1 ml-3">
               <button

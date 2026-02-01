@@ -40,6 +40,7 @@ export default function Home() {
   } = useMapStore();
 
   const [selectedShop, setSelectedShop] = useState<ShopMapResponse | null>(null);
+  const selectedShopRef = useRef<ShopMapResponse | null>(null);
   const [hadSelectedShop, setHadSelectedShop] = useState(false);
   const [isListSheetLeaving, setIsListSheetLeaving] = useState(false); // 기본 바텀시트 퇴장 애니메이션
   const [returnFromDetail] = useState(false); // 미리보기에서 복귀 시 animateIn
@@ -397,10 +398,20 @@ export default function Home() {
     }, 50);
   }, []);
 
+  // selectedShop 변경 시 ref 동기화
+  useEffect(() => {
+    selectedShopRef.current = selectedShop;
+  }, [selectedShop]);
+
   // 기본 바텀시트 퇴장 애니메이션 완료 후 미리보기 바텀시트 표시
   useEffect(() => {
     if (isListSheetLeaving) {
       const timer = setTimeout(() => {
+        // 전환 중 지도 클릭으로 selectedShop이 null이 된 경우 전환 취소
+        if (!selectedShopRef.current) {
+          setIsListSheetLeaving(false);
+          return;
+        }
         setShowPreviewSheet(true);
         setIsListSheetLeaving(false);
       }, 300);
