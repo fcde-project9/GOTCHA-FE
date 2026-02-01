@@ -14,6 +14,7 @@ interface ShopListItemProps {
   openStatus: string; // "영업 중", "영업 종료", "휴무", ""
   imageUrl?: string;
   isFavorite?: boolean;
+  onSelect?: (shopId: number) => void;
 }
 
 export default function ShopListItem({
@@ -23,6 +24,7 @@ export default function ShopListItem({
   openStatus,
   imageUrl,
   isFavorite: initialIsFavorite = false,
+  onSelect,
 }: ShopListItemProps) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -36,7 +38,11 @@ export default function ShopListItem({
   });
 
   const handleItemClick = () => {
-    router.push(`/shop/${shopId}`);
+    if (onSelect) {
+      onSelect(shopId);
+    } else {
+      router.push(`/shop/${shopId}`);
+    }
   };
 
   return (

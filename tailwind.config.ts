@@ -127,6 +127,25 @@ const config: Config = {
         default: "#FDFEFF", // bg-default
         white: "#FFFFFF", // bg-white (GOTCHA white)
       },
+      keyframes: {
+        "slide-up": {
+          from: { transform: "translateY(100%)" },
+          to: { transform: "translateY(0)" },
+        },
+        "slide-down": {
+          from: { transform: "translateY(0)" },
+          to: { transform: "translateY(100%)" },
+        },
+        "slide-down-header": {
+          from: { transform: "translateY(-100%)", opacity: "0" },
+          to: { transform: "translateY(0)", opacity: "1" },
+        },
+      },
+      animation: {
+        "slide-up": "slide-up 0.45s ease-out",
+        "slide-down": "slide-down 0.45s ease-in forwards",
+        "slide-down-header": "slide-down-header 0.4s ease-out forwards",
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",

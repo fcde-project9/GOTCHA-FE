@@ -3,12 +3,11 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { Search, LocateFixed, RefreshCcw, ChevronLeft, CircleX } from "lucide-react";
 import { useShopsInBounds } from "@/api/queries/useShopsInBounds";
 import { Footer, LocationPermissionModal, SplashScreen } from "@/components/common";
 import { SearchResultItem } from "@/components/features/search";
-import { ShopListBottomSheet } from "@/components/features/shop";
+import { ShopListBottomSheet, ShopPreviewBottomSheet } from "@/components/features/shop";
 import { DEFAULT_IMAGES } from "@/constants";
 import { useCurrentLocation, useKakaoPlaces, PlaceSearchResult } from "@/hooks";
 import { useMapStore } from "@/stores";
@@ -26,7 +25,6 @@ const KakaoMap = dynamic(() => import("@/components/features/map/KakaoMap"), {
 });
 
 export default function Home() {
-  const router = useRouter();
   const { location, getCurrentLocation } = useCurrentLocation();
   const { results, searchPlaces, clearResults } = useKakaoPlaces();
 
@@ -41,6 +39,10 @@ export default function Home() {
     setSearchQuery: setStoredSearchQuery,
   } = useMapStore();
 
+  const [selectedShop, setSelectedShop] = useState<ShopMapResponse | null>(null);
+  const [hadSelectedShop, setHadSelectedShop] = useState(false);
+  const [isListSheetLeaving, setIsListSheetLeaving] = useState(false); // 기본 바텀시트 퇴장 애니메이션
+  const [returnFromDetail] = useState(false); // 미리보기에서 복귀 시 animateIn
   const [bottomSheetHeight, setBottomSheetHeight] = useState(290); // 기본 높이 (헤더 + 약 2개 아이템)
   const [isSheetDragging, setIsSheetDragging] = useState(false);
   const [mapCenter, setMapCenterState] = useState<{ latitude: number; longitude: number } | null>(
@@ -370,9 +372,41 @@ export default function Home() {
     setIsSheetDragging(isDragging);
   };
 
+  const [showPreviewSheet, setShowPreviewSheet] = useState(false);
+  const [isPreviewSheetLeaving, setIsPreviewSheetLeaving] = useState(false);
+
   const handleMarkerClick = (marker: ShopMapResponse) => {
-    router.push(`/shop/${marker.id}`);
+    // 미리보기가 이미 열려있으면 해당 핀의 미리보기로 전환
+    if (showPreviewSheet) {
+      setSelectedShop(marker);
+      return;
+    }
+
+    setHadSelectedShop(true);
+    setSelectedShop(marker);
+    setIsListSheetLeaving(true);
   };
+
+  // 미리보기 닫기 → 기본 바텀시트 복귀
+  const handlePreviewClose = useCallback(() => {
+    setSelectedShop(null);
+    setShowPreviewSheet(false);
+    setIsPreviewSheetLeaving(true);
+    setTimeout(() => {
+      setIsPreviewSheetLeaving(false);
+    }, 50);
+  }, []);
+
+  // 기본 바텀시트 퇴장 애니메이션 완료 후 미리보기 바텀시트 표시
+  useEffect(() => {
+    if (isListSheetLeaving) {
+      const timer = setTimeout(() => {
+        setShowPreviewSheet(true);
+        setIsListSheetLeaving(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isListSheetLeaving]);
 
   // 바텀시트 높이에 따른 버튼 위치 계산
   // BottomSheet의 실제 DOM 높이는 currentHeight - 72px
@@ -440,6 +474,14 @@ export default function Home() {
               markers={markers}
               onBoundsChange={handleBoundsChange}
               onMarkerClick={handleMarkerClick}
+              onMapClick={() => {
+                if (showPreviewSheet) {
+                  handlePreviewClose();
+                } else {
+                  setSelectedShop(null);
+                }
+              }}
+              selectedMarkerId={selectedShop?.id ?? null}
               currentLocation={showCurrentLocation}
             />
 
@@ -570,12 +612,27 @@ export default function Home() {
           )}
 
           {/* 바텀시트 */}
-          {!isSearching && (
+          {!isSearching && (!showPreviewSheet || isListSheetLeaving) && (
             <ShopListBottomSheet
               shops={shops}
               isLoading={isShopsLoading}
               onHeightChange={handleBottomSheetHeightChange}
+              animateIn={
+                (hadSelectedShop && !isListSheetLeaving) ||
+                returnFromDetail ||
+                isPreviewSheetLeaving
+              }
+              animateOut={isListSheetLeaving}
+              onShopSelect={(shopId) => {
+                const marker = markers.find((m) => m.id === shopId);
+                if (marker) handleMarkerClick(marker);
+              }}
             />
+          )}
+
+          {/* 업체 미리보기 바텀시트 */}
+          {!isSearching && showPreviewSheet && selectedShop && (
+            <ShopPreviewBottomSheet shopId={selectedShop.id} onClose={handlePreviewClose} />
           )}
         </div>
       </main>

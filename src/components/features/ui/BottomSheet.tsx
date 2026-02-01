@@ -8,6 +8,12 @@ interface BottomSheetProps {
   defaultSnapPoint?: number; // 기본 스냅 포인트 인덱스
   onHeightChange?: (height: number, isDragging: boolean) => void; // 높이 변경 콜백 (isDragging 추가)
   scrollToTop?: number; // 스크롤을 맨 위로 이동시키기
+  scrollable?: boolean; // 내부 스크롤 여부 (기본값: true)
+  animateIn?: boolean; // 마운트 시 슬라이드 업 애니메이션 (기본값: false)
+  animateOut?: boolean; // 슬라이드 다운 퇴장 애니메이션 (기본값: false)
+  onSnapChange?: (snapIndex: number) => void; // 스냅 포인트 변경 콜백
+  onExpandAttempt?: () => void; // 최대 스냅에서 위로 드래그 시 콜백 (확장 애니메이션 후 호출)
+  onCollapseAttempt?: () => void; // 최소 스냅에서 아래로 드래그 시 즉시 호출
 }
 
 /** 확장 시 상단에서 유지할 여백 (검색창 + 재검색 버튼 영역) */
@@ -19,6 +25,12 @@ export default function BottomSheet({
   defaultSnapPoint = 0,
   onHeightChange,
   scrollToTop,
+  scrollable = true,
+  animateIn = false,
+  animateOut = false,
+  onSnapChange,
+  onExpandAttempt,
+  onCollapseAttempt,
 }: BottomSheetProps) {
   const [containerHeight, setContainerHeight] = useState<number | null>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -38,30 +50,33 @@ export default function BottomSheet({
   }, [measureContainer]);
 
   // 컨테이너 높이 기반으로 스냅 포인트 계산
+  const expandedHeight = containerHeight ? containerHeight - EXPANDED_TOP_MARGIN : 715;
   const computedSnapPoints = useMemo(() => {
-    if (snapPoints) return snapPoints;
-
-    // 컨테이너 높이가 측정되기 전에는 기본값 사용
-    const expandedHeight = containerHeight ? containerHeight - EXPANDED_TOP_MARGIN : 715;
+    if (snapPoints) {
+      // snap point에 Infinity가 있으면 expanded 높이로 대체
+      return snapPoints.map((p) => (p === Infinity ? expandedHeight : p));
+    }
 
     return [106, 290, expandedHeight];
-  }, [snapPoints, containerHeight]);
+  }, [snapPoints, expandedHeight]);
 
   const [currentSnapIndex, setCurrentSnapIndex] = useState(defaultSnapPoint);
   const [isDragging, setIsDragging] = useState(false);
+  const [isExpanding, setIsExpanding] = useState(false);
   const [startY, setStartY] = useState(0);
   const [currentY, setCurrentY] = useState(0);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const currentHeight = isDragging
-    ? Math.max(
-        computedSnapPoints[0],
-        Math.min(
-          computedSnapPoints[computedSnapPoints.length - 1],
-          computedSnapPoints[currentSnapIndex] - (currentY - startY)
+  const fullHeight = containerHeight ?? expandedHeight + EXPANDED_TOP_MARGIN;
+  const dragMax = onExpandAttempt ? fullHeight : computedSnapPoints[computedSnapPoints.length - 1];
+  const currentHeight = isExpanding
+    ? fullHeight
+    : isDragging
+      ? Math.max(
+          computedSnapPoints[0],
+          Math.min(dragMax, computedSnapPoints[currentSnapIndex] - (currentY - startY))
         )
-      )
-    : computedSnapPoints[currentSnapIndex];
+      : computedSnapPoints[currentSnapIndex];
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setIsDragging(true);
@@ -85,7 +100,11 @@ export default function BottomSheet({
 
     if (deltaY > threshold) {
       // 아래로 드래그
-      if (currentSnapIndex === computedSnapPoints.length - 1) {
+      if (onCollapseAttempt && currentSnapIndex <= 1) {
+        // 최소 또는 그 근처에서 아래로 드래그 → 즉시 닫기
+        onCollapseAttempt();
+        return;
+      } else if (currentSnapIndex === computedSnapPoints.length - 1) {
         // 맨 위에서 내리면 → 가운데로 (default)
         newIndex = 1;
       } else {
@@ -97,6 +116,14 @@ export default function BottomSheet({
       if (currentSnapIndex === 0) {
         // 맨 아래에서 올리면 → 가운데로 (default)
         newIndex = 1;
+      } else if (currentSnapIndex === computedSnapPoints.length - 1) {
+        // 이미 최대 상태에서 위로 드래그 → 확장 애니메이션 후 콜백
+        if (onExpandAttempt) {
+          setIsExpanding(true);
+          requestAnimationFrame(() => {
+            setTimeout(() => onExpandAttempt(), 400);
+          });
+        }
       } else {
         // 그 외에는 → 최대 상태로 (expanded)
         newIndex = computedSnapPoints.length - 1;
@@ -104,6 +131,7 @@ export default function BottomSheet({
     }
 
     setCurrentSnapIndex(newIndex);
+    onSnapChange?.(newIndex);
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -128,7 +156,11 @@ export default function BottomSheet({
 
     if (deltaY > threshold) {
       // 아래로 드래그
-      if (currentSnapIndex === computedSnapPoints.length - 1) {
+      if (onCollapseAttempt && currentSnapIndex <= 1) {
+        // 최소 또는 그 근처에서 아래로 드래그 → 즉시 닫기
+        onCollapseAttempt();
+        return;
+      } else if (currentSnapIndex === computedSnapPoints.length - 1) {
         // 맨 위에서 내리면 → 가운데로 (default)
         newIndex = 1;
       } else {
@@ -140,6 +172,14 @@ export default function BottomSheet({
       if (currentSnapIndex === 0) {
         // 맨 아래에서 올리면 → 가운데로 (default)
         newIndex = 1;
+      } else if (currentSnapIndex === computedSnapPoints.length - 1) {
+        // 이미 최대 상태에서 위로 드래그 → 확장 애니메이션 후 콜백
+        if (onExpandAttempt) {
+          setIsExpanding(true);
+          requestAnimationFrame(() => {
+            setTimeout(() => onExpandAttempt(), 400);
+          });
+        }
       } else {
         // 그 외에는 → 최대 상태로 (expanded)
         newIndex = computedSnapPoints.length - 1;
@@ -147,6 +187,7 @@ export default function BottomSheet({
     }
 
     setCurrentSnapIndex(newIndex);
+    onSnapChange?.(newIndex);
   };
 
   useEffect(() => {
@@ -178,9 +219,9 @@ export default function BottomSheet({
   return (
     <div
       ref={sheetRef}
-      className="absolute bottom-0 left-0 right-0 bg-white rounded-t-[24px] overflow-hidden z-10 shadow-[0_-4px_10px_rgba(0,0,0,0.2)]"
+      className={`absolute bottom-0 left-0 right-0 bg-white overflow-hidden z-10 shadow-[0_-4px_10px_rgba(0,0,0,0.2)] ${isExpanding ? "" : "rounded-t-[24px]"} ${animateOut ? "animate-slide-down" : animateIn ? "animate-slide-up" : ""}`}
       style={{
-        height: `${currentHeight - 72}px`,
+        height: isExpanding ? "100%" : `${currentHeight - 72}px`,
         transition: isDragging ? "none" : "height 0.3s ease-out",
       }}
     >
@@ -196,7 +237,10 @@ export default function BottomSheet({
       </div>
 
       {/* Content */}
-      <div ref={contentRef} className="overflow-y-auto h-[calc(100%-44px)]">
+      <div
+        ref={contentRef}
+        className={`h-[calc(100%-44px)] ${scrollable ? "overflow-y-auto" : "overflow-hidden"}`}
+      >
         {children}
       </div>
     </div>
