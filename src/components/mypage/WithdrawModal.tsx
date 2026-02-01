@@ -13,7 +13,6 @@ const WITHDRAW_REASONS = [
   { label: "사용을 잘 안하게 돼요", value: "LOW_USAGE" },
   { label: "가챠샵 정보가 부족해요", value: "INSUFFICIENT_INFO" },
   { label: "가챠샵 정보가 기재된 내용과 달라요", value: "INACCURATE_INFO" },
-  { label: "개인정보 보호를 위해 삭제할래요", value: "PRIVACY_CONCERN" },
   { label: "다른 계정이 있어요", value: "HAS_OTHER_ACCOUNT" },
   { label: "기타", value: "OTHER" },
 ] as const;
@@ -103,7 +102,7 @@ export function WithdrawModal({ isOpen, onClose, onConfirm }: WithdrawModalProps
                 value={otherReason}
                 onChange={(e) => setOtherReason(e.target.value)}
                 placeholder="직접 입력하기"
-                className="w-full h-12 px-4 rounded-lg border border-line-100 text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-900 placeholder:text-grey-400 focus:outline-none focus:border-line-100"
+                className="w-[114.3%] h-14 px-4 rounded-lg border border-line-100 text-[16px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-900 placeholder:text-grey-400 focus:outline-none focus:border-line-100 origin-top-left scale-[0.875]"
               />
             </div>
           )}

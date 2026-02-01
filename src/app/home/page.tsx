@@ -537,7 +537,7 @@ export default function Home() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="지역 또는 지하철역 검색"
                     autoFocus
-                    className="flex-1 bg-transparent text-[15px] font-normal leading-[1.5] tracking-[-0.15px] text-grey-900 placeholder:text-grey-600 focus:outline-none"
+                    className="flex-1 w-[106.7%] bg-transparent text-[16px] font-normal leading-[1.5] tracking-[-0.15px] text-grey-900 placeholder:text-grey-600 focus:outline-none origin-left scale-[0.9375]"
                   />
                   {searchQuery && (
                     <button onClick={handleClearSearch} aria-label="검색어 지우기">

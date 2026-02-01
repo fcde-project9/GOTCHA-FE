@@ -112,9 +112,9 @@ export function NicknameModal({ isOpen, currentNickname, onClose, onSave }: Nick
             onChange={handleNicknameChange}
             placeholder={currentNickname}
             maxLength={12}
-            className={`w-full h-12 px-4 rounded-lg border ${
+            className={`w-[114.3%] h-14 px-4 rounded-lg border ${
               error ? "border-error" : "border-line-100"
-            } text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-900 placeholder:text-grey-400 focus:outline-none ${
+            } text-[16px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-900 placeholder:text-grey-400 focus:outline-none origin-top-left scale-[0.875] ${
               error ? "focus:border-error" : "focus:border-line-100"
             }`}
           />

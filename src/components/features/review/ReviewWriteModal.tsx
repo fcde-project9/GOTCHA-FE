@@ -270,7 +270,7 @@ export function ReviewWriteModal({
               }}
               placeholder="10자 이상의 리뷰를 작성해주세요"
               disabled={isProcessing}
-              className="w-full h-[88px] text-[14px] leading-[1.5] tracking-[-0.14px] text-grey-900 placeholder:text-grey-400 resize-none focus:outline-none disabled:opacity-50"
+              className="w-[114.3%] h-[100px] text-[16px] leading-[1.5] tracking-[-0.14px] text-grey-900 placeholder:text-grey-400 resize-none focus:outline-none disabled:opacity-50 origin-top-left scale-[0.875]"
             />
             <div className="flex justify-end text-[13px] tracking-[-0.286px]">
               <span className="text-main">{content.length}&nbsp;</span>
