@@ -24,8 +24,12 @@ export const DEFAULT_IMAGES = {
 
 // 지도 마커 이미지
 export const MARKER_IMAGES = {
-  /** 가게 마커 */
-  SHOP: "/images/markers/shop-marker.png",
+  /** 홈 지도 마커 (기본) */
+  HOME: "/images/markers/home-marker.png",
+  /** 홈 지도 마커 (선택) */
+  HOME_SELECTED: "/images/markers/home-marker-selected.png",
+  /** 제보하기 마커 */
+  REPORT: "/images/markers/report-marker.png",
 } as const;
 
 // 에러 페이지 이미지

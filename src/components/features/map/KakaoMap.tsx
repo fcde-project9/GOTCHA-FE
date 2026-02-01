@@ -5,14 +5,22 @@ import { MARKER_IMAGES, DEFAULT_LOCATION } from "@/constants";
 import { useKakaoLoader } from "@/hooks/useKakaoLoader";
 import { MapBounds, ShopMapResponse } from "@/types/api";
 
-// 마커 이미지 설정
+// 마커 이미지 설정 (기본)
 const MARKER_IMAGE = {
-  src: MARKER_IMAGES.SHOP,
+  src: MARKER_IMAGES.HOME,
   width: 36,
-  height: 48,
-  // 마커 이미지의 기준점 (이미지 하단 중앙이 좌표에 위치)
+  height: 36,
   offsetX: 18,
-  offsetY: 48,
+  offsetY: 36,
+};
+
+// 마커 이미지 설정 (선택)
+const MARKER_IMAGE_SELECTED = {
+  src: MARKER_IMAGES.HOME_SELECTED,
+  width: 56,
+  height: 56,
+  offsetX: 28,
+  offsetY: 56,
 };
 
 interface CurrentLocationState {
@@ -30,12 +38,14 @@ interface KakaoMapProps {
   markers?: ShopMapResponse[];
   onBoundsChange?: (bounds: MapBounds) => void;
   onMarkerClick?: (marker: ShopMapResponse) => void;
+  onMapClick?: () => void; // 지도 클릭 시 콜백 (마커 외 영역)
   currentLocation?: CurrentLocationState | null; // 현재 위치 마커 표시용
   onMapLoad?: (map: KakaoMap) => void; // 지도 로드 완료 시 콜백
   draggable?: boolean; // 드래그 가능 여부 (기본값: true)
   zoomable?: boolean; // 줌 가능 여부 (기본값: true)
   disableDoubleClickZoom?: boolean; // 더블클릭 확대 비활성화 (기본값: false)
   centerUpdateTrigger?: number; // 중심 좌표 업데이트 트리거
+  selectedMarkerId?: number | null; // 선택된 마커 ID (null이면 선택 해제)
 }
 
 /**
@@ -51,16 +61,21 @@ export default function KakaoMap({
   markers = [],
   onBoundsChange,
   onMarkerClick,
+  onMapClick,
   currentLocation,
   onMapLoad,
   draggable = true,
   zoomable = true,
   disableDoubleClickZoom = false,
   centerUpdateTrigger,
+  selectedMarkerId,
 }: KakaoMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<KakaoMap | null>(null);
-  const markersRef = useRef<Array<{ marker: Marker; handler: () => void }>>([]);
+  const markersRef = useRef<Array<{ marker: Marker; data: ShopMapResponse; handler: () => void }>>(
+    []
+  );
+  const selectedMarkerRef = useRef<Marker | null>(null);
   const currentLocationOverlayRef = useRef<CustomOverlay | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [mapError, setMapError] = useState<string | null>(null);
@@ -68,12 +83,16 @@ export default function KakaoMap({
   // 콜백을 ref로 저장하여 이벤트 리스너에서 최신 값 참조
   const onBoundsChangeRef = useRef(onBoundsChange);
   const onMarkerClickRef = useRef(onMarkerClick);
+  const onMapClickRef = useRef(onMapClick);
   useEffect(() => {
     onBoundsChangeRef.current = onBoundsChange;
   }, [onBoundsChange]);
   useEffect(() => {
     onMarkerClickRef.current = onMarkerClick;
   }, [onMarkerClick]);
+  useEffect(() => {
+    onMapClickRef.current = onMapClick;
+  }, [onMapClick]);
 
   // 커스텀 훅으로 SDK 로드 (싱글톤 패턴으로 전역 관리)
   const { loaded: scriptLoaded, error: sdkError } = useKakaoLoader();
@@ -99,7 +118,7 @@ export default function KakaoMap({
 
   // 지도 초기화 (한 번만 실행)
   // latitude, longitude, level은 초기값만 사용하고 이후 업데이트는 별도 useEffect에서 처리
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     let isMounted = true;
     let timeoutId: NodeJS.Timeout | null = null;
@@ -148,6 +167,27 @@ export default function KakaoMap({
                 notifyBoundsChange(map);
               });
 
+              // 지도 클릭 시 선택 마커 초기화 + 콜백 호출
+              window.kakao.maps.event.addListener(map, "click", () => {
+                if (selectedMarkerRef.current) {
+                  const imageSize = new window.kakao.maps.Size(
+                    MARKER_IMAGE.width,
+                    MARKER_IMAGE.height
+                  );
+                  const imageOption = {
+                    offset: new window.kakao.maps.Point(MARKER_IMAGE.offsetX, MARKER_IMAGE.offsetY),
+                  };
+                  const defaultImage = new window.kakao.maps.MarkerImage(
+                    MARKER_IMAGE.src,
+                    imageSize,
+                    imageOption
+                  );
+                  selectedMarkerRef.current.setImage(defaultImage);
+                  selectedMarkerRef.current = null;
+                }
+                onMapClickRef.current?.();
+              });
+
               // 초기 bounds 알림
               notifyBoundsChange(map);
 
@@ -184,6 +224,55 @@ export default function KakaoMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scriptLoaded]);
 
+  // selectedMarkerId 변경 시 마커 이미지 업데이트
+  useEffect(() => {
+    if (!window.kakao?.maps) return;
+
+    try {
+      const imageSize = new window.kakao.maps.Size(MARKER_IMAGE.width, MARKER_IMAGE.height);
+      const imageOption = {
+        offset: new window.kakao.maps.Point(MARKER_IMAGE.offsetX, MARKER_IMAGE.offsetY),
+      };
+      const defaultImage = new window.kakao.maps.MarkerImage(
+        MARKER_IMAGE.src,
+        imageSize,
+        imageOption
+      );
+
+      // 이전 선택 마커 복원
+      if (selectedMarkerRef.current) {
+        selectedMarkerRef.current.setImage(defaultImage);
+        selectedMarkerRef.current = null;
+      }
+
+      // 새로운 마커 선택
+      if (selectedMarkerId != null) {
+        const found = markersRef.current.find((m) => m.data.id === selectedMarkerId);
+        if (found) {
+          const selectedSize = new window.kakao.maps.Size(
+            MARKER_IMAGE_SELECTED.width,
+            MARKER_IMAGE_SELECTED.height
+          );
+          const selectedOption = {
+            offset: new window.kakao.maps.Point(
+              MARKER_IMAGE_SELECTED.offsetX,
+              MARKER_IMAGE_SELECTED.offsetY
+            ),
+          };
+          const selectedImage = new window.kakao.maps.MarkerImage(
+            MARKER_IMAGE_SELECTED.src,
+            selectedSize,
+            selectedOption
+          );
+          found.marker.setImage(selectedImage);
+          selectedMarkerRef.current = found.marker;
+        }
+      }
+    } catch {
+      // 마커 이미지 변경 실패 시 무시
+    }
+  }, [selectedMarkerId]);
+
   // props 변경 시 지도 업데이트 (재생성하지 않음)
   useEffect(() => {
     if (!mapInstance.current) {
@@ -214,27 +303,44 @@ export default function KakaoMap({
       marker.setMap(null);
     });
     markersRef.current = [];
+    selectedMarkerRef.current = null;
 
     // 마커가 없으면 종료
     if (markers.length === 0) {
       return;
     }
 
-    // 커스텀 마커 이미지 생성 (이미지 로드 실패 시 기본 마커 사용)
+    // 커스텀 마커 이미지 생성 (기본 + 선택)
     let markerImage: MarkerImage | undefined;
+    let markerImageSelected: MarkerImage | undefined;
     try {
       const imageSize = new window.kakao.maps.Size(MARKER_IMAGE.width, MARKER_IMAGE.height);
       const imageOption = {
         offset: new window.kakao.maps.Point(MARKER_IMAGE.offsetX, MARKER_IMAGE.offsetY),
       };
       markerImage = new window.kakao.maps.MarkerImage(MARKER_IMAGE.src, imageSize, imageOption);
+
+      const selectedSize = new window.kakao.maps.Size(
+        MARKER_IMAGE_SELECTED.width,
+        MARKER_IMAGE_SELECTED.height
+      );
+      const selectedOption = {
+        offset: new window.kakao.maps.Point(
+          MARKER_IMAGE_SELECTED.offsetX,
+          MARKER_IMAGE_SELECTED.offsetY
+        ),
+      };
+      markerImageSelected = new window.kakao.maps.MarkerImage(
+        MARKER_IMAGE_SELECTED.src,
+        selectedSize,
+        selectedOption
+      );
     } catch (err) {
       console.warn("마커 이미지 생성 실패, 기본 마커 사용:", err);
     }
 
     // 새 마커 생성
     markers.forEach((markerData) => {
-      // 유효하지 않은 좌표 건너뛰기 (null, undefined, NaN만 제외, 0은 유효한 좌표)
       if (!Number.isFinite(markerData.latitude) || !Number.isFinite(markerData.longitude)) {
         return;
       }
@@ -246,32 +352,38 @@ export default function KakaoMap({
         map,
       };
 
-      // 마커 이미지가 있으면 추가
       if (markerImage) {
         markerOptions.image = markerImage;
       }
 
       const marker = new window.kakao.maps.Marker(markerOptions);
 
-      // 명명된 핸들러 생성 (이벤트 리스너 제거를 위해 필요)
       const handleMarkerClick = () => {
+        // 이전 선택 마커를 기본 이미지로 복원
+        if (selectedMarkerRef.current && markerImage) {
+          selectedMarkerRef.current.setImage(markerImage);
+        }
+        // 클릭한 마커를 선택 이미지로 변경
+        if (markerImageSelected) {
+          marker.setImage(markerImageSelected);
+        }
+        selectedMarkerRef.current = marker;
+
         onMarkerClickRef.current?.(markerData);
       };
 
-      // 마커 클릭 이벤트 등록
       window.kakao.maps.event.addListener(marker, "click", handleMarkerClick);
 
-      // 마커와 핸들러를 함께 저장
-      markersRef.current.push({ marker, handler: handleMarkerClick });
+      markersRef.current.push({ marker, data: markerData, handler: handleMarkerClick });
     });
 
-    // cleanup 함수: 컴포넌트 언마운트 또는 의존성 변경 시 실행
     return () => {
       markersRef.current.forEach(({ marker, handler }) => {
         window.kakao.maps.event.removeListener(marker, "click", handler);
         marker.setMap(null);
       });
       markersRef.current = [];
+      selectedMarkerRef.current = null;
     };
   }, [markers, isLoading]);
 

@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import dynamic from "next/dynamic";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -12,7 +11,6 @@ import {
   ChevronDown,
   PencilLine,
   X,
-  Expand,
   ThumbsUp,
   MoreVertical,
   Pencil,
@@ -29,16 +27,6 @@ import { StatusBadge } from "@/components/features/shop";
 import { useFavorite, useToast } from "@/hooks";
 import type { ReviewResponse, OpenTime, ReviewSortOption } from "@/types/api";
 import { formatDate } from "@/utils";
-
-// KakaoMap 동적 로드 - SSR 제외
-const KakaoMap = dynamic(() => import("@/components/features/map/KakaoMap"), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-[200px] flex items-center justify-center bg-grey-100 rounded-lg">
-      <span className="text-grey-500">지도 로딩 중...</span>
-    </div>
-  ),
-});
 
 // 요일 매핑 (API 응답 키 -> 한글)
 const DAY_MAP: Record<keyof OpenTime, string> = {
@@ -268,9 +256,6 @@ export default function ShopDetailPage() {
   const openTime = shop ? parseOpenTime(shop.openTime) : null;
   const businessDays = getBusinessDays(openTime);
 
-  // 지도 확대 모달 상태
-  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
-
   // 이미지 뷰어 모달 상태 (갤러리 모드)
   const [galleryState, setGalleryState] = useState<{
     images: string[];
@@ -390,14 +375,13 @@ export default function ShopDetailPage() {
     router.push(`/shop/${validShopId}/images`);
   };
 
-  // history가 없으면 /home으로 이동
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     if (window.history.length > 1) {
       router.back();
     } else {
       router.push("/home");
     }
-  };
+  }, [router]);
 
   // 유효하지 않은 shopId 처리
   if (!isValidShopId) {
@@ -441,7 +425,7 @@ export default function ShopDetailPage() {
     <div className="h-dvh bg-default flex flex-col overflow-hidden">
       {/* 헤더 */}
       <div className="flex items-center justify-between pr-5">
-        <BackHeader title={shop.name} onBack={handleBack} />
+        <BackHeader onBack={handleBack} />
         <div className="flex items-center gap-1 ml-3">
           <button
             onClick={toggleFavorite}
@@ -525,51 +509,6 @@ export default function ShopDetailPage() {
                 <span className="text-[14px] text-grey-900">{shop.todayOpenTime}</span>
               )}
               <StatusBadge openStatus={shop.openStatus} />
-            </div>
-          </div>
-        </section>
-
-        {/* 지도 */}
-        <section className="px-5 pb-4">
-          <div className="rounded-xl overflow-hidden border border-grey-100">
-            <div className="relative">
-              <KakaoMap
-                height="168px"
-                latitude={shop.latitude}
-                longitude={shop.longitude}
-                level={4}
-                draggable={false}
-                zoomable={false}
-                markers={[
-                  {
-                    id: shop.id,
-                    name: shop.name,
-                    latitude: shop.latitude,
-                    longitude: shop.longitude,
-                    mainImageUrl: shop.mainImageUrl,
-                    openTime: openTime || {
-                      Mon: null,
-                      Tue: null,
-                      Wed: null,
-                      Thu: null,
-                      Fri: null,
-                      Sat: null,
-                      Sun: null,
-                    },
-                    openStatus: shop.openStatus,
-                    distance: "",
-                    isFavorite: isFavorite,
-                  },
-                ]}
-              />
-              {/* 지도 확대 버튼 */}
-              <button
-                onClick={() => setIsMapModalOpen(true)}
-                className="absolute z-10 bottom-3 right-3 flex items-center justify-center w-8 h-8 bg-white rounded-lg"
-                aria-label="지도 크게 보기"
-              >
-                <Expand size={20} className="stroke-icon-default" strokeWidth={1.5} />
-              </button>
             </div>
           </div>
         </section>
@@ -851,61 +790,6 @@ export default function ShopDetailPage() {
         {/* 하단 여백 */}
         <div className="h-8" />
       </div>
-
-      {/* 지도 확대 모달 */}
-      {isMapModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="w-full h-full max-w-[480px] flex flex-col bg-white">
-            {/* 모달 헤더 */}
-            <div className="flex items-center justify-end px-2 py-1 border-b border-grey-100">
-              <button
-                onClick={() => setIsMapModalOpen(false)}
-                className="flex items-center justify-center w-10 h-10"
-                aria-label="닫기"
-              >
-                <X size={24} className="stroke-grey-700" strokeWidth={2} />
-              </button>
-            </div>
-
-            {/* 지도 영역 */}
-            <div className="flex-1">
-              <KakaoMap
-                height="100%"
-                latitude={shop.latitude}
-                longitude={shop.longitude}
-                level={3}
-                markers={[
-                  {
-                    id: shop.id,
-                    name: shop.name,
-                    latitude: shop.latitude,
-                    longitude: shop.longitude,
-                    mainImageUrl: shop.mainImageUrl,
-                    openTime: openTime || {
-                      Mon: null,
-                      Tue: null,
-                      Wed: null,
-                      Thu: null,
-                      Fri: null,
-                      Sat: null,
-                      Sun: null,
-                    },
-                    openStatus: shop.openStatus,
-                    distance: "",
-                    isFavorite: isFavorite,
-                  },
-                ]}
-              />
-            </div>
-
-            {/* 주소 정보 */}
-            <div className="px-5 py-4 border-t border-grey-100 bg-white">
-              <h2 className="text-[18px] font-semibold text-grey-900">{shop.name}</h2>
-              <p className="text-[14px] text-grey-700">{shop.addressName}</p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* 이미지 뷰어 모달 */}
       {galleryState && (

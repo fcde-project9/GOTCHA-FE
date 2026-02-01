@@ -10,12 +10,18 @@ interface ShopListBottomSheetProps {
   shops: ShopListView[];
   isLoading?: boolean;
   onHeightChange?: (height: number, isDragging: boolean) => void;
+  animateIn?: boolean;
+  animateOut?: boolean;
+  onShopSelect?: (shopId: number) => void;
 }
 
 export default function ShopListBottomSheet({
   shops,
   isLoading,
   onHeightChange,
+  animateIn = false,
+  animateOut = false,
+  onShopSelect,
 }: ShopListBottomSheetProps) {
   const hasShops = shops.length > 0;
   const [scrollTrigger, setScrollTrigger] = useState(0);
@@ -36,6 +42,8 @@ export default function ShopListBottomSheet({
       // 0: collapsed (Grabber만), 1: default (헤더+2개), 2: expanded (전체)
       defaultSnapPoint={1}
       onHeightChange={onHeightChange}
+      animateIn={animateIn}
+      animateOut={animateOut}
       scrollToTop={scrollTrigger}
     >
       <div className="flex flex-col items-center gap-2 px-5 h-full">
@@ -72,6 +80,7 @@ export default function ShopListBottomSheet({
                   openStatus={shop.openStatus}
                   imageUrl={shop.imageUrl}
                   isFavorite={shop.isFavorite}
+                  onSelect={onShopSelect}
                 />
               ))}
             </div>
