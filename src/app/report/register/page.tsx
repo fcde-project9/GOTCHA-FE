@@ -372,7 +372,7 @@ function ReportRegisterContent() {
             value={formData.shopName}
             onChange={(e) => setFormData((prev) => ({ ...prev, shopName: e.target.value }))}
             placeholder="업체 이름을 작성해주세요"
-            className="bg-grey-50 h-11 px-3 py-2 rounded-lg text-[15px] leading-[1.5] tracking-[-0.15px] placeholder:text-grey-500 text-grey-900 focus:outline-none focus:ring-2 focus:ring-main-400"
+            className="bg-grey-50 w-[106.7%] h-12 px-3 py-2 rounded-lg text-[16px] leading-[1.5] tracking-[-0.15px] placeholder:text-grey-500 text-grey-900 focus:outline-none focus:ring-2 focus:ring-main-400 origin-top-left scale-[0.9375]"
           />
         </div>
 
@@ -386,7 +386,7 @@ function ReportRegisterContent() {
             value={formData.locationHint}
             onChange={(e) => setFormData((prev) => ({ ...prev, locationHint: e.target.value }))}
             placeholder="예시) 지하 1층 베스킨라빈스 맞은편"
-            className="bg-grey-50 min-h-11 px-3 py-2 rounded-lg text-[15px] leading-[1.5] tracking-[-0.15px] placeholder:text-grey-500 text-grey-900 focus:outline-none focus:ring-2 focus:ring-main-400"
+            className="bg-grey-50 w-[106.7%] min-h-12 px-3 py-2 rounded-lg text-[16px] leading-[1.5] tracking-[-0.15px] placeholder:text-grey-500 text-grey-900 focus:outline-none focus:ring-2 focus:ring-main-400 origin-top-left scale-[0.9375]"
           />
         </div>
 

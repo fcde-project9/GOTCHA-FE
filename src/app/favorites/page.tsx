@@ -57,7 +57,7 @@ export default function FavoritesPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="찜한 업체 검색"
-                className="flex-1 bg-transparent text-[15px] font-normal leading-[1.5] tracking-[-0.15px] text-grey-900 placeholder:text-grey-500 focus:outline-none"
+                className="flex-1 w-[106.7%] bg-transparent text-[16px] font-normal leading-[1.5] tracking-[-0.15px] text-grey-900 placeholder:text-grey-500 focus:outline-none origin-left scale-[0.9375]"
               />
               {searchQuery ? (
                 <button type="button" onClick={handleClearSearch} aria-label="검색어 지우기">
