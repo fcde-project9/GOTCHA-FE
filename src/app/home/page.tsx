@@ -13,6 +13,7 @@ import { DEFAULT_IMAGES } from "@/constants";
 import { useCurrentLocation, useKakaoPlaces, PlaceSearchResult } from "@/hooks";
 import { useMapStore } from "@/stores";
 import { MapBounds, ShopMapResponse } from "@/types/api";
+import { trackMapSearch, trackLocationPermission } from "@/utils/analytics";
 import { shopMapResponsesToViews } from "@/utils/shop";
 
 // KakaoMap 동적 로드 - SSR 제외, 초기 번들에서 분리
@@ -239,6 +240,9 @@ export default function Home() {
   };
 
   const handleResultClick = (result: PlaceSearchResult) => {
+    // GA 이벤트: 지역/지하철 검색
+    trackMapSearch(result.place_name, results.length);
+
     // 자동 재검색 플래그 설정 (지도 이동 후 매장 핀 자동 표시)
     shouldAutoReloadRef.current = true;
 
@@ -300,6 +304,9 @@ export default function Home() {
 
         // 위치 권한 거부 시만 설정 안내 모달 표시
         if (err.code === err.PERMISSION_DENIED) {
+          // GA 이벤트: 위치 권한 거부
+          trackLocationPermission(false);
+
           setLocationDenied(true);
           // localStorage에 거부 플래그 저장
           try {
@@ -405,6 +412,9 @@ export default function Home() {
         }}
         initialDenied={locationDenied}
         onPermissionGranted={(position) => {
+          // GA 이벤트: 위치 권한 허용
+          trackLocationPermission(true);
+
           const newLocation = {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,

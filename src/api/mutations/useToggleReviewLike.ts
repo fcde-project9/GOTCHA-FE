@@ -4,6 +4,7 @@ import { ENDPOINTS } from "@/api/endpoints";
 import type { ApiResponse } from "@/api/types";
 import { extractApiError } from "@/api/types";
 import type { ReviewLikeResponse } from "@/types/api";
+import { trackReviewLike } from "@/utils/analytics";
 
 interface ToggleReviewLikeParams {
   reviewId: number;
@@ -26,6 +27,9 @@ export const useToggleReviewLike = () => {
         if (!data.success || !data.data) {
           throw new Error(data.error?.message || "좋아요 처리에 실패했어요.");
         }
+
+        // GA 이벤트: 리뷰 좋아요 (토글 후 상태)
+        trackReviewLike(reviewId, !isLiked);
 
         return data.data;
       } catch (error) {

@@ -6,6 +6,7 @@ import apiClient from "@/api/client";
 import { ENDPOINTS } from "@/api/endpoints";
 import { useDelayedRedirectWithToast, useAuth } from "@/hooks";
 import type { TokenExchangeApiResponse } from "@/types/api";
+import { trackUserLogin } from "@/utils/analytics";
 
 /**
  * OAuth 콜백 페이지
@@ -81,6 +82,13 @@ function OAuthCallbackContent() {
 
         // 전역 인증 상태 업데이트 (토큰 저장 포함)
         login(accessToken, refreshToken);
+
+        // GA 이벤트: 로그인 성공
+        const provider = sessionStorage.getItem("oauth_provider") as "kakao" | "google" | null;
+        if (provider) {
+          trackUserLogin(provider, isNewUser);
+          sessionStorage.removeItem("oauth_provider");
+        }
 
         // 신규 사용자면 닉네임 설정 페이지로, 기존 사용자면 스플래시 후 홈으로 이동
         if (isNewUser) {

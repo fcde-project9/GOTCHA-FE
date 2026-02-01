@@ -1,12 +1,19 @@
 "use client";
 
+import { useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/common";
 import { DEFAULT_IMAGES } from "@/constants";
+import { trackShopReportComplete } from "@/utils/analytics";
 
 export default function ReportCompletePage() {
   const router = useRouter();
+
+  // GA 이벤트: 매장 제보 완료
+  useEffect(() => {
+    trackShopReportComplete();
+  }, []);
 
   const handleGoHome = () => {
     router.push("/home");
