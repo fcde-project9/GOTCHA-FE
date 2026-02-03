@@ -271,12 +271,12 @@ export default function Home() {
   // 미리보기 닫기 → 기본 바텀시트 복귀 (애니메이션 포함)
   const handlePreviewClose = useCallback(() => {
     setIsPreviewSheetLeaving(true);
-    // 애니메이션 후 실제로 닫기
+    // 애니메이션(550ms) 완료 후 실제로 닫기
     setTimeout(() => {
       setSelectedShop(null);
       setShowPreviewSheet(false);
       setIsPreviewSheetLeaving(false);
-    }, 450);
+    }, 550);
   }, []);
 
   const handleReloadArea = () => {
