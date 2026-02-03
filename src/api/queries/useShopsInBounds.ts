@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import apiClient from "@/api/client";
 import { queryKeys } from "@/api/queryKeys";
-import { extractApiError } from "@/api/types";
-import type { MapBounds, ShopsMapApiResponse, ShopMapResponse } from "@/types/api";
+import { get } from "@/api/request";
+import type { MapBounds, ShopMapResponse } from "@/types/api";
 import { getCurrentLocation } from "@/utils/geolocation";
 
 /**
@@ -39,32 +38,22 @@ export const useShopsInBounds = (bounds: MapBounds | null, enabled: boolean = tr
         // 위치 정보를 가져올 수 없는 경우 null 유지
       }
 
-      try {
-        const { data } = await apiClient.get<ShopsMapApiResponse>("/api/shops/map", {
-          params: {
-            northEastLat: bounds.northEastLat,
-            northEastLng: bounds.northEastLng,
-            southWestLat: bounds.southWestLat,
-            southWestLng: bounds.southWestLng,
-            latitude,
-            longitude,
-          },
-        });
+      const result = await get<ShopMapResponse[]>(
+        "/api/shops/map",
+        {
+          northEastLat: bounds.northEastLat,
+          northEastLng: bounds.northEastLng,
+          southWestLat: bounds.southWestLat,
+          southWestLng: bounds.southWestLng,
+          latitude,
+          longitude,
+        },
+        { errorMessage: "가게 목록을 불러오는데 실패했어요." }
+      );
 
-        if (!data.success || !data.data) {
-          throw new Error("가게 목록을 불러오는데 실패했어요.");
-        }
-
-        return data.data;
-      } catch (error) {
-        const apiError = extractApiError(error);
-        if (apiError) {
-          throw new Error(apiError.message);
-        }
-        throw error;
-      }
+      return result ?? [];
     },
     enabled: enabled && bounds !== null,
-    staleTime: 30000, // 30초간 캐시 유지 (지도 이동 시 불필요한 재요청 방지)
+    staleTime: 30000,
   });
 };

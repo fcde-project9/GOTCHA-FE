@@ -1,13 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import apiClient from "@/api/client";
 import { ENDPOINTS } from "@/api/endpoints";
 import { queryKeys } from "@/api/queryKeys";
-import type { ApiResponse, User } from "@/api/types";
-import { extractApiError } from "@/api/types";
-
-interface UpdateProfileImageRequest {
-  profileImageUrl: string;
-}
+import { patch } from "@/api/request";
+import type { User } from "@/api/types";
 
 /**
  * 프로필 이미지 변경 Mutation Hook
@@ -17,27 +12,14 @@ export const useUpdateProfileImage = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (profileImageUrl: string) => {
-      try {
-        const { data } = await apiClient.patch<ApiResponse<User>>(
-          ENDPOINTS.USER.UPDATE_PROFILE_IMAGE,
-          { profileImageUrl } as UpdateProfileImageRequest
-        );
-
-        // API 응답 검증
-        if (!data.success || !data.data) {
-          throw new Error(data.error?.message || "프로필 이미지 변경에 실패했어요.");
+    mutationFn: (profileImageUrl: string) =>
+      patch<User>(
+        ENDPOINTS.USER.UPDATE_PROFILE_IMAGE,
+        { profileImageUrl },
+        {
+          errorMessage: "프로필 이미지 변경에 실패했어요.",
         }
-
-        return data.data;
-      } catch (error) {
-        const apiError = extractApiError(error);
-        if (apiError) {
-          throw new Error(apiError.message);
-        }
-        throw error;
-      }
-    },
+      ),
     onSuccess: () => {
       // 사용자 정보 쿼리 무효화하여 최신 데이터 불러오기
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });

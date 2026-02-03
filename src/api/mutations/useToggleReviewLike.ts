@@ -1,8 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
-import apiClient from "@/api/client";
 import { ENDPOINTS } from "@/api/endpoints";
-import type { ApiResponse } from "@/api/types";
-import { extractApiError } from "@/api/types";
+import { post, del } from "@/api/request";
 import type { ReviewLikeResponse } from "@/types/api";
 import { trackReviewLike } from "@/utils/analytics";
 
@@ -18,27 +16,17 @@ interface ToggleReviewLikeParams {
 export const useToggleReviewLike = () => {
   return useMutation({
     mutationFn: async ({ reviewId, isLiked }: ToggleReviewLikeParams) => {
-      try {
-        const method = isLiked ? "delete" : "post";
-        const { data } = await apiClient[method]<ApiResponse<ReviewLikeResponse>>(
-          ENDPOINTS.REVIEWS.LIKE(reviewId)
-        );
+      const url = ENDPOINTS.REVIEWS.LIKE(reviewId);
+      const options = { errorMessage: "좋아요 처리에 실패했어요." };
 
-        if (!data.success || !data.data) {
-          throw new Error(data.error?.message || "좋아요 처리에 실패했어요.");
-        }
+      const result = isLiked
+        ? await del<ReviewLikeResponse>(url, options)
+        : await post<ReviewLikeResponse>(url, undefined, options);
 
-        // GA 이벤트: 리뷰 좋아요 (토글 후 상태)
-        trackReviewLike(reviewId, !isLiked);
+      // GA 이벤트: 리뷰 좋아요 (토글 후 상태)
+      trackReviewLike(reviewId, !isLiked);
 
-        return data.data;
-      } catch (error) {
-        const apiError = extractApiError(error);
-        if (apiError) {
-          throw new Error(apiError.message);
-        }
-        throw error;
-      }
+      return result;
     },
   });
 };

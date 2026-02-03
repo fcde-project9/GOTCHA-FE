@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import apiClient from "@/api/client";
 import { ENDPOINTS } from "@/api/endpoints";
 import { queryKeys } from "@/api/queryKeys";
-import type { ApiResponse, User } from "@/api/types";
+import { get } from "@/api/request";
+import type { User } from "@/api/types";
 import { useAuth } from "@/hooks";
 
 /**
@@ -17,26 +17,20 @@ export const useUser = () => {
   return useQuery({
     queryKey: queryKeys.user.me(),
     queryFn: async () => {
-      try {
-        const { data } = await apiClient.get<ApiResponse<User>>(ENDPOINTS.USER.ME);
+      const result = await get<User>(ENDPOINTS.USER.ME, undefined, {
+        errorMessage: "사용자 정보를 불러올 수 없어요.",
+        allowUnauthorized: true,
+      });
 
-        if (!data.success || !data.data) {
-          throw new Error(data.error?.message || "사용자 정보를 불러올 수 없어요.");
-        }
-
-        return data.data;
-      } catch (error: unknown) {
-        // 401 Unauthorized (비로그인 상태)는 정상적인 케이스로 처리
-        const axiosError = error as { response?: { status?: number } };
-        if (axiosError?.response?.status === 401) {
-          // 토큰이 만료되었으면 로그아웃 처리
-          logout();
-          return undefined;
-        }
-        throw error;
+      // 401 에러로 null 반환 시 로그아웃 처리
+      if (result === null) {
+        logout();
+        return undefined;
       }
+
+      return result;
     },
     enabled: !authLoading && isLoggedIn,
-    retry: false, // 비로그인 상태에서 재시도하지 않음
+    retry: false,
   });
 };

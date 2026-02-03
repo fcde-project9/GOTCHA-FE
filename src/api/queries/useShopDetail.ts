@@ -1,8 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import apiClient from "@/api/client";
 import { queryKeys } from "@/api/queryKeys";
-import type { ApiResponse } from "@/api/types";
-import { extractApiError } from "@/api/types";
+import { get } from "@/api/request";
 import type { ShopDetailResponse, ReviewSortOption } from "@/types/api";
 
 /**
@@ -14,27 +12,15 @@ import type { ShopDetailResponse, ReviewSortOption } from "@/types/api";
 export const useShopDetail = (shopId: number, sortBy: ReviewSortOption = "LATEST") => {
   return useQuery({
     queryKey: queryKeys.shops.detail(shopId, sortBy),
-    queryFn: async () => {
-      try {
-        const { data } = await apiClient.get<ApiResponse<ShopDetailResponse>>(
-          `/api/shops/${shopId}`,
-          { params: { sortBy } }
-        );
-
-        if (!data.success || !data.data) {
-          throw new Error(data.error?.message || "업체 정보를 불러오는데 실패했어요.");
+    queryFn: () =>
+      get<ShopDetailResponse>(
+        `/api/shops/${shopId}`,
+        { sortBy },
+        {
+          errorMessage: "업체 정보를 불러오는데 실패했어요.",
         }
-
-        return data.data;
-      } catch (error) {
-        const apiError = extractApiError(error);
-        if (apiError) {
-          throw new Error(apiError.message);
-        }
-        throw error;
-      }
-    },
+      ),
     enabled: shopId > 0,
-    staleTime: 0, // 항상 최신 데이터 조회
+    staleTime: 0,
   });
 };
