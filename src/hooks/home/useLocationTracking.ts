@@ -20,9 +20,9 @@ interface UseLocationTrackingReturn {
   /** 위치 권한 모달 닫기 */
   closeLocationModal: () => void;
   /** 현재 위치 버튼 클릭 핸들러 */
-  handleCurrentLocation: () => void;
+  handleCurrentLocation: () => Promise<void>;
   /** 위치 권한 허용 시 콜백 */
-  handlePermissionGranted: (position: GeolocationPosition) => void;
+  handlePermissionGranted: (position: GeolocationPosition) => Promise<void>;
   /** 사용자 위치 (초기 로드용) */
   userLocation: { latitude: number; longitude: number } | null;
   /** 위치를 처음 받았는지 여부 */
@@ -50,6 +50,9 @@ export function useLocationTracking(
   // 디바이스 방향 이벤트 핸들러 ref (메모리 누수 방지)
   const orientationHandlerRef = useRef<((event: DeviceOrientationEvent) => void) | null>(null);
 
+  // iOS 13+ 디바이스 방향 권한 상태 캐시
+  const orientationPermissionRef = useRef<"granted" | "denied" | "pending">("pending");
+
   // localStorage에서 권한 거부 플래그 읽기
   useEffect(() => {
     try {
@@ -65,9 +68,59 @@ export function useLocationTracking(
     getCurrentLocation();
   }, [getCurrentLocation]);
 
-  // 디바이스 방향 감지 시작
+  // iOS 13+ 디바이스 방향 권한 요청 여부 확인
+  const requiresOrientationPermission = useCallback(() => {
+    return (
+      typeof DeviceOrientationEvent !== "undefined" &&
+      typeof (DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> })
+        .requestPermission === "function"
+    );
+  }, []);
+
+  // iOS 13+ 디바이스 방향 권한 요청 (반드시 사용자 제스처에서 직접 호출해야 함)
+  const requestOrientationPermission = useCallback(async (): Promise<boolean> => {
+    // 이미 권한 상태가 결정된 경우 캐시된 값 반환
+    if (orientationPermissionRef.current === "granted") {
+      return true;
+    }
+    if (orientationPermissionRef.current === "denied") {
+      return false;
+    }
+
+    // iOS 13+ 권한 요청이 필요하지 않은 경우 (Android 등)
+    if (!requiresOrientationPermission()) {
+      orientationPermissionRef.current = "granted";
+      return true;
+    }
+
+    // iOS 13+: 사용자 제스처 컨텍스트에서 권한 요청
+    try {
+      const permission = await (
+        DeviceOrientationEvent as unknown as { requestPermission: () => Promise<string> }
+      ).requestPermission();
+
+      if (permission === "granted") {
+        orientationPermissionRef.current = "granted";
+        return true;
+      } else {
+        orientationPermissionRef.current = "denied";
+        return false;
+      }
+    } catch (error) {
+      console.error("DeviceOrientationEvent 권한 요청 실패:", error);
+      orientationPermissionRef.current = "denied";
+      return false;
+    }
+  }, [requiresOrientationPermission]);
+
+  // 디바이스 방향 감지 시작 (권한이 이미 부여된 상태에서만 호출)
   const startDeviceOrientationTracking = useCallback(
     (currentLoc: { latitude: number; longitude: number }) => {
+      // iOS 13+에서 권한이 부여되지 않은 경우 리스너 등록 스킵
+      if (requiresOrientationPermission() && orientationPermissionRef.current !== "granted") {
+        return;
+      }
+
       // 기존 리스너 제거 (중복 방지)
       if (orientationHandlerRef.current) {
         window.removeEventListener("deviceorientation", orientationHandlerRef.current, true);
@@ -96,33 +149,10 @@ export function useLocationTracking(
       // 핸들러를 ref에 저장
       orientationHandlerRef.current = handleOrientation;
 
-      // 리스너 등록 함수
-      const addListener = () => {
-        if (orientationHandlerRef.current) {
-          window.addEventListener("deviceorientation", orientationHandlerRef.current, true);
-        }
-      };
-
-      // iOS 13+에서는 권한 요청 필요
-      if (
-        typeof DeviceOrientationEvent !== "undefined" &&
-        typeof (DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> })
-          .requestPermission === "function"
-      ) {
-        (DeviceOrientationEvent as unknown as { requestPermission: () => Promise<string> })
-          .requestPermission()
-          .then((permission) => {
-            if (permission === "granted") {
-              addListener();
-            }
-          })
-          .catch(console.error);
-      } else {
-        // Android 및 기타 브라우저
-        addListener();
-      }
+      // 리스너 등록
+      window.addEventListener("deviceorientation", orientationHandlerRef.current, true);
     },
-    []
+    [requiresOrientationPermission]
   );
 
   // 컴포넌트 언마운트 시 리스너 정리
@@ -136,10 +166,13 @@ export function useLocationTracking(
   }, []);
 
   // 현재 위치 버튼 클릭 핸들러
-  const handleCurrentLocation = useCallback(() => {
+  const handleCurrentLocation = useCallback(async () => {
     if (!navigator.geolocation) {
       return;
     }
+
+    // iOS 13+: 사용자 제스처 컨텍스트에서 직접 권한 요청
+    await requestOrientationPermission();
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -159,7 +192,7 @@ export function useLocationTracking(
           heading: heading != null && !isNaN(heading) ? heading : null,
         });
 
-        // 디바이스 방향 감지 시작
+        // 디바이스 방향 감지 시작 (권한이 이미 부여된 상태)
         startDeviceOrientationTracking(newLocation);
       },
       (err) => {
@@ -183,12 +216,15 @@ export function useLocationTracking(
         maximumAge: 0,
       }
     );
-  }, [onLocationUpdate, startDeviceOrientationTracking]);
+  }, [onLocationUpdate, requestOrientationPermission, startDeviceOrientationTracking]);
 
   // 위치 권한 허용 시 콜백
   const handlePermissionGranted = useCallback(
-    (position: GeolocationPosition) => {
+    async (position: GeolocationPosition) => {
       trackLocationPermission(true);
+
+      // iOS 13+: 사용자 제스처 컨텍스트에서 직접 권한 요청
+      await requestOrientationPermission();
 
       const newLocation = {
         latitude: position.coords.latitude,
@@ -204,6 +240,7 @@ export function useLocationTracking(
         heading: heading != null && !isNaN(heading) ? heading : null,
       });
 
+      // 디바이스 방향 감지 시작 (권한이 이미 부여된 상태)
       startDeviceOrientationTracking(newLocation);
 
       // 권한 허용 시 denied 상태 초기화
@@ -214,7 +251,7 @@ export function useLocationTracking(
         // localStorage 접근 불가 시 무시
       }
     },
-    [onLocationUpdate, startDeviceOrientationTracking]
+    [onLocationUpdate, requestOrientationPermission, startDeviceOrientationTracking]
   );
 
   // 위치 권한 모달 닫기
