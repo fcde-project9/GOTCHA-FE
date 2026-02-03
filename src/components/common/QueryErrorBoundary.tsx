@@ -79,6 +79,7 @@ export function QueryPageErrorFallback({
       <h2 className="text-lg font-semibold text-grey-900 mb-2">{title}</h2>
       <p className="text-sm text-grey-500 mb-6">{description}</p>
       <button
+        type="button"
         onClick={reset}
         className="px-6 py-3 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition-colors"
       >
@@ -101,6 +102,7 @@ export function QuerySectionErrorFallback({
     <div className="flex flex-col items-center justify-center p-4 bg-grey-50 rounded-lg">
       <p className="text-sm text-grey-600 mb-3">{title}</p>
       <button
+        type="button"
         onClick={reset}
         className="text-sm text-primary-500 font-medium hover:text-primary-600"
       >

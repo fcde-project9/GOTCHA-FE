@@ -69,14 +69,9 @@ export async function request<T>(
     options = maybeOptions;
   } else if (dataOrOptions !== undefined) {
     // 3개 인자: data인지 options인지 판단
-    if (
-      typeof dataOrOptions === "object" &&
-      dataOrOptions !== null &&
-      ("errorMessage" in dataOrOptions ||
-        "allowUnauthorized" in dataOrOptions ||
-        "transform" in dataOrOptions)
-    ) {
-      options = dataOrOptions as RequestOptions<T>;
+    // 모든 키가 옵션 키인 경우에만 옵션으로 처리
+    if (isRequestOptions<T>(dataOrOptions)) {
+      options = dataOrOptions;
     } else {
       requestData = dataOrOptions;
     }
@@ -222,10 +217,14 @@ export async function del<T>(
 
 /**
  * RequestOptions 타입 가드
+ * 객체의 모든 키가 알려진 옵션 키인 경우에만 true 반환
+ * 하나라도 알 수 없는 키가 있으면 payload로 간주
  */
 function isRequestOptions<T>(obj: unknown): obj is RequestOptions<T> {
   if (typeof obj !== "object" || obj === null) return false;
   const keys = Object.keys(obj);
   const optionKeys = ["errorMessage", "allowUnauthorized", "transform", "params", "headers"];
-  return keys.length === 0 || keys.some((key) => optionKeys.includes(key));
+  // 빈 객체는 옵션으로 처리 (기본값 사용)
+  // 모든 키가 옵션 키에 포함되어야 옵션으로 인정
+  return keys.length === 0 || keys.every((key) => optionKeys.includes(key));
 }

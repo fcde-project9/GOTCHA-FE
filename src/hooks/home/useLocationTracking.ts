@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useCurrentLocation } from "@/hooks";
 import { trackLocationPermission } from "@/utils/analytics";
 
@@ -47,6 +47,9 @@ export function useLocationTracking(
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [hasReceivedLocation, setHasReceivedLocation] = useState(false);
 
+  // 디바이스 방향 이벤트 핸들러 ref (메모리 누수 방지)
+  const orientationHandlerRef = useRef<((event: DeviceOrientationEvent) => void) | null>(null);
+
   // localStorage에서 권한 거부 플래그 읽기
   useEffect(() => {
     try {
@@ -65,6 +68,11 @@ export function useLocationTracking(
   // 디바이스 방향 감지 시작
   const startDeviceOrientationTracking = useCallback(
     (currentLoc: { latitude: number; longitude: number }) => {
+      // 기존 리스너 제거 (중복 방지)
+      if (orientationHandlerRef.current) {
+        window.removeEventListener("deviceorientation", orientationHandlerRef.current, true);
+      }
+
       const handleOrientation = (event: DeviceOrientationEvent) => {
         let heading: number | null = null;
 
@@ -85,6 +93,16 @@ export function useLocationTracking(
         }
       };
 
+      // 핸들러를 ref에 저장
+      orientationHandlerRef.current = handleOrientation;
+
+      // 리스너 등록 함수
+      const addListener = () => {
+        if (orientationHandlerRef.current) {
+          window.addEventListener("deviceorientation", orientationHandlerRef.current, true);
+        }
+      };
+
       // iOS 13+에서는 권한 요청 필요
       if (
         typeof DeviceOrientationEvent !== "undefined" &&
@@ -95,17 +113,27 @@ export function useLocationTracking(
           .requestPermission()
           .then((permission) => {
             if (permission === "granted") {
-              window.addEventListener("deviceorientation", handleOrientation, true);
+              addListener();
             }
           })
           .catch(console.error);
       } else {
         // Android 및 기타 브라우저
-        window.addEventListener("deviceorientation", handleOrientation, true);
+        addListener();
       }
     },
     []
   );
+
+  // 컴포넌트 언마운트 시 리스너 정리
+  useEffect(() => {
+    return () => {
+      if (orientationHandlerRef.current) {
+        window.removeEventListener("deviceorientation", orientationHandlerRef.current, true);
+        orientationHandlerRef.current = null;
+      }
+    };
+  }, []);
 
   // 현재 위치 버튼 클릭 핸들러
   const handleCurrentLocation = useCallback(() => {

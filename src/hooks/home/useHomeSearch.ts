@@ -40,6 +40,7 @@ export function useHomeSearch(): UseHomeSearchReturn {
 
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQueryState] = useState("");
+  const [isAutoSearchEnabled, setIsAutoSearchEnabled] = useState(true);
 
   // 스토어에서 검색어 복원
   useEffect(() => {
@@ -48,17 +49,20 @@ export function useHomeSearch(): UseHomeSearchReturn {
     }
   }, [storedSearchQuery]);
 
-  // 검색어 변경 시 스토어에 저장
+  // 검색어 변경 시 스토어에 저장 (자동 검색 활성화)
   const setSearchQuery = useCallback(
     (query: string) => {
+      setIsAutoSearchEnabled(true); // 사용자 입력 시 자동 검색 활성화
       setSearchQueryState(query);
       setStoredSearchQuery(query);
     },
     [setStoredSearchQuery]
   );
 
-  // 검색어 변경 시 자동 검색
+  // 검색어 변경 시 자동 검색 (자동 검색 활성화된 경우만)
   useEffect(() => {
+    if (!isAutoSearchEnabled) return;
+
     if (searchQuery.trim()) {
       const debounce = setTimeout(() => {
         searchPlaces(searchQuery);
@@ -68,7 +72,7 @@ export function useHomeSearch(): UseHomeSearchReturn {
     } else {
       clearResults();
     }
-  }, [searchQuery, searchPlaces, clearResults]);
+  }, [searchQuery, searchPlaces, clearResults, isAutoSearchEnabled]);
 
   // 검색 모드 시작
   const handleSearchClick = useCallback(() => {
@@ -94,8 +98,12 @@ export function useHomeSearch(): UseHomeSearchReturn {
       // GA 이벤트: 지역/지하철 검색
       trackMapSearch(result.place_name, results.length);
 
+      // 자동 검색 비활성화 (결과 선택 시 재검색 방지)
+      setIsAutoSearchEnabled(false);
+
       // 검색어를 선택한 장소명으로 업데이트
-      setSearchQuery(result.place_name);
+      setSearchQueryState(result.place_name);
+      setStoredSearchQuery(result.place_name);
 
       // 검색 모드 종료
       setIsSearching(false);
@@ -108,7 +116,7 @@ export function useHomeSearch(): UseHomeSearchReturn {
         placeName: result.place_name,
       };
     },
-    [results.length, setSearchQuery, clearResults]
+    [results.length, setStoredSearchQuery, clearResults]
   );
 
   return {

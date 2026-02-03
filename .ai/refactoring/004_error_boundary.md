@@ -166,8 +166,11 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       throwOnError: (error) => {
-        // 특정 에러만 throw
-        return error.status >= 500;
+        // 특정 에러만 throw (타입 가드 필요)
+        if (error instanceof Error && "status" in error) {
+          return (error as Error & { status: number }).status >= 500;
+        }
+        return false;
       },
     },
   },

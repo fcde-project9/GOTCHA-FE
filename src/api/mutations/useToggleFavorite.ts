@@ -18,7 +18,7 @@ export const useAddFavorite = () => {
         errorMessage: "찜 추가에 실패했어요.",
       }),
     onSuccess: () => {
-      // 찜 목록 및 지도 가게 목록 캐시 무효화
+      // 찜 추가 시: 찜 목록 갱신 (새 항목 즉시 표시)
       queryClient.invalidateQueries({ queryKey: queryKeys.favorites.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.shops.all });
     },

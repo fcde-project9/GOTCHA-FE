@@ -28,10 +28,10 @@ interface MyReportsPageResponse {
  * 비로그인 상태(401 에러)에서는 에러를 던지지 않고 null을 반환합니다.
  */
 export const useMyReports = () => {
-  return useQuery({
+  return useQuery<MyReportsPageResponse | null>({
     queryKey: queryKeys.user.myReports(),
     queryFn: () =>
-      get<MyReportsPageResponse>(ENDPOINTS.USER.MY_SHOPS, undefined, {
+      get<MyReportsPageResponse | null>(ENDPOINTS.USER.MY_SHOPS, undefined, {
         errorMessage: "제보한 업체 목록을 불러오는데 실패했어요.",
         allowUnauthorized: true,
       }),

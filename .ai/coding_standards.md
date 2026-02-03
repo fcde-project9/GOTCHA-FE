@@ -3,6 +3,21 @@
 > **Next.js 16 환경**: 본 프로젝트는 Next.js 16 + React 19를 사용합니다.
 > 코드 작성 시 [`.ai/nextjs16_best_practices.md`](./nextjs16_best_practices.md)를 참고하세요.
 
+## 프로젝트 아키텍처 및 패턴 요약
+
+본 프로젝트는 다음 아키텍처 패턴을 따릅니다:
+
+| 영역           | 패턴                     | 설명                                                                       |
+| -------------- | ------------------------ | -------------------------------------------------------------------------- |
+| **상태 관리**  | Zustand + TanStack Query | 전역 상태(useMapStore, useAuthStore)는 Zustand, 서버 상태는 TanStack Query |
+| **API 레이어** | API Wrapper Pattern      | `src/api/request.ts`의 `get/post/del` 함수로 공통 에러 처리                |
+| **Query Key**  | Query Key Factory        | `src/api/queryKeys.ts`에서 중앙 관리                                       |
+| **에러 처리**  | Error Boundary           | `QueryErrorBoundary`로 React Query 에러 자동 처리                          |
+| **인증**       | Zustand Persist          | localStorage 기반 토큰 관리, hydration 대기                                |
+| **컴포넌트**   | Feature-based Structure  | `components/features/` 하위에 도메인별 폴더 구조                           |
+
+상세 아키텍처 다이어그램: [`.ai/architecture.md`](./architecture.md)
+
 ## 네이밍
 
 - 함수/컴포넌트는 의도를 드러내는 완전한 단어 사용
@@ -101,6 +116,8 @@ import { Button } from "@/components/common";
 src/api/
 ├── queries/      # useQuery 훅 (데이터 조회 - GET)
 ├── mutations/    # useMutation 훅 (데이터 변경 - POST/PUT/DELETE)
+├── queryKeys.ts  # Query Key Factory (중앙 관리)
+├── request.ts    # API Wrapper (공통 요청 처리)
 ├── client.ts     # axios 인스턴스
 ├── endpoints.ts  # API 엔드포인트 상수
 └── types.ts      # 공통 타입 정의
@@ -110,9 +127,47 @@ src/api/
 
 1. **queries vs mutations**: GET 요청은 `queries/`, POST/PUT/DELETE는 `mutations/`
 2. **네이밍**: `use` 접두사 + 동작 (예: `useShopDetail`, `useCreateReview`)
-3. **에러 처리**: `extractApiError()` 사용, 사용자 친화적 메시지 반환
+3. **에러 처리**: `request()` 함수가 자동 처리, 필요시 `extractApiError()` 사용
 4. **타입 안전성**: `ApiResponse<T>` 제네릭으로 응답 타입 명시
 5. **캐시 무효화**: 필요시 `queryClient.invalidateQueries()` 사용
+6. **캐시 무효화**: 찜 추가/해제 시 `favorites.all`, `shops.all` 모두 무효화
+
+#### Query Key Factory (`src/api/queryKeys.ts`)
+
+```typescript
+import { queryKeys } from "@/api/queryKeys";
+
+// 사용 예시
+useQuery({
+  queryKey: queryKeys.shops.detail(shopId),
+  queryFn: () => get<ShopDetail>(`/api/shops/${shopId}`),
+});
+
+// 무효화
+queryClient.invalidateQueries({ queryKey: queryKeys.shops.all });
+```
+
+#### API Wrapper (`src/api/request.ts`)
+
+```typescript
+import { get, post, del } from "@/api/request";
+
+// GET 요청
+const data = await get<ShopDetail>("/api/shops/1");
+
+// POST 요청
+const result = await post<Review>("/api/reviews", { content: "좋아요" });
+
+// 비로그인 허용 (401 시 null 반환)
+const user = await get<User | null>("/api/users/me", undefined, {
+  allowUnauthorized: true,
+});
+
+// 커스텀 에러 메시지
+const data = await get<Shop[]>("/api/shops", undefined, {
+  errorMessage: "매장 목록을 불러오는데 실패했어요.",
+});
+```
 
 ### API 에러 처리 패턴
 
@@ -139,29 +194,37 @@ interface ApiResponse<T> {
 #### 사용 예시
 
 ```typescript
+// ✅ 권장: API Wrapper 사용 (자동 에러 처리)
+import { get } from "@/api/request";
+
+const fetchData = async () => {
+  try {
+    const user = await get<UserData>("/api/users/me");
+    setUser(user); // 성공 시 바로 데이터 반환
+  } catch (error) {
+    // request()가 이미 Error로 변환해서 throw
+    setToast(error instanceof Error ? error.message : "오류가 발생했습니다.");
+  }
+};
+
+// ⚠️ 레거시: 직접 apiClient 사용 (특수한 경우만)
 import apiClient from "@/api/client";
 import { ApiResponse, extractApiError } from "@/api/types";
 
-// API 호출
-const fetchData = async () => {
+const fetchDataLegacy = async () => {
   try {
     const response = await apiClient.get<ApiResponse<UserData>>("/api/users/me");
 
     if (!response.data.success) {
-      // 백엔드에서 success: false 반환한 경우
       const errorMessage = response.data.error?.message || "오류가 발생했습니다.";
       setToast(errorMessage);
       return;
     }
 
-    // 성공 처리
     setUser(response.data.data);
   } catch (error) {
-    // 네트워크 에러 또는 서버 에러
     const apiError = extractApiError(error);
     const errorMessage = apiError?.message || "네트워크 오류가 발생했습니다.";
-
-    console.error("API 호출 실패:", error);
     setToast(errorMessage);
   }
 };
@@ -319,6 +382,47 @@ const NOTIFICATION_PERMISSION_MESSAGES = {
   primaryAction: "알림 받기",
   secondaryAction: "나중에",
 };
+```
+
+## 에러 바운더리 (Error Boundary)
+
+### 컴포넌트 종류
+
+```
+src/components/common/
+├── ErrorBoundary.tsx         # 기본 에러 바운더리
+└── QueryErrorBoundary.tsx    # React Query 연동 에러 바운더리
+```
+
+### 사용 예시
+
+```typescript
+import { QueryErrorBoundary } from "@/components/common";
+
+// 기본 사용
+<QueryErrorBoundary>
+  <MyQueryComponent />
+</QueryErrorBoundary>
+
+// 커스텀 fallback
+<QueryErrorBoundary
+  fallback={(error, reset) => (
+    <ErrorCard error={error} onRetry={reset} />
+  )}
+>
+  <MyQueryComponent />
+</QueryErrorBoundary>
+```
+
+### throwOnError 사용 시 주의사항
+
+```typescript
+// ✅ 타입 가드 필수
+useQuery({
+  queryKey: ["data"],
+  queryFn: fetchData,
+  throwOnError: (error) => error instanceof Error && "status" in error && error.status >= 500,
+});
 ```
 
 ## 테스트/품질

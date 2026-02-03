@@ -11,13 +11,14 @@ import type { FavoriteShopResponse } from "@/types/api";
  * - 비로그인 상태: null
  */
 export const useFavorites = () => {
-  return useQuery({
+  return useQuery<FavoriteShopResponse[] | null>({
     queryKey: queryKeys.favorites.all,
     queryFn: () =>
-      get<FavoriteShopResponse[]>("/api/users/me/favorites", undefined, {
+      get<FavoriteShopResponse[] | null>("/api/users/me/favorites", undefined, {
         errorMessage: "찜 목록을 불러오는데 실패했어요.",
         allowUnauthorized: true,
       }),
+    staleTime: 0, // 항상 최신 데이터 refetch (전역 staleTime 1분 무시)
     retry: false,
   });
 };

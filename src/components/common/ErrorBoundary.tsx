@@ -107,6 +107,7 @@ export function DefaultErrorFallback({
       )}
       {onRetry && (
         <button
+          type="button"
           onClick={onRetry}
           className="px-4 py-2 bg-primary-500 text-white text-sm font-medium rounded-lg hover:bg-primary-600 transition-colors"
         >
@@ -130,7 +131,11 @@ export function InlineErrorFallback({ error, onRetry }: ErrorFallbackProps) {
         </span>
       </div>
       {onRetry && (
-        <button onClick={onRetry} className="text-sm text-red-600 font-medium hover:text-red-700">
+        <button
+          type="button"
+          onClick={onRetry}
+          className="text-sm text-red-600 font-medium hover:text-red-700"
+        >
           재시도
         </button>
       )}
