@@ -132,6 +132,11 @@ export function useHomeMapState(): UseHomeMapStateReturn {
     (bounds: MapBounds) => {
       setCurrentBounds(bounds);
 
+      // 지도 중심 좌표를 스토어에 저장 (뒤로가기 시 복원용)
+      const newCenter = { latitude: bounds.latitude, longitude: bounds.longitude };
+      setStoredMapCenter(newCenter);
+      setMapCenterState(newCenter);
+
       if (!hasInitialLoad) {
         // 최초 로드 시 자동으로 가게 목록 조회
         setActiveBounds(bounds);
@@ -147,7 +152,7 @@ export function useHomeMapState(): UseHomeMapStateReturn {
         setShowReloadButton(true);
       }
     },
-    [hasInitialLoad]
+    [hasInitialLoad, setStoredMapCenter]
   );
 
   // 이 지역 재검색 핸들러
