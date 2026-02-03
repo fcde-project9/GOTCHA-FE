@@ -111,6 +111,7 @@ export default function KakaoMap({
       southWestLng: bounds.getSouthWest().getLng(),
       latitude: center.getLat(),
       longitude: center.getLng(),
+      level: map.getLevel(),
     };
 
     onBoundsChangeRef.current(mapBounds);

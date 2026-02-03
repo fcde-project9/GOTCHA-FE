@@ -38,6 +38,7 @@ export interface MapBounds {
   southWestLng: number;
   latitude: number;
   longitude: number;
+  level: number;
 }
 
 /**
