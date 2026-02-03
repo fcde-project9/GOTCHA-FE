@@ -31,6 +31,7 @@ import StatusBadge from "./StatusBadge";
 interface ShopPreviewBottomSheetProps {
   shopId: number | null;
   onClose: () => void;
+  isLeaving?: boolean;
 }
 
 // 요일 매핑
@@ -188,7 +189,11 @@ function ReviewItem({
   );
 }
 
-export default function ShopPreviewBottomSheet({ shopId, onClose }: ShopPreviewBottomSheetProps) {
+export default function ShopPreviewBottomSheet({
+  shopId,
+  onClose,
+  isLeaving = false,
+}: ShopPreviewBottomSheetProps) {
   const router = useRouter();
   const { showToast } = useToast();
 
@@ -422,7 +427,7 @@ export default function ShopPreviewBottomSheet({ shopId, onClose }: ShopPreviewB
     <>
       {/* 바텀시트 */}
       <div
-        className={`absolute bottom-0 left-0 right-0 z-40 bg-white overflow-hidden shadow-[0_-4px_10px_rgba(0,0,0,0.2)] ${isExpanded && !isCollapsing ? "" : "rounded-t-[24px]"} ${!hasExpandedOnce ? "animate-slide-up" : ""}`}
+        className={`absolute bottom-0 left-0 right-0 z-40 bg-white overflow-hidden shadow-[0_-4px_10px_rgba(0,0,0,0.2)] ${isExpanded && !isCollapsing ? "" : "rounded-t-[24px]"} ${isLeaving ? "animate-slide-down" : !hasExpandedOnce ? "animate-slide-up" : ""}`}
         style={{
           height: isCollapsing ? `${sheetHeight}px` : isExpanded ? "100%" : `${sheetHeight}px`,
           transition: isDragging ? "none" : "height 0.55s cubic-bezier(0.32, 0.72, 0, 1)",
