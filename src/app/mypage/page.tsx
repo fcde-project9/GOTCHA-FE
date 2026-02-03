@@ -175,18 +175,12 @@ export default function MyPage() {
     );
   }
 
-  // 401 에러 (세션 만료) 시 로그인 페이지로 리다이렉트
-  const axiosError = error as { response?: { status?: number } } | null;
-  if (axiosError?.response?.status === 401) {
-    // useAuth의 logout으로 상태 정리 후 리다이렉트
-    logout();
-    router.replace("/login");
-    return null;
-  }
-
   // 일시적 에러 확인 (네트워크 오류 또는 5xx 서버 오류)
+  // 401은 providers.tsx와 apiClient에서 전역 처리됨
+  const axiosError = error as { response?: { status?: number } } | null;
   const isTemporaryError =
     error &&
+    axiosError?.response?.status !== 401 &&
     (!axiosError?.response ||
       (axiosError.response.status !== undefined && axiosError.response.status >= 500));
 
