@@ -187,8 +187,8 @@ export default function MyPage() {
     return <ErrorPage onRetry={refetch} />;
   }
 
-  // useAuth의 isLoggedIn으로 로그인 여부 판별
-  const loggedInUser: User | undefined = isLoggedIn ? user : undefined;
+  // useAuth의 isLoggedIn으로 로그인 여부 판별 (null도 undefined로 처리)
+  const loggedInUser: User | undefined = isLoggedIn && user ? user : undefined;
 
   // socialType을 socialProvider 형식으로 변환
   const socialProvider = loggedInUser?.socialType?.toLowerCase() as

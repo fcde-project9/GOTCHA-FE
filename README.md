@@ -51,6 +51,19 @@
 
 ---
 
+## 아키텍처 패턴
+
+| 영역       | 패턴                                           |
+| ---------- | ---------------------------------------------- |
+| 상태 관리  | Zustand (전역) + TanStack Query (서버)         |
+| API 레이어 | API Wrapper (`request.ts`) + Query Key Factory |
+| 에러 처리  | QueryErrorBoundary                             |
+| 인증       | Zustand Persist                                |
+
+📖 상세: [`.ai/architecture.md`](.ai/architecture.md) | [`.ai/coding_standards.md`](.ai/coding_standards.md)
+
+---
+
 ## CI/CD
 
 GitHub Actions + Vercel을 사용한 자동 배포 파이프라인

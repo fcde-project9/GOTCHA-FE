@@ -87,7 +87,13 @@ export function ProfileSection({
       <div className="flex flex-col items-center gap-3 w-[168px]">
         <div className="relative w-[100px] h-[100px]">
           <div className="relative w-full h-full rounded-full overflow-hidden">
-            <Image src={profileImage} alt="프로필 이미지" fill className="object-cover" />
+            <Image
+              src={profileImage}
+              alt="프로필 이미지"
+              fill
+              sizes="100px"
+              className="object-cover"
+            />
           </div>
           {/* Edit Button */}
           <button
@@ -122,6 +128,7 @@ export function ProfileSection({
               alt={socialProvider ? SOCIAL_PROVIDER_LABELS[socialProvider] : ""}
               width={14}
               height={14}
+              style={{ width: "auto", height: "auto" }}
             />
             <p className="text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-800 text-center">
               {email}

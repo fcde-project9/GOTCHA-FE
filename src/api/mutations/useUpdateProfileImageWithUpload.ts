@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/api/queryKeys";
 import { useUpdateProfileImage } from "./useUpdateProfileImage";
 import { useUploadFile } from "./useUploadFile";
 
@@ -25,7 +26,7 @@ export const useUpdateProfileImageWithUpload = () => {
     },
     onSuccess: () => {
       // 사용자 정보 쿼리 무효화하여 최신 데이터 불러오기
-      queryClient.invalidateQueries({ queryKey: ["user", "me"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
     },
   });
 };
