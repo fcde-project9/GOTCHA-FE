@@ -265,10 +265,28 @@ export default function Home() {
     clearResults();
   };
 
+  const [showPreviewSheet, setShowPreviewSheet] = useState(false);
+  const [isPreviewSheetLeaving, setIsPreviewSheetLeaving] = useState(false);
+
+  // 미리보기 닫기 → 기본 바텀시트 복귀 (애니메이션 포함)
+  const handlePreviewClose = useCallback(() => {
+    setIsPreviewSheetLeaving(true);
+    // 애니메이션 후 실제로 닫기
+    setTimeout(() => {
+      setSelectedShop(null);
+      setShowPreviewSheet(false);
+      setIsPreviewSheetLeaving(false);
+    }, 450);
+  }, []);
+
   const handleReloadArea = () => {
     if (currentBounds) {
       setShowReloadButton(false);
       setActiveBounds(currentBounds);
+      // 미리보기 바텀시트가 열려있으면 닫고 기본 바텀시트로 복귀 (애니메이션 포함)
+      if (showPreviewSheet) {
+        handlePreviewClose();
+      }
     }
   };
 
@@ -380,9 +398,6 @@ export default function Home() {
     setIsSheetDragging(isDragging);
   };
 
-  const [showPreviewSheet, setShowPreviewSheet] = useState(false);
-  const [isPreviewSheetLeaving, setIsPreviewSheetLeaving] = useState(false);
-
   const handleMarkerClick = (marker: ShopMapResponse) => {
     // 미리보기가 이미 열려있으면 해당 핀의 미리보기로 전환
     if (showPreviewSheet) {
@@ -394,16 +409,6 @@ export default function Home() {
     setSelectedShop(marker);
     setIsListSheetLeaving(true);
   };
-
-  // 미리보기 닫기 → 기본 바텀시트 복귀
-  const handlePreviewClose = useCallback(() => {
-    setSelectedShop(null);
-    setShowPreviewSheet(false);
-    setIsPreviewSheetLeaving(true);
-    setTimeout(() => {
-      setIsPreviewSheetLeaving(false);
-    }, 50);
-  }, []);
 
   // selectedShop 변경 시 ref 동기화
   useEffect(() => {
@@ -653,7 +658,11 @@ export default function Home() {
 
           {/* 업체 미리보기 바텀시트 */}
           {!isSearching && showPreviewSheet && selectedShop && (
-            <ShopPreviewBottomSheet shopId={selectedShop.id} onClose={handlePreviewClose} />
+            <ShopPreviewBottomSheet
+              shopId={selectedShop.id}
+              onClose={handlePreviewClose}
+              isLeaving={isPreviewSheetLeaving}
+            />
           )}
         </div>
       </main>
