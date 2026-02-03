@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import apiClient from "@/api/client";
+import { queryKeys } from "@/api/queryKeys";
 import type { ApiResponse } from "@/api/types";
 import { extractApiError } from "@/api/types";
 import type { FavoriteShopResponse } from "@/types/api";
@@ -13,7 +14,7 @@ import type { FavoriteShopResponse } from "@/types/api";
  */
 export const useFavorites = () => {
   return useQuery({
-    queryKey: ["favorites"],
+    queryKey: queryKeys.favorites.all,
     queryFn: async (): Promise<FavoriteShopResponse[] | null> => {
       try {
         const { data } =

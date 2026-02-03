@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import apiClient from "@/api/client";
+import { queryKeys } from "@/api/queryKeys";
 import type { ApiResponse } from "@/api/types";
 import { extractApiError } from "@/api/types";
 import type { ShopDetailResponse, ReviewSortOption } from "@/types/api";
@@ -12,7 +13,7 @@ import type { ShopDetailResponse, ReviewSortOption } from "@/types/api";
  */
 export const useShopDetail = (shopId: number, sortBy: ReviewSortOption = "LATEST") => {
   return useQuery({
-    queryKey: ["shop", shopId, sortBy],
+    queryKey: queryKeys.shops.detail(shopId, sortBy),
     queryFn: async () => {
       try {
         const { data } = await apiClient.get<ApiResponse<ShopDetailResponse>>(

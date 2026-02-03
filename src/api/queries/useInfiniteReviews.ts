@@ -1,6 +1,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import apiClient from "@/api/client";
 import { ENDPOINTS } from "@/api/endpoints";
+import { queryKeys } from "@/api/queryKeys";
 import type { ApiResponse } from "@/api/types";
 import { extractApiError } from "@/api/types";
 import type { ReviewsPageResponse, ReviewSortOption } from "@/types/api";
@@ -19,7 +20,7 @@ export const useInfiniteReviews = (
   size: number = 10
 ) => {
   return useInfiniteQuery({
-    queryKey: ["reviews", "infinite", shopId, sortBy, size],
+    queryKey: queryKeys.reviews.infinite(shopId, sortBy, size),
     queryFn: async ({ pageParam = 0 }) => {
       try {
         const { data } = await apiClient.get<ApiResponse<ReviewsPageResponse>>(

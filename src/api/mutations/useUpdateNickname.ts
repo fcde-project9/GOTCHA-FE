@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/api/client";
 import { ENDPOINTS } from "@/api/endpoints";
+import { queryKeys } from "@/api/queryKeys";
 import type { ApiResponse, User } from "@/api/types";
 import { extractApiError } from "@/api/types";
 
@@ -39,7 +40,7 @@ export const useUpdateNickname = () => {
     },
     onSuccess: () => {
       // 사용자 정보 쿼리 무효화하여 최신 데이터 불러오기
-      queryClient.invalidateQueries({ queryKey: ["user", "me"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
     },
   });
 };

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import apiClient from "@/api/client";
 import { ENDPOINTS } from "@/api/endpoints";
+import { queryKeys } from "@/api/queryKeys";
 import type { ApiResponse } from "@/api/types";
 import { extractApiError } from "@/api/types";
 
@@ -30,7 +31,7 @@ interface MyReportsPageResponse {
  */
 export const useMyReports = () => {
   return useQuery({
-    queryKey: ["myReports"],
+    queryKey: queryKeys.user.myReports(),
     queryFn: async (): Promise<MyReportsPageResponse | null> => {
       try {
         const { data } = await apiClient.get<ApiResponse<MyReportsPageResponse>>(

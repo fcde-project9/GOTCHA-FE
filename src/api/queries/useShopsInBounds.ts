@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import apiClient from "@/api/client";
+import { queryKeys } from "@/api/queryKeys";
 import { extractApiError } from "@/api/types";
 import type { MapBounds, ShopsMapApiResponse, ShopMapResponse } from "@/types/api";
 import { getCurrentLocation } from "@/utils/geolocation";
@@ -16,7 +17,7 @@ import { getCurrentLocation } from "@/utils/geolocation";
  */
 export const useShopsInBounds = (bounds: MapBounds | null, enabled: boolean = true) => {
   return useQuery({
-    queryKey: ["shops", "map", bounds],
+    queryKey: queryKeys.shops.map(bounds),
     queryFn: async (): Promise<ShopMapResponse[]> => {
       if (!bounds) {
         return [];

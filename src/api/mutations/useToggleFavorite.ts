@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/api/client";
+import { queryKeys } from "@/api/queryKeys";
 import type { ApiResponse } from "@/api/types";
 import { extractApiError } from "@/api/types";
 
@@ -35,8 +36,8 @@ export const useAddFavorite = () => {
     },
     onSuccess: () => {
       // 찜 목록 및 지도 가게 목록 캐시 무효화
-      queryClient.invalidateQueries({ queryKey: ["favorites"] });
-      queryClient.invalidateQueries({ queryKey: ["shops", "map"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.favorites.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.shops.all });
     },
   });
 };
@@ -69,8 +70,8 @@ export const useRemoveFavorite = () => {
     },
     onSuccess: () => {
       // 찜 목록 및 지도 가게 목록 캐시 무효화
-      queryClient.invalidateQueries({ queryKey: ["favorites"] });
-      queryClient.invalidateQueries({ queryKey: ["shops", "map"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.favorites.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.shops.all });
     },
   });
 };

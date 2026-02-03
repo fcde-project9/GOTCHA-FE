@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
+import apiClient from "@/api/client";
+import { ENDPOINTS } from "@/api/endpoints";
+import { queryKeys } from "@/api/queryKeys";
 import type { ApiResponse, NearbyShopsResponse } from "@/api/types";
-import apiClient from "../client";
-import { ENDPOINTS } from "../endpoints";
 
 /**
  * 근처 가게 확인 Query Hook
@@ -9,7 +10,7 @@ import { ENDPOINTS } from "../endpoints";
  */
 export const useCheckNearbyShops = (latitude: number, longitude: number, enabled = true) => {
   return useQuery({
-    queryKey: ["shops", "nearby", latitude, longitude],
+    queryKey: queryKeys.shops.nearby(latitude, longitude),
     queryFn: async () => {
       const { data } = await apiClient.get<ApiResponse<NearbyShopsResponse>>(
         ENDPOINTS.SHOPS.NEARBY,
