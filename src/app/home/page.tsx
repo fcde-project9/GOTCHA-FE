@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { Search, LocateFixed, RefreshCcw, ChevronLeft, CircleX } from "lucide-react";
+import { Search, LocateFixed, RefreshCcw, ChevronLeft, CircleX, Loader2 } from "lucide-react";
 import { Footer, LocationPermissionModal, SplashScreen } from "@/components/common";
 import { SearchResultItem } from "@/components/features/search";
 import { ShopListBottomSheet, ShopPreviewBottomSheet } from "@/components/features/shop";
@@ -159,6 +159,17 @@ export default function Home() {
                 bottom={bottomSheet.buttonBottom}
                 isVisible={bottomSheet.isButtonVisible}
                 isSheetDragging={bottomSheet.isSheetDragging}
+                isLoading={locationTracking.isLocating}
+                isAtCurrentLocation={
+                  locationTracking.currentLocation != null &&
+                  mapState.storedMapCenter != null &&
+                  Math.abs(
+                    locationTracking.currentLocation.latitude - mapState.storedMapCenter.latitude
+                  ) < 0.0005 &&
+                  Math.abs(
+                    locationTracking.currentLocation.longitude - mapState.storedMapCenter.longitude
+                  ) < 0.0005
+                }
               />
             )}
           </div>
@@ -288,6 +299,8 @@ interface CurrentLocationButtonProps {
   bottom: number;
   isVisible: boolean;
   isSheetDragging: boolean;
+  isLoading?: boolean;
+  isAtCurrentLocation?: boolean;
 }
 
 function CurrentLocationButton({
@@ -295,7 +308,11 @@ function CurrentLocationButton({
   bottom,
   isVisible,
   isSheetDragging,
+  isLoading = false,
+  isAtCurrentLocation = false,
 }: CurrentLocationButtonProps) {
+  const iconColor = isAtCurrentLocation ? "stroke-main" : "stroke-grey-800";
+
   return (
     <div
       className={`absolute right-0 z-10 mx-auto w-full max-w-[480px] px-5 ${
@@ -310,10 +327,15 @@ function CurrentLocationButton({
       <div className="flex justify-end">
         <button
           onClick={onClick}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-[0px_0px_5px_0px_rgba(0,0,0,0.2)]"
+          disabled={isLoading}
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-[0px_0px_5px_0px_rgba(0,0,0,0.2)] disabled:opacity-70"
           aria-label="현재 위치"
         >
-          <LocateFixed size={20} className="stroke-grey-800" strokeWidth={1.5} />
+          {isLoading ? (
+            <Loader2 size={20} className="stroke-grey-800 animate-spin" strokeWidth={1.5} />
+          ) : (
+            <LocateFixed size={20} className={iconColor} strokeWidth={1.5} />
+          )}
         </button>
       </div>
     </div>
