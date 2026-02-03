@@ -9,12 +9,11 @@
 | 001 | [Query Key Factory](./001_query_key_factory.md)     | 완료 | 2026-02-03 | React Query의 queryKey 중앙 관리          |
 | 002 | [API Wrapper](./002_api_wrapper.md)                 | 완료 | 2026-02-04 | API 호출 공통 에러 처리 로직 추출         |
 | 003 | [Container/Presenter](./003_container_presenter.md) | 완료 | 2026-02-04 | home 페이지 Custom Hooks 분리 (673→376줄) |
+| 004 | [Error Boundary](./004_error_boundary.md)           | 완료 | 2026-02-04 | 에러 경계 컴포넌트 인프라 구축            |
 
 ## 예정된 리팩토링
 
-| 우선순위 | 제목           | 난이도 | 효과 | 설명                         |
-| -------- | -------------- | ------ | ---- | ---------------------------- |
-| 1        | Error Boundary | 낮음   | 중간 | 쿼리 에러 경계 컴포넌트 추가 |
+현재 예정된 리팩토링이 없습니다.
 
 ## 리팩토링 문서 작성 가이드
 
