@@ -45,17 +45,24 @@ const addRefreshSubscriber = (
 };
 
 // 로그아웃 처리
-const handleLogout = (showAlert: boolean = true) => {
+const handleLogout = (redirect: boolean = true) => {
   try {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("user_type");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userName");
   } catch {
     // ignore storage errors
   }
 
-  if (showAlert && typeof window !== "undefined") {
-    alert("로그인 세션이 만료되었어요. 다시 로그인해주세요.");
+  if (redirect && typeof window !== "undefined") {
+    // 로그인 페이지에서 토스트 표시를 위해 플래그 저장
+    try {
+      sessionStorage.setItem("sessionExpired", "true");
+    } catch {
+      // ignore storage errors
+    }
     window.location.replace("/login");
   }
 };
@@ -141,7 +148,8 @@ apiClient.interceptors.response.use(
       // reissue 요청 자체가 실패한 경우 무한 루프 방지
       if (originalRequest.url?.includes("/api/auth/reissue")) {
         handleLogout();
-        return Promise.reject(error);
+        // 리다이렉트 완료까지 pending 상태 유지 (에러 페이지 방지)
+        return new Promise(() => {});
       }
 
       if (shouldSkipRefresh) {
@@ -152,7 +160,8 @@ apiClient.interceptors.response.use(
       const refreshToken = localStorage.getItem("refreshToken");
       if (!refreshToken) {
         handleLogout();
-        return Promise.reject(error);
+        // 리다이렉트 완료까지 pending 상태 유지 (에러 페이지 방지)
+        return new Promise(() => {});
       }
 
       // 이미 재발급 진행 중이면 대기
@@ -188,13 +197,15 @@ apiClient.interceptors.response.use(
           isRefreshing = false;
           onRefreshFailed(new Error("Token refresh failed"));
           handleLogout();
-          return Promise.reject(error);
+          // 리다이렉트 완료까지 pending 상태 유지 (에러 페이지 방지)
+          return new Promise(() => {});
         }
       } catch {
         isRefreshing = false;
         onRefreshFailed(new Error("Token refresh failed"));
         handleLogout();
-        return Promise.reject(error);
+        // 리다이렉트 완료까지 pending 상태 유지 (에러 페이지 방지)
+        return new Promise(() => {});
       }
     }
 

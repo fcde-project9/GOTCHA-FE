@@ -6,11 +6,13 @@ import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { Checkbox } from "@/components/common";
 import { LOGO_IMAGES, SOCIAL_LOGO_IMAGES } from "@/constants";
+import { useToast } from "@/hooks";
 import { loginWithKakao, loginWithGoogle } from "@/utils";
 import { trackGuestModeStart } from "@/utils/analytics";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [showTermsSheet, setShowTermsSheet] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
@@ -21,6 +23,15 @@ export default function LoginPage() {
       router.replace("/home");
     }
   }, [router]);
+
+  // 세션 만료로 리다이렉트된 경우 토스트 표시
+  useEffect(() => {
+    const sessionExpired = sessionStorage.getItem("sessionExpired");
+    if (sessionExpired === "true") {
+      sessionStorage.removeItem("sessionExpired");
+      showToast("로그인 세션이 만료되었어요");
+    }
+  }, [showToast]);
 
   const handleGuestLogin = () => {
     setShowTermsSheet(true);
