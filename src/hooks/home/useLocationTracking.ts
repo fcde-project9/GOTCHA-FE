@@ -29,6 +29,8 @@ interface UseLocationTrackingReturn {
   hasReceivedLocation: boolean;
   /** 위치 수신 완료 표시 */
   setHasReceivedLocation: (value: boolean) => void;
+  /** 위치 가져오는 중 여부 */
+  isLocating: boolean;
 }
 
 /**
@@ -46,6 +48,7 @@ export function useLocationTracking(
   const [locationDenied, setLocationDenied] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [hasReceivedLocation, setHasReceivedLocation] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
 
   // 디바이스 방향 이벤트 핸들러 ref (메모리 누수 방지)
   const orientationHandlerRef = useRef<((event: DeviceOrientationEvent) => void) | null>(null);
@@ -171,6 +174,9 @@ export function useLocationTracking(
       return;
     }
 
+    // 로딩 시작
+    setIsLocating(true);
+
     // iOS 13+: 사용자 제스처 컨텍스트에서 직접 권한 요청
     await requestOrientationPermission();
 
@@ -206,6 +212,9 @@ export function useLocationTracking(
         } catch {
           // localStorage 접근 불가 시 무시
         }
+
+        // 로딩 종료
+        setIsLocating(false);
       },
       (err) => {
         console.error("위치 정보를 가져올 수 없어요:", err);
@@ -221,6 +230,9 @@ export function useLocationTracking(
           }
           setShowLocationModal(true);
         }
+
+        // 로딩 종료
+        setIsLocating(false);
       },
       {
         enableHighAccuracy: true,
@@ -292,5 +304,6 @@ export function useLocationTracking(
     userLocation,
     hasReceivedLocation,
     setHasReceivedLocation,
+    isLocating,
   };
 }
