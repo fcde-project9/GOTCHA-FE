@@ -214,6 +214,7 @@ export default function Home() {
         // 최초 로드 시 자동으로 가게 목록 조회
         setActiveBounds(bounds);
         setHasInitialLoad(true);
+        shouldAutoReloadRef.current = false; // 초기 로드 후 리셋
       } else if (shouldAutoReloadRef.current) {
         // 현재 위치 버튼 클릭 또는 위치 수신 시 자동 재검색
         setActiveBounds(bounds);
