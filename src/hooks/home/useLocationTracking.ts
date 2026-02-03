@@ -176,6 +176,9 @@ export function useLocationTracking(
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        // 권한 허용 성공 추적
+        trackLocationPermission(true);
+
         const newLocation = {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
@@ -194,6 +197,15 @@ export function useLocationTracking(
 
         // 디바이스 방향 감지 시작 (권한이 이미 부여된 상태)
         startDeviceOrientationTracking(newLocation);
+
+        // 권한 허용 시 denied 상태 초기화
+        setLocationDenied(false);
+        setShowLocationModal(false);
+        try {
+          localStorage.removeItem("locationPermissionDenied");
+        } catch {
+          // localStorage 접근 불가 시 무시
+        }
       },
       (err) => {
         console.error("위치 정보를 가져올 수 없어요:", err);
