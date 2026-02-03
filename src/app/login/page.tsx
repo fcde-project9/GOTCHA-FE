@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { Checkbox } from "@/components/common";
 import { LOGO_IMAGES, SOCIAL_LOGO_IMAGES } from "@/constants";
-import { loginWithKakao, loginWithGoogle } from "@/utils";
+import { loginWithKakao, loginWithGoogle, loginWithApple } from "@/utils";
 import { trackGuestModeStart } from "@/utils/analytics";
 
 export default function LoginPage() {
@@ -98,6 +98,18 @@ export default function LoginPage() {
                 <Image src={SOCIAL_LOGO_IMAGES.GOOGLE} alt="구글" width={20} height={20} />
                 <span className="text-[16px] font-semibold leading-[1.5] text-[#1F1F1F]">
                   Google 로그인
+                </span>
+              </button>
+
+              {/* 애플 로그인 */}
+              <button
+                onClick={loginWithApple}
+                disabled={showTermsSheet}
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-black transition-opacity hover:opacity-90 active:opacity-80 disabled:opacity-50"
+              >
+                <Image src={SOCIAL_LOGO_IMAGES.APPLE} alt="Apple" width={20} height={20} />
+                <span className="text-[16px] font-semibold leading-[1.5] text-white">
+                  Apple로 로그인
                 </span>
               </button>
             </div>
