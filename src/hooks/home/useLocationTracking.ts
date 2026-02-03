@@ -197,10 +197,11 @@ export function useLocationTracking(
 
       onLocationUpdate?.(newLocation);
 
+      const heading = position.coords.heading;
       setCurrentLocation({
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
-        heading: position.coords.heading ?? null,
+        heading: heading != null && !isNaN(heading) ? heading : null,
       });
 
       startDeviceOrientationTracking(newLocation);
