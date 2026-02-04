@@ -26,8 +26,9 @@ export function checkSessionAndRedirect(): boolean {
     const accessToken = localStorage.getItem("accessToken");
     const refreshToken = localStorage.getItem("refreshToken");
 
-    // accessToken이 만료됐고 refreshToken도 없으면 바로 로그인으로
-    if (isTokenExpired(accessToken) && !refreshToken) {
+    // accessToken이 있지만 만료됐고 refreshToken도 없으면 바로 로그인으로
+    // (토큰이 없는 경우는 로그아웃 상태이므로 세션 만료 처리하지 않음)
+    if (accessToken && isTokenExpired(accessToken) && !refreshToken) {
       // 토큰 및 사용자 정보 정리
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
