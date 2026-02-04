@@ -1,4 +1,5 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/api/queryKeys";
 import type { CreateShopRequest, CoordinateRequest } from "@/api/types";
 import { useCreateShop } from "./useCreateShop";
 import { useUploadFile } from "./useUploadFile";
@@ -16,6 +17,7 @@ interface CreateShopWithUploadParams {
  * @returns Mutation hook - 파일과 가게 정보를 받아 업로드 후 가게를 생성
  */
 export const useCreateShopWithUpload = () => {
+  const queryClient = useQueryClient();
   const uploadFileMutation = useUploadFile("shops");
   const createShopMutation = useCreateShop();
 
@@ -34,6 +36,10 @@ export const useCreateShopWithUpload = () => {
       });
 
       return shopResult;
+    },
+    onSuccess: () => {
+      // 제보 완료 시 내가 제보한 업체 목록 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.myReports() });
     },
   });
 };
