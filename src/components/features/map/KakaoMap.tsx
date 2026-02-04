@@ -184,6 +184,7 @@ export default function KakaoMap({
                     imageOption
                   );
                   selectedMarkerRef.current.setImage(defaultImage);
+                  selectedMarkerRef.current.setZIndex(1);
                   selectedMarkerRef.current = null;
                 }
                 onMapClickRef.current?.();
@@ -243,6 +244,7 @@ export default function KakaoMap({
       // 이전 선택 마커 복원
       if (selectedMarkerRef.current) {
         selectedMarkerRef.current.setImage(defaultImage);
+        selectedMarkerRef.current.setZIndex(1);
         selectedMarkerRef.current = null;
       }
 
@@ -266,6 +268,7 @@ export default function KakaoMap({
             selectedOption
           );
           found.marker.setImage(selectedImage);
+          found.marker.setZIndex(10);
           selectedMarkerRef.current = found.marker;
         }
       }
@@ -351,6 +354,7 @@ export default function KakaoMap({
       const markerOptions: MarkerOptions = {
         position,
         map,
+        zIndex: 1,
       };
 
       if (markerImage) {
@@ -363,11 +367,13 @@ export default function KakaoMap({
         // 이전 선택 마커를 기본 이미지로 복원
         if (selectedMarkerRef.current && markerImage) {
           selectedMarkerRef.current.setImage(markerImage);
+          selectedMarkerRef.current.setZIndex(1);
         }
         // 클릭한 마커를 선택 이미지로 변경
         if (markerImageSelected) {
           marker.setImage(markerImageSelected);
         }
+        marker.setZIndex(10);
         selectedMarkerRef.current = marker;
 
         onMarkerClickRef.current?.(markerData);
