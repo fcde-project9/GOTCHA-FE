@@ -60,7 +60,7 @@ export function useHomeMapState(): UseHomeMapStateReturn {
     setMapLevel: setStoredMapLevel,
   } = useMapStore();
 
-  // 스토어 값이 있으면 스토어 값으로 초기화 (hydration 후 복원 대신)
+  // null로 초기화 후 hydration 완료 시 스토어 값으로 복원
   const [mapCenter, setMapCenterState] = useState<MapCenter | null>(null);
   const [mapLevel, setMapLevelState] = useState<number | null>(null);
   const [centerUpdateTrigger, setCenterUpdateTrigger] = useState(0);
