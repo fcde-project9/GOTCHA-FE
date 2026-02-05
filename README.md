@@ -128,7 +128,7 @@ GitHub Actions + Vercel을 사용한 자동 배포 파이프라인
 
 커밋 시 자동으로 코드 품질 검사가 실행됩니다.
 
-```
+```text
 pre-commit → lint-staged → ESLint + Prettier
 ```
 

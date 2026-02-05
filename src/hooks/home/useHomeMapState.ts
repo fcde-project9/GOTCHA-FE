@@ -62,7 +62,7 @@ export function useHomeMapState(): UseHomeMapStateReturn {
 
   // 스토어 값이 있으면 스토어 값으로 초기화 (hydration 후 복원 대신)
   const [mapCenter, setMapCenterState] = useState<MapCenter | null>(null);
-  const [mapLevel, setMapLevelState] = useState(5);
+  const [mapLevel, setMapLevelState] = useState<number | null>(null);
   const [centerUpdateTrigger, setCenterUpdateTrigger] = useState(0);
   const [showReloadButton, setShowReloadButton] = useState(false);
   const [hasInitialLoad, setHasInitialLoad] = useState(false);
@@ -103,7 +103,7 @@ export function useHomeMapState(): UseHomeMapStateReturn {
 
   // hydration 완료 전까지는 스토어 값을 직접 사용
   const effectiveMapCenter = hasHydrated ? (mapCenter ?? storedMapCenter) : null;
-  const effectiveMapLevel = hasHydrated ? mapLevel : (storedMapLevel ?? 5);
+  const effectiveMapLevel = hasHydrated ? (mapLevel ?? storedMapLevel ?? 5) : 5;
 
   // 지도 중심 변경 시 스토어에 저장
   const setMapCenter = useCallback(

@@ -38,7 +38,7 @@ export default function ReportLocationPage() {
   } | null>(null);
 
   // 카카오맵 SDK 로드 상태
-  const { loaded: kakaoLoaded } = useKakaoLoader();
+  const { loaded: kakaoLoaded, error: kakaoError } = useKakaoLoader();
 
   // 근처 가게 확인 함수
   const checkNearbyShops = useCallback(async (latitude: number, longitude: number) => {
@@ -85,6 +85,14 @@ export default function ReportLocationPage() {
 
   // SDK 로드 완료 후 주소 변환
   useEffect(() => {
+    if (kakaoError && pendingLocation) {
+      // SDK 로드 실패 시 에러 처리
+      setAddress("주소를 가져올 수 없어요");
+      setIsLoading(false);
+      setPendingLocation(null);
+      return;
+    }
+
     if (kakaoLoaded && pendingLocation) {
       getAddressFromCoords(pendingLocation.latitude, pendingLocation.longitude).then(() => {
         setIsLoading(false);
@@ -92,7 +100,7 @@ export default function ReportLocationPage() {
       setPendingLocation(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [kakaoLoaded, pendingLocation]);
+  }, [kakaoLoaded, kakaoError, pendingLocation]);
 
   const getAddressFromCoords = useCallback((lat: number, lng: number): Promise<void> => {
     return new Promise((resolve) => {
