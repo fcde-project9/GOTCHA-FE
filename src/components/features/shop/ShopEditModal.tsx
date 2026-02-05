@@ -107,6 +107,16 @@ export function ShopEditModal({
       });
       setOpenTimeValues(values);
       setDayStatus(statuses);
+    } else {
+      // 파싱 실패 시 기본값으로 초기화
+      const values: Record<string, string> = {};
+      const statuses: Record<string, DayStatusType> = {};
+      ALL_DAYS.forEach((day) => {
+        values[day] = "";
+        statuses[day] = "unknown";
+      });
+      setOpenTimeValues(values);
+      setDayStatus(statuses);
     }
   }, [shopData]);
 
