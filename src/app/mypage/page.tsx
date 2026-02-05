@@ -27,7 +27,7 @@ export default function MyPage() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const { isLoggedIn, isLoading: authLoading, logout } = useAuth();
-  const { data: user, isLoading: userLoading, error, refetch } = useUser();
+  const { data: user, isLoading: userLoading, error, refetch, isAdmin } = useUser();
   const updateNicknameMutation = useUpdateNickname();
   const updateProfileImageWithUploadMutation = useUpdateProfileImageWithUpload();
   const logoutMutation = useLogout();
@@ -224,6 +224,7 @@ export default function MyPage() {
           email={loggedInUser?.email}
           profileImage={loggedInUser?.profileImageUrl ?? undefined}
           socialProvider={socialProvider}
+          isAdmin={isAdmin}
           onEditProfile={handleEditProfile}
           onEditNickname={handleEditNickname}
           onLogin={handleLogin}

@@ -17,11 +17,16 @@ import {
   Trash2,
 } from "lucide-react";
 import { useDeleteReview } from "@/api/mutations/useDeleteReview";
+import { useDeleteShop } from "@/api/mutations/useDeleteShop";
 import { useToggleReviewLike } from "@/api/mutations/useToggleReviewLike";
+import { useUpdateShop } from "@/api/mutations/useUpdateShop";
 import { useShopDetail } from "@/api/queries/useShopDetail";
+import { useUser } from "@/api/queries/useUser";
 import { BackHeader, Button, OutlineButton, ImageViewerModal } from "@/components/common";
 import { ReviewDeleteConfirmModal } from "@/components/features/review/ReviewDeleteConfirmModal";
 import { ReviewWriteModal } from "@/components/features/review/ReviewWriteModal";
+import { ShopDeleteConfirmModal } from "@/components/features/shop/ShopDeleteConfirmModal";
+import { ShopEditModal } from "@/components/features/shop/ShopEditModal";
 // BottomSheet 미사용 - 직접 드래그 처리
 import { useFavorite, useToast } from "@/hooks";
 import type { OpenTime, ReviewResponse, ReviewSortOption } from "@/types/api";
@@ -225,6 +230,14 @@ export default function ShopPreviewBottomSheet({
 
   const deleteReviewMutation = useDeleteReview(shopId ?? 0, deletingReviewId ?? 0);
   const toggleReviewLikeMutation = useToggleReviewLike();
+  const deleteShopMutation = useDeleteShop();
+  const updateShopMutation = useUpdateShop();
+
+  const { isAdmin } = useUser();
+  const [isShopDeleteModalOpen, setIsShopDeleteModalOpen] = useState(false);
+  const [isShopEditModalOpen, setIsShopEditModalOpen] = useState(false);
+  const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
+  const adminMenuRef = useRef<HTMLDivElement>(null);
 
   // 정렬 드롭다운 외부 클릭 시 닫기
   useEffect(() => {
@@ -238,6 +251,19 @@ export default function ShopPreviewBottomSheet({
       return () => document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [isSortDropdownOpen]);
+
+  // 어드민 메뉴 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (adminMenuRef.current && !adminMenuRef.current.contains(event.target as Node)) {
+        setIsAdminMenuOpen(false);
+      }
+    };
+    if (isAdminMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isAdminMenuOpen]);
 
   // 드래그 상태
   const DEFAULT_HEIGHT = 348;
@@ -422,6 +448,41 @@ export default function ShopPreviewBottomSheet({
     setIsSortDropdownOpen(false);
   };
 
+  const handleConfirmShopDelete = () => {
+    if (!shopId) return;
+    deleteShopMutation.mutate(shopId, {
+      onSuccess: () => {
+        showToast("가게가 삭제되었어요.");
+        setIsShopDeleteModalOpen(false);
+        onClose();
+      },
+      onError: (error) => {
+        showToast(error.message || "가게 삭제에 실패했어요.");
+      },
+    });
+  };
+
+  const handleShopEdit = (data: {
+    name: string;
+    addressName?: string;
+    locationHint?: string;
+    openTime?: Record<string, string | null>;
+  }) => {
+    if (!shopId) return;
+    updateShopMutation.mutate(
+      { shopId, data },
+      {
+        onSuccess: () => {
+          showToast("가게 정보가 수정되었어요.");
+          setIsShopEditModalOpen(false);
+        },
+        onError: (error) => {
+          showToast(error.message || "가게 정보 수정에 실패했어요.");
+        },
+      }
+    );
+  };
+
   return (
     <>
       {/* 바텀시트 */}
@@ -448,7 +509,7 @@ export default function ShopPreviewBottomSheet({
         {/* 확장 시 헤더 (위에서 아래로 슬라이드) */}
         {(isExpanded || isCollapsing) && (
           <div
-            className="flex items-center justify-between pr-5 animate-slide-down-header cursor-grab active:cursor-grabbing"
+            className="flex items-center justify-between pr-4 animate-slide-down-header cursor-grab active:cursor-grabbing"
             onTouchStart={(e) => handleDragStart(e.touches[0].clientY)}
             onTouchMove={(e) => handleDragMove(e.touches[0].clientY)}
             onTouchEnd={handleDragEnd}
@@ -475,6 +536,44 @@ export default function ShopPreviewBottomSheet({
               >
                 <Share size={24} className="stroke-icon-default" strokeWidth={1.5} />
               </button>
+              {isAdmin && (
+                <div className="relative" ref={adminMenuRef}>
+                  <button
+                    onClick={() => setIsAdminMenuOpen(!isAdminMenuOpen)}
+                    className="flex items-center justify-center w-8 h-10 rounded-full"
+                    aria-label="관리자 메뉴"
+                  >
+                    <MoreVertical size={24} className="stroke-icon-default" strokeWidth={1.5} />
+                  </button>
+                  {isAdminMenuOpen && (
+                    <div className="absolute right-0 top-10 z-10 bg-white rounded-lg shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden">
+                      <button
+                        onClick={() => {
+                          setIsAdminMenuOpen(false);
+                          setIsShopEditModalOpen(true);
+                        }}
+                        className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
+                      >
+                        <Pencil size={16} className="text-grey-900" />
+                        <span className="text-[14px] text-grey-900 whitespace-nowrap">
+                          수정하기
+                        </span>
+                      </button>
+                      <div className="border-t border-grey-100" />
+                      <button
+                        onClick={() => {
+                          setIsAdminMenuOpen(false);
+                          setIsShopDeleteModalOpen(true);
+                        }}
+                        className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
+                      >
+                        <Trash2 size={16} className="text-error" />
+                        <span className="text-[14px] text-error whitespace-nowrap">삭제하기</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -907,6 +1006,33 @@ export default function ShopPreviewBottomSheet({
         onClose={() => setDeletingReviewId(null)}
         onConfirm={handleConfirmDelete}
       />
+
+      {/* 가게 삭제 확인 모달 (ADMIN 전용) */}
+      <ShopDeleteConfirmModal
+        isOpen={isShopDeleteModalOpen}
+        isLoading={deleteShopMutation.isPending}
+        shopName={shop?.name ?? ""}
+        onClose={() => setIsShopDeleteModalOpen(false)}
+        onConfirm={handleConfirmShopDelete}
+      />
+
+      {/* 가게 정보 수정 모달 (ADMIN 전용) */}
+      {shop && shopId && (
+        <ShopEditModal
+          isOpen={isShopEditModalOpen}
+          isLoading={updateShopMutation.isPending}
+          shopId={shopId}
+          shopData={{
+            name: shop.name,
+            addressName: shop.addressName,
+            locationHint: shop.locationHint,
+            openTime: shop.openTime,
+            mainImageUrl: shop.mainImageUrl,
+          }}
+          onClose={() => setIsShopEditModalOpen(false)}
+          onSave={handleShopEdit}
+        />
+      )}
     </>
   );
 }
