@@ -75,7 +75,7 @@ export default function Footer() {
             >
               <Image
                 src={active ? item.activeIcon : item.inactiveIcon}
-                alt={item.label}
+                alt=""
                 width={24}
                 height={24}
                 aria-hidden="true"
