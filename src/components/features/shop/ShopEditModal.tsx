@@ -24,6 +24,7 @@ type DayStatusType = "custom" | "24h" | "closed" | "unknown";
 
 const DAY_STATUS_OPTIONS: { value: DayStatusType; label: string }[] = [
   { value: "24h", label: "24시간" },
+  { value: "closed", label: "휴무" },
   { value: "unknown", label: "모름" },
 ];
 
@@ -92,13 +93,13 @@ export function ShopEditModal({
         if (value === "00:00~24:00" || value === "24시간") {
           values[day] = "";
           statuses[day] = "24h";
-        } else if (value === null) {
-          // null은 "모름"으로 처리
+        } else if (value === "휴무") {
+          values[day] = "";
+          statuses[day] = "closed";
+        } else if (value === null || value === "") {
+          // null 또는 빈 문자열은 "모름"으로 처리
           values[day] = "";
           statuses[day] = "unknown";
-        } else if (value === "" || value === "휴무" || value === "모름") {
-          values[day] = "";
-          statuses[day] = "custom";
         } else {
           values[day] = value;
           statuses[day] = "custom";
@@ -108,6 +109,28 @@ export function ShopEditModal({
       setDayStatus(statuses);
     }
   }, [shopData]);
+
+  // ESC 키로 모달 닫기
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [isOpen, onClose]);
+
+  // Body 스크롤 방지
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -183,6 +206,9 @@ export function ShopEditModal({
         case "24h":
           newOpenTime[day] = "00:00~24:00";
           break;
+        case "closed":
+          newOpenTime[day] = "휴무";
+          break;
         case "unknown":
           newOpenTime[day] = null;
           break;
@@ -199,11 +225,18 @@ export function ShopEditModal({
   const isButtonDisabled = !name.trim() || !addressName.trim() || isLoading;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-3xl w-[335px] max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+      <div
+        role="dialog"
+        aria-labelledby="shop-edit-modal-title"
+        className="bg-white rounded-3xl w-[335px] max-h-[90vh] flex flex-col"
+      >
         {/* Header - 고정 */}
         <div className="flex items-center justify-between p-6 pb-0">
-          <h2 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900">
+          <h2
+            id="shop-edit-modal-title"
+            className="text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900"
+          >
             가게 정보 수정
           </h2>
           <button
@@ -291,9 +324,11 @@ export function ShopEditModal({
                 const displayValue =
                   status === "24h"
                     ? "00:00~24:00"
-                    : status === "unknown"
-                      ? "-"
-                      : openTimeValues[day] || "";
+                    : status === "closed"
+                      ? "휴무"
+                      : status === "unknown"
+                        ? "-"
+                        : openTimeValues[day] || "";
                 return (
                   <div key={day} className="flex items-center gap-1.5">
                     <span className="w-5 text-[13px] text-grey-700 font-medium shrink-0">

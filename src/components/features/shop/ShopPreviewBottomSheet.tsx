@@ -475,7 +475,6 @@ export default function ShopPreviewBottomSheet({
         onSuccess: () => {
           showToast("가게 정보가 수정되었어요.");
           setIsShopEditModalOpen(false);
-          refetch();
         },
         onError: (error) => {
           showToast(error.message || "가게 정보 수정에 실패했어요.");

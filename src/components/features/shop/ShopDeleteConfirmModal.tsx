@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+
 interface ShopDeleteConfirmModalProps {
   isOpen: boolean;
   isLoading?: boolean;
@@ -18,14 +20,43 @@ export function ShopDeleteConfirmModal({
   onClose,
   onConfirm,
 }: ShopDeleteConfirmModalProps) {
+  // ESC 키로 모달 닫기
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [isOpen, onClose]);
+
+  // Body 스크롤 방지
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-3xl w-[335px] p-6 flex flex-col gap-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+      <div
+        role="dialog"
+        aria-labelledby="shop-delete-modal-title"
+        className="bg-white rounded-3xl w-[335px] p-6 flex flex-col gap-6"
+      >
         {/* Title & Description */}
         <div className="flex flex-col gap-2">
-          <h2 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900 text-center">
+          <h2
+            id="shop-delete-modal-title"
+            className="text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900 text-center"
+          >
             가게를 삭제할까요?
           </h2>
           <p className="text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-700 text-center">
