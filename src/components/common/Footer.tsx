@@ -2,31 +2,20 @@
 
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { UserRound } from "lucide-react";
 
-type NavItem =
-  | {
-      id: string;
-      label: string;
-      path: string;
-      type: "svg";
-      activeIcon: string;
-      inactiveIcon: string;
-    }
-  | {
-      id: string;
-      label: string;
-      path: string;
-      type: "lucide";
-      icon: typeof UserRound;
-    };
+type NavItem = {
+  id: string;
+  label: string;
+  path: string;
+  activeIcon: string;
+  inactiveIcon: string;
+};
 
 const navItems: NavItem[] = [
   {
     id: "home",
     label: "홈",
     path: "/home",
-    type: "svg",
     activeIcon: "/images/icons/home_fill.svg",
     inactiveIcon: "/images/icons/home_blank.svg",
   },
@@ -34,7 +23,6 @@ const navItems: NavItem[] = [
     id: "report",
     label: "제보하기",
     path: "/report",
-    type: "svg",
     activeIcon: "/images/icons/report_fill.svg",
     inactiveIcon: "/images/icons/report_blank.svg",
   },
@@ -42,7 +30,6 @@ const navItems: NavItem[] = [
     id: "favorites",
     label: "찜한업체",
     path: "/favorites",
-    type: "svg",
     activeIcon: "/images/icons/favorites_fill.svg",
     inactiveIcon: "/images/icons/favorites_blank.svg",
   },
@@ -50,8 +37,8 @@ const navItems: NavItem[] = [
     id: "mypage",
     label: "마이페이지",
     path: "/mypage",
-    type: "lucide",
-    icon: UserRound,
+    activeIcon: "/images/icons/mypage_fill.svg",
+    inactiveIcon: "/images/icons/mypage_blank.svg",
   },
 ];
 
@@ -70,7 +57,7 @@ export default function Footer() {
     <footer
       className="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-[480px] bg-white shadow-[0px_-3px_8px_rgba(163,163,163,0.15)] z-[20]"
       style={{
-        paddingBottom: "env(safe-area-inset-bottom)",
+        paddingBottom: "calc(env(safe-area-inset-bottom) + 8px)",
         minHeight: "calc(60px + env(safe-area-inset-bottom))",
       }}
     >
@@ -86,22 +73,13 @@ export default function Footer() {
               aria-label={item.label}
               aria-current={active ? "page" : undefined}
             >
-              {item.type === "svg" ? (
-                <Image
-                  src={active ? item.activeIcon : item.inactiveIcon}
-                  alt={item.label}
-                  width={24}
-                  height={24}
-                  aria-hidden="true"
-                />
-              ) : (
-                <item.icon
-                  size={24}
-                  className={active ? "stroke-grey-800 fill-grey-800" : "stroke-grey-500 fill-none"}
-                  strokeWidth={1.25}
-                  aria-hidden="true"
-                />
-              )}
+              <Image
+                src={active ? item.activeIcon : item.inactiveIcon}
+                alt=""
+                width={24}
+                height={24}
+                aria-hidden="true"
+              />
               <span
                 className={`text-center font-medium text-[11px] leading-[1.5] tracking-[-0.11px] ${
                   active ? "text-grey-800" : "text-grey-500"
