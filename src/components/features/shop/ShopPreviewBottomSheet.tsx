@@ -389,11 +389,10 @@ export default function ShopPreviewBottomSheet({
 
   const handleLikeToggle = (reviewId: number) => {
     const review = shop.reviews.find((r) => r.id === reviewId);
-    if (!review) return;
+    if (!review || !shopId) return;
     toggleReviewLikeMutation.mutate(
-      { reviewId, isLiked: review.isLiked },
+      { reviewId, isLiked: review.isLiked, shopId },
       {
-        onSuccess: () => refetch(),
         onError: (error) => showToast(error.message || "좋아요 처리에 실패했어요."),
       }
     );
@@ -427,7 +426,7 @@ export default function ShopPreviewBottomSheet({
     <>
       {/* 바텀시트 */}
       <div
-        className={`absolute bottom-0 left-0 right-0 z-40 bg-white overflow-hidden shadow-[0_-4px_10px_rgba(0,0,0,0.2)] ${isExpanded && !isCollapsing ? "" : "rounded-t-[24px]"} ${isLeaving ? "animate-slide-down" : !hasExpandedOnce ? "animate-slide-up" : ""}`}
+        className={`absolute bottom-0 left-0 right-0 z-40 bg-white overflow-hidden shadow-[0_-4px_10px_rgba(0,0,0,0.2)] ${isExpanded && !isCollapsing ? "flex flex-col" : "rounded-t-[24px]"} ${isLeaving ? "animate-slide-down" : !hasExpandedOnce ? "animate-slide-up" : ""}`}
         style={{
           height: isCollapsing ? `${sheetHeight}px` : isExpanded ? "100%" : `${sheetHeight}px`,
           transition: isDragging ? "none" : "height 0.55s cubic-bezier(0.32, 0.72, 0, 1)",
@@ -481,7 +480,7 @@ export default function ShopPreviewBottomSheet({
         )}
 
         <div
-          className={`${isExpanded ? "overflow-y-auto h-full" : "overflow-hidden h-[calc(100%-34px)]"}`}
+          className={`${isExpanded ? "flex-1 overflow-y-auto pb-safe" : "overflow-hidden h-[calc(100%-34px)]"}`}
         >
           <div className="flex flex-col px-5">
             {/* 업체명 + 찜/공유 (확장 시 찜/공유는 헤더에만 표시) */}
@@ -864,8 +863,6 @@ export default function ShopPreviewBottomSheet({
                     </div>
                   )}
                 </div>
-
-                <div className="h-8" />
               </>
             )}
           </div>
@@ -887,7 +884,6 @@ export default function ShopPreviewBottomSheet({
         shopId={shopId}
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
-        onSuccess={() => refetch()}
       />
 
       {/* 리뷰 수정 모달 */}
@@ -896,7 +892,6 @@ export default function ShopPreviewBottomSheet({
           shopId={shopId}
           isOpen={!!editingReview}
           onClose={() => setEditingReview(null)}
-          onSuccess={() => refetch()}
           reviewId={editingReview.id}
           initialData={{
             content: editingReview.content,

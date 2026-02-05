@@ -335,11 +335,8 @@ export default function ShopDetailPage() {
     if (!review) return;
 
     toggleReviewLikeMutation.mutate(
-      { reviewId, isLiked: review.isLiked },
+      { reviewId, isLiked: review.isLiked, shopId: validShopId },
       {
-        onSuccess: () => {
-          refetch();
-        },
         onError: (error) => {
           showToast(error.message || "좋아요 처리에 실패했어요.");
         },
@@ -818,7 +815,6 @@ export default function ShopDetailPage() {
         shopId={validShopId}
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
-        onSuccess={() => refetch()}
       />
 
       {/* 리뷰 수정 모달 */}
@@ -827,7 +823,6 @@ export default function ShopDetailPage() {
           shopId={validShopId}
           isOpen={!!editingReview}
           onClose={() => setEditingReview(null)}
-          onSuccess={() => refetch()}
           reviewId={editingReview.id}
           initialData={{
             content: editingReview.content,

@@ -60,6 +60,7 @@ export function useHomeMapState(): UseHomeMapStateReturn {
     setMapLevel: setStoredMapLevel,
   } = useMapStore();
 
+  // 스토어 값이 있으면 스토어 값으로 초기화 (hydration 후 복원 대신)
   const [mapCenter, setMapCenterState] = useState<MapCenter | null>(null);
   const [mapLevel, setMapLevelState] = useState(5);
   const [centerUpdateTrigger, setCenterUpdateTrigger] = useState(0);
@@ -88,9 +89,10 @@ export function useHomeMapState(): UseHomeMapStateReturn {
     if (hasRestoredFromStore.current) return;
     hasRestoredFromStore.current = true;
 
+    // 스토어에 저장된 위치가 있으면 복원
     if (storedMapCenter) {
       setMapCenterState(storedMapCenter);
-      setCenterUpdateTrigger((prev) => prev + 1);
+      // 이미 저장된 위치가 있으므로 자동 재검색 설정
       shouldAutoReloadRef.current = true;
     }
 
@@ -98,6 +100,10 @@ export function useHomeMapState(): UseHomeMapStateReturn {
       setMapLevelState(storedMapLevel);
     }
   }, [hasHydrated, storedMapCenter, storedMapLevel]);
+
+  // hydration 완료 전까지는 스토어 값을 직접 사용
+  const effectiveMapCenter = hasHydrated ? (mapCenter ?? storedMapCenter) : null;
+  const effectiveMapLevel = hasHydrated ? mapLevel : (storedMapLevel ?? 5);
 
   // 지도 중심 변경 시 스토어에 저장
   const setMapCenter = useCallback(
@@ -163,9 +169,9 @@ export function useHomeMapState(): UseHomeMapStateReturn {
   }, [currentBounds]);
 
   return {
-    mapCenter,
+    mapCenter: effectiveMapCenter,
     setMapCenter,
-    mapLevel,
+    mapLevel: effectiveMapLevel,
     setMapLevel,
     centerUpdateTrigger,
     triggerCenterUpdate,
