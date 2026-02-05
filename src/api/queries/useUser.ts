@@ -33,5 +33,11 @@ export const useUser = () => {
     }
   }, [query.data, query.isLoading, logout]);
 
-  return query;
+  // 권한 파생 값
+  const isAdmin = query.data?.userType === "ADMIN";
+
+  return {
+    ...query,
+    isAdmin,
+  };
 };

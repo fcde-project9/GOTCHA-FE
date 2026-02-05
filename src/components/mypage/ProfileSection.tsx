@@ -16,6 +16,7 @@ interface ProfileSectionProps {
   email?: string;
   profileImage?: string;
   socialProvider?: "google" | "kakao" | "naver";
+  isAdmin?: boolean;
   onEditProfile?: (file: File) => void;
   onEditNickname?: () => void;
   onLogin?: () => void;
@@ -27,6 +28,7 @@ export function ProfileSection({
   email = "abcd123@gmail.com",
   profileImage = DEFAULT_IMAGES.PROFILE,
   socialProvider = "google",
+  isAdmin = false,
   onEditProfile,
   onEditNickname,
   onLogin,
@@ -133,6 +135,11 @@ export function ProfileSection({
             <p className="text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-800 text-center">
               {email}
             </p>
+            {isAdmin && (
+              <span className="bg-main text-white text-[10px] font-semibold px-1.5 py-0.5 rounded">
+                ADMIN
+              </span>
+            )}
           </div>
         </div>
       </div>

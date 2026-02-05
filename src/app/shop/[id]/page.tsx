@@ -10,7 +10,6 @@ import {
   ChevronRight,
   ChevronDown,
   PencilLine,
-  X,
   ThumbsUp,
   MoreVertical,
   Pencil,
@@ -18,12 +17,17 @@ import {
   Images,
 } from "lucide-react";
 import { useDeleteReview } from "@/api/mutations/useDeleteReview";
+import { useDeleteShop } from "@/api/mutations/useDeleteShop";
 import { useToggleReviewLike } from "@/api/mutations/useToggleReviewLike";
+import { useUpdateShop } from "@/api/mutations/useUpdateShop";
 import { useShopDetail } from "@/api/queries/useShopDetail";
+import { useUser } from "@/api/queries/useUser";
 import { Button, BackHeader, OutlineButton, ImageViewerModal } from "@/components/common";
 import { ReviewDeleteConfirmModal } from "@/components/features/review/ReviewDeleteConfirmModal";
 import { ReviewWriteModal } from "@/components/features/review/ReviewWriteModal";
 import { StatusBadge } from "@/components/features/shop";
+import { ShopDeleteConfirmModal } from "@/components/features/shop/ShopDeleteConfirmModal";
+import { ShopEditModal } from "@/components/features/shop/ShopEditModal";
 import { useFavorite, useToast } from "@/hooks";
 import type { ReviewResponse, OpenTime, ReviewSortOption } from "@/types/api";
 import { formatDate } from "@/utils";
@@ -79,15 +83,24 @@ function ReviewItem({
   onEdit,
   onDelete,
   onImageClick,
+  isAdmin = false,
 }: {
   review: ReviewResponse;
   onLikeToggle: (reviewId: number) => void;
   onEdit: (reviewId: number) => void;
   onDelete: (reviewId: number) => void;
   onImageClick?: (images: string[], index: number) => void;
+  isAdmin?: boolean;
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // 메뉴 표시 조건: 본인 리뷰이거나 ADMIN
+  const showMenu = review.isOwner || isAdmin;
+  // 수정 권한: 본인만 가능
+  const canEdit = review.isOwner;
+  // 삭제 권한: 본인 또는 ADMIN
+  const canDelete = review.isOwner || isAdmin;
 
   // 메뉴 외부 클릭 시 닫기
   useEffect(() => {
@@ -109,7 +122,7 @@ function ReviewItem({
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <span className="text-[12px] text-grey-600 leading-[1.5]">{review.author.nickname}</span>
-          {review.isOwner && (
+          {showMenu && (
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -121,27 +134,35 @@ function ReviewItem({
               {/* 드롭다운 메뉴 */}
               {isMenuOpen && (
                 <div className="absolute right-[calc(50%_+_2px)] top-[20px] z-10 bg-white rounded-lg rounded-tr-none shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden">
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      onEdit(review.id);
-                    }}
-                    className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
-                  >
-                    <Pencil size={16} className="text-grey-900" />
-                    <span className="text-[14px] text-grey-900 whitespace-nowrap">수정하기</span>
-                  </button>
-                  <div className="border-t border-grey-100" />
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      onDelete(review.id);
-                    }}
-                    className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
-                  >
-                    <Trash2 size={16} className="text-error" />
-                    <span className="text-[14px] text-error whitespace-nowrap">삭제하기</span>
-                  </button>
+                  {canEdit && (
+                    <>
+                      <button
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          onEdit(review.id);
+                        }}
+                        className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
+                      >
+                        <Pencil size={16} className="text-grey-900" />
+                        <span className="text-[14px] text-grey-900 whitespace-nowrap">
+                          수정하기
+                        </span>
+                      </button>
+                      {canDelete && <div className="border-t border-grey-100" />}
+                    </>
+                  )}
+                  {canDelete && (
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        onDelete(review.id);
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
+                    >
+                      <Trash2 size={16} className="text-error" />
+                      <span className="text-[14px] text-error whitespace-nowrap">삭제하기</span>
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -285,6 +306,33 @@ export default function ShopDetailPage() {
   // 리뷰 좋아요 토글 mutation hook
   const toggleReviewLikeMutation = useToggleReviewLike();
 
+  // 사용자 정보 조회 (ADMIN 권한 확인용)
+  const { isAdmin } = useUser();
+
+  // 가게 삭제/수정 상태
+  const [isShopDeleteModalOpen, setIsShopDeleteModalOpen] = useState(false);
+  const [isShopEditModalOpen, setIsShopEditModalOpen] = useState(false);
+  const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
+  const adminMenuRef = useRef<HTMLDivElement>(null);
+
+  // 가게 삭제/수정 mutation hook
+  const deleteShopMutation = useDeleteShop();
+  const updateShopMutation = useUpdateShop();
+
+  // Admin 메뉴 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (adminMenuRef.current && !adminMenuRef.current.contains(event.target as Node)) {
+        setIsAdminMenuOpen(false);
+      }
+    };
+
+    if (isAdminMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isAdminMenuOpen]);
+
   // 주소 복사
   const handleCopyAddress = async () => {
     if (!shop) return;
@@ -392,6 +440,42 @@ export default function ShopDetailPage() {
     }
   }, [router]);
 
+  // 가게 삭제 실행 (ADMIN 전용)
+  const handleConfirmShopDelete = () => {
+    deleteShopMutation.mutate(validShopId, {
+      onSuccess: () => {
+        showToast("가게가 삭제되었어요.");
+        setIsShopDeleteModalOpen(false);
+        router.push("/home");
+      },
+      onError: (error) => {
+        showToast(error.message || "가게 삭제에 실패했어요.");
+      },
+    });
+  };
+
+  // 가게 정보 수정 실행 (ADMIN 전용)
+  const handleShopEdit = (data: {
+    name: string;
+    addressName?: string;
+    locationHint?: string;
+    openTime?: Record<string, string | null>;
+  }) => {
+    updateShopMutation.mutate(
+      { shopId: validShopId, data },
+      {
+        onSuccess: () => {
+          showToast("가게 정보가 수정되었어요.");
+          setIsShopEditModalOpen(false);
+          refetch();
+        },
+        onError: (error) => {
+          showToast(error.message || "가게 정보 수정에 실패했어요.");
+        },
+      }
+    );
+  };
+
   // 유효하지 않은 shopId 처리
   if (!isValidShopId) {
     return (
@@ -433,7 +517,7 @@ export default function ShopDetailPage() {
   return (
     <div className="h-dvh bg-default flex flex-col overflow-hidden">
       {/* 헤더 */}
-      <div className="flex items-center justify-between pr-5">
+      <div className="flex items-center justify-between pr-4">
         <BackHeader onBack={handleBack} />
         <div className="flex items-center gap-1 ml-3">
           <button
@@ -455,6 +539,43 @@ export default function ShopDetailPage() {
           >
             <Share size={24} className="stroke-icon-default" strokeWidth={1.5} />
           </button>
+          {/* ADMIN 메뉴 */}
+          {isAdmin && (
+            <div className="relative" ref={adminMenuRef}>
+              <button
+                onClick={() => setIsAdminMenuOpen(!isAdminMenuOpen)}
+                className="flex items-center justify-center w-8 h-10 rounded-full"
+                aria-label="관리자 메뉴"
+              >
+                <MoreVertical size={24} className="stroke-icon-default" strokeWidth={1.5} />
+              </button>
+              {isAdminMenuOpen && (
+                <div className="absolute right-0 top-10 z-10 bg-white rounded-lg shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden min-w-[120px]">
+                  <button
+                    onClick={() => {
+                      setIsAdminMenuOpen(false);
+                      setIsShopEditModalOpen(true);
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
+                  >
+                    <Pencil size={16} className="text-grey-900" />
+                    <span className="text-[14px] text-grey-900 whitespace-nowrap">가게 수정</span>
+                  </button>
+                  <div className="border-t border-grey-100" />
+                  <button
+                    onClick={() => {
+                      setIsAdminMenuOpen(false);
+                      setIsShopDeleteModalOpen(true);
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
+                  >
+                    <Trash2 size={16} className="text-error" />
+                    <span className="text-[14px] text-error whitespace-nowrap">가게 삭제</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -773,6 +894,7 @@ export default function ShopDetailPage() {
                     onImageClick={(images, index) =>
                       setGalleryState({ images, initialIndex: index })
                     }
+                    isAdmin={isAdmin}
                   />
                 ))}
               </div>
@@ -837,6 +959,31 @@ export default function ShopDetailPage() {
         isLoading={deleteReviewMutation.isPending}
         onClose={() => setDeletingReviewId(null)}
         onConfirm={handleConfirmDelete}
+      />
+
+      {/* 가게 삭제 확인 모달 (ADMIN 전용) */}
+      <ShopDeleteConfirmModal
+        isOpen={isShopDeleteModalOpen}
+        isLoading={deleteShopMutation.isPending}
+        shopName={shop.name}
+        onClose={() => setIsShopDeleteModalOpen(false)}
+        onConfirm={handleConfirmShopDelete}
+      />
+
+      {/* 가게 정보 수정 모달 (ADMIN 전용) */}
+      <ShopEditModal
+        isOpen={isShopEditModalOpen}
+        isLoading={updateShopMutation.isPending}
+        shopId={validShopId}
+        shopData={{
+          name: shop.name,
+          addressName: shop.addressName,
+          locationHint: shop.locationHint,
+          openTime: shop.openTime,
+          mainImageUrl: shop.mainImageUrl,
+        }}
+        onClose={() => setIsShopEditModalOpen(false)}
+        onSave={handleShopEdit}
       />
     </div>
   );

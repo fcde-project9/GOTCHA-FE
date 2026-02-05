@@ -7,6 +7,7 @@ import { ChevronDown, ThumbsUp, MoreVertical, Pencil, Trash2 } from "lucide-reac
 import { useDeleteReview } from "@/api/mutations/useDeleteReview";
 import { useToggleReviewLike } from "@/api/mutations/useToggleReviewLike";
 import { useInfiniteReviews } from "@/api/queries/useInfiniteReviews";
+import { useUser } from "@/api/queries/useUser";
 import { Button, BackHeader, ImageViewerModal } from "@/components/common";
 import { ReviewDeleteConfirmModal } from "@/components/features/review/ReviewDeleteConfirmModal";
 import { ReviewWriteModal } from "@/components/features/review/ReviewWriteModal";
@@ -21,15 +22,24 @@ function ReviewListItem({
   onEdit,
   onDelete,
   onImageClick,
+  isAdmin = false,
 }: {
   review: ReviewResponse;
   onLikeToggle: (reviewId: number) => void;
   onEdit: (reviewId: number) => void;
   onDelete: (reviewId: number) => void;
   onImageClick?: (imageUrl: string) => void;
+  isAdmin?: boolean;
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // 메뉴 표시 조건: 본인 리뷰이거나 ADMIN
+  const showMenu = review.isOwner || isAdmin;
+  // 수정 권한: 본인만 가능
+  const canEdit = review.isOwner;
+  // 삭제 권한: 본인 또는 ADMIN
+  const canDelete = review.isOwner || isAdmin;
 
   // 메뉴 외부 클릭 시 닫기
   useEffect(() => {
@@ -51,7 +61,7 @@ function ReviewListItem({
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <span className="text-[12px] text-grey-600 leading-[1.5]">{review.author.nickname}</span>
-          {review.isOwner && (
+          {showMenu && (
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -63,27 +73,35 @@ function ReviewListItem({
               {/* 드롭다운 메뉴 */}
               {isMenuOpen && (
                 <div className="absolute right-0 top-6 z-10 bg-white rounded-lg shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden">
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      onEdit(review.id);
-                    }}
-                    className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
-                  >
-                    <Pencil size={16} className="text-grey-900" />
-                    <span className="text-[14px] text-grey-900 whitespace-nowrap">수정하기</span>
-                  </button>
-                  <div className="border-t border-grey-100" />
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      onDelete(review.id);
-                    }}
-                    className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
-                  >
-                    <Trash2 size={16} className="text-error" />
-                    <span className="text-[14px] text-error whitespace-nowrap">삭제하기</span>
-                  </button>
+                  {canEdit && (
+                    <>
+                      <button
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          onEdit(review.id);
+                        }}
+                        className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
+                      >
+                        <Pencil size={16} className="text-grey-900" />
+                        <span className="text-[14px] text-grey-900 whitespace-nowrap">
+                          수정하기
+                        </span>
+                      </button>
+                      {canDelete && <div className="border-t border-grey-100" />}
+                    </>
+                  )}
+                  {canDelete && (
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        onDelete(review.id);
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
+                    >
+                      <Trash2 size={16} className="text-error" />
+                      <span className="text-[14px] text-error whitespace-nowrap">삭제하기</span>
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -201,6 +219,9 @@ export default function ReviewsListPage() {
 
   // 리뷰 좋아요 토글 mutation hook
   const toggleReviewLikeMutation = useToggleReviewLike();
+
+  // 사용자 정보 조회 (ADMIN 권한 확인용)
+  const { isAdmin } = useUser();
 
   // 무한 스크롤 Intersection Observer
   useEffect(() => {
@@ -366,6 +387,7 @@ export default function ReviewsListPage() {
                   onEdit={handleEditReview}
                   onDelete={handleDeleteReview}
                   onImageClick={setSelectedImageUrl}
+                  isAdmin={isAdmin}
                 />
               ))}
             </div>
