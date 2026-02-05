@@ -77,6 +77,10 @@ export default function KakaoMap({
   );
   const selectedMarkerRef = useRef<Marker | null>(null);
   const currentLocationOverlayRef = useRef<CustomOverlay | null>(null);
+  // 지도 이벤트 리스너 참조 저장 (cleanup용)
+  const mapListenersRef = useRef<Array<{ target: KakaoMap; type: string; handler: () => void }>>(
+    []
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [mapError, setMapError] = useState<string | null>(null);
 
@@ -149,66 +153,64 @@ export default function KakaoMap({
         return;
       }
 
-      if (window.kakao && window.kakao.maps) {
-        window.kakao.maps.load(() => {
-          if (mapContainer.current && isMounted) {
-            try {
-              const options = {
-                center: new window.kakao.maps.LatLng(latitude, longitude),
-                level: level,
-                draggable: draggable,
-                scrollwheel: zoomable,
-                disableDoubleClickZoom: disableDoubleClickZoom || !zoomable,
+      // useKakaoLoader에서 이미 kakao.maps.load()가 완료된 상태
+      if (window.kakao && window.kakao.maps && mapContainer.current && isMounted) {
+        try {
+          const options = {
+            center: new window.kakao.maps.LatLng(latitude, longitude),
+            level: level,
+            draggable: draggable,
+            scrollwheel: zoomable,
+            disableDoubleClickZoom: disableDoubleClickZoom || !zoomable,
+          };
+          const map = new window.kakao.maps.Map(mapContainer.current, options);
+          mapInstance.current = map;
+
+          // 지도 이동 완료 시 bounds 변경 알림
+          const idleHandler = () => {
+            notifyBoundsChange(map);
+          };
+          window.kakao.maps.event.addListener(map, "idle", idleHandler);
+          mapListenersRef.current.push({ target: map, type: "idle", handler: idleHandler });
+
+          // 지도 클릭 시 선택 마커 초기화 + 콜백 호출
+          const clickHandler = () => {
+            if (selectedMarkerRef.current) {
+              const imageSize = new window.kakao.maps.Size(MARKER_IMAGE.width, MARKER_IMAGE.height);
+              const imageOption = {
+                offset: new window.kakao.maps.Point(MARKER_IMAGE.offsetX, MARKER_IMAGE.offsetY),
               };
-              const map = new window.kakao.maps.Map(mapContainer.current, options);
-              mapInstance.current = map;
-
-              // 지도 이동 완료 시 bounds 변경 알림
-              window.kakao.maps.event.addListener(map, "idle", () => {
-                notifyBoundsChange(map);
-              });
-
-              // 지도 클릭 시 선택 마커 초기화 + 콜백 호출
-              window.kakao.maps.event.addListener(map, "click", () => {
-                if (selectedMarkerRef.current) {
-                  const imageSize = new window.kakao.maps.Size(
-                    MARKER_IMAGE.width,
-                    MARKER_IMAGE.height
-                  );
-                  const imageOption = {
-                    offset: new window.kakao.maps.Point(MARKER_IMAGE.offsetX, MARKER_IMAGE.offsetY),
-                  };
-                  const defaultImage = new window.kakao.maps.MarkerImage(
-                    MARKER_IMAGE.src,
-                    imageSize,
-                    imageOption
-                  );
-                  selectedMarkerRef.current.setImage(defaultImage);
-                  selectedMarkerRef.current.setZIndex(1);
-                  selectedMarkerRef.current = null;
-                }
-                onMapClickRef.current?.();
-              });
-
-              // 초기 bounds 알림
-              notifyBoundsChange(map);
-
-              // 지도 로드 완료 콜백 호출
-              if (onMapLoad) {
-                onMapLoad(map);
-              }
-
-              if (isMounted) {
-                setIsLoading(false);
-              }
-            } catch (err) {
-              if (isMounted) {
-                setMapError(`지도 초기화 실패: ${err}`);
-                setIsLoading(false);
-              }
+              const defaultImage = new window.kakao.maps.MarkerImage(
+                MARKER_IMAGE.src,
+                imageSize,
+                imageOption
+              );
+              selectedMarkerRef.current.setImage(defaultImage);
+              selectedMarkerRef.current.setZIndex(1);
+              selectedMarkerRef.current = null;
             }
+            onMapClickRef.current?.();
+          };
+          window.kakao.maps.event.addListener(map, "click", clickHandler);
+          mapListenersRef.current.push({ target: map, type: "click", handler: clickHandler });
+
+          // 초기 bounds 알림
+          notifyBoundsChange(map);
+
+          // 지도 로드 완료 콜백 호출
+          if (onMapLoad) {
+            onMapLoad(map);
           }
-        });
+
+          if (isMounted) {
+            setIsLoading(false);
+          }
+        } catch (err) {
+          if (isMounted) {
+            setMapError(`지도 초기화 실패: ${err}`);
+            setIsLoading(false);
+          }
+        }
       }
     };
 
@@ -219,6 +221,13 @@ export default function KakaoMap({
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
+      // 지도 이벤트 리스너 정리
+      if (window.kakao?.maps?.event) {
+        mapListenersRef.current.forEach(({ target, type, handler }) => {
+          window.kakao.maps.event.removeListener(target, type, handler);
+        });
+      }
+      mapListenersRef.current = [];
       // 지도 인스턴스 정리
       // Kakao Maps API는 명시적인 destroy 메서드가 없지만, ref를 null로 설정
       mapInstance.current = null;

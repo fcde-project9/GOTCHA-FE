@@ -10,6 +10,7 @@ import { Button, BackHeader } from "@/components/common";
 import { KakaoMap } from "@/components/features/map";
 import { ShopDuplicateCheckModal } from "@/components/report/ShopDuplicateCheckModal";
 import { MARKER_IMAGES, DEFAULT_LOCATION } from "@/constants";
+import { useKakaoLoader } from "@/hooks/useKakaoLoader";
 import { trackShopReportStart, trackShopReportExit } from "@/utils/analytics";
 
 // 카카오맵 타입
@@ -31,6 +32,13 @@ export default function ReportLocationPage() {
   const [map, setMap] = useState<KakaoMap | null>(null);
   const [nearbyShops, setNearbyShops] = useState<NearbyShopsResponse | null>(null);
   const [mapLevel, setMapLevel] = useState(3); // 줌 레벨 상태 관리
+  const [pendingLocation, setPendingLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+
+  // 카카오맵 SDK 로드 상태
+  const { loaded: kakaoLoaded, error: kakaoError } = useKakaoLoader();
 
   // 근처 가게 확인 함수
   const checkNearbyShops = useCallback(async (latitude: number, longitude: number) => {
@@ -53,33 +61,46 @@ export default function ReportLocationPage() {
     trackShopReportStart();
   }, []);
 
+  // 사용자의 현재 위치 가져오기
   useEffect(() => {
-    // 사용자의 현재 위치 가져오기
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        async (position) => {
+        (position) => {
           const { latitude, longitude } = position.coords;
           setCenter({ latitude, longitude });
           setMyLocation({ latitude, longitude });
-          await getAddressFromCoords(latitude, longitude);
-          setIsLoading(false);
+          setPendingLocation({ latitude, longitude });
         },
-        async () => {
+        () => {
           // 위치 정보 가져오기 실패 시 기본 위치 사용
           setMyLocation({ ...DEFAULT_LOCATION });
-          await getAddressFromCoords(DEFAULT_LOCATION.latitude, DEFAULT_LOCATION.longitude);
-          setIsLoading(false);
+          setPendingLocation({ ...DEFAULT_LOCATION });
         }
       );
     } else {
-      (async () => {
-        setMyLocation({ ...DEFAULT_LOCATION });
-        await getAddressFromCoords(DEFAULT_LOCATION.latitude, DEFAULT_LOCATION.longitude);
+      setMyLocation({ ...DEFAULT_LOCATION });
+      setPendingLocation({ ...DEFAULT_LOCATION });
+    }
+  }, []);
+
+  // SDK 로드 완료 후 주소 변환
+  useEffect(() => {
+    if (kakaoError && pendingLocation) {
+      // SDK 로드 실패 시 에러 처리
+      setAddress("주소를 가져올 수 없어요");
+      setIsLoading(false);
+      setPendingLocation(null);
+      return;
+    }
+
+    if (kakaoLoaded && pendingLocation) {
+      getAddressFromCoords(pendingLocation.latitude, pendingLocation.longitude).then(() => {
         setIsLoading(false);
-      })();
+      });
+      setPendingLocation(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [kakaoLoaded, kakaoError, pendingLocation]);
 
   const getAddressFromCoords = useCallback((lat: number, lng: number): Promise<void> => {
     return new Promise((resolve) => {

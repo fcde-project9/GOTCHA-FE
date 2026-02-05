@@ -113,13 +113,11 @@ export async function request<T>(
       throw new Error(response.data.error?.message || errorMessage);
     }
 
-    // data 필드 검증 (success: true이지만 data가 없는 경우)
-    if (response.data.data === undefined) {
-      throw new Error(errorMessage);
-    }
+    // data 필드 처리 (DELETE 등 응답 데이터가 없는 경우 null 반환)
+    const data = response.data.data === undefined ? null : response.data.data;
 
     // 변환 함수가 있으면 적용
-    return transform ? transform(response.data.data) : response.data.data;
+    return transform ? transform(data as T) : (data as T);
   } catch (error: unknown) {
     // 401 Unauthorized 처리 (비로그인 허용 API)
     if (allowUnauthorized) {
