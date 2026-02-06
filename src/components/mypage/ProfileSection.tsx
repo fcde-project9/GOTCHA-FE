@@ -124,13 +124,13 @@ export function ProfileSection({
           </div>
 
           {/* Social Login Info */}
-          <div className="bg-grey-50 rounded-md px-2 py-0.5 flex items-center gap-2 w-full justify-center">
+          <div className="bg-grey-50 rounded-md px-2 py-0.5 inline-flex items-center gap-2 justify-center">
             <Image
               src={getSocialProviderIcon(socialProvider)}
               alt={socialProvider ? SOCIAL_PROVIDER_LABELS[socialProvider] : ""}
-              width={14}
-              height={14}
-              style={{ width: "auto", height: "auto" }}
+              width={16}
+              height={16}
+              className="shrink-0"
             />
             <p className="text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-800 text-center">
               {email}
