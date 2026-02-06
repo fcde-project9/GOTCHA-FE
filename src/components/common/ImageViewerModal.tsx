@@ -135,7 +135,7 @@ export function ImageViewerModal({
             alt={`${alt} ${currentIndex + 1}`}
             width={327}
             height={435}
-            className="w-full h-auto object-contain"
+            className="object-contain"
           />
         </div>
 

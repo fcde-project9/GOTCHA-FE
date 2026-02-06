@@ -1,35 +1,26 @@
-import { useMutation } from "@tanstack/react-query";
-import apiClient from "@/api/client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ENDPOINTS } from "@/api/endpoints";
-import type { ApiResponse } from "@/api/types";
-import { extractApiError } from "@/api/types";
+import { queryKeys } from "@/api/queryKeys";
+import { post } from "@/api/request";
 import type { CreateReviewRequest, ReviewResponse } from "@/types/api";
 
 /**
  * 리뷰 작성 Mutation Hook
+ * 리뷰 작성 후 해당 매장의 리뷰 목록과 매장 상세 정보를 무효화합니다.
  * @param shopId - 가게 ID
  */
 export const useCreateReview = (shopId: number) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: async (request: CreateReviewRequest) => {
-      try {
-        const { data } = await apiClient.post<ApiResponse<ReviewResponse>>(
-          ENDPOINTS.REVIEWS.CREATE(shopId),
-          request
-        );
-
-        if (!data.success || !data.data) {
-          throw new Error(data.error?.message || "작성에 실패했어요.");
-        }
-
-        return data.data;
-      } catch (error) {
-        const apiError = extractApiError(error);
-        if (apiError) {
-          throw new Error(apiError.message);
-        }
-        throw error;
-      }
+    mutationFn: (request: CreateReviewRequest) =>
+      post<ReviewResponse>(ENDPOINTS.REVIEWS.CREATE(shopId), request, {
+        errorMessage: "작성에 실패했어요.",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.reviews.byShop(shopId) });
+      // sortBy에 관계없이 해당 shop의 모든 detail 쿼리 무효화
+      queryClient.invalidateQueries({ queryKey: ["shops", "detail", shopId] });
     },
   });
 };

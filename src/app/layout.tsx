@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import Providers from "./providers";
 import "./globals.css";
 
@@ -152,6 +153,11 @@ export default function RootLayout({
   return (
     <html lang="ko" className="bg-white">
       <head>
+        {/* PWA 메타태그 */}
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="GOTCHA!" />
         {/* 폰트 CSS preload - 렌더링 차단 방지 */}
         <link rel="preload" href="/fonts/pretendard.css" as="style" />
         <link rel="stylesheet" href="/fonts/pretendard.css" />
@@ -161,6 +167,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://t1.daumcdn.net" crossOrigin="anonymous" />
       </head>
       <body className="w-full max-w-[480px] mx-auto bg-white">
+        <GoogleAnalytics />
         <Providers>{children}</Providers>
       </body>
     </html>

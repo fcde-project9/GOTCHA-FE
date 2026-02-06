@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import apiClient from "@/api/client";
-import type { ApiResponse } from "@/api/types";
-import { extractApiError } from "@/api/types";
+import { queryKeys } from "@/api/queryKeys";
+import { get } from "@/api/request";
 import type { FavoriteShopResponse } from "@/types/api";
 
 /**
@@ -12,32 +11,14 @@ import type { FavoriteShopResponse } from "@/types/api";
  * - 비로그인 상태: null
  */
 export const useFavorites = () => {
-  return useQuery({
-    queryKey: ["favorites"],
-    queryFn: async (): Promise<FavoriteShopResponse[] | null> => {
-      try {
-        const { data } =
-          await apiClient.get<ApiResponse<FavoriteShopResponse[]>>("/api/users/me/favorites");
-
-        if (!data.success || !data.data) {
-          throw new Error(data.error?.message || "찜 목록을 불러오는데 실패했어요.");
-        }
-
-        return data.data;
-      } catch (error: unknown) {
-        // 401 Unauthorized (비로그인 상태)는 정상적인 케이스로 처리
-        const axiosError = error as { response?: { status?: number } };
-        if (axiosError?.response?.status === 401) {
-          return null;
-        }
-
-        const apiError = extractApiError(error);
-        if (apiError) {
-          throw new Error(apiError.message);
-        }
-        throw error;
-      }
-    },
-    retry: false, // 비로그인 상태에서 재시도하지 않음
+  return useQuery<FavoriteShopResponse[] | null>({
+    queryKey: queryKeys.favorites.all,
+    queryFn: () =>
+      get<FavoriteShopResponse[] | null>("/api/users/me/favorites", undefined, {
+        errorMessage: "찜 목록을 불러오는데 실패했어요.",
+        allowUnauthorized: true,
+      }),
+    staleTime: 0, // 항상 최신 데이터 refetch (전역 staleTime 1분 무시)
+    retry: false,
   });
 };

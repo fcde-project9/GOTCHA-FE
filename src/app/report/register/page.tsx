@@ -10,6 +10,7 @@ import { ExitConfirmModal } from "@/components/report/ExitConfirmModal";
 import { OperatingHoursItem } from "@/components/report/OperatingHoursItem";
 import { TimePickerModal } from "@/components/report/TimePickerModal";
 import { OperatingHoursEntry } from "@/types/report";
+import { trackShopReportExit } from "@/utils/analytics";
 
 const DAYS_OF_WEEK = ["월", "화", "수", "목", "금", "토", "일"] as const;
 
@@ -37,6 +38,17 @@ function ReportRegisterContent() {
   const [is24Hours, setIs24Hours] = useState(false);
   const [isOpenTimeModalOpen, setIsOpenTimeModalOpen] = useState(false);
   const [isCloseTimeModalOpen, setIsCloseTimeModalOpen] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // 영업시간 기본값 설정: 매일, 시간 모름
+  useEffect(() => {
+    if (!isInitialized && operatingHours.length === 0) {
+      setSelectedDays([0, 1, 2, 3, 4, 5, 6]);
+      setIsEveryDay(true);
+      setIsUnknown(true);
+      setIsInitialized(true);
+    }
+  }, [isInitialized, operatingHours.length]);
 
   // URL 파라미터에서 주소와 좌표 가져오기
   useEffect(() => {
@@ -81,7 +93,8 @@ function ReportRegisterContent() {
     Boolean(formData.locationHint.trim()) ||
     formData.images.length > 0 ||
     operatingHours.length > 0 ||
-    selectedDays.length > 0;
+    (isInitialized && selectedDays.length !== 7) ||
+    (!isInitialized && selectedDays.length > 0);
 
   const handleBackClick = () => {
     if (hasUserInput) {
@@ -92,6 +105,9 @@ function ReportRegisterContent() {
   };
 
   const handleConfirmExit = () => {
+    // GA 이벤트: 제보 중도 이탈 (정보 등록 단계)
+    trackShopReportExit("register");
+
     setIsExitConfirmModalOpen(false);
     router.push("/report");
   };
@@ -210,8 +226,7 @@ function ReportRegisterContent() {
     };
   }, [previewUrl]);
 
-  const isFormValid =
-    Boolean(formData.shopName.trim()) && formData.images.length > 0 && operatingHours.length > 0;
+  const isFormValid = Boolean(formData.shopName.trim()) && formData.images.length > 0;
 
   /**
    * 시간 포맷 변환: "오전 00:00" -> "00:00" (24시간 형식)
@@ -280,6 +295,12 @@ function ReportRegisterContent() {
 
   const handleSubmit = async () => {
     if (!isFormValid || isSubmitting) return;
+
+    // 영업시간이 추가되지 않은 경우 토스트 표시
+    if (operatingHours.length === 0) {
+      displayToast("영업시간을 추가해주세요");
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -351,7 +372,7 @@ function ReportRegisterContent() {
             value={formData.shopName}
             onChange={(e) => setFormData((prev) => ({ ...prev, shopName: e.target.value }))}
             placeholder="업체 이름을 작성해주세요"
-            className="bg-grey-50 h-11 px-3 py-2 rounded-lg text-[15px] leading-[1.5] tracking-[-0.15px] placeholder:text-grey-500 text-grey-900 focus:outline-none focus:ring-2 focus:ring-main-400"
+            className="bg-grey-50 w-[106.7%] h-12 px-3 py-2 rounded-lg text-[16px] leading-[1.5] tracking-[-0.15px] placeholder:text-grey-500 text-grey-900 focus:outline-none focus:ring-2 focus:ring-main-400 origin-top-left scale-[0.9375]"
           />
         </div>
 
@@ -365,7 +386,7 @@ function ReportRegisterContent() {
             value={formData.locationHint}
             onChange={(e) => setFormData((prev) => ({ ...prev, locationHint: e.target.value }))}
             placeholder="예시) 지하 1층 베스킨라빈스 맞은편"
-            className="bg-grey-50 min-h-11 px-3 py-2 rounded-lg text-[15px] leading-[1.5] tracking-[-0.15px] placeholder:text-grey-500 text-grey-900 focus:outline-none focus:ring-2 focus:ring-main-400"
+            className="bg-grey-50 w-[106.7%] min-h-12 px-3 py-2 rounded-lg text-[16px] leading-[1.5] tracking-[-0.15px] placeholder:text-grey-500 text-grey-900 focus:outline-none focus:ring-2 focus:ring-main-400 origin-top-left scale-[0.9375]"
           />
         </div>
 

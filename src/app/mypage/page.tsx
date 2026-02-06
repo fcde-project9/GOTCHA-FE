@@ -27,7 +27,7 @@ export default function MyPage() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const { isLoggedIn, isLoading: authLoading, logout } = useAuth();
-  const { data: user, isLoading: userLoading, error, refetch } = useUser();
+  const { data: user, isLoading: userLoading, error, refetch, isAdmin } = useUser();
   const updateNicknameMutation = useUpdateNickname();
   const updateProfileImageWithUploadMutation = useUpdateProfileImageWithUpload();
   const logoutMutation = useLogout();
@@ -176,9 +176,11 @@ export default function MyPage() {
   }
 
   // 일시적 에러 확인 (네트워크 오류 또는 5xx 서버 오류)
+  // 401은 providers.tsx와 apiClient에서 전역 처리됨
   const axiosError = error as { response?: { status?: number } } | null;
   const isTemporaryError =
     error &&
+    axiosError?.response?.status !== 401 &&
     (!axiosError?.response ||
       (axiosError.response.status !== undefined && axiosError.response.status >= 500));
 
@@ -187,8 +189,8 @@ export default function MyPage() {
     return <ErrorPage onRetry={refetch} />;
   }
 
-  // useAuth의 isLoggedIn으로 로그인 여부 판별
-  const loggedInUser: User | undefined = isLoggedIn ? user : undefined;
+  // useAuth의 isLoggedIn으로 로그인 여부 판별 (null도 undefined로 처리)
+  const loggedInUser: User | undefined = isLoggedIn && user ? user : undefined;
 
   // socialType을 socialProvider 형식으로 변환
   const socialProvider = loggedInUser?.socialType?.toLowerCase() as
@@ -222,6 +224,7 @@ export default function MyPage() {
           email={loggedInUser?.email}
           profileImage={loggedInUser?.profileImageUrl ?? undefined}
           socialProvider={socialProvider}
+          isAdmin={isAdmin}
           onEditProfile={handleEditProfile}
           onEditNickname={handleEditNickname}
           onLogin={handleLogin}

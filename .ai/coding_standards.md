@@ -1,5 +1,23 @@
 # Coding Standards (Frontend)
 
+> **Next.js 16 환경**: 본 프로젝트는 Next.js 16 + React 19를 사용합니다.
+> 코드 작성 시 [`.ai/nextjs16_best_practices.md`](./nextjs16_best_practices.md)를 참고하세요.
+
+## 프로젝트 아키텍처 및 패턴 요약
+
+본 프로젝트는 다음 아키텍처 패턴을 따릅니다:
+
+| 영역           | 패턴                     | 설명                                                                       |
+| -------------- | ------------------------ | -------------------------------------------------------------------------- |
+| **상태 관리**  | Zustand + TanStack Query | 전역 상태(useMapStore, useAuthStore)는 Zustand, 서버 상태는 TanStack Query |
+| **API 레이어** | API Wrapper Pattern      | `src/api/request.ts`의 `get/post/del` 함수로 공통 에러 처리                |
+| **Query Key**  | Query Key Factory        | `src/api/queryKeys.ts`에서 중앙 관리                                       |
+| **에러 처리**  | Error Boundary           | `QueryErrorBoundary`로 React Query 에러 자동 처리                          |
+| **인증**       | Zustand Persist          | localStorage 기반 토큰 관리, hydration 대기                                |
+| **컴포넌트**   | Feature-based Structure  | `components/features/` 하위에 도메인별 폴더 구조                           |
+
+상세 아키텍처 다이어그램: [`.ai/architecture.md`](./architecture.md)
+
 ## 네이밍
 
 - 함수/컴포넌트는 의도를 드러내는 완전한 단어 사용
@@ -12,16 +30,38 @@
 - `any`/unsafe 캐스팅 지양
 - 유틸/도메인 타입은 재사용 고려해 분리
 
-## React
+## React / Next.js 16
 
 - 가드클로즈(early return) 선호, 깊은 중첩 지양
 - 불필요한 try/catch 금지(의미 있는 처리 시에만)
 - 상태/부수효과 최소화, 의존성 배열 엄격 관리
 - 조건부 렌더링/로딩 상태는 명확히 표현
-- pages 폴더에는 단독적인 url이 존재하는 컴포넌트
+- `src/app/` 폴더는 App Router 기반, 각 폴더가 URL 경로에 대응
 - components와 utils를 먼저 확인하고 재사용할 수 있는 코드는 재사용하기
 - import할때는 최대한 절대경로 ('@') 사용
 - useEffect 사용 시 정리(cleanup) 함수 추가와 이벤트 리스너 정리 패턴
+
+### Next.js 16 필수 패턴
+
+- **서버 컴포넌트 기본**: 클라이언트 상태가 필요할 때만 `"use client"` 추가
+- **params/searchParams 비동기**: `const { id } = await params;`
+- **cookies/headers 비동기**: `const cookieStore = await cookies();`
+- **캐싱**: 필요한 컴포넌트에 `"use cache"` + `cacheTag()` 적용
+- **데이터 변경**: Server Actions + `revalidateTag()` 사용
+
+### React 19 권장 Hook
+
+- `useFormStatus`: 폼 제출 로딩 상태
+- `useActionState`: Server Action 상태 관리
+- `use`: Promise/Context 직접 읽기
+
+> **Note**: 낙관적 업데이트는 React 19의 `useOptimistic` 대신 React Query의 `onMutate` 패턴 사용
+>
+> - 프로젝트가 TanStack Query 기반이라 캐시 일관성 유지에 유리
+> - `onError`로 자동 롤백, `onSettled`로 서버 동기화 패턴이 깔끔
+> - 캐시 업데이트 시 다른 컴포넌트에서도 즉시 반영됨
+>
+> (상세 패턴은 아래 "Optimistic Update" 섹션 참고)
 
 ## 유틸 함수
 
@@ -83,6 +123,8 @@ import { Button } from "@/components/common";
 src/api/
 ├── queries/      # useQuery 훅 (데이터 조회 - GET)
 ├── mutations/    # useMutation 훅 (데이터 변경 - POST/PUT/DELETE)
+├── queryKeys.ts  # Query Key Factory (중앙 관리)
+├── request.ts    # API Wrapper (공통 요청 처리)
 ├── client.ts     # axios 인스턴스
 ├── endpoints.ts  # API 엔드포인트 상수
 └── types.ts      # 공통 타입 정의
@@ -92,9 +134,161 @@ src/api/
 
 1. **queries vs mutations**: GET 요청은 `queries/`, POST/PUT/DELETE는 `mutations/`
 2. **네이밍**: `use` 접두사 + 동작 (예: `useShopDetail`, `useCreateReview`)
-3. **에러 처리**: `extractApiError()` 사용, 사용자 친화적 메시지 반환
+3. **에러 처리**: `request()` 함수가 자동 처리, 필요시 `extractApiError()` 사용
 4. **타입 안전성**: `ApiResponse<T>` 제네릭으로 응답 타입 명시
-5. **캐시 무효화**: 필요시 `queryClient.invalidateQueries()` 사용
+5. **캐시 무효화**: mutation 성공 시 `invalidateQueries()`로 관련 쿼리 갱신 (상세 패턴은 아래 참고)
+
+#### Query Key Factory (`src/api/queryKeys.ts`)
+
+```typescript
+import { queryKeys } from "@/api/queryKeys";
+
+// 사용 예시
+useQuery({
+  queryKey: queryKeys.shops.detail(shopId),
+  queryFn: () => get<ShopDetail>(`/api/shops/${shopId}`),
+});
+
+// 무효화
+queryClient.invalidateQueries({ queryKey: queryKeys.shops.all });
+```
+
+#### 캐시 무효화 (Cache Invalidation)
+
+##### invalidateQueries vs staleTime
+
+| 구분   | invalidateQueries   | staleTime                       |
+| ------ | ------------------- | ------------------------------- |
+| 용도   | 수동 캐시 무효화    | 자동 신선도 관리                |
+| 시점   | mutation 성공 후    | 쿼리 정의 시                    |
+| 사용처 | 데이터 변경 후 갱신 | 읽기 전용/자주 안 바뀌는 데이터 |
+
+##### Partial Query Key 매칭
+
+쿼리 키에 파라미터(sortBy 등)가 포함된 경우, 부분 키로 무효화해야 모든 관련 쿼리가 갱신됩니다.
+
+```typescript
+// ❌ 문제: sortBy가 다른 쿼리는 무효화 안됨
+queryClient.invalidateQueries({
+  queryKey: queryKeys.shops.detail(shopId, sortBy),
+});
+
+// ✅ 권장: 부분 키로 해당 shop의 모든 detail 쿼리 무효화
+queryClient.invalidateQueries({
+  queryKey: ["shops", "detail", shopId],
+});
+```
+
+##### Mutation에서 캐시 무효화
+
+데이터 변경(생성/수정/삭제) 후에는 관련 쿼리를 무효화하여 UI를 동기화합니다.
+
+```typescript
+// src/api/mutations/useCreateReview.ts
+export const useCreateReview = (shopId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (request: CreateReviewRequest) =>
+      post<ReviewResponse>(ENDPOINTS.REVIEWS.CREATE(shopId), request),
+    onSuccess: () => {
+      // 리뷰 목록 무효화
+      queryClient.invalidateQueries({ queryKey: queryKeys.reviews.byShop(shopId) });
+      // 매장 상세 (리뷰 카운트 등) 무효화 - 부분 키 사용
+      queryClient.invalidateQueries({ queryKey: ["shops", "detail", shopId] });
+    },
+  });
+};
+```
+
+#### Optimistic Update (낙관적 업데이트)
+
+좋아요, 찜하기처럼 즉각적인 피드백이 필요한 경우 서버 응답을 기다리지 않고 UI를 먼저 업데이트합니다.
+
+```typescript
+export const useToggleReviewLike = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ reviewId, isLiked }) => {
+      /* API 호출 */
+    },
+
+    // 1. 요청 전: 캐시 즉시 업데이트 + 이전 상태 저장
+    onMutate: async ({ reviewId, isLiked, shopId }) => {
+      await queryClient.cancelQueries({ queryKey: ["shops", "detail", shopId] });
+
+      const previousData = queryClient.getQueriesData({
+        queryKey: ["shops", "detail", shopId],
+      });
+
+      queryClient.setQueriesData({ queryKey: ["shops", "detail", shopId] }, (old) => ({
+        ...old,
+        reviews: old.reviews.map((review) =>
+          review.id === reviewId
+            ? { ...review, isLiked: !isLiked, likeCount: review.likeCount + (isLiked ? -1 : 1) }
+            : review
+        ),
+      }));
+
+      return { previousData };
+    },
+
+    // 2. 실패 시: 이전 상태로 롤백
+    onError: (_, __, context) => {
+      context?.previousData.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
+    },
+
+    // 3. 완료 후: 서버 데이터와 동기화
+    onSettled: (_, __, { shopId }) => {
+      queryClient.invalidateQueries({ queryKey: ["shops", "detail", shopId] });
+    },
+  });
+};
+```
+
+##### 언제 Optimistic Update를 사용하나?
+
+| 상황                | 권장 방식                          |
+| ------------------- | ---------------------------------- |
+| 좋아요/찜하기 토글  | Optimistic Update                  |
+| 리뷰 작성/수정/삭제 | invalidateQueries (서버 검증 필요) |
+| 목록 정렬 변경      | invalidateQueries                  |
+| 사용자 프로필 수정  | invalidateQueries                  |
+
+#### API Wrapper (`src/api/request.ts`)
+
+```typescript
+import { get, post, del } from "@/api/request";
+
+// GET 요청
+const data = await get<ShopDetail>("/api/shops/1");
+
+// POST 요청
+const result = await post<Review>("/api/reviews", { content: "좋아요" });
+
+// 비로그인 허용 (401 시 null 반환)
+const user = await get<User | null>("/api/users/me", undefined, {
+  allowUnauthorized: true,
+});
+
+// 커스텀 에러 메시지
+const data = await get<Shop[]>("/api/shops", undefined, {
+  errorMessage: "매장 목록을 불러오는데 실패했어요.",
+});
+
+// DELETE 요청 (응답 데이터 없는 경우)
+await del<null>(
+  "/api/users/me",
+  { reasons: ["LOW_USAGE"] },
+  {
+    errorMessage: "회원탈퇴에 실패했어요.",
+  }
+);
+// → API가 { success: true } 만 반환해도 null로 처리됨
+```
 
 ### API 에러 처리 패턴
 
@@ -121,29 +315,37 @@ interface ApiResponse<T> {
 #### 사용 예시
 
 ```typescript
+// ✅ 권장: API Wrapper 사용 (자동 에러 처리)
+import { get } from "@/api/request";
+
+const fetchData = async () => {
+  try {
+    const user = await get<UserData>("/api/users/me");
+    setUser(user); // 성공 시 바로 데이터 반환
+  } catch (error) {
+    // request()가 이미 Error로 변환해서 throw
+    setToast(error instanceof Error ? error.message : "오류가 발생했습니다.");
+  }
+};
+
+// ⚠️ 레거시: 직접 apiClient 사용 (특수한 경우만)
 import apiClient from "@/api/client";
 import { ApiResponse, extractApiError } from "@/api/types";
 
-// API 호출
-const fetchData = async () => {
+const fetchDataLegacy = async () => {
   try {
     const response = await apiClient.get<ApiResponse<UserData>>("/api/users/me");
 
     if (!response.data.success) {
-      // 백엔드에서 success: false 반환한 경우
       const errorMessage = response.data.error?.message || "오류가 발생했습니다.";
       setToast(errorMessage);
       return;
     }
 
-    // 성공 처리
     setUser(response.data.data);
   } catch (error) {
-    // 네트워크 에러 또는 서버 에러
     const apiError = extractApiError(error);
     const errorMessage = apiError?.message || "네트워크 오류가 발생했습니다.";
-
-    console.error("API 호출 실패:", error);
     setToast(errorMessage);
   }
 };
@@ -301,6 +503,47 @@ const NOTIFICATION_PERMISSION_MESSAGES = {
   primaryAction: "알림 받기",
   secondaryAction: "나중에",
 };
+```
+
+## 에러 바운더리 (Error Boundary)
+
+### 컴포넌트 종류
+
+```
+src/components/common/
+├── ErrorBoundary.tsx         # 기본 에러 바운더리
+└── QueryErrorBoundary.tsx    # React Query 연동 에러 바운더리
+```
+
+### 사용 예시
+
+```typescript
+import { QueryErrorBoundary } from "@/components/common";
+
+// 기본 사용
+<QueryErrorBoundary>
+  <MyQueryComponent />
+</QueryErrorBoundary>
+
+// 커스텀 fallback
+<QueryErrorBoundary
+  fallback={(error, reset) => (
+    <ErrorCard error={error} onRetry={reset} />
+  )}
+>
+  <MyQueryComponent />
+</QueryErrorBoundary>
+```
+
+### throwOnError 사용 시 주의사항
+
+```typescript
+// ✅ 타입 가드 필수
+useQuery({
+  queryKey: ["data"],
+  queryFn: fetchData,
+  throwOnError: (error) => error instanceof Error && "status" in error && error.status >= 500,
+});
 ```
 
 ## 테스트/품질

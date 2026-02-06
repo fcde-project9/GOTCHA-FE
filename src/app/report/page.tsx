@@ -10,6 +10,8 @@ import { Button, BackHeader } from "@/components/common";
 import { KakaoMap } from "@/components/features/map";
 import { ShopDuplicateCheckModal } from "@/components/report/ShopDuplicateCheckModal";
 import { MARKER_IMAGES, DEFAULT_LOCATION } from "@/constants";
+import { useKakaoLoader } from "@/hooks/useKakaoLoader";
+import { trackShopReportStart, trackShopReportExit } from "@/utils/analytics";
 
 // 카카오맵 타입
 interface KakaoLatLng {
@@ -30,6 +32,13 @@ export default function ReportLocationPage() {
   const [map, setMap] = useState<KakaoMap | null>(null);
   const [nearbyShops, setNearbyShops] = useState<NearbyShopsResponse | null>(null);
   const [mapLevel, setMapLevel] = useState(3); // 줌 레벨 상태 관리
+  const [pendingLocation, setPendingLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+
+  // 카카오맵 SDK 로드 상태
+  const { loaded: kakaoLoaded, error: kakaoError } = useKakaoLoader();
 
   // 근처 가게 확인 함수
   const checkNearbyShops = useCallback(async (latitude: number, longitude: number) => {
@@ -47,33 +56,51 @@ export default function ReportLocationPage() {
     }
   }, []);
 
+  // GA 이벤트: 제보하기 진입
   useEffect(() => {
-    // 사용자의 현재 위치 가져오기
+    trackShopReportStart();
+  }, []);
+
+  // 사용자의 현재 위치 가져오기
+  useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        async (position) => {
+        (position) => {
           const { latitude, longitude } = position.coords;
           setCenter({ latitude, longitude });
           setMyLocation({ latitude, longitude });
-          await getAddressFromCoords(latitude, longitude);
-          setIsLoading(false);
+          setPendingLocation({ latitude, longitude });
         },
-        async () => {
+        () => {
           // 위치 정보 가져오기 실패 시 기본 위치 사용
           setMyLocation({ ...DEFAULT_LOCATION });
-          await getAddressFromCoords(DEFAULT_LOCATION.latitude, DEFAULT_LOCATION.longitude);
-          setIsLoading(false);
+          setPendingLocation({ ...DEFAULT_LOCATION });
         }
       );
     } else {
-      (async () => {
-        setMyLocation({ ...DEFAULT_LOCATION });
-        await getAddressFromCoords(DEFAULT_LOCATION.latitude, DEFAULT_LOCATION.longitude);
+      setMyLocation({ ...DEFAULT_LOCATION });
+      setPendingLocation({ ...DEFAULT_LOCATION });
+    }
+  }, []);
+
+  // SDK 로드 완료 후 주소 변환
+  useEffect(() => {
+    if (kakaoError && pendingLocation) {
+      // SDK 로드 실패 시 에러 처리
+      setAddress("주소를 가져올 수 없어요");
+      setIsLoading(false);
+      setPendingLocation(null);
+      return;
+    }
+
+    if (kakaoLoaded && pendingLocation) {
+      getAddressFromCoords(pendingLocation.latitude, pendingLocation.longitude).then(() => {
         setIsLoading(false);
-      })();
+      });
+      setPendingLocation(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [kakaoLoaded, kakaoError, pendingLocation]);
 
   const getAddressFromCoords = useCallback((lat: number, lng: number): Promise<void> => {
     return new Promise((resolve) => {
@@ -240,7 +267,14 @@ export default function ReportLocationPage() {
   return (
     <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative">
       {/* Header */}
-      <BackHeader title="제보하기" onBack={() => router.push("/home")} absolute />
+      <BackHeader
+        title="제보하기"
+        onBack={() => {
+          trackShopReportExit("location");
+          router.push("/home");
+        }}
+        absolute
+      />
 
       {/* Map - 헤더(56px)와 바텀시트를 고려한 높이, 바텀시트가 살짝 걸치도록 */}
       <div className="relative h-[100dvh] pt-14 pb-[150px]">
@@ -270,7 +304,7 @@ export default function ReportLocationPage() {
           className="absolute left-1/2 z-20 flex h-14 w-14 -translate-x-1/2 items-center justify-center px-[7px] pointer-events-none"
           style={{ top: "calc(50% - 40px)", transform: "translate(-50%, -100%)" }}
         >
-          <img src={MARKER_IMAGES.SHOP} alt="위치 핀" width={42} height={56} />
+          <img src={MARKER_IMAGES.REPORT} alt="위치 핀" width={42} height={56} />
         </div>
 
         {/* 현재 위치 버튼 */}
@@ -297,7 +331,7 @@ export default function ReportLocationPage() {
           {/* Address */}
           <div className="flex flex-col gap-2">
             <label className="text-[14px] font-medium leading-[1.5] tracking-[-0.14px] text-grey-600 text-center">
-              제보 할 위치
+              제보할 위치
             </label>
             <div className="bg-grey-100 min-h-11 flex items-center justify-center px-3 py-2 rounded-lg">
               <p className="text-[15px] font-semibold leading-[1.5] tracking-[-0.15px] text-grey-700 text-center">

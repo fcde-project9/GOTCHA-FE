@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import dynamic from "next/dynamic";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -11,8 +10,6 @@ import {
   ChevronRight,
   ChevronDown,
   PencilLine,
-  X,
-  Expand,
   ThumbsUp,
   MoreVertical,
   Pencil,
@@ -20,25 +17,21 @@ import {
   Images,
 } from "lucide-react";
 import { useDeleteReview } from "@/api/mutations/useDeleteReview";
+import { useDeleteShop } from "@/api/mutations/useDeleteShop";
 import { useToggleReviewLike } from "@/api/mutations/useToggleReviewLike";
+import { useUpdateShop } from "@/api/mutations/useUpdateShop";
 import { useShopDetail } from "@/api/queries/useShopDetail";
+import { useUser } from "@/api/queries/useUser";
 import { Button, BackHeader, OutlineButton, ImageViewerModal } from "@/components/common";
 import { ReviewDeleteConfirmModal } from "@/components/features/review/ReviewDeleteConfirmModal";
 import { ReviewWriteModal } from "@/components/features/review/ReviewWriteModal";
 import { StatusBadge } from "@/components/features/shop";
+import { ShopDeleteConfirmModal } from "@/components/features/shop/ShopDeleteConfirmModal";
+import { ShopEditModal } from "@/components/features/shop/ShopEditModal";
 import { useFavorite, useToast } from "@/hooks";
 import type { ReviewResponse, OpenTime, ReviewSortOption } from "@/types/api";
 import { formatDate } from "@/utils";
-
-// KakaoMap 동적 로드 - SSR 제외
-const KakaoMap = dynamic(() => import("@/components/features/map/KakaoMap"), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-[200px] flex items-center justify-center bg-grey-100 rounded-lg">
-      <span className="text-grey-500">지도 로딩 중...</span>
-    </div>
-  ),
-});
+import { trackShopView, trackShareClick } from "@/utils/analytics";
 
 // 요일 매핑 (API 응답 키 -> 한글)
 const DAY_MAP: Record<keyof OpenTime, string> = {
@@ -90,15 +83,24 @@ function ReviewItem({
   onEdit,
   onDelete,
   onImageClick,
+  isAdmin = false,
 }: {
   review: ReviewResponse;
   onLikeToggle: (reviewId: number) => void;
   onEdit: (reviewId: number) => void;
   onDelete: (reviewId: number) => void;
   onImageClick?: (images: string[], index: number) => void;
+  isAdmin?: boolean;
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // 메뉴 표시 조건: 본인 리뷰이거나 ADMIN
+  const showMenu = review.isOwner || isAdmin;
+  // 수정 권한: 본인만 가능
+  const canEdit = review.isOwner;
+  // 삭제 권한: 본인 또는 ADMIN
+  const canDelete = review.isOwner || isAdmin;
 
   // 메뉴 외부 클릭 시 닫기
   useEffect(() => {
@@ -120,7 +122,7 @@ function ReviewItem({
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <span className="text-[12px] text-grey-600 leading-[1.5]">{review.author.nickname}</span>
-          {review.isOwner && (
+          {showMenu && (
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -132,27 +134,35 @@ function ReviewItem({
               {/* 드롭다운 메뉴 */}
               {isMenuOpen && (
                 <div className="absolute right-[calc(50%_+_2px)] top-[20px] z-10 bg-white rounded-lg rounded-tr-none shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden">
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      onEdit(review.id);
-                    }}
-                    className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
-                  >
-                    <Pencil size={16} className="text-grey-900" />
-                    <span className="text-[14px] text-grey-900 whitespace-nowrap">수정하기</span>
-                  </button>
-                  <div className="border-t border-grey-100" />
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      onDelete(review.id);
-                    }}
-                    className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
-                  >
-                    <Trash2 size={16} className="text-error" />
-                    <span className="text-[14px] text-error whitespace-nowrap">삭제하기</span>
-                  </button>
+                  {canEdit && (
+                    <>
+                      <button
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          onEdit(review.id);
+                        }}
+                        className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
+                      >
+                        <Pencil size={16} className="text-grey-900" />
+                        <span className="text-[14px] text-grey-900 whitespace-nowrap">
+                          수정하기
+                        </span>
+                      </button>
+                      {canDelete && <div className="border-t border-grey-100" />}
+                    </>
+                  )}
+                  {canDelete && (
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        onDelete(review.id);
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
+                    >
+                      <Trash2 size={16} className="text-error" />
+                      <span className="text-[14px] text-error whitespace-nowrap">삭제하기</span>
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -251,6 +261,13 @@ export default function ShopDetailPage() {
   // React Query로 shop 상세 조회
   const { data: shop, isLoading, error, refetch } = useShopDetail(validShopId, sortBy);
 
+  // GA 이벤트: 매장 상세 페이지 조회
+  useEffect(() => {
+    if (shop) {
+      trackShopView(shop.id, shop.name);
+    }
+  }, [shop?.id, shop?.name]);
+
   // 찜하기 훅 (shop 데이터 로드 후 초기값 동기화)
   const {
     isFavorite,
@@ -267,9 +284,6 @@ export default function ShopDetailPage() {
   // openTime 파싱
   const openTime = shop ? parseOpenTime(shop.openTime) : null;
   const businessDays = getBusinessDays(openTime);
-
-  // 지도 확대 모달 상태
-  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
 
   // 이미지 뷰어 모달 상태 (갤러리 모드)
   const [galleryState, setGalleryState] = useState<{
@@ -292,6 +306,33 @@ export default function ShopDetailPage() {
   // 리뷰 좋아요 토글 mutation hook
   const toggleReviewLikeMutation = useToggleReviewLike();
 
+  // 사용자 정보 조회 (ADMIN 권한 확인용)
+  const { isAdmin } = useUser();
+
+  // 가게 삭제/수정 상태
+  const [isShopDeleteModalOpen, setIsShopDeleteModalOpen] = useState(false);
+  const [isShopEditModalOpen, setIsShopEditModalOpen] = useState(false);
+  const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
+  const adminMenuRef = useRef<HTMLDivElement>(null);
+
+  // 가게 삭제/수정 mutation hook
+  const deleteShopMutation = useDeleteShop();
+  const updateShopMutation = useUpdateShop();
+
+  // Admin 메뉴 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (adminMenuRef.current && !adminMenuRef.current.contains(event.target as Node)) {
+        setIsAdminMenuOpen(false);
+      }
+    };
+
+    if (isAdminMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isAdminMenuOpen]);
+
   // 주소 복사
   const handleCopyAddress = async () => {
     if (!shop) return;
@@ -306,6 +347,10 @@ export default function ShopDetailPage() {
   // 공유하기
   const handleShare = async () => {
     if (!shop) return;
+
+    // GA 이벤트: 공유 버튼 클릭
+    trackShareClick(shop.id);
+
     try {
       if (navigator.share) {
         await navigator.share({
@@ -338,11 +383,8 @@ export default function ShopDetailPage() {
     if (!review) return;
 
     toggleReviewLikeMutation.mutate(
-      { reviewId, isLiked: review.isLiked },
+      { reviewId, isLiked: review.isLiked, shopId: validShopId },
       {
-        onSuccess: () => {
-          refetch();
-        },
         onError: (error) => {
           showToast(error.message || "좋아요 처리에 실패했어요.");
         },
@@ -390,13 +432,47 @@ export default function ShopDetailPage() {
     router.push(`/shop/${validShopId}/images`);
   };
 
-  // history가 없으면 /home으로 이동
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     if (window.history.length > 1) {
       router.back();
     } else {
       router.push("/home");
     }
+  }, [router]);
+
+  // 가게 삭제 실행 (ADMIN 전용)
+  const handleConfirmShopDelete = () => {
+    deleteShopMutation.mutate(validShopId, {
+      onSuccess: () => {
+        showToast("가게가 삭제되었어요.");
+        setIsShopDeleteModalOpen(false);
+        router.push("/home");
+      },
+      onError: (error) => {
+        showToast(error.message || "가게 삭제에 실패했어요.");
+      },
+    });
+  };
+
+  // 가게 정보 수정 실행 (ADMIN 전용)
+  const handleShopEdit = (data: {
+    name: string;
+    addressName?: string;
+    locationHint?: string;
+    openTime?: Record<string, string | null>;
+  }) => {
+    updateShopMutation.mutate(
+      { shopId: validShopId, data },
+      {
+        onSuccess: () => {
+          showToast("가게 정보가 수정되었어요.");
+          setIsShopEditModalOpen(false);
+        },
+        onError: (error) => {
+          showToast(error.message || "가게 정보 수정에 실패했어요.");
+        },
+      }
+    );
   };
 
   // 유효하지 않은 shopId 처리
@@ -440,8 +516,8 @@ export default function ShopDetailPage() {
   return (
     <div className="h-dvh bg-default flex flex-col overflow-hidden">
       {/* 헤더 */}
-      <div className="flex items-center justify-between pr-5">
-        <BackHeader title={shop.name} onBack={handleBack} />
+      <div className="flex items-center justify-between pr-4">
+        <BackHeader onBack={handleBack} />
         <div className="flex items-center gap-1 ml-3">
           <button
             onClick={toggleFavorite}
@@ -462,6 +538,43 @@ export default function ShopDetailPage() {
           >
             <Share size={24} className="stroke-icon-default" strokeWidth={1.5} />
           </button>
+          {/* ADMIN 메뉴 */}
+          {isAdmin && (
+            <div className="relative" ref={adminMenuRef}>
+              <button
+                onClick={() => setIsAdminMenuOpen(!isAdminMenuOpen)}
+                className="flex items-center justify-center w-8 h-10 rounded-full"
+                aria-label="관리자 메뉴"
+              >
+                <MoreVertical size={24} className="stroke-icon-default" strokeWidth={1.5} />
+              </button>
+              {isAdminMenuOpen && (
+                <div className="absolute right-0 top-10 z-10 bg-white rounded-lg shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden min-w-[120px]">
+                  <button
+                    onClick={() => {
+                      setIsAdminMenuOpen(false);
+                      setIsShopEditModalOpen(true);
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
+                  >
+                    <Pencil size={16} className="text-grey-900" />
+                    <span className="text-[14px] text-grey-900 whitespace-nowrap">가게 수정</span>
+                  </button>
+                  <div className="border-t border-grey-100" />
+                  <button
+                    onClick={() => {
+                      setIsAdminMenuOpen(false);
+                      setIsShopDeleteModalOpen(true);
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
+                  >
+                    <Trash2 size={16} className="text-error" />
+                    <span className="text-[14px] text-error whitespace-nowrap">가게 삭제</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -525,51 +638,6 @@ export default function ShopDetailPage() {
                 <span className="text-[14px] text-grey-900">{shop.todayOpenTime}</span>
               )}
               <StatusBadge openStatus={shop.openStatus} />
-            </div>
-          </div>
-        </section>
-
-        {/* 지도 */}
-        <section className="px-5 pb-4">
-          <div className="rounded-xl overflow-hidden border border-grey-100">
-            <div className="relative">
-              <KakaoMap
-                height="168px"
-                latitude={shop.latitude}
-                longitude={shop.longitude}
-                level={4}
-                draggable={false}
-                zoomable={false}
-                markers={[
-                  {
-                    id: shop.id,
-                    name: shop.name,
-                    latitude: shop.latitude,
-                    longitude: shop.longitude,
-                    mainImageUrl: shop.mainImageUrl,
-                    openTime: openTime || {
-                      Mon: null,
-                      Tue: null,
-                      Wed: null,
-                      Thu: null,
-                      Fri: null,
-                      Sat: null,
-                      Sun: null,
-                    },
-                    openStatus: shop.openStatus,
-                    distance: "",
-                    isFavorite: isFavorite,
-                  },
-                ]}
-              />
-              {/* 지도 확대 버튼 */}
-              <button
-                onClick={() => setIsMapModalOpen(true)}
-                className="absolute z-10 bottom-3 right-3 flex items-center justify-center w-8 h-8 bg-white rounded-lg"
-                aria-label="지도 크게 보기"
-              >
-                <Expand size={20} className="stroke-icon-default" strokeWidth={1.5} />
-              </button>
             </div>
           </div>
         </section>
@@ -825,6 +893,7 @@ export default function ShopDetailPage() {
                     onImageClick={(images, index) =>
                       setGalleryState({ images, initialIndex: index })
                     }
+                    isAdmin={isAdmin}
                   />
                 ))}
               </div>
@@ -852,61 +921,6 @@ export default function ShopDetailPage() {
         <div className="h-8" />
       </div>
 
-      {/* 지도 확대 모달 */}
-      {isMapModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="w-full h-full max-w-[480px] flex flex-col bg-white">
-            {/* 모달 헤더 */}
-            <div className="flex items-center justify-end px-2 py-1 border-b border-grey-100">
-              <button
-                onClick={() => setIsMapModalOpen(false)}
-                className="flex items-center justify-center w-10 h-10"
-                aria-label="닫기"
-              >
-                <X size={24} className="stroke-grey-700" strokeWidth={2} />
-              </button>
-            </div>
-
-            {/* 지도 영역 */}
-            <div className="flex-1">
-              <KakaoMap
-                height="100%"
-                latitude={shop.latitude}
-                longitude={shop.longitude}
-                level={3}
-                markers={[
-                  {
-                    id: shop.id,
-                    name: shop.name,
-                    latitude: shop.latitude,
-                    longitude: shop.longitude,
-                    mainImageUrl: shop.mainImageUrl,
-                    openTime: openTime || {
-                      Mon: null,
-                      Tue: null,
-                      Wed: null,
-                      Thu: null,
-                      Fri: null,
-                      Sat: null,
-                      Sun: null,
-                    },
-                    openStatus: shop.openStatus,
-                    distance: "",
-                    isFavorite: isFavorite,
-                  },
-                ]}
-              />
-            </div>
-
-            {/* 주소 정보 */}
-            <div className="px-5 py-4 border-t border-grey-100 bg-white">
-              <h2 className="text-[18px] font-semibold text-grey-900">{shop.name}</h2>
-              <p className="text-[14px] text-grey-700">{shop.addressName}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* 이미지 뷰어 모달 */}
       {galleryState && (
         <ImageViewerModal
@@ -922,7 +936,6 @@ export default function ShopDetailPage() {
         shopId={validShopId}
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
-        onSuccess={() => refetch()}
       />
 
       {/* 리뷰 수정 모달 */}
@@ -931,7 +944,6 @@ export default function ShopDetailPage() {
           shopId={validShopId}
           isOpen={!!editingReview}
           onClose={() => setEditingReview(null)}
-          onSuccess={() => refetch()}
           reviewId={editingReview.id}
           initialData={{
             content: editingReview.content,
@@ -946,6 +958,31 @@ export default function ShopDetailPage() {
         isLoading={deleteReviewMutation.isPending}
         onClose={() => setDeletingReviewId(null)}
         onConfirm={handleConfirmDelete}
+      />
+
+      {/* 가게 삭제 확인 모달 (ADMIN 전용) */}
+      <ShopDeleteConfirmModal
+        isOpen={isShopDeleteModalOpen}
+        isLoading={deleteShopMutation.isPending}
+        shopName={shop.name}
+        onClose={() => setIsShopDeleteModalOpen(false)}
+        onConfirm={handleConfirmShopDelete}
+      />
+
+      {/* 가게 정보 수정 모달 (ADMIN 전용) */}
+      <ShopEditModal
+        isOpen={isShopEditModalOpen}
+        isLoading={updateShopMutation.isPending}
+        shopId={validShopId}
+        shopData={{
+          name: shop.name,
+          addressName: shop.addressName,
+          locationHint: shop.locationHint,
+          openTime: shop.openTime,
+          mainImageUrl: shop.mainImageUrl,
+        }}
+        onClose={() => setIsShopEditModalOpen(false)}
+        onSave={handleShopEdit}
       />
     </div>
   );

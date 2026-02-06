@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
+import { trackReviewSubmit } from "@/utils/analytics";
 import { useCreateReview } from "./useCreateReview";
 import { useUploadFile } from "./useUploadFile";
 
@@ -59,6 +60,9 @@ export const useCreateReviewWithUpload = (
         content,
         imageUrls,
       });
+
+      // GA 이벤트: 리뷰 작성 완료
+      trackReviewSubmit(shopId, images.length > 0);
 
       return review;
     },
