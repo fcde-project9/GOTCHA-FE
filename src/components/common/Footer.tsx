@@ -54,13 +54,7 @@ export default function Footer() {
   };
 
   return (
-    <footer
-      className="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-[480px] bg-white shadow-[0px_-3px_8px_rgba(163,163,163,0.15)] z-[20]"
-      style={{
-        paddingBottom: "calc(env(safe-area-inset-bottom) + 8px)",
-        minHeight: "calc(60px + env(safe-area-inset-bottom))",
-      }}
-    >
+    <footer className="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-[480px] bg-white shadow-[0px_-3px_8px_rgba(163,163,163,0.15)] z-[20] pb-[calc(env(safe-area-inset-bottom)+24px)]">
       <nav className="flex h-[60px] px-12 items-center justify-between">
         {navItems.map((item) => {
           const active = isActive(item.path);

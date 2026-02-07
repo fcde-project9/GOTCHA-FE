@@ -68,7 +68,7 @@
 - 2개 이상의 컴포넌트에서 사용되는 로직은 `src/utils/`에 공통 함수로 분리
 - 유틸 함수는 단일 책임 원칙을 따르며, 명확한 JSDoc 주석 작성
 - `src/utils/index.ts`에서 export하여 `@/utils`로 간편하게 import
-- 예시: `openInstagramSupport()` - Instagram 문의하기 로직
+- 예시: `openContactSupport()` - 문의하기 로직
 
 ## 공통 컴포넌트
 
@@ -365,6 +365,7 @@ const fetchDataLegacy = async () => {
 - 불필요한 주석/로그 삭제, 핵심 맥락만 주석
 - CSS는 `tailwind.config.ts`에 정의된 디자인 시스템 변수 우선 사용
 - inline style 대신 Tailwind className 사용
+  - `env(safe-area-inset-bottom)` 등 CSS 환경 변수도 Tailwind arbitrary value로 처리: `pb-[calc(env(safe-area-inset-bottom)+24px)]` (공백 없이)
   - 배경색: `bg-default`, `bg-white`, `bg-grey` (GOTCHA 시스템)
   - 메인 컬러: `bg-main-500`, `text-main-700`
   - Grey 컬러: `bg-grey-900`, `text-grey-800`
