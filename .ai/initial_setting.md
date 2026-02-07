@@ -674,7 +674,7 @@ export const useShop = (id: string) => {
 ## 14. `.nvmrc` 추가
 
 ```text
-18.17.0
+24
 ```
 
 ## 15. README 업데이트
@@ -686,7 +686,7 @@ export const useShop = (id: string) => {
 
 ### 필수 요구사항
 
-- Node.js 18.17 이상
+- Node.js 24 이상
 - npm 9 이상
 
 ### 설치 및 실행
