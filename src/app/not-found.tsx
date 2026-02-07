@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/common";
 import { ERROR_IMAGES } from "@/constants/images";
-import { openInstagramSupport } from "@/utils";
+import { openContactSupport } from "@/utils";
 
 export default function NotFound() {
   const router = useRouter();
@@ -48,7 +48,7 @@ export default function NotFound() {
               variant="tertiary"
               size="small"
               className="h-11 flex-1"
-              onClick={openInstagramSupport}
+              onClick={openContactSupport}
             >
               문의하기
             </Button>

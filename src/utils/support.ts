@@ -2,15 +2,15 @@
  * 고객 지원 및 인증 관련 유틸리티 함수
  */
 
-import { SOCIAL_URLS } from "@/constants";
+import { SUPPORT_URLS } from "@/constants";
 
 /**
- * Instagram DM으로 문의하기
- * - 새 창에서 Instagram Direct Message를 엽니다
+ * 문의하기 폼 열기
+ * - 새 창에서 문의 폼을 엽니다
  * - Tabnabbing 방지를 위해 opener를 null로 설정합니다
  */
-export function openInstagramSupport(): void {
-  const newWindow = window.open(SOCIAL_URLS.INSTAGRAM_DM, "_blank", "noopener,noreferrer");
+export function openContactSupport(): void {
+  const newWindow = window.open(SUPPORT_URLS.CONTACT_FORM, "_blank", "noopener,noreferrer");
 
   // Tabnabbing 방지: opener를 null로 설정
   if (newWindow) {

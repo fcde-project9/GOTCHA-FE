@@ -20,7 +20,7 @@ import { ProfileSection } from "@/components/mypage/ProfileSection";
 import { WithdrawConfirmModal } from "@/components/mypage/WithdrawConfirmModal";
 import { WithdrawModal } from "@/components/mypage/WithdrawModal";
 import { useToast, useAuth } from "@/hooks";
-import { openInstagramSupport } from "@/utils";
+import { openContactSupport } from "@/utils";
 
 export default function MyPage() {
   const router = useRouter();
@@ -76,7 +76,7 @@ export default function MyPage() {
   };
 
   const handleSupport = () => {
-    openInstagramSupport();
+    openContactSupport();
   };
 
   const handleLogin = () => {
