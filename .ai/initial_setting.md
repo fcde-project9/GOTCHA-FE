@@ -5,7 +5,7 @@
 ## 1. Node 버전
 
 - `.nvmrc`에 Node 버전 명시 → `nvm use`로 적용
-- 권장 버전: Node 20.11.0 이상
+- 권장 버전: Node 24 이상
 
 ## 2. Next.js 프로젝트 초기화
 
@@ -674,7 +674,7 @@ export const useShop = (id: string) => {
 ## 14. `.nvmrc` 추가
 
 ```text
-18.17.0
+24
 ```
 
 ## 15. README 업데이트
@@ -686,7 +686,7 @@ export const useShop = (id: string) => {
 
 ### 필수 요구사항
 
-- Node.js 18.17 이상
+- Node.js 24 이상
 - npm 9 이상
 
 ### 설치 및 실행
