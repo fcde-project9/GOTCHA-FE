@@ -81,7 +81,7 @@ GitHub Actions + Vercel을 사용한 자동 배포 파이프라인
 
 ### 필수 요구사항
 
-- Node.js 20.11 이상
+- Node.js 24 이상
 - npm 9 이상
 
 ### 설치 및 실행

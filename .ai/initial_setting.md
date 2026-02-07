@@ -5,7 +5,7 @@
 ## 1. Node 버전
 
 - `.nvmrc`에 Node 버전 명시 → `nvm use`로 적용
-- 권장 버전: Node 20.11.0 이상
+- 권장 버전: Node 24 이상
 
 ## 2. Next.js 프로젝트 초기화
 
