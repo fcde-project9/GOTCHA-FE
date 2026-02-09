@@ -6,9 +6,8 @@ import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { Checkbox } from "@/components/common";
 import { LOGO_IMAGES, SOCIAL_LOGO_IMAGES } from "@/constants";
-
-import { loginWithKakao, loginWithGoogle, loginWithApple } from "@/utils";
 import { useToast } from "@/hooks";
+import { loginWithKakao, loginWithGoogle, loginWithApple } from "@/utils";
 import { trackGuestModeStart } from "@/utils/analytics";
 
 export default function LoginPage() {
