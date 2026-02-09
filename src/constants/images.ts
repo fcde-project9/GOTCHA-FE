@@ -55,6 +55,7 @@ export const SOCIAL_LOGO_IMAGES = {
   KAKAO: "/images/kakao-logo.svg",
   NAVER: "/images/naver-logo.svg",
   GOOGLE: "/images/google-logo.svg",
+  APPLE: "/images/apple-logo.svg",
 } as const;
 
 /** 소셜 프로바이더 타입 - SOCIAL_LOGO_IMAGES 키에서 파생 */

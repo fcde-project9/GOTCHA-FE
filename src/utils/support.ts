@@ -21,7 +21,7 @@ export function openContactSupport(): void {
 /**
  * 소셜 로그인 타입
  */
-export type SocialLoginProvider = "kakao" | "naver" | "google";
+export type SocialLoginProvider = "kakao" | "naver" | "google" | "apple";
 
 /**
  * API Base URL 가져오기
@@ -114,6 +114,16 @@ export function loginWithGoogle(): void {
 }
 
 /**
+ * 애플 OAuth 로그인
+ * 백엔드 OAuth 엔드포인트로 리다이렉트
+ * CSRF 공격 방지를 위해 state 파라미터 생성 및 검증
+ * @throws {Error} 환경변수가 설정되지 않았거나 로그인 처리 중 오류 발생 시
+ */
+export function loginWithApple(): void {
+  redirectToOAuth("apple", "Apple");
+}
+
+/**
  * 소셜 로그인 실행
  * @param provider - 로그인 제공자 (kakao, naver, google)
  * @throws {Error} 알 수 없는 제공자이거나 로그인 처리 중 오류 발생 시
@@ -128,6 +138,9 @@ export function loginWithSocial(provider: SocialLoginProvider): void {
       break;
     case "google":
       loginWithGoogle();
+      break;
+    case "apple":
+      loginWithApple();
       break;
     default: {
       const errorMessage = "지원하지 않는 로그인 방식이에요.";
