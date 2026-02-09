@@ -56,9 +56,18 @@ function loadKakaoSDK(apiKey: string) {
   script.async = true;
 
   script.onload = () => {
-    kakaoLoaderState.loaded = true;
-    kakaoLoaderState.loading = false;
-    notifyListeners();
+    // autoload=false이므로 kakao.maps.load()를 호출해야 라이브러리가 로드됨
+    if (window.kakao && window.kakao.maps) {
+      window.kakao.maps.load(() => {
+        kakaoLoaderState.loaded = true;
+        kakaoLoaderState.loading = false;
+        notifyListeners();
+      });
+    } else {
+      kakaoLoaderState.error = "카카오맵 SDK 로드에 실패했어요.";
+      kakaoLoaderState.loading = false;
+      notifyListeners();
+    }
   };
 
   script.onerror = () => {

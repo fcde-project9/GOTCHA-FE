@@ -13,6 +13,10 @@ export const ENDPOINTS = {
     DETAIL: (id: string) => `/shops/${id}`,
     NEARBY: "/api/shops/nearby",
     SAVE: "/api/shops/save",
+    // ADMIN 전용
+    UPDATE: (shopId: number) => `/api/shops/${shopId}`,
+    UPDATE_MAIN_IMAGE: (shopId: number) => `/api/shops/${shopId}/main-image`,
+    DELETE: (shopId: number) => `/api/shops/${shopId}`,
   },
   // 사용자
   USER: {

@@ -9,5 +9,11 @@ export { CenterTitleHeader } from "./CenterTitleHeader";
 export { SimpleHeader } from "./SimpleHeader";
 export { ImageViewerModal } from "./ImageViewerModal";
 export { SplashScreen } from "./SplashScreen";
+export { ErrorBoundary, DefaultErrorFallback, InlineErrorFallback } from "./ErrorBoundary";
+export {
+  QueryErrorBoundary,
+  QueryPageErrorFallback,
+  QuerySectionErrorFallback,
+} from "./QueryErrorBoundary";
 export type { ButtonProps, ButtonVariant, ButtonSize } from "./Button";
 export type { OutlineButtonProps, OutlineButtonSize } from "./OutlineButton";

@@ -153,7 +153,8 @@ export default function RootLayout({
   return (
     <html lang="ko" className="bg-white">
       <head>
-        {/* PWA - Apple 메타태그 */}
+        {/* PWA 메타태그 */}
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="GOTCHA!" />

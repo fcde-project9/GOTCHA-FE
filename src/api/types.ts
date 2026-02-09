@@ -57,6 +57,14 @@ export function extractApiError(error: unknown): ApiError | null {
 export type SocialType = "KAKAO" | "GOOGLE" | "NAVER";
 
 /**
+ * 사용자 역할 타입
+ * - ADMIN: 관리자 (가게 수정/삭제, 리뷰 삭제 권한)
+ * - OWNER: 업주 (향후 확장용)
+ * - NORMAL: 일반 사용자
+ */
+export type UserType = "ADMIN" | "OWNER" | "NORMAL";
+
+/**
  * 사용자 정보 타입
  * 백엔드 /api/users/me 응답 형식
  */
@@ -66,6 +74,7 @@ export interface User {
   email: string;
   profileImageUrl: string | null;
   socialType: SocialType;
+  userType: UserType;
 }
 
 /**
@@ -96,6 +105,25 @@ export interface CreateShopRequest {
    * - 모름: null
    */
   openTime?: Record<string, string | null>;
+}
+
+/**
+ * 가게 수정 요청 타입 (ADMIN 전용)
+ * 백엔드 PUT /api/shops/{shopId} 요청 형식
+ */
+export interface UpdateShopRequest {
+  name: string; // 필수
+  addressName?: string;
+  locationHint?: string;
+  openTime?: Record<string, string | null>;
+}
+
+/**
+ * 가게 대표 이미지 수정 요청 타입 (ADMIN 전용)
+ * 백엔드 PATCH /api/shops/{shopId}/main-image 요청 형식
+ */
+export interface UpdateShopMainImageRequest {
+  mainImageUrl: string;
 }
 
 /**

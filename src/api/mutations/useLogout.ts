@@ -1,22 +1,21 @@
-import { useMutation } from "@tanstack/react-query";
-import apiClient from "@/api/client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ENDPOINTS } from "@/api/endpoints";
-import type { ApiResponse } from "@/api/types";
+import { post } from "@/api/request";
 
 /**
  * 로그아웃 Hook
- * 로그아웃 요청을 처리합니다.
+ * 로그아웃 요청 후 전체 캐시를 클리어합니다.
  */
 export const useLogout = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: async () => {
-      const response = await apiClient.post<ApiResponse<null>>(ENDPOINTS.AUTH.LOGOUT);
-
-      if (!response.data.success) {
-        throw new Error(response.data.error?.message || "로그아웃에 실패했어요.");
-      }
-
-      return response.data;
+    mutationFn: () =>
+      post<null>(ENDPOINTS.AUTH.LOGOUT, undefined, {
+        errorMessage: "로그아웃에 실패했어요.",
+      }),
+    onSuccess: () => {
+      queryClient.clear();
     },
   });
 };

@@ -105,6 +105,7 @@ export default function ImagesGalleryPage() {
               src={images[selectedIndex]}
               alt={`업체 사진 ${selectedIndex + 1}`}
               fill
+              sizes="100vw"
               className="object-contain"
               onClick={(e) => e.stopPropagation()}
             />

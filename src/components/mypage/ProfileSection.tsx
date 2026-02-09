@@ -16,6 +16,7 @@ interface ProfileSectionProps {
   email?: string;
   profileImage?: string;
   socialProvider?: "google" | "kakao" | "naver";
+  isAdmin?: boolean;
   onEditProfile?: (file: File) => void;
   onEditNickname?: () => void;
   onLogin?: () => void;
@@ -27,6 +28,7 @@ export function ProfileSection({
   email = "abcd123@gmail.com",
   profileImage = DEFAULT_IMAGES.PROFILE,
   socialProvider = "google",
+  isAdmin = false,
   onEditProfile,
   onEditNickname,
   onLogin,
@@ -87,7 +89,13 @@ export function ProfileSection({
       <div className="flex flex-col items-center gap-3 w-[168px]">
         <div className="relative w-[100px] h-[100px]">
           <div className="relative w-full h-full rounded-full overflow-hidden">
-            <Image src={profileImage} alt="프로필 이미지" fill className="object-cover" />
+            <Image
+              src={profileImage}
+              alt="프로필 이미지"
+              fill
+              sizes="100px"
+              className="object-cover"
+            />
           </div>
           {/* Edit Button */}
           <button
@@ -116,16 +124,22 @@ export function ProfileSection({
           </div>
 
           {/* Social Login Info */}
-          <div className="bg-grey-50 rounded-md px-2 py-0.5 flex items-center gap-2 w-full justify-center">
+          <div className="bg-grey-50 rounded-md px-2 py-0.5 inline-flex items-center gap-2 justify-center">
             <Image
               src={getSocialProviderIcon(socialProvider)}
               alt={socialProvider ? SOCIAL_PROVIDER_LABELS[socialProvider] : ""}
-              width={14}
-              height={14}
+              width={16}
+              height={16}
+              className="shrink-0"
             />
             <p className="text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-800 text-center">
               {email}
             </p>
+            {isAdmin && (
+              <span className="bg-main text-white text-[10px] font-semibold px-1.5 py-0.5 rounded">
+                ADMIN
+              </span>
+            )}
           </div>
         </div>
       </div>

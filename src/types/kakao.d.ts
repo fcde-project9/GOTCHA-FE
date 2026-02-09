@@ -98,12 +98,15 @@ declare global {
     image?: MarkerImage;
     title?: string;
     clickable?: boolean;
+    zIndex?: number;
   }
 
   interface Marker {
     setMap: (map: KakaoMap | null) => void;
     getPosition: () => LatLng;
     setImage: (image: MarkerImage) => void;
+    setZIndex: (zIndex: number) => void;
+    getZIndex: () => number;
   }
 
   interface InfoWindowOptions {

@@ -19,7 +19,7 @@
 ### 예정 기능
 
 - 📲 앱 출시 (iOS / Android)
-- 🏠 사장님 페이지
+- 🤖 AI로 캐릭터명 도출하기
 
 ---
 
@@ -51,6 +51,19 @@
 
 ---
 
+## 아키텍처 패턴
+
+| 영역       | 패턴                                           |
+| ---------- | ---------------------------------------------- |
+| 상태 관리  | Zustand (전역) + TanStack Query (서버)         |
+| API 레이어 | API Wrapper (`request.ts`) + Query Key Factory |
+| 에러 처리  | QueryErrorBoundary                             |
+| 인증       | Zustand Persist                                |
+
+📖 상세: [`.ai/architecture.md`](.ai/architecture.md) | [`.ai/coding_standards.md`](.ai/coding_standards.md)
+
+---
+
 ## CI/CD
 
 GitHub Actions + Vercel을 사용한 자동 배포 파이프라인
@@ -68,7 +81,7 @@ GitHub Actions + Vercel을 사용한 자동 배포 파이프라인
 
 ### 필수 요구사항
 
-- Node.js 20.11 이상
+- Node.js 24 이상
 - npm 9 이상
 
 ### 설치 및 실행
@@ -100,9 +113,31 @@ GitHub Actions + Vercel을 사용한 자동 배포 파이프라인
 
    Open [http://localhost:3000](http://localhost:3000)
 
-5. 배포 환경
+### 사용 가능한 스크립트
 
-   프로덕션: [https://gotcha.it.com](https://gotcha.it.com)
+| 명령어             | 설명                            |
+| ------------------ | ------------------------------- |
+| `npm run dev`      | 개발 서버 실행 (localhost:3000) |
+| `npm run build`    | 프로덕션 빌드                   |
+| `npm run start`    | 프로덕션 서버 실행              |
+| `npm run lint`     | ESLint 검사                     |
+| `npm run lint:fix` | ESLint 자동 수정                |
+| `npm run format`   | Prettier 포맷팅                 |
+
+### Git Hooks (Husky)
+
+커밋 시 자동으로 코드 품질 검사가 실행됩니다.
+
+```text
+pre-commit → lint-staged → ESLint + Prettier
+```
+
+| 파일 타입           | 실행 작업                          |
+| ------------------- | ---------------------------------- |
+| `*.{js,jsx,ts,tsx}` | ESLint 자동 수정 + Prettier 포맷팅 |
+| `*.{json,css,md}`   | Prettier 포맷팅                    |
+
+> 린트 에러가 있으면 커밋이 차단됩니다. `npm run lint:fix`로 먼저 수정하세요.
 
 ---
 
@@ -139,7 +174,7 @@ src/
 | `nextjs16_migration_guide.md`       | Next.js 16 마이그레이션 가이드         |
 | `seo_standards.md`                  | SEO 최적화 가이드                      |
 | `modal_and_permission_standards.md` | 모달 및 권한 요청 UI 표준              |
-| `BUTTON_COMPONENT.md`               | Button 컴포넌트 사용 가이드            |
+| `button_component.md`               | Button 컴포넌트 사용 가이드            |
 
 ### 활용 방법
 

@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import apiClient from "@/api/client";
-import type { ApiResponse } from "@/api/types";
-import { extractApiError } from "@/api/types";
+import { queryKeys } from "@/api/queryKeys";
+import { post, del } from "@/api/request";
 
 interface FavoriteToggleResponse {
   isFavorite: boolean;
@@ -14,29 +13,14 @@ export const useAddFavorite = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (shopId: number) => {
-      try {
-        const { data } = await apiClient.post<ApiResponse<FavoriteToggleResponse>>(
-          `/api/shops/${shopId}/favorite`
-        );
-
-        if (!data.success || !data.data) {
-          throw new Error(data.error?.message || "찜 추가에 실패했어요.");
-        }
-
-        return data.data;
-      } catch (error) {
-        const apiError = extractApiError(error);
-        if (apiError) {
-          throw new Error(apiError.message);
-        }
-        throw error;
-      }
-    },
+    mutationFn: (shopId: number) =>
+      post<FavoriteToggleResponse>(`/api/shops/${shopId}/favorite`, undefined, {
+        errorMessage: "찜 추가에 실패했어요.",
+      }),
     onSuccess: () => {
-      // 찜 목록 및 지도 가게 목록 캐시 무효화
-      queryClient.invalidateQueries({ queryKey: ["favorites"] });
-      queryClient.invalidateQueries({ queryKey: ["shops", "map"] });
+      // 찜 추가 시: 찜 목록 갱신 (새 항목 즉시 표시)
+      queryClient.invalidateQueries({ queryKey: queryKeys.favorites.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.shops.all });
     },
   });
 };
@@ -48,29 +32,14 @@ export const useRemoveFavorite = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (shopId: number) => {
-      try {
-        const { data } = await apiClient.delete<ApiResponse<FavoriteToggleResponse>>(
-          `/api/shops/${shopId}/favorite`
-        );
-
-        if (!data.success || !data.data) {
-          throw new Error(data.error?.message || "찜 해제에 실패했어요.");
-        }
-
-        return data.data;
-      } catch (error) {
-        const apiError = extractApiError(error);
-        if (apiError) {
-          throw new Error(apiError.message);
-        }
-        throw error;
-      }
-    },
+    mutationFn: (shopId: number) =>
+      del<FavoriteToggleResponse>(`/api/shops/${shopId}/favorite`, {
+        errorMessage: "찜 해제에 실패했어요.",
+      }),
     onSuccess: () => {
       // 찜 목록 및 지도 가게 목록 캐시 무효화
-      queryClient.invalidateQueries({ queryKey: ["favorites"] });
-      queryClient.invalidateQueries({ queryKey: ["shops", "map"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.favorites.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.shops.all });
     },
   });
 };

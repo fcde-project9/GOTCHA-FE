@@ -47,6 +47,7 @@ export function FavoriteShopItem({ shop }: FavoriteShopItemProps) {
           src={shop.mainImageUrl || DEFAULT_IMAGES.NO_IMAGE}
           alt={shop.name}
           fill
+          sizes="85px"
           className="object-cover"
         />
       </div>
@@ -68,7 +69,7 @@ export function FavoriteShopItem({ shop }: FavoriteShopItemProps) {
             <Heart
               size={24}
               className={isFavorite ? "fill-main stroke-main" : "fill-none stroke-grey-400"}
-              strokeWidth={2}
+              strokeWidth={1.5}
             />
           </button>
         </div>

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { Button } from "@/components/common";
 import { ERROR_IMAGES } from "@/constants/images";
-import { openInstagramSupport } from "@/utils";
+import { openContactSupport } from "@/utils";
 
 interface ErrorPageProps {
   onRetry?: () => void;
@@ -51,7 +51,7 @@ export function ErrorPage({ onRetry }: ErrorPageProps) {
               variant="tertiary"
               size="small"
               className="h-11 flex-1"
-              onClick={openInstagramSupport}
+              onClick={openContactSupport}
             >
               문의하기
             </Button>

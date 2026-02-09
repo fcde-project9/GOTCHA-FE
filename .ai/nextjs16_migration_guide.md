@@ -46,7 +46,7 @@ Next.js 16은 Turbopack, 캐싱, 라우팅, 개발자 도구에 대한 주요 �
 | `middleware.ts`               | `proxy.ts`로 변경                         |
 | 동기 `params`, `searchParams` | `await params`, `await searchParams` 사용 |
 | 동기 `cookies()`, `headers()` | `await cookies()`, `await headers()` 사용 |
-| Node.js 18                    | 지원 중단 (Node.js 20.9+ 필수)            |
+| Node.js 18                    | 지원 중단 (Node.js 24+ 필수)              |
 | `experimental.turbopack`      | `turbopack`으로 상단 이동                 |
 
 ### 1.4 Next.js 16.1 추가 개선사항
@@ -123,10 +123,10 @@ Next.js 16.1에서 RSC "Flight" 프로토콜 관련 **보안 취약점이 패치
 
 Next.js 16은 Node.js 18 지원을 중단했습니다.
 
-| 요구사항 | 버전        |
-| -------- | ----------- |
-| Node.js  | 20.9+ (LTS) |
-| npm      | 10+         |
+| 요구사항 | 버전 |
+| -------- | ---- |
+| Node.js  | 24+  |
+| npm      | 10+  |
 
 ```bash
 # Node.js 버전 확인
@@ -145,7 +145,7 @@ nvm use 20
 
 ### 필수 작업
 
-- [ ] Node.js 20.9+ 설치 확인
+- [ ] Node.js 24+ 설치 확인
 - [ ] 의존성 업데이트 (`next`, `react`, `react-dom`, `eslint-config-next`)
 - [ ] `middleware.ts` → `proxy.ts` 파일명 및 코드 변경
 - [ ] `params` 비동기 접근으로 변경 (`src/app/shop/[id]/layout.tsx`)
