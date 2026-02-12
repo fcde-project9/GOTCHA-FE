@@ -36,6 +36,8 @@ export const MARKER_IMAGES = {
 export const ERROR_IMAGES = {
   /** 에러 페이지 멤버 캐릭터 이미지 */
   MEMBERS: "/images/members-error.jpg",
+  /** 네트워크 에러 일러스트 */
+  NETWORK: "/images/network-error-illustration.png",
 } as const;
 
 // 로고 이미지
