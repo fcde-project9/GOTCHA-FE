@@ -1,5 +1,12 @@
 const CACHE_NAME = "gotcha-v1";
-const STATIC_ASSETS = ["/", "/offline", "/manifest.json", "/favicon.ico", "/images/icon-512.png"];
+const STATIC_ASSETS = [
+  "/",
+  "/offline",
+  "/manifest.json",
+  "/favicon.ico",
+  "/images/icon-512.png",
+  "/images/network-error-illustration.png",
+];
 
 // 설치 시 정적 자산 캐시
 self.addEventListener("install", (event) => {
