@@ -68,8 +68,11 @@ export default function LoginPage() {
       >
         <div className="mx-auto flex h-full flex-col w-full max-w-[480px] overflow-y-auto">
           {/* 로고 - 남은 영역에서 가운데 */}
-          <div className="flex flex-1 items-center justify-center">
+          <div className="flex flex-1 flex-col items-center justify-center gap-8">
             <Image src={LOGO_IMAGES.MAIN} alt="GOTCHA 로고" width={130} height={90} priority />
+            <p className="text-center text-lg font-semibold leading-[1.5] tracking-[-0.18px] text-[#4F4F51] ">
+              가챠샵 정보를 한 곳에서 갓차!
+            </p>
           </div>
 
           {/* 소셜 로그인 버튼 영역 - 하단 32px 여백 */}

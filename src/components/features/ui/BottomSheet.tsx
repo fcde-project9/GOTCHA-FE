@@ -227,7 +227,7 @@ export default function BottomSheet({
     >
       {/* Grabber */}
       <div
-        className="flex items-center justify-center h-[34px] cursor-grab active:cursor-grabbing"
+        className="flex justify-center pt-3 h-[44px] cursor-grab active:cursor-grabbing"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}

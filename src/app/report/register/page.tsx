@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Camera, Clock, Plus } from "lucide-react";
 import { useCreateShopWithUpload } from "@/api/mutations/useCreateShopWithUpload";
@@ -18,14 +19,27 @@ function ReportRegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [formData, setFormData] = useState({
-    address: "",
-    latitude: 0,
-    longitude: 0,
+  const address = searchParams.get("address") || "";
+  const latParam = searchParams.get("lat");
+  const lngParam = searchParams.get("lng");
+  const lat = latParam ? parseFloat(latParam) : NaN;
+  const lng = lngParam ? parseFloat(lngParam) : NaN;
+
+  // 좌표가 유효하지 않으면 이전 페이지로 리다이렉트
+  useEffect(() => {
+    if (!latParam || !lngParam || Number.isNaN(lat) || Number.isNaN(lng)) {
+      router.replace("/report");
+    }
+  }, [latParam, lngParam, lat, lng, router]);
+
+  const [formData, setFormData] = useState(() => ({
+    address,
+    latitude: Number.isNaN(lat) ? 0 : lat,
+    longitude: Number.isNaN(lng) ? 0 : lng,
     shopName: "",
     locationHint: "",
     images: [] as File[],
-  });
+  }));
   const [operatingHours, setOperatingHours] = useState<OperatingHoursEntry[]>([]);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -38,40 +52,6 @@ function ReportRegisterContent() {
   const [is24Hours, setIs24Hours] = useState(false);
   const [isOpenTimeModalOpen, setIsOpenTimeModalOpen] = useState(false);
   const [isCloseTimeModalOpen, setIsCloseTimeModalOpen] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
-
-  // 영업시간 기본값 설정: 매일, 시간 모름
-  useEffect(() => {
-    if (!isInitialized && operatingHours.length === 0) {
-      setSelectedDays([0, 1, 2, 3, 4, 5, 6]);
-      setIsEveryDay(true);
-      setIsUnknown(true);
-      setIsInitialized(true);
-    }
-  }, [isInitialized, operatingHours.length]);
-
-  // URL 파라미터에서 주소와 좌표 가져오기
-  useEffect(() => {
-    const address = searchParams.get("address") || "";
-    const latParam = searchParams.get("lat");
-    const lngParam = searchParams.get("lng");
-
-    const lat = latParam ? parseFloat(latParam) : NaN;
-    const lng = lngParam ? parseFloat(lngParam) : NaN;
-
-    // 좌표가 유효하지 않으면 이전 페이지로 리다이렉트
-    if (!latParam || !lngParam || Number.isNaN(lat) || Number.isNaN(lng)) {
-      router.replace("/report");
-      return;
-    }
-
-    setFormData((prev) => ({
-      ...prev,
-      address,
-      latitude: lat,
-      longitude: lng,
-    }));
-  }, [searchParams, router]);
   const [isExitConfirmModalOpen, setIsExitConfirmModalOpen] = useState(false);
   const [toast, setToast] = useState({ message: "", isVisible: false });
   const [toastKey, setToastKey] = useState(0);
@@ -93,8 +73,7 @@ function ReportRegisterContent() {
     Boolean(formData.locationHint.trim()) ||
     formData.images.length > 0 ||
     operatingHours.length > 0 ||
-    (isInitialized && selectedDays.length !== 7) ||
-    (!isInitialized && selectedDays.length > 0);
+    selectedDays.length > 0;
 
   const handleBackClick = () => {
     if (hasUserInput) {
@@ -571,10 +550,12 @@ function ReportRegisterContent() {
           </div>
           {formData.images.length > 0 && previewUrl ? (
             <div className="relative w-[105px] h-[105px]">
-              <img
+              <Image
                 src={previewUrl}
                 alt="대표 사진 미리보기"
-                className="w-full h-full object-cover rounded-lg"
+                className="object-cover rounded-lg"
+                fill
+                unoptimized
               />
               <button
                 type="button"

@@ -44,7 +44,7 @@ export default function FavoritesPage() {
 
   return (
     <>
-      <main className="h-[calc(100dvh-70px)] overflow-hidden relative bg-default flex flex-col">
+      <main className="h-[calc(100dvh-var(--footer-height))] overflow-hidden relative bg-default flex flex-col">
         {/* 헤더 */}
         <SimpleHeader title="찜한 업체" />
 

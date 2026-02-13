@@ -326,7 +326,7 @@ export default function ReportLocationPage() {
       </div>
 
       {/* Bottom Sheet */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl px-5 pt-5 pb-8 shadow-[0_-4px_10px_rgba(0,0,0,0.2)] z-30">
+      <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl px-5 pt-5 pb-[52px] shadow-[0_-4px_10px_rgba(0,0,0,0.2)] z-30">
         <div className="flex flex-col gap-4">
           {/* Address */}
           <div className="flex flex-col gap-2">
@@ -360,7 +360,7 @@ export default function ReportLocationPage() {
             loading={checkingNearby}
             onClick={handleSubmit}
           >
-            이 주소로 등록하기
+            이 주소로 등록할래요!
           </Button>
         </div>
       </div>
