@@ -27,10 +27,12 @@ function ReportRegisterContent() {
 
   // 좌표가 유효하지 않으면 이전 페이지로 리다이렉트
   useEffect(() => {
-    if (!latParam || !lngParam || Number.isNaN(lat) || Number.isNaN(lng)) {
+    const parsedLat = latParam ? parseFloat(latParam) : NaN;
+    const parsedLng = lngParam ? parseFloat(lngParam) : NaN;
+    if (!latParam || !lngParam || Number.isNaN(parsedLat) || Number.isNaN(parsedLng)) {
       router.replace("/report");
     }
-  }, [latParam, lngParam, lat, lng, router]);
+  }, [latParam, lngParam, router]);
 
   const [formData, setFormData] = useState(() => ({
     address,
