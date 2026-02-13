@@ -276,13 +276,15 @@ export default function ShopPreviewBottomSheet({
   const dragStartHeight = useRef(DEFAULT_HEIGHT);
   const lastDragY = useRef(0);
 
-  // shopId 변경 시 미리보기 상태로 리셋
-  useEffect(() => {
+  // shopId 변경 시 미리보기 상태로 리셋 (렌더 중 상태 조정 패턴)
+  const [prevShopId, setPrevShopId] = useState(shopId);
+  if (shopId !== prevShopId) {
+    setPrevShopId(shopId);
     setIsExpanded(false);
     setIsCollapsing(false);
-    setSheetHeight(348);
+    setSheetHeight(DEFAULT_HEIGHT);
     setHasExpandedOnce(false);
-  }, [shopId]);
+  }
 
   // 확장 → 미리보기 축소 (숨겼다가 미리보기로 다시 올라옴)
   const collapseToPreview = useCallback(() => {
@@ -496,7 +498,7 @@ export default function ShopPreviewBottomSheet({
         {/* Grabber (미리보기에서만 표시) */}
         {!isExpanded && !isCollapsing && (
           <div
-            className="flex items-center justify-center h-[34px] cursor-grab active:cursor-grabbing"
+            className="flex justify-center pt-3 h-[44px] cursor-grab active:cursor-grabbing"
             onTouchStart={(e) => handleDragStart(e.touches[0].clientY)}
             onTouchMove={(e) => handleDragMove(e.touches[0].clientY)}
             onTouchEnd={handleDragEnd}

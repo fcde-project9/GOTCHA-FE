@@ -19,13 +19,13 @@ interface SplashScreenProps {
  */
 export function SplashScreen({ duration = 2000, onComplete }: SplashScreenProps) {
   const [fadeOut, setFadeOut] = useState(false);
-  const [shouldShow, setShouldShow] = useState(true);
+  const [shouldShow] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return sessionStorage.getItem("splashShown") !== "true";
+  });
 
   useEffect(() => {
-    // 이미 스플래시를 본 경우 즉시 완료 처리
-    const splashShown = sessionStorage.getItem("splashShown") === "true";
-    if (splashShown) {
-      setShouldShow(false);
+    if (!shouldShow) {
       onComplete();
       return;
     }
@@ -51,7 +51,7 @@ export function SplashScreen({ duration = 2000, onComplete }: SplashScreenProps)
       clearTimeout(completeTimer);
       document.documentElement.style.backgroundColor = originalBgColor || "#ffffff";
     };
-  }, [duration, onComplete]);
+  }, [shouldShow, duration, onComplete]);
 
   // 이미 본 경우 렌더링하지 않음
   if (!shouldShow) {
@@ -60,7 +60,7 @@ export function SplashScreen({ duration = 2000, onComplete }: SplashScreenProps)
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-main transition-opacity duration-500 ${
+      className={`fixed inset-0 z-50 flex flex-col items-center justify-center pb-8 bg-main transition-opacity duration-500 ${
         fadeOut ? "opacity-0" : "opacity-100"
       }`}
     >
@@ -71,7 +71,7 @@ export function SplashScreen({ duration = 2000, onComplete }: SplashScreenProps)
 
       {/* 슬로건 */}
       <p className="text-center text-lg font-semibold tracking-tight text-white">
-        가챠샵 정보를 한곳에서 갓차!
+        가챠샵 정보를 한 곳에서 갓차!
       </p>
     </div>
   );

@@ -83,7 +83,7 @@ export default function MyReportsPage() {
   if (isLoading) {
     return (
       <>
-        <main className="h-[calc(100dvh-70px)] overflow-hidden relative bg-default flex flex-col">
+        <main className="h-[calc(100dvh-var(--footer-height))] overflow-hidden relative bg-default flex flex-col">
           <BackHeader title="내가 제보한 업체" />
           <div className="flex flex-1 items-center justify-center">
             <div className="h-12 w-12 animate-spin rounded-full border-4 border-grey-200 border-t-main"></div>
@@ -98,7 +98,7 @@ export default function MyReportsPage() {
   if (error) {
     return (
       <>
-        <main className="h-[calc(100dvh-70px)] overflow-hidden relative bg-default flex flex-col">
+        <main className="h-[calc(100dvh-var(--footer-height))] overflow-hidden relative bg-default flex flex-col">
           <BackHeader title="내가 제보한 업체" />
           <div className="flex flex-1 flex-col items-center justify-center gap-4 px-5">
             <p className="text-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-600">
@@ -113,7 +113,7 @@ export default function MyReportsPage() {
 
   return (
     <>
-      <main className="h-[calc(100dvh-70px)] overflow-hidden relative bg-default flex flex-col">
+      <main className="h-[calc(100dvh-var(--footer-height))] overflow-hidden relative bg-default flex flex-col">
         {/* 헤더 */}
         <BackHeader title="내가 제보한 업체" />
 

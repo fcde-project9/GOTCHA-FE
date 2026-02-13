@@ -118,7 +118,7 @@ export default function Home() {
         onPermissionGranted={locationTracking.handlePermissionGranted}
       />
 
-      <main className="h-[calc(100dvh-70px)] overflow-hidden relative touch-none">
+      <main className="h-[calc(100dvh-var(--footer-height))] overflow-hidden relative touch-none">
         <div className="flex h-full flex-col items-center relative touch-auto">
           {/* 카카오맵 */}
           <div className="w-full h-full relative">
