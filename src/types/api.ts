@@ -250,3 +250,29 @@ export interface FileUploadResponse {
  * POST /api/files/upload 전체 응답
  */
 export type FileUploadApiResponse = ApiResponse<FileUploadResponse>;
+
+/**
+ * GET /api/users/me/blocks 응답 - 차단된 사용자 정보
+ */
+export interface BlockedUserResponse {
+  id: number;
+  nickname: string;
+  profileImageUrl: string;
+  blockedAt: string; // ISO 8601 형식
+}
+
+/**
+ * GET /api/users/me/blocks 페이지 응답
+ */
+export interface BlockedUsersPageResponse {
+  content: BlockedUserResponse[];
+  totalCount: number;
+  page: number;
+  size: number;
+  hasNext: boolean;
+}
+
+/**
+ * GET /api/users/me/blocks 전체 응답
+ */
+export type BlockedUsersApiResponse = ApiResponse<BlockedUsersPageResponse>;

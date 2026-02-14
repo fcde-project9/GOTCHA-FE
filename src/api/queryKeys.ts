@@ -78,6 +78,17 @@ export const queryKeys = {
     /** 내가 제보한 매장 목록 */
     myReports: () => [...queryKeys.user.all, "reports"] as const,
   },
+
+  /**
+   * 차단 관련 쿼리 키
+   */
+  blocks: {
+    /** 모든 차단 관련 쿼리의 기본 키 */
+    all: ["blocks"] as const,
+
+    /** 차단 목록 */
+    list: () => [...queryKeys.blocks.all, "list"] as const,
+  },
 } as const;
 
 /**

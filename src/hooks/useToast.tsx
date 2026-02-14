@@ -11,8 +11,13 @@ import {
 } from "react";
 import { Toast } from "@/components/common";
 
+interface ToastAction {
+  label: string;
+  onPress: () => void;
+}
+
 interface ToastContextValue {
-  showToast: (message: string, duration?: number) => void;
+  showToast: (message: string, duration?: number, action?: ToastAction) => void;
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null);
@@ -22,6 +27,7 @@ interface ToastState {
   isVisible: boolean;
   duration: number;
   key: number;
+  action?: ToastAction;
 }
 
 /**
@@ -47,30 +53,35 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const showToast = useCallback((message: string, duration: number = 2000) => {
-    // 기존 타이머 정리
-    if (toastTimeoutRef.current) {
-      clearTimeout(toastTimeoutRef.current);
-    }
+  const showToast = useCallback(
+    (message: string, duration: number = 2000, action?: ToastAction) => {
+      // 기존 타이머 정리
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
 
-    // 먼저 기존 토스트를 숨기고 새로운 토스트를 표시 (연속 호출 대응)
-    setToast((prev) => ({
-      message,
-      isVisible: false,
-      duration,
-      key: prev.key,
-    }));
-
-    // 다음 틱에서 새 토스트 표시
-    toastTimeoutRef.current = setTimeout(() => {
+      // 먼저 기존 토스트를 숨기고 새로운 토스트를 표시 (연속 호출 대응)
       setToast((prev) => ({
         message,
-        isVisible: true,
+        isVisible: false,
         duration,
-        key: prev.key + 1,
+        key: prev.key,
+        action,
       }));
-    }, 0);
-  }, []);
+
+      // 다음 틱에서 새 토스트 표시
+      toastTimeoutRef.current = setTimeout(() => {
+        setToast((prev) => ({
+          message,
+          isVisible: true,
+          duration,
+          key: prev.key + 1,
+          action,
+        }));
+      }, 0);
+    },
+    []
+  );
 
   const handleClose = useCallback(() => {
     setToast((prev) => ({ ...prev, isVisible: false }));
@@ -85,6 +96,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         isVisible={toast.isVisible}
         onClose={handleClose}
         duration={toast.duration}
+        action={toast.action}
       />
     </ToastContext.Provider>
   );

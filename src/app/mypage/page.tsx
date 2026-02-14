@@ -67,6 +67,10 @@ export default function MyPage() {
     router.push("/mypage/my-reports");
   };
 
+  const handleBlockedUsers = () => {
+    router.push("/mypage/blocked-users");
+  };
+
   const handleTerms = () => {
     router.push("/mypage/terms");
   };
@@ -232,7 +236,12 @@ export default function MyPage() {
 
         {/* Menu List */}
         <div className="w-full max-w-[335px] mx-auto">
-          <MenuList onMyReports={handleMyReports} onTerms={handleTerms} onAbout={handleAbout} />
+          <MenuList
+            onMyReports={handleMyReports}
+            onBlockedUsers={handleBlockedUsers}
+            onTerms={handleTerms}
+            onAbout={handleAbout}
+          />
         </div>
       </main>
 
