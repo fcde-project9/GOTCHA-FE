@@ -271,8 +271,3 @@ export interface BlockedUsersPageResponse {
   size: number;
   hasNext: boolean;
 }
-
-/**
- * GET /api/users/me/blocks 전체 응답
- */
-export type BlockedUsersApiResponse = ApiResponse<BlockedUsersPageResponse>;

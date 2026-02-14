@@ -22,7 +22,7 @@ export function UnblockConfirmModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-5">
       <div className="w-full max-w-[335px] rounded-2xl bg-white px-4 py-5 flex flex-col items-center gap-5">
         {/* Title & Description */}
         <div className="flex flex-col items-center gap-1">
