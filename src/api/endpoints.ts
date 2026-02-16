@@ -46,6 +46,8 @@ export const ENDPOINTS = {
   },
   // 차단
   BLOCKS: {
+    LIST: "/api/users/me/blocks",
     BLOCK: (userId: number) => `/api/users/${userId}/block`,
+    UNBLOCK: (userId: number) => `/api/users/${userId}/block`,
   },
 } as const;

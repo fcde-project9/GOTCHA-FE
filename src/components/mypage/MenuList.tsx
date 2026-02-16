@@ -40,14 +40,16 @@ function MenuItem({ label, onClick, showBorder = true }: MenuItemProps) {
 
 interface MenuListProps {
   onMyReports?: () => void;
+  onBlockedUsers?: () => void;
   onTerms?: () => void;
   onAbout?: () => void;
 }
 
-export function MenuList({ onMyReports, onTerms, onAbout }: MenuListProps) {
+export function MenuList({ onMyReports, onBlockedUsers, onTerms, onAbout }: MenuListProps) {
   return (
     <div className="flex flex-col items-start w-full">
       <MenuItem label="내가 제보한 업체" onClick={onMyReports} />
+      <MenuItem label="차단한 사용자 목록" onClick={onBlockedUsers} />
       <MenuItem label="약관/라이센스" onClick={onTerms} />
       <MenuItem label="이 서비스를 만든 녀석들" onClick={onAbout} showBorder={false} />
     </div>
