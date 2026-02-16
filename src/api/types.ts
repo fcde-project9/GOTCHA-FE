@@ -164,3 +164,66 @@ export interface NearbyShopsResponse {
   count: number;
   shops: NearbyShopResponse[];
 }
+
+// ── 신고 ──
+
+export type ReportTargetType = "REVIEW" | "SHOP" | "USER";
+
+// 리뷰 신고
+export type ReviewReportReason =
+  | "REVIEW_SPAM"
+  | "REVIEW_COPYRIGHT"
+  | "REVIEW_DEFAMATION"
+  | "REVIEW_ABUSE"
+  | "REVIEW_VIOLENCE"
+  | "REVIEW_OBSCENE"
+  | "REVIEW_PRIVACY"
+  | "REVIEW_HATE_SPEECH"
+  | "REVIEW_FALSE_INFO"
+  | "REVIEW_OTHER";
+
+// 가게 신고
+export type ShopReportReason =
+  | "SHOP_WRONG_ADDRESS"
+  | "SHOP_CLOSED"
+  | "SHOP_INAPPROPRIATE"
+  | "SHOP_DUPLICATE"
+  | "SHOP_FALSE_INFO"
+  | "SHOP_OTHER";
+
+// 사용자 신고
+export type UserReportReason =
+  | "USER_INAPPROPRIATE_NICKNAME"
+  | "USER_INAPPROPRIATE_PROFILE"
+  | "USER_PRIVACY"
+  | "USER_IMPERSONATION"
+  | "USER_HATE_SPEECH"
+  | "USER_OTHER";
+
+export type ReportReason = ReviewReportReason | ShopReportReason | UserReportReason;
+
+export type ReportStatus = "PENDING" | "ACCEPTED" | "REJECTED" | "CANCELLED";
+
+export interface CreateReportRequest {
+  targetType: ReportTargetType;
+  targetId: number;
+  reason: ReportReason;
+  detail?: string;
+}
+
+export interface ReportResponse {
+  id: number;
+  targetType: ReportTargetType;
+  targetId: number;
+  reason: ReportReason;
+  detail: string | null;
+  status: ReportStatus;
+  createdAt: string;
+}
+
+// ── 차단 ──
+
+export interface BlockResponse {
+  blockedUserId: number;
+  blockedAt: string;
+}

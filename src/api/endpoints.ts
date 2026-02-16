@@ -40,7 +40,11 @@ export const ENDPOINTS = {
     DELETE: (shopId: number, reviewId: number) => `/api/shops/${shopId}/reviews/${reviewId}`,
     LIKE: (reviewId: number) => `/api/shops/reviews/${reviewId}/like`,
   },
-  // 사용자 차단
+  // 신고
+  REPORTS: {
+    CREATE: "/api/reports",
+  },
+  // 차단
   BLOCKS: {
     LIST: "/api/users/me/blocks",
     BLOCK: (userId: number) => `/api/users/${userId}/block`,

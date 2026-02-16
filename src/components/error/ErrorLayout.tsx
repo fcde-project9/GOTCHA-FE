@@ -3,8 +3,8 @@ import { type ReactNode } from "react";
 interface ErrorLayoutProps {
   /** 상단 일러스트 영역 */
   illustration: ReactNode;
-  /** 제목 텍스트 */
-  title: string;
+  /** 제목 (ReactNode로 멀티라인 지원) */
+  title: ReactNode;
   /** 설명 텍스트 */
   subtitle: ReactNode;
   /** 하단 버튼 영역 */
