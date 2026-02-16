@@ -74,15 +74,17 @@ function ReviewListItem({
         <div className="flex items-center justify-between">
           <span className="text-[12px] text-grey-600 leading-[1.5]">{review.author.nickname}</span>
           <div className="relative" ref={menuRef}>
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="flex items-center justify-center h-6"
-              aria-label="메뉴"
-            >
-              <MoreVertical size={16} className="text-grey-500" />
-            </button>
+            {(isOwnerOrAdmin || isLoggedIn) && (
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="flex items-center justify-center h-6"
+                aria-label="메뉴"
+              >
+                <MoreVertical size={16} className="text-grey-500" />
+              </button>
+            )}
             {/* 드롭다운 메뉴 */}
-            {isMenuOpen && (
+            {isMenuOpen && (isOwnerOrAdmin || isLoggedIn) && (
               <div className="absolute right-0 top-6 z-10 bg-white rounded-lg shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden">
                 {isOwnerOrAdmin ? (
                   <>

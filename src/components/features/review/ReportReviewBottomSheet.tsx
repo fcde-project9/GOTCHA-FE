@@ -100,15 +100,13 @@ export function ReportBottomSheet({
   };
 
   const handleClose = () => {
-    setSelectedReason(null);
-    setDetail("");
     onClose();
   };
 
   const isSubmitDisabled = !selectedReason || (isOtherSelected && !detail.trim()) || isLoading;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end bg-black/80" onClick={handleClose}>
+    <div className="fixed inset-0 z-50 flex items-end bg-black/70" onClick={handleClose}>
       <div
         className="w-full bg-white rounded-t-3xl px-5 pt-5 pb-[52px] animate-slide-up"
         onClick={(e) => e.stopPropagation()}

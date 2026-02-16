@@ -128,14 +128,16 @@ function ReviewItem({
         <div className="flex items-center justify-between">
           <span className="text-[12px] text-grey-600 leading-[1.5]">{review.author.nickname}</span>
           <div className="relative" ref={menuRef}>
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="flex items-center justify-center h-6"
-              aria-label="메뉴"
-            >
-              <MoreVertical size={16} className="text-grey-500" />
-            </button>
-            {isMenuOpen && (
+            {(review.isOwner || isLoggedIn) && (
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="flex items-center justify-center h-6"
+                aria-label="메뉴"
+              >
+                <MoreVertical size={16} className="text-grey-500" />
+              </button>
+            )}
+            {isMenuOpen && (review.isOwner || isLoggedIn) && (
               <div className="absolute right-[calc(50%_+_2px)] top-[20px] z-10 bg-white rounded-lg rounded-tr-none shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden">
                 {review.isOwner ? (
                   <>
