@@ -23,7 +23,7 @@ export function NetworkErrorPage({ onRetry }: NetworkErrorPageProps) {
   return (
     <ErrorLayout
       illustration={
-        <Image src={ERROR_IMAGES.NETWORK} alt="네트워크 에러" width={93} height={81} priority />
+        <Image src={ERROR_IMAGES.OFFLINE} alt="오프라인 상태" width={80} height={81} priority />
       }
       title="오프라인 상태에요"
       subtitle="인터넷 연결을 확인해주세요"

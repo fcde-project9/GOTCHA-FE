@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   ErrorBoundary,
   DefaultErrorFallback,
@@ -39,6 +40,20 @@ export default function TestErrorPage() {
   return (
     <div className="min-h-screen bg-grey-100 p-6">
       <h1 className="text-2xl font-bold mb-6">Error Boundary 테스트 페이지</h1>
+
+      {/* 0. 에러 페이지 테스트 (풀스크린) */}
+      <section className="mb-8">
+        <h2 className="text-lg font-semibold mb-4">0. 에러 페이지 (풀스크린)</h2>
+        <Link
+          href="/test-error/error-pages"
+          className="inline-flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-white hover:bg-red-600"
+        >
+          에러 페이지 테스트 &rarr;
+        </Link>
+        <p className="mt-2 text-sm text-grey-500">
+          404, 오프라인, 알 수 없는 오류, 서비스 이용불가, 세션 만료, 시스템 점검
+        </p>
+      </section>
 
       {/* 1. DefaultErrorFallback 직접 렌더링 */}
       <section className="mb-8">
