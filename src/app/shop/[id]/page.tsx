@@ -531,13 +531,10 @@ export default function ShopDetailPage() {
     if (!blockTarget) return;
 
     blockUserMutation.mutate(blockTarget.userId, {
-      onSuccess: async () => {
-        try {
-          await refetch();
-        } finally {
-          setBlockTarget(null);
-          showToast("사용자 차단이 완료되었어요!");
-        }
+      onSuccess: () => {
+        setBlockTarget(null);
+        showToast("사용자 차단이 완료되었어요!");
+        refetch();
       },
       onError: (error) => {
         showToast(error.message || "사용자 차단에 실패했어요.");
