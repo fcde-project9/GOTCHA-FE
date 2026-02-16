@@ -103,7 +103,7 @@ export default function BlockedUsersPage() {
                 <button
                   onClick={() => handleUnblockClick(user.id, user.nickname)}
                   disabled={unblockMutation.isPending}
-                  className="shrink-0 rounded-full border border-grey-300 bg-white px-2 py-1 text-xs font-normal text-grey-700 tracking-[-0.12px] leading-[18px] disabled:opacity-50"
+                  className="shrink-0 rounded-full border border-grey-300 bg-white px-2 py-1 text-xs font-normal text-grey-700 tracking-[-0.12px] leading-[18px] active:bg-grey-400 disabled:opacity-50"
                 >
                   차단해제
                 </button>

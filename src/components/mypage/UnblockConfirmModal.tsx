@@ -35,7 +35,9 @@ export function UnblockConfirmModal({
             </span>
           </div>
           <p className="text-[14px] font-normal text-grey-700 tracking-[-0.14px] leading-[21px] text-center">
-            차단을 해제하면 해당 사용자의 콘텐츠 및 활동이 다시 보여요
+            차단을 해제하면 해당 사용자의
+            <br />
+            콘텐츠 및 활동이 다시 보여요
           </p>
         </div>
 

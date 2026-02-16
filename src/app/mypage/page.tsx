@@ -241,6 +241,7 @@ export default function MyPage() {
             onBlockedUsers={handleBlockedUsers}
             onTerms={handleTerms}
             onAbout={handleAbout}
+            isLoggedIn={isLoggedIn}
           />
         </div>
       </main>

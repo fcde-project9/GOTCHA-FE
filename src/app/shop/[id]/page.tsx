@@ -15,20 +15,28 @@ import {
   Pencil,
   Trash2,
   Images,
+  Flag,
+  Ban,
 } from "lucide-react";
+import { useBlockUser } from "@/api/mutations/useBlockUser";
+import { useCreateReport } from "@/api/mutations/useCreateReport";
 import { useDeleteReview } from "@/api/mutations/useDeleteReview";
 import { useDeleteShop } from "@/api/mutations/useDeleteShop";
 import { useToggleReviewLike } from "@/api/mutations/useToggleReviewLike";
 import { useUpdateShop } from "@/api/mutations/useUpdateShop";
 import { useShopDetail } from "@/api/queries/useShopDetail";
 import { useUser } from "@/api/queries/useUser";
+import type { ReportReason, ReportTargetType } from "@/api/types";
 import { Button, BackHeader, OutlineButton, ImageViewerModal } from "@/components/common";
+import { BlockUserConfirmModal } from "@/components/features/review/BlockUserConfirmModal";
+import { ReportBottomSheet } from "@/components/features/review/ReportReviewBottomSheet";
+import { ReportSuccessModal } from "@/components/features/review/ReportSuccessModal";
 import { ReviewDeleteConfirmModal } from "@/components/features/review/ReviewDeleteConfirmModal";
 import { ReviewWriteModal } from "@/components/features/review/ReviewWriteModal";
 import { StatusBadge } from "@/components/features/shop";
 import { ShopDeleteConfirmModal } from "@/components/features/shop/ShopDeleteConfirmModal";
 import { ShopEditModal } from "@/components/features/shop/ShopEditModal";
-import { useFavorite, useToast } from "@/hooks";
+import { useAuth, useFavorite, useToast } from "@/hooks";
 import type { ReviewResponse, OpenTime, ReviewSortOption } from "@/types/api";
 import { formatDate } from "@/utils";
 import { trackShopView, trackShareClick } from "@/utils/analytics";
@@ -82,24 +90,30 @@ function ReviewItem({
   onLikeToggle,
   onEdit,
   onDelete,
+  onReport,
+  onReportUser,
+  onBlock,
   onImageClick,
   isAdmin = false,
+  isLoggedIn = false,
 }: {
   review: ReviewResponse;
   onLikeToggle: (reviewId: number) => void;
   onEdit: (reviewId: number) => void;
   onDelete: (reviewId: number) => void;
+  onReport: (reviewId: number) => void;
+  onReportUser: (userId: number) => void;
+  onBlock: (userId: number, nickname: string) => void;
   onImageClick?: (images: string[], index: number) => void;
   isAdmin?: boolean;
+  isLoggedIn?: boolean;
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // 메뉴 표시 조건: 본인 리뷰이거나 ADMIN
-  const showMenu = review.isOwner || isAdmin;
-  // 수정 권한: 본인만 가능
+  // 본인 리뷰 메뉴: 수정/삭제
+  const isOwnerOrAdmin = review.isOwner || isAdmin;
   const canEdit = review.isOwner;
-  // 삭제 권한: 본인 또는 ADMIN
   const canDelete = review.isOwner || isAdmin;
 
   // 메뉴 외부 클릭 시 닫기
@@ -122,8 +136,8 @@ function ReviewItem({
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <span className="text-[12px] text-grey-600 leading-[1.5]">{review.author.nickname}</span>
-          {showMenu && (
-            <div className="relative" ref={menuRef}>
+          <div className="relative" ref={menuRef}>
+            {(isOwnerOrAdmin || isLoggedIn) && (
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className="flex items-center justify-center h-6"
@@ -131,42 +145,87 @@ function ReviewItem({
               >
                 <MoreVertical size={16} className="text-grey-500" />
               </button>
-              {/* 드롭다운 메뉴 */}
-              {isMenuOpen && (
-                <div className="absolute right-[calc(50%_+_2px)] top-[20px] z-10 bg-white rounded-lg rounded-tr-none shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden">
-                  {canEdit && (
-                    <>
+            )}
+            {/* 드롭다운 메뉴 */}
+            {isMenuOpen && (isOwnerOrAdmin || isLoggedIn) && (
+              <div className="absolute right-0 top-6 z-10 bg-white rounded-lg shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden">
+                {isOwnerOrAdmin ? (
+                  <>
+                    {canEdit && (
+                      <>
+                        <button
+                          onClick={() => {
+                            setIsMenuOpen(false);
+                            onEdit(review.id);
+                          }}
+                          className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
+                        >
+                          <Pencil size={16} className="text-grey-900" />
+                          <span className="text-[14px] text-grey-900 whitespace-nowrap">
+                            수정하기
+                          </span>
+                        </button>
+                        {canDelete && <div className="border-t border-grey-100" />}
+                      </>
+                    )}
+                    {canDelete && (
                       <button
                         onClick={() => {
                           setIsMenuOpen(false);
-                          onEdit(review.id);
+                          onDelete(review.id);
                         }}
                         className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
                       >
-                        <Pencil size={16} className="text-grey-900" />
-                        <span className="text-[14px] text-grey-900 whitespace-nowrap">
-                          수정하기
-                        </span>
+                        <Trash2 size={16} className="text-error" />
+                        <span className="text-[14px] text-error whitespace-nowrap">삭제하기</span>
                       </button>
-                      {canDelete && <div className="border-t border-grey-100" />}
-                    </>
-                  )}
-                  {canDelete && (
+                    )}
+                  </>
+                ) : isLoggedIn ? (
+                  <>
                     <button
                       onClick={() => {
                         setIsMenuOpen(false);
-                        onDelete(review.id);
+                        onReport(review.id);
                       }}
                       className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
                     >
-                      <Trash2 size={16} className="text-error" />
-                      <span className="text-[14px] text-error whitespace-nowrap">삭제하기</span>
+                      <Flag size={16} className="text-grey-900" />
+                      <span className="text-[14px] text-grey-900 whitespace-nowrap">
+                        리뷰 신고하기
+                      </span>
                     </button>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
+                    <div className="border-t border-grey-100" />
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        onReportUser(review.author.id);
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
+                    >
+                      <Flag size={16} className="text-grey-900" />
+                      <span className="text-[14px] text-grey-900 whitespace-nowrap">
+                        사용자 신고하기
+                      </span>
+                    </button>
+                    <div className="border-t border-grey-100" />
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        onBlock(review.author.id, review.author.nickname);
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
+                    >
+                      <Ban size={16} className="text-error" />
+                      <span className="text-[14px] text-error whitespace-nowrap">
+                        사용자 차단하기
+                      </span>
+                    </button>
+                  </>
+                ) : null}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* 리뷰 내용 */}
@@ -306,8 +365,22 @@ export default function ShopDetailPage() {
   // 리뷰 좋아요 토글 mutation hook
   const toggleReviewLikeMutation = useToggleReviewLike();
 
+  // 신고/차단 mutation hooks
+  const createReportMutation = useCreateReport();
+  const blockUserMutation = useBlockUser();
+
   // 사용자 정보 조회 (ADMIN 권한 확인용)
   const { isAdmin } = useUser();
+  const { isLoggedIn } = useAuth();
+
+  // 신고 상태
+  const [reportTarget, setReportTarget] = useState<{ type: ReportTargetType; id: number } | null>(
+    null
+  );
+  const [isReportSuccessOpen, setIsReportSuccessOpen] = useState(false);
+
+  // 차단 상태
+  const [blockTarget, setBlockTarget] = useState<{ userId: number; nickname: string } | null>(null);
 
   // 가게 삭제/수정 상태
   const [isShopDeleteModalOpen, setIsShopDeleteModalOpen] = useState(false);
@@ -417,6 +490,57 @@ export default function ShopDetailPage() {
       },
       onError: (error) => {
         showToast(error.message || "리뷰 삭제에 실패했어요.");
+      },
+    });
+  };
+
+  // 신고 바텀시트 열기
+  const handleReportReview = (reviewId: number) => {
+    setReportTarget({ type: "REVIEW", id: reviewId });
+  };
+
+  const handleReportUser = (userId: number) => {
+    setReportTarget({ type: "USER", id: userId });
+  };
+
+  // 신고 제출
+  const handleSubmitReport = (reason: ReportReason, detail?: string) => {
+    if (!reportTarget) return;
+
+    createReportMutation.mutate(
+      { targetType: reportTarget.type, targetId: reportTarget.id, reason, detail },
+      {
+        onSuccess: () => {
+          setReportTarget(null);
+          setIsReportSuccessOpen(true);
+        },
+        onError: (error) => {
+          showToast(error.message || "신고 접수에 실패했어요.");
+        },
+      }
+    );
+  };
+
+  // 사용자 차단 다이얼로그 열기
+  const handleBlockUser = (userId: number, nickname: string) => {
+    setBlockTarget({ userId, nickname });
+  };
+
+  // 사용자 차단 실행
+  const handleConfirmBlock = () => {
+    if (!blockTarget) return;
+
+    blockUserMutation.mutate(blockTarget.userId, {
+      onSuccess: async () => {
+        try {
+          await refetch();
+        } finally {
+          setBlockTarget(null);
+          showToast("사용자 차단이 완료되었어요!");
+        }
+      },
+      onError: (error) => {
+        showToast(error.message || "사용자 차단에 실패했어요.");
       },
     });
   };
@@ -890,10 +1014,14 @@ export default function ShopDetailPage() {
                     onLikeToggle={handleLikeToggle}
                     onEdit={handleEditReview}
                     onDelete={handleDeleteReview}
+                    onReport={handleReportReview}
+                    onReportUser={handleReportUser}
+                    onBlock={handleBlockUser}
                     onImageClick={(images, index) =>
                       setGalleryState({ images, initialIndex: index })
                     }
                     isAdmin={isAdmin}
+                    isLoggedIn={isLoggedIn}
                   />
                 ))}
               </div>
@@ -958,6 +1086,30 @@ export default function ShopDetailPage() {
         isLoading={deleteReviewMutation.isPending}
         onClose={() => setDeletingReviewId(null)}
         onConfirm={handleConfirmDelete}
+      />
+
+      {/* 신고 바텀시트 */}
+      <ReportBottomSheet
+        isOpen={!!reportTarget}
+        isLoading={createReportMutation.isPending}
+        targetType={reportTarget?.type ?? "REVIEW"}
+        onClose={() => setReportTarget(null)}
+        onSubmit={handleSubmitReport}
+      />
+
+      {/* 신고 정상처리 다이얼로그 */}
+      <ReportSuccessModal
+        isOpen={isReportSuccessOpen}
+        onClose={() => setIsReportSuccessOpen(false)}
+      />
+
+      {/* 사용자 차단 확인 다이얼로그 */}
+      <BlockUserConfirmModal
+        isOpen={!!blockTarget}
+        isLoading={blockUserMutation.isPending}
+        nickname={blockTarget?.nickname ?? ""}
+        onClose={() => setBlockTarget(null)}
+        onConfirm={handleConfirmBlock}
       />
 
       {/* 가게 삭제 확인 모달 (ADMIN 전용) */}
