@@ -73,6 +73,15 @@ export function ReportBottomSheet({
   const [selectedReason, setSelectedReason] = useState<ReportReason | null>(null);
   const [detail, setDetail] = useState("");
 
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+    if (!isOpen) {
+      setSelectedReason(null);
+      setDetail("");
+    }
+  }
+
   if (!isOpen) return null;
 
   const reasons = REASONS_BY_TARGET[targetType];

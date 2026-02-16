@@ -17,7 +17,7 @@ import { ReportBottomSheet } from "@/components/features/review/ReportReviewBott
 import { ReportSuccessModal } from "@/components/features/review/ReportSuccessModal";
 import { ReviewDeleteConfirmModal } from "@/components/features/review/ReviewDeleteConfirmModal";
 import { ReviewWriteModal } from "@/components/features/review/ReviewWriteModal";
-import { useToast } from "@/hooks";
+import { useAuth, useToast } from "@/hooks";
 import type { ReviewResponse, ReviewSortOption } from "@/types/api";
 import { formatDate } from "@/utils";
 
@@ -32,6 +32,7 @@ function ReviewListItem({
   onBlock,
   onImageClick,
   isAdmin = false,
+  isLoggedIn = false,
 }: {
   review: ReviewResponse;
   onLikeToggle: (reviewId: number) => void;
@@ -42,6 +43,7 @@ function ReviewListItem({
   onBlock: (userId: number, nickname: string) => void;
   onImageClick?: (imageUrl: string) => void;
   isAdmin?: boolean;
+  isLoggedIn?: boolean;
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -114,7 +116,7 @@ function ReviewListItem({
                       </button>
                     )}
                   </>
-                ) : (
+                ) : isLoggedIn ? (
                   <>
                     <button
                       onClick={() => {
@@ -155,7 +157,7 @@ function ReviewListItem({
                       </span>
                     </button>
                   </>
-                )}
+                ) : null}
               </div>
             )}
           </div>
@@ -288,6 +290,7 @@ export default function ReviewsListPage() {
 
   // 사용자 정보 조회 (ADMIN 권한 확인용)
   const { isAdmin } = useUser();
+  const { isLoggedIn } = useAuth();
 
   // 무한 스크롤 Intersection Observer
   useEffect(() => {
@@ -397,9 +400,12 @@ export default function ReviewsListPage() {
 
     blockUserMutation.mutate(blockTarget.userId, {
       onSuccess: async () => {
-        await refetch();
-        setBlockTarget(null);
-        showToast("사용자 차단이 완료되었어요!");
+        try {
+          await refetch();
+        } finally {
+          setBlockTarget(null);
+          showToast("사용자 차단이 완료되었어요!");
+        }
       },
       onError: (error) => {
         showToast(error.message || "사용자 차단에 실패했어요.");
@@ -505,6 +511,7 @@ export default function ReviewsListPage() {
                   onBlock={handleBlockUser}
                   onImageClick={setSelectedImageUrl}
                   isAdmin={isAdmin}
+                  isLoggedIn={isLoggedIn}
                 />
               ))}
             </div>

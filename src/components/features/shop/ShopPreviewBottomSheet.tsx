@@ -36,7 +36,7 @@ import { ReviewWriteModal } from "@/components/features/review/ReviewWriteModal"
 import { ShopDeleteConfirmModal } from "@/components/features/shop/ShopDeleteConfirmModal";
 import { ShopEditModal } from "@/components/features/shop/ShopEditModal";
 // BottomSheet 미사용 - 직접 드래그 처리
-import { useFavorite, useToast } from "@/hooks";
+import { useAuth, useFavorite, useToast } from "@/hooks";
 import type { OpenTime, ReviewResponse, ReviewSortOption } from "@/types/api";
 import { formatDate } from "@/utils";
 import StatusBadge from "./StatusBadge";
@@ -95,6 +95,7 @@ function ReviewItem({
   onReportUser,
   onBlock,
   onImageClick,
+  isLoggedIn = false,
 }: {
   review: ReviewResponse;
   onLikeToggle: (reviewId: number) => void;
@@ -104,6 +105,7 @@ function ReviewItem({
   onReportUser: (userId: number) => void;
   onBlock: (userId: number, nickname: string) => void;
   onImageClick?: (images: string[], index: number) => void;
+  isLoggedIn?: boolean;
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -159,7 +161,7 @@ function ReviewItem({
                       <span className="text-[14px] text-error whitespace-nowrap">삭제하기</span>
                     </button>
                   </>
-                ) : (
+                ) : isLoggedIn ? (
                   <>
                     <button
                       onClick={() => {
@@ -200,7 +202,7 @@ function ReviewItem({
                       </span>
                     </button>
                   </>
-                )}
+                ) : null}
               </div>
             )}
           </div>
@@ -302,6 +304,7 @@ export default function ShopPreviewBottomSheet({
   const updateShopMutation = useUpdateShop();
 
   const { isAdmin } = useUser();
+  const { isLoggedIn } = useAuth();
   const [isShopDeleteModalOpen, setIsShopDeleteModalOpen] = useState(false);
   const [isShopEditModalOpen, setIsShopEditModalOpen] = useState(false);
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
@@ -548,9 +551,12 @@ export default function ShopPreviewBottomSheet({
     if (!blockTarget) return;
     blockUserMutation.mutate(blockTarget.userId, {
       onSuccess: async () => {
-        await refetch();
-        setBlockTarget(null);
-        showToast("사용자 차단이 완료되었어요!");
+        try {
+          await refetch();
+        } finally {
+          setBlockTarget(null);
+          showToast("사용자 차단이 완료되었어요!");
+        }
       },
       onError: (error) => showToast(error.message || "사용자 차단에 실패했어요."),
     });
@@ -698,7 +704,7 @@ export default function ShopPreviewBottomSheet({
                     </div>
                   )}
                 </div>
-              ) : (
+              ) : isLoggedIn ? (
                 <div className="relative" ref={userMenuRef}>
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
@@ -724,7 +730,7 @@ export default function ShopPreviewBottomSheet({
                     </div>
                   )}
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
         )}
@@ -1090,6 +1096,7 @@ export default function ShopPreviewBottomSheet({
                             onReport={handleReportReview}
                             onReportUser={handleReportUser}
                             onBlock={handleBlockUser}
+                            isLoggedIn={isLoggedIn}
                             onImageClick={(images, index) =>
                               setGalleryState({ images, initialIndex: index })
                             }

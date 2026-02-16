@@ -22,7 +22,7 @@ export function BlockUserConfirmModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
       <div className="bg-white rounded-3xl w-[335px] p-6 flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <h2 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900 text-center">
