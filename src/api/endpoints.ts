@@ -50,4 +50,9 @@ export const ENDPOINTS = {
     BLOCK: (userId: number) => `/api/users/${userId}/block`,
     UNBLOCK: (userId: number) => `/api/users/${userId}/block`,
   },
+  // 푸시 알림
+  PUSH: {
+    VAPID_KEY: "/api/push/vapid-key",
+    SUBSCRIBE: "/api/push/subscribe",
+  },
 } as const;

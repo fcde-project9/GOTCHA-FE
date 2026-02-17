@@ -30,6 +30,41 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+// 푸시 알림 수신
+self.addEventListener("push", (event) => {
+  const data = event.data ? event.data.json() : {};
+  const title = data.title || "갓챠";
+  const options = {
+    body: data.body || "",
+    icon: "/images/icon-512.png",
+    badge: "/images/icon-512.png",
+    data: { url: data.url || "/" },
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+// 알림 클릭 시 앱으로 이동
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  const url = event.notification.data?.url || "/";
+
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      // 이미 열린 탭이 있으면 포커스
+      for (const client of clientList) {
+        if (client.url.includes(self.location.origin) && "focus" in client) {
+          client.navigate(url);
+          return client.focus();
+        }
+      }
+      // 열린 탭이 없으면 새 탭 열기
+      return self.clients.openWindow(url);
+    })
+  );
+});
+
 // 네트워크 우선, 실패 시 캐시 사용
 self.addEventListener("fetch", (event) => {
   // GET 요청만 캐시 (Cache API는 GET만 지원)

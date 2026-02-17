@@ -88,6 +88,14 @@ export const trackMapSearch = (query: string, resultCount: number) => {
   });
 };
 
+/** 알림 권한 응답 */
+export const trackNotificationPermission = (granted: boolean) => {
+  if (typeof window.gtag === "undefined") return;
+  window.gtag("event", "notification_permission", {
+    granted,
+  });
+};
+
 /** 위치 권한 응답 */
 export const trackLocationPermission = (granted: boolean) => {
   if (typeof window.gtag === "undefined") return;
