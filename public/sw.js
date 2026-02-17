@@ -25,7 +25,12 @@ self.addEventListener("activate", (event) => {
 
 // 푸시 알림 수신
 self.addEventListener("push", (event) => {
-  const data = event.data ? event.data.json() : {};
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    // JSON 파싱 실패 시 기본값 사용
+  }
   const title = data.title || "갓챠";
   const options = {
     body: data.body || "",

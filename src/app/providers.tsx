@@ -26,7 +26,8 @@ async function registerPushSubscription() {
 
   // 백엔드에서 VAPID 공개키 조회
   const { data } = await apiClient.get(ENDPOINTS.PUSH.VAPID_KEY);
-  const vapidPublicKey = data.data.publicKey;
+  const vapidPublicKey = data.data?.publicKey;
+  if (!vapidPublicKey) return;
 
   // Base64 → Uint8Array 변환
   const urlBase64ToUint8Array = (base64String: string) => {
