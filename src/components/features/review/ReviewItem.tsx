@@ -184,8 +184,9 @@ export function ReviewItem({
           {formatDate(review.createdAt)}
         </span>
         <button
-          onClick={() => onLikeToggle(review.id)}
-          className="flex items-center gap-[3px]"
+          onClick={() => isLoggedIn && onLikeToggle(review.id)}
+          disabled={!isLoggedIn}
+          className="flex items-center gap-[3px] disabled:opacity-50"
           aria-label={review.isLiked ? "좋아요 취소" : "좋아요"}
         >
           <ThumbsUp
