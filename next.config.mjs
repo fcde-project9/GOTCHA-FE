@@ -19,10 +19,6 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "gotcha-prod-files.s3.ap-northeast-2.amazonaws.com",
-      },
-      {
-        protocol: "https",
         hostname: "gotcha-storage.s3.ap-northeast-2.amazonaws.com",
       },
       {
