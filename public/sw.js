@@ -1,12 +1,5 @@
 const CACHE_NAME = "gotcha-v1";
-const STATIC_ASSETS = [
-  "/",
-  "/offline",
-  "/manifest.json",
-  "/favicon.ico",
-  "/images/icon-512.png",
-  "/images/network-error-illustration.png",
-];
+const STATIC_ASSETS = ["/", "/offline", "/manifest.json", "/favicon.ico", "/images/icon-512.png"];
 
 // 설치 시 정적 자산 캐시
 self.addEventListener("install", (event) => {
@@ -69,6 +62,11 @@ self.addEventListener("notificationclick", (event) => {
 self.addEventListener("fetch", (event) => {
   // GET 요청만 캐시 (Cache API는 GET만 지원)
   if (event.request.method !== "GET") {
+    return;
+  }
+
+  // http/https 이외의 요청은 캐시하지 않음 (chrome-extension:// 등)
+  if (!event.request.url.startsWith("http")) {
     return;
   }
 
