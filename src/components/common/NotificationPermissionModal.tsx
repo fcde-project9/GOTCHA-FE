@@ -16,11 +16,10 @@ interface NotificationPermissionModalProps {
  *
  * 표준 준수:
  * - .ai/modal_and_permission_standards.md 참조
- * - ESC 키로 닫기
- * - 오버레이 클릭으로 닫기
  * - Body 스크롤 방지
  * - 접근성 속성 (role, aria-*)
  * - 브라우저별 설정 안내
+ * - 오버레이/ESC/X 닫기 비활성화 (명시적 버튼 선택 유도)
  */
 export function NotificationPermissionModal({
   isOpen,
@@ -30,20 +29,6 @@ export function NotificationPermissionModal({
   const [settingsGuide, setSettingsGuide] = useState<string>("");
   const [permissionState, setPermissionState] = useState<NotificationPermission | null>(null);
   const [isRequesting, setIsRequesting] = useState(false);
-
-  // ESC 키로 모달 닫기 (표준 준수)
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
-    };
-
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
-  }, [isOpen, onClose]);
 
   // Body 스크롤 방지 (표준 준수)
   useEffect(() => {
