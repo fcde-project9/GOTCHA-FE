@@ -34,10 +34,10 @@ export function ReviewItem({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // 본인 리뷰 메뉴: 수정/삭제
-  const isOwnerOrAdmin = review.isOwner || isAdmin;
-  const canEdit = review.isOwner;
-  const canDelete = review.isOwner || isAdmin;
+  // 본인 리뷰 메뉴: 수정/삭제 (비인증 상태에서 isOwner 방어)
+  const isOwnerOrAdmin = (review.isOwner && isLoggedIn) || isAdmin;
+  const canEdit = review.isOwner && isLoggedIn;
+  const canDelete = (review.isOwner && isLoggedIn) || isAdmin;
 
   // 메뉴 외부 클릭 시 닫기
   useEffect(() => {
