@@ -27,10 +27,8 @@ const KakaoMap = dynamic(() => import("@/components/features/map/KakaoMap"), {
 
 export default function Home() {
   // 스플래시 상태 - sessionStorage로 세션 당 한 번만 표시
-  const [showSplash, setShowSplash] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return sessionStorage.getItem("splashShown") !== "true";
-  });
+  // null = hydration 전(미결정), true = 표시, false = 스킵
+  const [showSplash, setShowSplash] = useState<boolean | null>(null);
 
   // Custom Hooks
   const mapState = useHomeMapState();
@@ -48,6 +46,12 @@ export default function Home() {
   );
 
   const locationTracking = useLocationTracking(handleLocationUpdate);
+
+  // 스플래시 표시 여부 결정 (클라이언트에서만 실행)
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 브라우저 전용 API(sessionStorage) 초기 읽기
+    setShowSplash(sessionStorage.getItem("splashShown") !== "true");
+  }, []);
 
   // 홈페이지에서 pull-to-refresh 비활성화
   useEffect(() => {
@@ -100,8 +104,8 @@ export default function Home() {
     sessionStorage.setItem("splashShown", "true");
   }, []);
 
-  // 스플래시 표시 중일 때
-  if (showSplash) {
+  // hydration 전 또는 스플래시 표시 중
+  if (showSplash === null || showSplash) {
     return <SplashScreen duration={2500} onComplete={handleSplashComplete} />;
   }
 
