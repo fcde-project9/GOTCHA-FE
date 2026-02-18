@@ -27,7 +27,10 @@ const KakaoMap = dynamic(() => import("@/components/features/map/KakaoMap"), {
 
 export default function Home() {
   // 스플래시 상태 - sessionStorage로 세션 당 한 번만 표시
-  const [showSplash, setShowSplash] = useState<boolean | null>(null);
+  const [showSplash, setShowSplash] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return sessionStorage.getItem("splashShown") !== "true";
+  });
 
   // Custom Hooks
   const mapState = useHomeMapState();
@@ -45,12 +48,6 @@ export default function Home() {
   );
 
   const locationTracking = useLocationTracking(handleLocationUpdate);
-
-  // 스플래시 표시 여부 결정 (클라이언트에서만 실행)
-  useEffect(() => {
-    const splashShown = sessionStorage.getItem("splashShown") === "true";
-    setShowSplash(!splashShown);
-  }, []);
 
   // 홈페이지에서 pull-to-refresh 비활성화
   useEffect(() => {
@@ -104,7 +101,7 @@ export default function Home() {
   }, []);
 
   // 스플래시 표시 중일 때
-  if (showSplash === null || showSplash === true) {
+  if (showSplash) {
     return <SplashScreen duration={2500} onComplete={handleSplashComplete} />;
   }
 
