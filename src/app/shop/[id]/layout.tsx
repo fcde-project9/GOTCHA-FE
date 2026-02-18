@@ -102,8 +102,11 @@ function safeJsonLdStringify(data: object): string {
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
-// 서버에서 가게 정보 조회
+const isCapacitor = process.env.NEXT_PUBLIC_BUILD_TARGET === "capacitor";
+
+// 서버에서 가게 정보 조회 (웹 빌드 전용)
 async function getShopDetail(shopId: number): Promise<ShopDetailResponse | null> {
+  if (isCapacitor) return null;
   try {
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
     if (!apiBaseUrl) return null;
@@ -121,8 +124,12 @@ async function getShopDetail(shopId: number): Promise<ShopDetailResponse | null>
   }
 }
 
-// 동적 메타데이터 생성
+// 동적 메타데이터 생성 (Capacitor 빌드에서는 기본값 반환)
 export async function generateMetadata({ params }: ShopLayoutProps): Promise<Metadata> {
+  if (isCapacitor) {
+    return { title: "GOTCHA!" };
+  }
+
   const { id } = await params;
   const shopId = parseInt(id, 10);
 
@@ -160,6 +167,11 @@ export async function generateMetadata({ params }: ShopLayoutProps): Promise<Met
 }
 
 export default async function ShopLayout({ children, params }: ShopLayoutProps) {
+  // Capacitor 빌드: JSON-LD 없이 children만 렌더링
+  if (isCapacitor) {
+    return <>{children}</>;
+  }
+
   const { id } = await params;
   const shopId = parseInt(id, 10);
   const shop = !isNaN(shopId) ? await getShopDetail(shopId) : null;
@@ -181,10 +193,6 @@ export default async function ShopLayout({ children, params }: ShopLayoutProps) 
           longitude: shop.longitude,
         },
         image: shop.mainImageUrl || undefined,
-        // TODO: 백엔드에서 averageRating 제공 시 aggregateRating 추가
-        // aggregateRating: shop.averageRating && shop.reviewCount > 0
-        //   ? { "@type": "AggregateRating", ratingValue: shop.averageRating, bestRating: 5, reviewCount: shop.reviewCount }
-        //   : undefined,
         ...(shop.locationHint && { description: shop.locationHint }),
       }
     : null;

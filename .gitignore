@@ -28,6 +28,7 @@ yarn-error.log*
 # local env files
 .env*
 !.env.example
+!.env.capacitor
 
 # vercel
 .vercel
@@ -39,3 +40,6 @@ next-env.d.ts
 
 # claude
 tmpclaude-*
+
+# capacitor
+ios/App/Pods/

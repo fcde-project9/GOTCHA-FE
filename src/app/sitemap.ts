@@ -1,5 +1,8 @@
 import { MetadataRoute } from "next";
 
+// 정적 내보내기 호환
+export const dynamic = "force-static";
+
 // 전체 가게 목록 조회 (sitemap용)
 async function getAllShops(): Promise<{ id: number; updatedAt?: string }[]> {
   try {
