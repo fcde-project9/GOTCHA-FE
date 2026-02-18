@@ -26,6 +26,7 @@ const nextConfig = {
         hostname: "localhost",
       },
     ],
+    unoptimized: process.env.NODE_ENV === "development",
   },
 
   // 외부 스크립트 (Kakao Map SDK)

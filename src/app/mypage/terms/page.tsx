@@ -11,6 +11,10 @@ export default function TermsPage() {
     router.push("/mypage");
   };
 
+  const handleCommunityGuideClick = () => {
+    router.push("/mypage/terms/community-guide");
+  };
+
   const handleTermsClick = () => {
     router.push("/mypage/terms/service");
   };
@@ -27,6 +31,33 @@ export default function TermsPage() {
       {/* Main Content */}
       <main className="flex flex-col px-5 pt-[7px]">
         <div className="flex flex-col w-full">
+          {/* 커뮤니티 가이드 */}
+          <button
+            onClick={handleCommunityGuideClick}
+            className="flex items-center justify-between w-full px-0 py-3.5 border-b border-line-100"
+          >
+            <span className="flex-1 text-left text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-900 h-6">
+              커뮤니티 가이드
+            </span>
+            <div className="w-6 h-6 flex items-center justify-center">
+              <svg
+                width="7"
+                height="14"
+                viewBox="0 0 7 14"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M1 13L6 7L1 1"
+                  stroke="#626264"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+          </button>
+
           {/* 이용약관 */}
           <button
             onClick={handleTermsClick}
