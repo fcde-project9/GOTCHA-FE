@@ -9,7 +9,7 @@ export const DEFAULT_IMAGES = {
   NO_IMAGE: "/images/no-image.png",
   /** 기본 프로필 이미지 */
   PROFILE:
-    "https://gotcha-prod-files.s3.ap-northeast-2.amazonaws.com/prod/defaults/profile-default-join.png",
+    "https://gotcha-storage.s3.ap-northeast-2.amazonaws.com/prod/defaults/profile-default-join.png",
   /** 가게 아이콘 (빈 상태용) */
   SHOP: "/images/shop.png",
   /** 내 제보 빈 상태 이미지 */
