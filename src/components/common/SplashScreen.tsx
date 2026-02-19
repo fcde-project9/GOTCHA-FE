@@ -15,33 +15,22 @@ interface SplashScreenProps {
  * 스플래시 스크린 컴포넌트
  * - 앱 첫 로딩 시 브랜드 로고 표시
  * - 페이드아웃 애니메이션 후 메인 콘텐츠로 전환
- * - sessionStorage로 세션 당 한 번만 표시
+ * - 부모가 렌더링 여부를 제어 (sessionStorage 체크는 부모 책임)
  */
 export function SplashScreen({ duration = 2000, onComplete }: SplashScreenProps) {
   const [fadeOut, setFadeOut] = useState(false);
-  const [shouldShow] = useState(() => {
-    if (typeof window === "undefined") return true;
-    return sessionStorage.getItem("splashShown") !== "true";
-  });
 
   useEffect(() => {
-    if (!shouldShow) {
-      onComplete();
-      return;
-    }
-
-    // 스플래시 화면일 때 html 배경색을 main으로 변경
     const originalBgColor = document.documentElement.style.backgroundColor;
     document.documentElement.style.backgroundColor = "#EF4444";
 
-    // 페이드아웃 시작 (duration - 500ms, 최소 0ms)
     const fadeDelay = Math.max(0, duration - 500);
+
     const fadeTimer = setTimeout(() => {
       setFadeOut(true);
       document.documentElement.style.backgroundColor = "#ffffff";
     }, fadeDelay);
 
-    // 스플래시 완료
     const completeTimer = setTimeout(() => {
       onComplete();
     }, duration);
@@ -51,12 +40,7 @@ export function SplashScreen({ duration = 2000, onComplete }: SplashScreenProps)
       clearTimeout(completeTimer);
       document.documentElement.style.backgroundColor = originalBgColor || "#ffffff";
     };
-  }, [shouldShow, duration, onComplete]);
-
-  // 이미 본 경우 렌더링하지 않음
-  if (!shouldShow) {
-    return null;
-  }
+  }, [duration, onComplete]);
 
   return (
     <div

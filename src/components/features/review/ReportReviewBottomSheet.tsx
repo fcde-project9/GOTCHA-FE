@@ -49,7 +49,7 @@ const REASONS_BY_TARGET: Record<ReportTargetType, { value: ReportReason; label: 
 
 const TARGET_TITLE: Record<ReportTargetType, string> = {
   REVIEW: "리뷰",
-  SHOP: "게시글",
+  SHOP: "가게",
   USER: "사용자",
 };
 
