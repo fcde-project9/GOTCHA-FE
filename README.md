@@ -15,10 +15,12 @@
 - ⭐ 즐겨찾기
 - 📝 새 업체 제보
 - 📱 PWA 지원
+- 🔔 Web Push 알림
+- 🚨 리뷰/매장/사용자 신고 및 차단
 
 ### 예정 기능
 
-- 📲 앱 출시 (iOS / Android)
+- 📲 iOS 앱 출시 (Capacitor 래핑 완료, App Store 심사 준비 중)
 - 🤖 AI로 캐릭터명 도출하기
 
 ---
@@ -36,6 +38,7 @@
 - Kakao Map SDK
 - Lucide React (아이콘)
 - PWA 지원
+- Capacitor (iOS 네이티브 앱)
 - Vercel
 
 ### Backend
@@ -115,14 +118,15 @@ GitHub Actions + Vercel을 사용한 자동 배포 파이프라인
 
 ### 사용 가능한 스크립트
 
-| 명령어             | 설명                            |
-| ------------------ | ------------------------------- |
-| `npm run dev`      | 개발 서버 실행 (localhost:3000) |
-| `npm run build`    | 프로덕션 빌드                   |
-| `npm run start`    | 프로덕션 서버 실행              |
-| `npm run lint`     | ESLint 검사                     |
-| `npm run lint:fix` | ESLint 자동 수정                |
-| `npm run format`   | Prettier 포맷팅                 |
+| 명령어              | 설명                             |
+| ------------------- | -------------------------------- |
+| `npm run dev`       | 개발 서버 실행 (localhost:3000)  |
+| `npm run build`     | 프로덕션 빌드                    |
+| `npm run start`     | 프로덕션 서버 실행               |
+| `npm run lint`      | ESLint 검사                      |
+| `npm run lint:fix`  | ESLint 자동 수정                 |
+| `npm run format`    | Prettier 포맷팅                  |
+| `npm run build:ios` | Capacitor iOS 빌드 및 Xcode 열기 |
 
 ### Git Hooks (Husky)
 
@@ -175,6 +179,9 @@ src/
 | `seo_standards.md`                  | SEO 최적화 가이드                      |
 | `modal_and_permission_standards.md` | 모달 및 권한 요청 UI 표준              |
 | `button_component.md`               | Button 컴포넌트 사용 가이드            |
+| `user_role_permissions.md`          | 사용자 역할별 권한 정의                |
+| `google_analytics.md`               | Google Analytics 설정 가이드           |
+| `capacitor_ios_setup.md`            | Capacitor iOS 앱 래핑 구현 문서        |
 
 ### 활용 방법
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { MapPin, X } from "lucide-react";
+import { isNativeApp } from "@/utils/platform";
 import { Button } from "./Button";
 
 interface LocationPermissionModalProps {
@@ -63,6 +64,11 @@ export function LocationPermissionModal({
 
   // 브라우저별 설정 안내 텍스트 생성 (한 번만 실행)
   useEffect(() => {
+    if (isNativeApp()) {
+      setSettingsGuide("설정 앱 → GOTCHA! → 위치에서 '허용'으로 변경해주세요.");
+      return;
+    }
+
     const userAgent = navigator.userAgent.toLowerCase();
     const isIOS = /iphone|ipad|ipod/.test(userAgent);
     const isAndroid = /android/.test(userAgent);
@@ -92,6 +98,31 @@ export function LocationPermissionModal({
     let permissionStatus: PermissionStatus | null = null;
     let isMounted = true;
 
+    // 네이티브: Capacitor Geolocation 플러그인으로 권한 확인
+    if (isNativeApp()) {
+      import("@capacitor/geolocation").then(({ Geolocation }) => {
+        if (!isMounted) return;
+        Geolocation.checkPermissions().then((result) => {
+          if (!isMounted) return;
+          const state =
+            result.location === "granted"
+              ? "granted"
+              : result.location === "denied"
+                ? "denied"
+                : "prompt";
+          setPermissionState(state);
+          if (state === "granted") {
+            requestLocationRef.current();
+          }
+        });
+      });
+
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    // 웹: Permissions API로 권한 확인
     if (navigator.permissions) {
       navigator.permissions
         .query({ name: "geolocation" })
@@ -101,24 +132,20 @@ export function LocationPermissionModal({
           permissionStatus = result;
           setPermissionState(result.state);
 
-          // 이미 권한이 허용된 경우 바로 위치 요청
           if (result.state === "granted") {
             requestLocationRef.current();
             return;
           }
 
-          // 권한 상태 변경 감지
           result.onchange = () => {
             if (!isMounted) return;
             setPermissionState(result.state);
-            // 권한이 허용되면 자동으로 위치 요청
             if (result.state === "granted") {
               requestLocationRef.current();
             }
           };
         })
         .catch((error) => {
-          // Permissions API 에러 처리 (일부 브라우저에서 지원하지 않을 수 있음)
           console.warn("Permissions API error:", error);
         });
     }
@@ -131,19 +158,46 @@ export function LocationPermissionModal({
     };
   }, [isOpen]);
 
-  // 위치 권한 다시 요청
-  const requestLocation = useCallback(() => {
+  // 위치 권한 다시 요청 (네이티브/웹 분기)
+  const requestLocation = useCallback(async () => {
     setIsRequesting(true);
 
-    // Geolocation API 미지원 환경 체크
+    // 네이티브: Capacitor Geolocation 플러그인 사용
+    if (isNativeApp()) {
+      try {
+        const { Geolocation } = await import("@capacitor/geolocation");
+        const position = await Geolocation.getCurrentPosition({
+          enableHighAccuracy: true,
+          timeout: 10000,
+        });
+        setIsRequesting(false);
+        try {
+          localStorage.removeItem("locationPermissionDenied");
+        } catch {
+          /* noop */
+        }
+        onPermissionGranted?.(position as unknown as GeolocationPosition);
+        onClose();
+      } catch {
+        setIsRequesting(false);
+        setPermissionState("denied");
+        try {
+          localStorage.setItem("locationPermissionDenied", "true");
+        } catch {
+          /* noop */
+        }
+      }
+      return;
+    }
+
+    // 웹: navigator.geolocation 사용
     if (!("geolocation" in navigator)) {
       setIsRequesting(false);
       setPermissionState("denied");
-      // localStorage에 거부 플래그 저장
       try {
         localStorage.setItem("locationPermissionDenied", "true");
       } catch {
-        // localStorage 접근 불가 시 무시
+        /* noop */
       }
       return;
     }
@@ -151,34 +205,26 @@ export function LocationPermissionModal({
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setIsRequesting(false);
-        // 권한 허용 시 거부 플래그 제거
         try {
           localStorage.removeItem("locationPermissionDenied");
         } catch {
-          // localStorage 접근 불가 시 무시
+          /* noop */
         }
         onPermissionGranted?.(position);
         onClose();
       },
       (error) => {
         setIsRequesting(false);
-        // Permissions API 미지원 환경에서도 UX가 동작하도록 보정
         if (error.code === error.PERMISSION_DENIED) {
           setPermissionState("denied");
-          // localStorage에 거부 플래그 저장
           try {
             localStorage.setItem("locationPermissionDenied", "true");
           } catch {
-            // localStorage 접근 불가 시 무시
+            /* noop */
           }
         }
-        // 여전히 거부됨 - 설정 안내 계속 표시
       },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
-      }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   }, [onClose, onPermissionGranted]);
 

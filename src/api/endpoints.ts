@@ -54,5 +54,6 @@ export const ENDPOINTS = {
   PUSH: {
     VAPID_KEY: "/api/push/vapid-key",
     SUBSCRIBE: "/api/push/subscribe",
+    REGISTER_DEVICE: "/api/push/register-device",
   },
 } as const;

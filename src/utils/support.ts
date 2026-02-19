@@ -3,13 +3,20 @@
  */
 
 import { SUPPORT_URLS } from "@/constants";
+import { isNativeApp } from "./platform";
 
 /**
  * 문의하기 폼 열기
- * - 새 창에서 문의 폼을 엽니다
- * - Tabnabbing 방지를 위해 opener를 null로 설정합니다
+ * - 웹: 새 창에서 문의 폼을 엽니다
+ * - 네이티브: 인앱 브라우저로 엽니다
  */
-export function openContactSupport(): void {
+export async function openContactSupport(): Promise<void> {
+  if (isNativeApp()) {
+    const { Browser } = await import("@capacitor/browser");
+    await Browser.open({ url: SUPPORT_URLS.CONTACT_FORM });
+    return;
+  }
+
   const newWindow = window.open(SUPPORT_URLS.CONTACT_FORM, "_blank", "noopener,noreferrer");
 
   // Tabnabbing 방지: opener를 null로 설정
@@ -44,13 +51,26 @@ function generateSecureState(): string {
 }
 
 /**
- * OAuth 로그인 공통 헬퍼 함수
- * 백엔드 OAuth 엔드포인트로 리다이렉트
- * @param provider - OAuth 제공자 이름 (kakao, naver, google)
- * @param providerDisplayName - 에러 메시지에 표시할 제공자 이름
- * @throws {Error} 환경변수가 설정되지 않았거나 로그인 처리 중 오류 발생 시
+ * OAuth 리디렉트 URI 생성
+ * - 웹: 현재 도메인 기반 콜백 URL
+ * - 네이티브: 커스텀 URL 스킴 기반 콜백
  */
-function redirectToOAuth(provider: SocialLoginProvider, providerDisplayName: string): void {
+function getOAuthRedirectUri(): string {
+  if (isNativeApp()) {
+    return "gotchaapp://oauth/callback";
+  }
+  return `${window.location.origin}/oauth/callback`;
+}
+
+/**
+ * OAuth 로그인 공통 헬퍼 함수
+ * - 웹: 백엔드 OAuth 엔드포인트로 리다이렉트
+ * - 네이티브: 인앱 브라우저로 OAuth 플로우 진행
+ */
+async function redirectToOAuth(
+  provider: SocialLoginProvider,
+  providerDisplayName: string
+): Promise<void> {
   const apiBaseUrl = getApiBaseUrl();
 
   if (!apiBaseUrl) {
@@ -69,13 +89,17 @@ function redirectToOAuth(provider: SocialLoginProvider, providerDisplayName: str
     // GA 이벤트 추적을 위해 provider 저장
     sessionStorage.setItem("oauth_provider", provider);
 
-    // 현재 도메인의 콜백 URL 생성 (로컬/배포 환경 자동 대응)
-    const callbackUrl = `${window.location.origin}/oauth/callback`;
-
-    // state와 redirect_uri 파라미터를 포함한 OAuth URL 생성
-    // replace 사용: /login 페이지를 히스토리에서 제거 (뒤로가기 시 /login으로 안 돌아감)
+    const callbackUrl = getOAuthRedirectUri();
     const oauthUrl = `${apiBaseUrl}/oauth2/authorize/${provider}?state=${encodeURIComponent(state)}&redirect_uri=${encodeURIComponent(callbackUrl)}`;
-    window.location.replace(oauthUrl);
+
+    if (isNativeApp()) {
+      // 네이티브: 인앱 브라우저로 OAuth 진행, 딥링크로 복귀
+      const { Browser } = await import("@capacitor/browser");
+      await Browser.open({ url: oauthUrl });
+    } else {
+      // 웹: 페이지 리디렉트
+      window.location.replace(oauthUrl);
+    }
   } catch (error) {
     const errorMessage = `${providerDisplayName} 로그인을 시작할 수 없어요. 다시 시도해주세요.`;
     alert(errorMessage);
@@ -85,9 +109,6 @@ function redirectToOAuth(provider: SocialLoginProvider, providerDisplayName: str
 
 /**
  * 카카오 OAuth 로그인
- * 백엔드 OAuth 엔드포인트로 리다이렉트
- * CSRF 공격 방지를 위해 state 파라미터 생성 및 검증
- * @throws {Error} 환경변수가 설정되지 않았거나 로그인 처리 중 오류 발생 시
  */
 export function loginWithKakao(): void {
   redirectToOAuth("kakao", "카카오");
@@ -95,9 +116,6 @@ export function loginWithKakao(): void {
 
 /**
  * 네이버 OAuth 로그인
- * 백엔드 OAuth 엔드포인트로 리다이렉트
- * CSRF 공격 방지를 위해 state 파라미터 생성 및 검증
- * @throws {Error} 환경변수가 설정되지 않았거나 로그인 처리 중 오류 발생 시
  */
 export function loginWithNaver(): void {
   redirectToOAuth("naver", "네이버");
@@ -105,9 +123,6 @@ export function loginWithNaver(): void {
 
 /**
  * 구글 OAuth 로그인
- * 백엔드 OAuth 엔드포인트로 리다이렉트
- * CSRF 공격 방지를 위해 state 파라미터 생성 및 검증
- * @throws {Error} 환경변수가 설정되지 않았거나 로그인 처리 중 오류 발생 시
  */
 export function loginWithGoogle(): void {
   redirectToOAuth("google", "구글");
@@ -115,9 +130,6 @@ export function loginWithGoogle(): void {
 
 /**
  * 애플 OAuth 로그인
- * 백엔드 OAuth 엔드포인트로 리다이렉트
- * CSRF 공격 방지를 위해 state 파라미터 생성 및 검증
- * @throws {Error} 환경변수가 설정되지 않았거나 로그인 처리 중 오류 발생 시
  */
 export function loginWithApple(): void {
   redirectToOAuth("apple", "Apple");
@@ -125,8 +137,6 @@ export function loginWithApple(): void {
 
 /**
  * 소셜 로그인 실행
- * @param provider - 로그인 제공자 (kakao, naver, google)
- * @throws {Error} 알 수 없는 제공자이거나 로그인 처리 중 오류 발생 시
  */
 export function loginWithSocial(provider: SocialLoginProvider): void {
   switch (provider) {

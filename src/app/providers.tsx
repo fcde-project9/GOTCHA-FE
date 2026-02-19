@@ -4,59 +4,52 @@ import { useState, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import apiClient from "@/api/client";
-import { ENDPOINTS } from "@/api/endpoints";
 import { NotificationPermissionModal } from "@/components/common";
 import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
-import { ToastProvider } from "@/hooks";
+import { ToastProvider, useDeepLink } from "@/hooks";
 import { checkSessionAndRedirect } from "@/utils";
+import { isNativeApp } from "@/utils/platform";
+import { registerPushNotifications, checkNativePushPermission } from "@/utils/pushNotifications";
 
 // 세션 체크를 하지 않는 페이지 목록
 const PUBLIC_PATHS = ["/login", "/oauth/callback", "/login/nickname", "/terms"];
 
 const NOTIFICATION_DISMISSED_KEY = "notificationPermissionDismissed";
 
-/** VAPID 공개키를 가져와서 Push 구독을 등록하고 백엔드에 전송 */
-async function registerPushSubscription() {
-  const registration = await navigator.serviceWorker.ready;
-
-  // 이미 구독 중이면 스킵
-  const existing = await registration.pushManager.getSubscription();
-  if (existing) return;
-
-  // 백엔드에서 VAPID 공개키 조회
-  const { data } = await apiClient.get(ENDPOINTS.PUSH.VAPID_KEY);
-  const vapidPublicKey = data.data?.publicKey;
-  if (!vapidPublicKey) return;
-
-  // Base64 → Uint8Array 변환
-  const urlBase64ToUint8Array = (base64String: string) => {
-    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-    const rawData = window.atob(base64);
-    return Uint8Array.from(rawData, (char) => char.charCodeAt(0));
-  };
-
-  // Push 구독 생성
-  const subscription = await registration.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-  });
-
-  // 백엔드에 구독 정보 전송
-  const json = subscription.toJSON();
-  await apiClient.post(ENDPOINTS.PUSH.SUBSCRIBE, {
-    endpoint: json.endpoint,
-    keys: {
-      p256dh: json.keys?.p256dh,
-      auth: json.keys?.auth,
-    },
-  });
-}
-
 export default function Providers({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [showNotificationModal, setShowNotificationModal] = useState(false);
+
+  // 딥링크(gotchaapp://) 이벤트 리스닝
+  useDeepLink();
+
+  // 네이티브 앱 초기화 (StatusBar, SplashScreen, Keyboard)
+  useEffect(() => {
+    if (!isNativeApp()) return;
+
+    const initNativeApp = async () => {
+      try {
+        const { StatusBar, Style } = await import("@capacitor/status-bar");
+        const { Keyboard, KeyboardResize } = await import("@capacitor/keyboard");
+
+        // 상태바: 어두운 텍스트 (밝은 배경)
+        await StatusBar.setStyle({ style: Style.Light });
+
+        // 키보드: 리사이즈 모드
+        await Keyboard.setResizeMode({ mode: KeyboardResize.Body });
+      } finally {
+        // import/초기화 실패 시에도 스플래시는 반드시 숨기기
+        try {
+          const { SplashScreen } = await import("@capacitor/splash-screen");
+          await SplashScreen.hide();
+        } catch {
+          // SplashScreen import 자체가 실패하면 무시
+        }
+      }
+    };
+
+    initNativeApp().catch(console.error);
+  }, []);
 
   // 모든 페이지에서 세션 만료 체크
   useEffect(() => {
@@ -68,19 +61,41 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     }
   }, [pathname]);
 
-  // 알림 권한 모달 표시 조건 확인
+  // 알림 권한 모달 표시 조건 확인 (인증된 페이지에서만)
   useEffect(() => {
-    if (typeof Notification === "undefined") return;
-    if (Notification.permission !== "default") return;
+    const isPublicPath = PUBLIC_PATHS.some(
+      (path) => pathname === path || pathname?.startsWith(`${path}/`)
+    );
+    if (isPublicPath) return;
 
-    try {
-      if (localStorage.getItem(NOTIFICATION_DISMISSED_KEY) === "true") return;
-    } catch {
-      return;
-    }
+    const checkPermission = async () => {
+      // Capacitor API로 권한 확인 (타임아웃 2초)
+      let permission: "granted" | "denied" | "prompt";
+      try {
+        permission = await Promise.race([
+          checkNativePushPermission(),
+          new Promise<"prompt">((resolve) => setTimeout(() => resolve("prompt"), 2000)),
+        ]);
+      } catch {
+        permission = "prompt";
+      }
 
-    setShowNotificationModal(true);
-  }, []);
+      if (permission === "granted") return;
+      // 웹에서는 denied면 모달 표시하지 않음
+      if (!isNativeApp() && permission === "denied") return;
+
+      try {
+        if (localStorage.getItem(NOTIFICATION_DISMISSED_KEY) === "true") return;
+        if (localStorage.getItem("notificationPermissionGranted") === "true") return;
+      } catch {
+        return;
+      }
+
+      setShowNotificationModal(true);
+    };
+
+    checkPermission();
+  }, [pathname]);
 
   const handleNotificationClose = useCallback(() => {
     // "나중에" 클릭 시 localStorage에 플래그 저장
@@ -94,10 +109,19 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
   const handleNotificationGranted = useCallback(() => {
     setShowNotificationModal(false);
-    // 권한 허용 후 push 구독 등록
-    registerPushSubscription().catch(() => {
-      // 구독 실패해도 앱 동작에 영향 없음
-    });
+    // 권한 허용 후 push 구독 등록 (웹/네이티브 자동 분기)
+    // 등록 성공 시에만 granted 플래그 저장 (실패 시 다음에 재시도 가능)
+    registerPushNotifications()
+      .then(() => {
+        try {
+          localStorage.setItem("notificationPermissionGranted", "true");
+        } catch {
+          /* noop */
+        }
+      })
+      .catch(() => {
+        // 구독 실패해도 앱 동작에 영향 없음
+      });
   }, []);
 
   const [queryClient] = useState(
