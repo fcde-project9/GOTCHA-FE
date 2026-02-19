@@ -41,5 +41,11 @@ next-env.d.ts
 # claude
 tmpclaude-*
 
-# capacitor
-ios/
+# capacitor - ios
+ios/App/App/public/
+ios/App/App/capacitor.config.json
+ios/DerivedData/
+ios/App/Pods/
+ios/*.xcworkspace/xcuserdata/
+ios/App/App.xcodeproj/xcuserdata/
+ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
