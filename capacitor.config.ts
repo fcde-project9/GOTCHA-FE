@@ -5,7 +5,6 @@ const config: CapacitorConfig = {
   appName: "GOTCHA!",
   webDir: "out",
   server: {
-    url: "https://dev.gotcha.it.com",
     androidScheme: "https",
   },
   plugins: {

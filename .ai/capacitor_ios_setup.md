@@ -209,13 +209,21 @@ const config: CapacitorConfig = {
   appId: "com.it.gotcha.app",
   appName: "GOTCHA!",
   webDir: "out",
-  server: { androidScheme: "https" },
+  server: {
+    // url: "https://dev.gotcha.it.com", // 개발 시에만 사용. 배포 시 반드시 제거 (로컬 번들 사용)
+    androidScheme: "https",
+  },
   plugins: {
     SplashScreen: { launchAutoHide: false, backgroundColor: "#ffffff" },
     Keyboard: { resize: "body", resizeOnFullScreen: true },
   },
 };
 ```
+
+> **주의:** `server.url`을 설정하면 WebView가 해당 원격 URL을 로드합니다.
+>
+> - **개발/테스트:** `server.url`에 dev 서버 주소를 넣어 빌드 없이 빠르게 테스트 가능
+> - **배포(App Store):** `server.url`을 **반드시 제거**하여 `webDir`(`out/`)의 로컬 번들을 사용
 
 ### package.json 스크립트
 
@@ -320,9 +328,13 @@ export function useDeepLink() {
       }
     };
 
-    App.addListener("appUrlOpen", handleUrlOpen);
+    let handle: Awaited<ReturnType<typeof App.addListener>> | undefined;
+    App.addListener("appUrlOpen", handleUrlOpen).then((h) => {
+      handle = h;
+    });
+
     return () => {
-      App.removeAllListeners();
+      handle?.remove(); // 이 리스너만 제거 (다른 @capacitor/app 리스너에 영향 없음)
     };
   }, [router]);
 }
@@ -374,6 +386,38 @@ async function redirectToOAuth(provider, providerDisplayName) {
 </array>
 ```
 
+### App.entitlements (APNs 환경)
+
+`ios/App/App/App.entitlements`에서 푸시 알림 환경을 설정합니다.
+
+```xml
+<key>aps-environment</key>
+<string>production</string>
+```
+
+> **주의:** `development`로 설정하면 TestFlight/App Store 빌드에서 프로덕션 APNs에 연결되지 않습니다.
+> `production`으로 설정해도 Debug 빌드 시 프로비저닝 프로파일이 sandbox APNs를 사용하므로 개발 푸시 테스트에 영향 없습니다.
+
+### AppDelegate.swift (APNs 콜백)
+
+`@capacitor/push-notifications` 플러그인이 APNS 토큰 등록 결과를 수신하려면 `AppDelegate`에 아래 두 메서드가 필요합니다. 없으면 `registration` / `registrationError` 이벤트가 발생하지 않습니다.
+
+```swift
+// ios/App/App/AppDelegate.swift
+
+func application(_ application: UIApplication,
+                 didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+    NotificationCenter.default.post(
+        name: .capacitorDidRegisterForRemoteNotifications, object: deviceToken)
+}
+
+func application(_ application: UIApplication,
+                 didFailToRegisterForRemoteNotificationsWithError error: Error) {
+    NotificationCenter.default.post(
+        name: .capacitorDidFailToRegisterForRemoteNotifications, object: error)
+}
+```
+
 ### 앱 아이콘
 
 `public/images/icon-512.png`를 1024x1024로 리사이즈하여 적용:
@@ -385,9 +429,13 @@ async function redirectToOAuth(provider, providerDisplayName) {
 useEffect(() => {
   if (!isNativeApp()) return;
   const init = async () => {
-    await StatusBar.setStyle({ style: Style.Light }); // 어두운 텍스트
-    await Keyboard.setResizeMode({ mode: "body" });
-    await SplashScreen.hide(); // 앱 준비 완료
+    try {
+      await StatusBar.setStyle({ style: Style.Light }); // 어두운 텍스트
+      await Keyboard.setResizeMode({ mode: "body" });
+    } finally {
+      // StatusBar/Keyboard 실패 시에도 스플래시는 반드시 숨기기
+      await SplashScreen.hide();
+    }
   };
   init();
 }, []);

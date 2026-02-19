@@ -28,8 +28,10 @@ export function useDeepLink() {
         // 브라우저가 열려있지 않을 수 있음
       }
 
-      // gotchaapp://oauth/callback → /oauth/callback
-      const path = url.pathname || url.hostname + url.pathname;
+      // gotchaapp://oauth/callback → hostname="oauth", pathname="/callback"
+      // 커스텀 스킴에서는 hostname + pathname으로 전체 경로 조합
+      const isCustomScheme = url.protocol !== "http:" && url.protocol !== "https:";
+      const path = isCustomScheme ? url.hostname + url.pathname : url.pathname;
       const search = url.search;
 
       if (path.includes("oauth/callback")) {
@@ -37,10 +39,13 @@ export function useDeepLink() {
       }
     };
 
-    App.addListener("appUrlOpen", handleUrlOpen);
+    let handle: Awaited<ReturnType<typeof App.addListener>> | undefined;
+    App.addListener("appUrlOpen", handleUrlOpen).then((h) => {
+      handle = h;
+    });
 
     return () => {
-      App.removeAllListeners();
+      handle?.remove();
     };
   }, [router]);
 }

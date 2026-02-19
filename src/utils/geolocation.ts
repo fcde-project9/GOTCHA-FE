@@ -95,16 +95,43 @@ export async function getCurrentLocationWithError(
   if (isNativeApp()) {
     try {
       const { Geolocation } = await import("@capacitor/geolocation");
-      const position = await Geolocation.getCurrentPosition(options);
-      return { position: position as unknown as GeolocationPosition, error: null };
-    } catch {
-      return {
-        position: null,
-        error: {
-          code: GeolocationErrorCode.PERMISSION_DENIED,
-          message: "위치 정보 접근이 거부되었어요.",
+      const result = await Geolocation.getCurrentPosition(options);
+      const coords = result.coords;
+      const position = {
+        coords: {
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          altitude: coords.altitude ?? null,
+          accuracy: coords.accuracy,
+          altitudeAccuracy: coords.altitudeAccuracy ?? null,
+          heading: coords.heading ?? null,
+          speed: coords.speed ?? null,
+          toJSON() {
+            return this;
+          },
         },
-      };
+        timestamp: result.timestamp,
+        toJSON() {
+          return this;
+        },
+      } satisfies GeolocationPosition;
+      return { position, error: null };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      const lowerMessage = message.toLowerCase();
+
+      let code: number = GeolocationErrorCode.POSITION_UNAVAILABLE;
+      let errorMessage = "위치 정보를 사용할 수 없어요.";
+
+      if (lowerMessage.includes("permission") || lowerMessage.includes("denied")) {
+        code = GeolocationErrorCode.PERMISSION_DENIED;
+        errorMessage = "위치 정보 접근이 거부되었어요.";
+      } else if (lowerMessage.includes("timeout")) {
+        code = GeolocationErrorCode.TIMEOUT;
+        errorMessage = "위치 정보 요청 시간이 초과되었어요.";
+      }
+
+      return { position: null, error: { code, message: errorMessage } };
     }
   }
 

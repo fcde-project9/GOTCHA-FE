@@ -32,14 +32,16 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       const { SplashScreen } = await import("@capacitor/splash-screen");
       const { Keyboard } = await import("@capacitor/keyboard");
 
-      // 상태바: 어두운 텍스트 (밝은 배경)
-      await StatusBar.setStyle({ style: Style.Light });
+      try {
+        // 상태바: 어두운 텍스트 (밝은 배경)
+        await StatusBar.setStyle({ style: Style.Light });
 
-      // 키보드: 리사이즈 모드
-      await Keyboard.setResizeMode({ mode: "body" as never });
-
-      // 앱 준비 완료 → 스플래시 숨기기
-      await SplashScreen.hide();
+        // 키보드: 리사이즈 모드
+        await Keyboard.setResizeMode({ mode: "body" as never });
+      } finally {
+        // 위 호출이 실패해도 스플래시는 반드시 숨기기
+        await SplashScreen.hide();
+      }
     };
 
     initNativeApp().catch(console.error);

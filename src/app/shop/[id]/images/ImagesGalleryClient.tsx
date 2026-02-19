@@ -7,14 +7,27 @@ import { ChevronLeft, X } from "lucide-react";
 import { useShopDetail } from "@/api/queries/useShopDetail";
 import { BackHeader } from "@/components/common";
 
+// shopId 파싱 및 검증
+function parseShopId(id: string | string[] | undefined): number | null {
+  if (typeof id !== "string") return null;
+  const parsed = Number(id);
+  if (Number.isNaN(parsed) || !Number.isInteger(parsed) || parsed <= 0) {
+    return null;
+  }
+  return parsed;
+}
+
 export default function ImagesGalleryClient() {
   const params = useParams();
-  const shopId = Number(params.id);
+  const shopId = parseShopId(params.id);
+
+  const isValidShopId = shopId !== null;
+  const validShopId = shopId ?? 0;
 
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   // useShopDetail 훅으로 가게 데이터 조회
-  const { data: shop, isLoading } = useShopDetail(shopId);
+  const { data: shop, isLoading } = useShopDetail(validShopId);
 
   // mainImageUrl + reviews(배열)의 모든 imageUrls 결합
   const images = shop
@@ -48,7 +61,11 @@ export default function ImagesGalleryClient() {
       <BackHeader showBorder />
 
       {/* 컨텐츠 */}
-      {isLoading ? (
+      {!isValidShopId ? (
+        <div className="flex flex-col items-center justify-center h-64 px-5">
+          <p className="text-[15px] text-grey-500">잘못된 업체 정보입니다.</p>
+        </div>
+      ) : isLoading ? (
         <div className="flex items-center justify-center h-64">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
         </div>
