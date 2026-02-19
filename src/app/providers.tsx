@@ -58,11 +58,24 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   // 알림 권한 모달 표시 조건 확인
   useEffect(() => {
     const checkPermission = async () => {
-      const permission = await checkNativePushPermission();
-      if (permission !== "prompt") return;
+      // Capacitor API로 권한 확인 (타임아웃 2초)
+      let permission: "granted" | "denied" | "prompt";
+      try {
+        permission = await Promise.race([
+          checkNativePushPermission(),
+          new Promise<"prompt">((resolve) => setTimeout(() => resolve("prompt"), 2000)),
+        ]);
+      } catch {
+        permission = "prompt";
+      }
+
+      if (permission === "granted") return;
+      // 웹에서는 denied면 모달 표시하지 않음
+      if (!isNativeApp() && permission === "denied") return;
 
       try {
         if (localStorage.getItem(NOTIFICATION_DISMISSED_KEY) === "true") return;
+        if (localStorage.getItem("notificationPermissionGranted") === "true") return;
       } catch {
         return;
       }
@@ -85,6 +98,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
   const handleNotificationGranted = useCallback(() => {
     setShowNotificationModal(false);
+    try {
+      localStorage.setItem("notificationPermissionGranted", "true");
+    } catch {
+      /* noop */
+    }
     // 권한 허용 후 push 구독 등록 (웹/네이티브 자동 분기)
     registerPushNotifications().catch(() => {
       // 구독 실패해도 앱 동작에 영향 없음

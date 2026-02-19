@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useCurrentLocation } from "@/hooks";
 import { trackLocationPermission } from "@/utils/analytics";
+import { isNativeApp } from "@/utils/platform";
 
 interface CurrentLocationState {
   latitude: number;
@@ -168,77 +169,91 @@ export function useLocationTracking(
     };
   }, []);
 
-  // 현재 위치 버튼 클릭 핸들러
+  // 현재 위치 버튼 클릭 핸들러 (네이티브/웹 분기)
   const handleCurrentLocation = useCallback(async () => {
-    if (!navigator.geolocation) {
-      return;
-    }
-
     // 로딩 시작
     setIsLocating(true);
 
     // iOS 13+: 사용자 제스처 컨텍스트에서 직접 권한 요청
     await requestOrientationPermission();
 
+    const onSuccess = (coords: { latitude: number; longitude: number; heading: number | null }) => {
+      trackLocationPermission(true);
+
+      const newLocation = { latitude: coords.latitude, longitude: coords.longitude };
+      onLocationUpdate?.(newLocation);
+
+      setCurrentLocation({
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        heading: coords.heading != null && !isNaN(coords.heading) ? coords.heading : null,
+      });
+
+      startDeviceOrientationTracking(newLocation);
+
+      setLocationDenied(false);
+      setShowLocationModal(false);
+      try {
+        localStorage.removeItem("locationPermissionDenied");
+      } catch {
+        /* noop */
+      }
+      setIsLocating(false);
+    };
+
+    const onError = () => {
+      trackLocationPermission(false);
+      setLocationDenied(true);
+      try {
+        localStorage.setItem("locationPermissionDenied", "true");
+      } catch {
+        /* noop */
+      }
+      setShowLocationModal(true);
+      setIsLocating(false);
+    };
+
+    // 네이티브: Capacitor Geolocation 플러그인 사용 (WKWebView 이중 팝업 방지)
+    if (isNativeApp()) {
+      try {
+        const { Geolocation } = await import("@capacitor/geolocation");
+        const position = await Geolocation.getCurrentPosition({
+          enableHighAccuracy: true,
+          timeout: 5000,
+        });
+        onSuccess({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          heading: position.coords.heading,
+        });
+      } catch {
+        onError();
+      }
+      return;
+    }
+
+    // 웹: navigator.geolocation 사용
+    if (!navigator.geolocation) {
+      setIsLocating(false);
+      return;
+    }
+
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        // 권한 허용 성공 추적
-        trackLocationPermission(true);
-
-        const newLocation = {
+        onSuccess({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
-        };
-
-        // 콜백으로 위치 업데이트 전달
-        onLocationUpdate?.(newLocation);
-
-        // 현재 위치 마커 표시
-        const heading = position.coords.heading;
-        setCurrentLocation({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          heading: heading != null && !isNaN(heading) ? heading : null,
+          heading: position.coords.heading,
         });
-
-        // 디바이스 방향 감지 시작 (권한이 이미 부여된 상태)
-        startDeviceOrientationTracking(newLocation);
-
-        // 권한 허용 시 denied 상태 초기화
-        setLocationDenied(false);
-        setShowLocationModal(false);
-        try {
-          localStorage.removeItem("locationPermissionDenied");
-        } catch {
-          // localStorage 접근 불가 시 무시
-        }
-
-        // 로딩 종료
-        setIsLocating(false);
       },
       (err) => {
         console.error("위치 정보를 가져올 수 없어요:", err);
-
-        // 위치 권한 거부 시만 설정 안내 모달 표시
         if (err.code === err.PERMISSION_DENIED) {
-          trackLocationPermission(false);
-          setLocationDenied(true);
-          try {
-            localStorage.setItem("locationPermissionDenied", "true");
-          } catch {
-            // localStorage 접근 불가 시 무시
-          }
-          setShowLocationModal(true);
+          onError();
         }
-
-        // 로딩 종료
         setIsLocating(false);
       },
-      {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0,
-      }
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
     );
   }, [onLocationUpdate, requestOrientationPermission, startDeviceOrientationTracking]);
 

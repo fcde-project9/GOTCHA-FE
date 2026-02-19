@@ -1,15 +1,16 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "com.gotcha.it.app",
+  appId: "com.it.gotcha.app",
   appName: "GOTCHA!",
   webDir: "out",
   server: {
+    url: "https://dev.gotcha.it.com",
     androidScheme: "https",
   },
   plugins: {
     SplashScreen: {
-      launchAutoHide: false,
+      launchAutoHide: true,
       backgroundColor: "#ffffff",
     },
     Keyboard: {

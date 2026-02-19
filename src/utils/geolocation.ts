@@ -30,21 +30,29 @@ const DEFAULT_OPTIONS: GeolocationOptions = {
 
 /**
  * 현재 위치를 가져오는 순수 함수
+ * 네이티브 앱에서는 Capacitor Geolocation 플러그인 사용 (WKWebView 이중 팝업 방지)
  *
  * @param options - Geolocation 옵션
  * @returns Promise<GeolocationResult | null> - 위치 정보 또는 null
- *
- * @example
- * ```ts
- * const location = await getCurrentLocation();
- * if (location) {
- *   console.log(location.latitude, location.longitude);
- * }
- * ```
  */
 export async function getCurrentLocation(
   options: GeolocationOptions = {}
 ): Promise<GeolocationResult | null> {
+  const { isNativeApp } = await import("./platform");
+
+  if (isNativeApp()) {
+    try {
+      const { Geolocation } = await import("@capacitor/geolocation");
+      const position = await Geolocation.getCurrentPosition(options);
+      return {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+      };
+    } catch {
+      return null;
+    }
+  }
+
   return new Promise((resolve) => {
     if (!("geolocation" in navigator)) {
       resolve(null);
@@ -82,6 +90,24 @@ export interface GeolocationWithErrorResult {
 export async function getCurrentLocationWithError(
   options: GeolocationOptions = {}
 ): Promise<GeolocationWithErrorResult> {
+  const { isNativeApp } = await import("./platform");
+
+  if (isNativeApp()) {
+    try {
+      const { Geolocation } = await import("@capacitor/geolocation");
+      const position = await Geolocation.getCurrentPosition(options);
+      return { position: position as unknown as GeolocationPosition, error: null };
+    } catch {
+      return {
+        position: null,
+        error: {
+          code: GeolocationErrorCode.PERMISSION_DENIED,
+          message: "위치 정보 접근이 거부되었어요.",
+        },
+      };
+    }
+  }
+
   return new Promise((resolve) => {
     if (!("geolocation" in navigator)) {
       resolve({

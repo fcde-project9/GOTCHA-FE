@@ -112,8 +112,9 @@ apiClient.interceptors.request.use(
       const token = localStorage.getItem("accessToken");
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
-        // 요청 시점에 토큰이 있었음을 표시 (내부 속성으로)
         config._hadToken = true;
+      } else {
+        // no token
       }
     } catch {
       // Private Browsing 등 localStorage 접근 불가 시 무시
@@ -121,6 +122,7 @@ apiClient.interceptors.request.use(
     return config;
   },
   (error) => {
+    // request error
     return Promise.reject(error);
   }
 );

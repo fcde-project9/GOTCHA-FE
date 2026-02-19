@@ -32,7 +32,7 @@
 | ------------- | -------------------------- |
 | 프레임워크    | Capacitor 8                |
 | 웹 프레임워크 | Next.js 16 (정적 내보내기) |
-| 번들 ID       | `com.gotcha.it.app`        |
+| 번들 ID       | `com.it.gotcha.app`        |
 | URL 스킴      | `gotchaapp://`             |
 | 최소 iOS      | 14.0+                      |
 
@@ -206,7 +206,7 @@ export default async function ShopLayout({ children, params }) {
 
 ```ts
 const config: CapacitorConfig = {
-  appId: "com.gotcha.it.app",
+  appId: "com.it.gotcha.app",
   appName: "GOTCHA!",
   webDir: "out",
   server: { androidScheme: "https" },
@@ -365,7 +365,7 @@ async function redirectToOAuth(provider, providerDisplayName) {
 <array>
   <dict>
     <key>CFBundleURLName</key>
-    <string>com.gotcha.it.app</string>
+    <string>com.it.gotcha.app</string>
     <key>CFBundleURLSchemes</key>
     <array>
       <string>gotchaapp</string>
@@ -428,7 +428,7 @@ npm run build:capacitor
 
 1. `npx cap open ios`로 Xcode 프로젝트 열기
 2. Signing & Capabilities에서 Apple Developer 팀 선택
-3. Bundle Identifier: `com.gotcha.it.app` 확인
+3. Bundle Identifier: `com.it.gotcha.app` 확인
 4. Push Notifications capability 추가
 5. 시뮬레이터 또는 실기기에서 빌드/실행
 

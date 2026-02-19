@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { Bell } from "lucide-react";
 import { trackNotificationPermission } from "@/utils/analytics";
+import { isNativeApp } from "@/utils/platform";
+import { checkNativePushPermission } from "@/utils/pushNotifications";
 import { Button } from "./Button";
 
 interface NotificationPermissionModalProps {
@@ -18,7 +20,8 @@ interface NotificationPermissionModalProps {
  * - .ai/modal_and_permission_standards.md 참조
  * - Body 스크롤 방지
  * - 접근성 속성 (role, aria-*)
- * - 브라우저별 설정 안내
+ * - 브라우저별 설정 안내 (웹 전용)
+ * - 네이티브 앱: Capacitor PushNotifications 플러그인 사용
  * - 오버레이/ESC/X 닫기 비활성화 (명시적 버튼 선택 유도)
  */
 export function NotificationPermissionModal({
@@ -27,7 +30,9 @@ export function NotificationPermissionModal({
   onPermissionGranted,
 }: NotificationPermissionModalProps) {
   const [settingsGuide, setSettingsGuide] = useState<string>("");
-  const [permissionState, setPermissionState] = useState<NotificationPermission | null>(null);
+  const [permissionState, setPermissionState] = useState<"granted" | "denied" | "prompt" | null>(
+    null
+  );
   const [isRequesting, setIsRequesting] = useState(false);
 
   // Body 스크롤 방지 (표준 준수)
@@ -40,8 +45,13 @@ export function NotificationPermissionModal({
     }
   }, [isOpen]);
 
-  // 브라우저별 설정 안내 텍스트 생성
+  // 브라우저별 설정 안내 텍스트 생성 (웹 전용)
   useEffect(() => {
+    if (isNativeApp()) {
+      setSettingsGuide("설정 앱 → GOTCHA! → 알림에서 '허용'으로 변경해주세요.");
+      return;
+    }
+
     const userAgent = navigator.userAgent.toLowerCase();
     const isIOS = /iphone|ipad|ipod/.test(userAgent);
     const isAndroid = /android/.test(userAgent);
@@ -64,31 +74,45 @@ export function NotificationPermissionModal({
     setSettingsGuide(guide);
   }, []);
 
-  // 모달 열릴 때 현재 권한 상태 확인
+  // 모달 열릴 때 현재 권한 상태 확인 (네이티브/웹 통합)
   useEffect(() => {
     if (!isOpen) return;
-    if (typeof Notification === "undefined") return;
 
-    setPermissionState(Notification.permission);
+    checkNativePushPermission().then(setPermissionState);
   }, [isOpen]);
 
-  // 알림 권한 요청
+  // 알림 권한 요청 (네이티브/웹 분기)
   const requestNotification = useCallback(async () => {
-    if (typeof Notification === "undefined") {
-      setPermissionState("denied");
-      return;
-    }
-
     setIsRequesting(true);
 
     try {
-      const result = await Notification.requestPermission();
-      setPermissionState(result);
-      trackNotificationPermission(result === "granted");
+      if (isNativeApp()) {
+        // 네이티브: Capacitor PushNotifications 사용
+        const { PushNotifications } = await import("@capacitor/push-notifications");
+        const result = await PushNotifications.requestPermissions();
+        const granted = result.receive === "granted";
+        setPermissionState(granted ? "granted" : "denied");
+        trackNotificationPermission(granted);
 
-      if (result === "granted") {
-        onPermissionGranted?.();
-        onClose();
+        if (granted) {
+          onPermissionGranted?.();
+          onClose();
+        }
+      } else {
+        // 웹: Notification API 사용
+        if (typeof Notification === "undefined") {
+          setPermissionState("denied");
+          return;
+        }
+        const result = await Notification.requestPermission();
+        const state = result === "default" ? "prompt" : result;
+        setPermissionState(state);
+        trackNotificationPermission(result === "granted");
+
+        if (result === "granted") {
+          onPermissionGranted?.();
+          onClose();
+        }
       }
     } catch {
       setPermissionState("denied");
