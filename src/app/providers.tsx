@@ -109,15 +109,19 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
   const handleNotificationGranted = useCallback(() => {
     setShowNotificationModal(false);
-    try {
-      localStorage.setItem("notificationPermissionGranted", "true");
-    } catch {
-      /* noop */
-    }
     // 권한 허용 후 push 구독 등록 (웹/네이티브 자동 분기)
-    registerPushNotifications().catch(() => {
-      // 구독 실패해도 앱 동작에 영향 없음
-    });
+    // 등록 성공 시에만 granted 플래그 저장 (실패 시 다음에 재시도 가능)
+    registerPushNotifications()
+      .then(() => {
+        try {
+          localStorage.setItem("notificationPermissionGranted", "true");
+        } catch {
+          /* noop */
+        }
+      })
+      .catch(() => {
+        // 구독 실패해도 앱 동작에 영향 없음
+      });
   }, []);
 
   const [queryClient] = useState(
