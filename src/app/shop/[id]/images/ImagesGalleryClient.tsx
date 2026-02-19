@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { ChevronLeft, X } from "lucide-react";
@@ -25,9 +25,11 @@ export default function ImagesGalleryClient() {
   const validShopId = shopId ?? 0;
 
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previousFocusRef = useRef<Element | null>(null);
 
   // useShopDetail 훅으로 가게 데이터 조회
-  const { data: shop, isLoading } = useShopDetail(validShopId);
+  const { data: shop, isLoading, isError } = useShopDetail(validShopId);
 
   // mainImageUrl + reviews(배열)의 모든 imageUrls 결합
   const images = shop
@@ -38,12 +40,30 @@ export default function ImagesGalleryClient() {
     : [];
 
   const handleImageClick = (index: number) => {
+    previousFocusRef.current = document.activeElement;
     setSelectedIndex(index);
   };
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setSelectedIndex(null);
-  };
+    if (previousFocusRef.current instanceof HTMLElement) {
+      previousFocusRef.current.focus();
+    }
+    previousFocusRef.current = null;
+  }, []);
+
+  // 모달 열릴 때 닫기 버튼으로 포커스 이동 + Escape 키 핸들러
+  useEffect(() => {
+    if (selectedIndex === null) return;
+
+    closeButtonRef.current?.focus();
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") handleCloseModal();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [selectedIndex, handleCloseModal]);
 
   const handlePrevImage = () => {
     if (selectedIndex === null) return;
@@ -68,6 +88,10 @@ export default function ImagesGalleryClient() {
       ) : isLoading ? (
         <div className="flex items-center justify-center h-64">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
+        </div>
+      ) : isError ? (
+        <div className="flex flex-col items-center justify-center h-64 px-5">
+          <p className="text-[15px] text-grey-500">업체 정보를 불러오는데 실패했어요.</p>
         </div>
       ) : images.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-64 px-5">
@@ -98,13 +122,14 @@ export default function ImagesGalleryClient() {
 
       {/* 이미지 뷰어 모달 */}
       {selectedIndex !== null && (
-        <div className="fixed inset-0 z-50 bg-black">
+        <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 bg-black">
           {/* 모달 헤더 */}
           <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-3 bg-gradient-to-b from-black/50 to-transparent">
             <span className="text-[14px] text-white">
               {selectedIndex + 1} / {images.length}
             </span>
             <button
+              ref={closeButtonRef}
               onClick={handleCloseModal}
               className="w-10 h-10 flex items-center justify-center"
               aria-label="닫기"

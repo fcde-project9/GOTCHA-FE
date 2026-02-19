@@ -329,12 +329,19 @@ export function useDeepLink() {
     };
 
     let handle: Awaited<ReturnType<typeof App.addListener>> | undefined;
+    let cancelled = false;
+
     App.addListener("appUrlOpen", handleUrlOpen).then((h) => {
-      handle = h;
+      if (cancelled) {
+        h.remove(); // cleanup이 먼저 실행된 경우 즉시 제거
+      } else {
+        handle = h;
+      }
     });
 
     return () => {
-      handle?.remove(); // 이 리스너만 제거 (다른 @capacitor/app 리스너에 영향 없음)
+      cancelled = true;
+      handle?.remove();
     };
   }, [router]);
 }
@@ -430,11 +437,18 @@ useEffect(() => {
   if (!isNativeApp()) return;
   const init = async () => {
     try {
+      const { StatusBar, Style } = await import("@capacitor/status-bar");
+      const { Keyboard } = await import("@capacitor/keyboard");
       await StatusBar.setStyle({ style: Style.Light }); // 어두운 텍스트
       await Keyboard.setResizeMode({ mode: "body" });
     } finally {
-      // StatusBar/Keyboard 실패 시에도 스플래시는 반드시 숨기기
-      await SplashScreen.hide();
+      // import/초기화 실패 시에도 스플래시는 반드시 숨기기
+      try {
+        const { SplashScreen } = await import("@capacitor/splash-screen");
+        await SplashScreen.hide();
+      } catch {
+        // SplashScreen import 자체가 실패하면 무시
+      }
     }
   };
   init();

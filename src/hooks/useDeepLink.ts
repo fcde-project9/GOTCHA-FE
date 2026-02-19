@@ -40,11 +40,18 @@ export function useDeepLink() {
     };
 
     let handle: Awaited<ReturnType<typeof App.addListener>> | undefined;
+    let cancelled = false;
+
     App.addListener("appUrlOpen", handleUrlOpen).then((h) => {
-      handle = h;
+      if (cancelled) {
+        h.remove();
+      } else {
+        handle = h;
+      }
     });
 
     return () => {
+      cancelled = true;
       handle?.remove();
     };
   }, [router]);

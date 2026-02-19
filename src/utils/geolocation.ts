@@ -43,7 +43,8 @@ export async function getCurrentLocation(
   if (isNativeApp()) {
     try {
       const { Geolocation } = await import("@capacitor/geolocation");
-      const position = await Geolocation.getCurrentPosition(options);
+      const mergedOptions = { ...DEFAULT_OPTIONS, ...options };
+      const position = await Geolocation.getCurrentPosition(mergedOptions);
       return {
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
@@ -95,7 +96,8 @@ export async function getCurrentLocationWithError(
   if (isNativeApp()) {
     try {
       const { Geolocation } = await import("@capacitor/geolocation");
-      const result = await Geolocation.getCurrentPosition(options);
+      const mergedOptions = { ...DEFAULT_OPTIONS, ...options };
+      const result = await Geolocation.getCurrentPosition(mergedOptions);
       const coords = result.coords;
       const position = {
         coords: {

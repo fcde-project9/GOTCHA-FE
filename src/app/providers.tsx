@@ -28,19 +28,23 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     if (!isNativeApp()) return;
 
     const initNativeApp = async () => {
-      const { StatusBar, Style } = await import("@capacitor/status-bar");
-      const { SplashScreen } = await import("@capacitor/splash-screen");
-      const { Keyboard } = await import("@capacitor/keyboard");
-
       try {
+        const { StatusBar, Style } = await import("@capacitor/status-bar");
+        const { Keyboard, KeyboardResize } = await import("@capacitor/keyboard");
+
         // 상태바: 어두운 텍스트 (밝은 배경)
         await StatusBar.setStyle({ style: Style.Light });
 
         // 키보드: 리사이즈 모드
-        await Keyboard.setResizeMode({ mode: "body" as never });
+        await Keyboard.setResizeMode({ mode: KeyboardResize.Body });
       } finally {
-        // 위 호출이 실패해도 스플래시는 반드시 숨기기
-        await SplashScreen.hide();
+        // import/초기화 실패 시에도 스플래시는 반드시 숨기기
+        try {
+          const { SplashScreen } = await import("@capacitor/splash-screen");
+          await SplashScreen.hide();
+        } catch {
+          // SplashScreen import 자체가 실패하면 무시
+        }
       }
     };
 
