@@ -61,8 +61,13 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     }
   }, [pathname]);
 
-  // 알림 권한 모달 표시 조건 확인
+  // 알림 권한 모달 표시 조건 확인 (인증된 페이지에서만)
   useEffect(() => {
+    const isPublicPath = PUBLIC_PATHS.some(
+      (path) => pathname === path || pathname?.startsWith(`${path}/`)
+    );
+    if (isPublicPath) return;
+
     const checkPermission = async () => {
       // Capacitor API로 권한 확인 (타임아웃 2초)
       let permission: "granted" | "denied" | "prompt";
@@ -90,7 +95,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     };
 
     checkPermission();
-  }, []);
+  }, [pathname]);
 
   const handleNotificationClose = useCallback(() => {
     // "나중에" 클릭 시 localStorage에 플래그 저장
