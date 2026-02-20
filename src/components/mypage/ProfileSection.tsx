@@ -8,6 +8,7 @@ const SOCIAL_PROVIDER_LABELS = {
   google: "Google",
   kakao: "Kakao",
   naver: "Naver",
+  apple: "Apple",
 } as const;
 
 interface ProfileSectionProps {
@@ -15,7 +16,7 @@ interface ProfileSectionProps {
   nickname?: string;
   email?: string;
   profileImage?: string;
-  socialProvider?: "google" | "kakao" | "naver";
+  socialProvider?: "google" | "kakao" | "naver" | "apple";
   isAdmin?: boolean;
   onEditProfile?: (file: File) => void;
   onEditNickname?: () => void;
@@ -130,7 +131,7 @@ export function ProfileSection({
               alt={socialProvider ? SOCIAL_PROVIDER_LABELS[socialProvider] : ""}
               width={16}
               height={16}
-              className="shrink-0"
+              className={`shrink-0${socialProvider === "apple" ? " brightness-0" : ""}`}
             />
             <p className="text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-800 text-center">
               {email}
