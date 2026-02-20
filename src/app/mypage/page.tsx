@@ -201,6 +201,7 @@ export default function MyPage() {
     | "google"
     | "kakao"
     | "naver"
+    | "apple"
     | undefined;
 
   return (
