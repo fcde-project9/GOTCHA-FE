@@ -216,5 +216,5 @@ npm run build:ios
 
 ## 관련 문서
 
-- [Capacitor iOS 앱 래핑 구현 가이드](.ai/capacitor_ios_setup.md)
-- [Capacitor 백엔드 요구사항](.ai/capacitor-backend-requirements.md)
+- [Capacitor iOS 앱 래핑 구현 가이드](capacitor_ios_setup.md)
+- [Capacitor 백엔드 요구사항](capacitor-backend-requirements.md)
