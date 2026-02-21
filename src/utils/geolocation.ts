@@ -30,21 +30,30 @@ const DEFAULT_OPTIONS: GeolocationOptions = {
 
 /**
  * 현재 위치를 가져오는 순수 함수
+ * 네이티브 앱에서는 Capacitor Geolocation 플러그인 사용 (WKWebView 이중 팝업 방지)
  *
  * @param options - Geolocation 옵션
  * @returns Promise<GeolocationResult | null> - 위치 정보 또는 null
- *
- * @example
- * ```ts
- * const location = await getCurrentLocation();
- * if (location) {
- *   console.log(location.latitude, location.longitude);
- * }
- * ```
  */
 export async function getCurrentLocation(
   options: GeolocationOptions = {}
 ): Promise<GeolocationResult | null> {
+  const { isNativeApp } = await import("./platform");
+
+  if (isNativeApp()) {
+    try {
+      const { Geolocation } = await import("@capacitor/geolocation");
+      const mergedOptions = { ...DEFAULT_OPTIONS, ...options };
+      const position = await Geolocation.getCurrentPosition(mergedOptions);
+      return {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+      };
+    } catch {
+      return null;
+    }
+  }
+
   return new Promise((resolve) => {
     if (!("geolocation" in navigator)) {
       resolve(null);
@@ -82,6 +91,52 @@ export interface GeolocationWithErrorResult {
 export async function getCurrentLocationWithError(
   options: GeolocationOptions = {}
 ): Promise<GeolocationWithErrorResult> {
+  const { isNativeApp } = await import("./platform");
+
+  if (isNativeApp()) {
+    try {
+      const { Geolocation } = await import("@capacitor/geolocation");
+      const mergedOptions = { ...DEFAULT_OPTIONS, ...options };
+      const result = await Geolocation.getCurrentPosition(mergedOptions);
+      const coords = result.coords;
+      const position = {
+        coords: {
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          altitude: coords.altitude ?? null,
+          accuracy: coords.accuracy,
+          altitudeAccuracy: coords.altitudeAccuracy ?? null,
+          heading: coords.heading ?? null,
+          speed: coords.speed ?? null,
+          toJSON() {
+            return this;
+          },
+        },
+        timestamp: result.timestamp,
+        toJSON() {
+          return this;
+        },
+      } satisfies GeolocationPosition;
+      return { position, error: null };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      const lowerMessage = message.toLowerCase();
+
+      let code: number = GeolocationErrorCode.POSITION_UNAVAILABLE;
+      let errorMessage = "위치 정보를 사용할 수 없어요.";
+
+      if (lowerMessage.includes("permission") || lowerMessage.includes("denied")) {
+        code = GeolocationErrorCode.PERMISSION_DENIED;
+        errorMessage = "위치 정보 접근이 거부되었어요.";
+      } else if (lowerMessage.includes("timeout")) {
+        code = GeolocationErrorCode.TIMEOUT;
+        errorMessage = "위치 정보 요청 시간이 초과되었어요.";
+      }
+
+      return { position: null, error: { code, message: errorMessage } };
+    }
+  }
+
   return new Promise((resolve) => {
     if (!("geolocation" in navigator)) {
       resolve({

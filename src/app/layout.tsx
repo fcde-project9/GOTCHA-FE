@@ -121,7 +121,7 @@ export const metadata: Metadata = {
     locale: "ko_KR",
     images: [
       {
-        url: "https://gotcha-prod-files.s3.ap-northeast-2.amazonaws.com/prod/defaults/og-image.png",
+        url: "https://gotcha-storage.s3.ap-northeast-2.amazonaws.com/prod/defaults/og-image.png",
         width: 1200,
         height: 630,
         alt: "가챠 덕후들의 아지트 GOTCHA!",
@@ -162,7 +162,7 @@ export default function RootLayout({
         <link rel="preload" href="/fonts/pretendard.css" as="style" />
         <link rel="stylesheet" href="/fonts/pretendard.css" />
         {/* Preconnect - 외부 리소스 연결 시간 단축 */}
-        <link rel="preconnect" href="https://gotcha-prod-files.s3.ap-northeast-2.amazonaws.com" />
+        <link rel="preconnect" href="https://gotcha-storage.s3.ap-northeast-2.amazonaws.com" />
         <link rel="preconnect" href="https://dapi.kakao.com" />
         <link rel="preconnect" href="https://t1.daumcdn.net" crossOrigin="anonymous" />
       </head>

@@ -7,7 +7,7 @@ import { ChevronRight } from "lucide-react";
 import { Checkbox } from "@/components/common";
 import { LOGO_IMAGES, SOCIAL_LOGO_IMAGES } from "@/constants";
 import { useToast } from "@/hooks";
-import { loginWithKakao, loginWithGoogle } from "@/utils";
+import { loginWithKakao, loginWithGoogle, loginWithApple } from "@/utils";
 import { trackGuestModeStart } from "@/utils/analytics";
 
 export default function LoginPage() {
@@ -68,8 +68,11 @@ export default function LoginPage() {
       >
         <div className="mx-auto flex h-full flex-col w-full max-w-[480px] overflow-y-auto">
           {/* 로고 - 남은 영역에서 가운데 */}
-          <div className="flex flex-1 items-center justify-center">
+          <div className="flex flex-1 flex-col items-center justify-center gap-8">
             <Image src={LOGO_IMAGES.MAIN} alt="GOTCHA 로고" width={130} height={90} priority />
+            <p className="text-center text-lg font-semibold leading-[1.5] tracking-[-0.18px] text-[#4F4F51] ">
+              가챠샵 정보를 한 곳에서 갓차!
+            </p>
           </div>
 
           {/* 소셜 로그인 버튼 영역 - 하단 32px 여백 */}
@@ -109,6 +112,18 @@ export default function LoginPage() {
                 <Image src={SOCIAL_LOGO_IMAGES.GOOGLE} alt="구글" width={20} height={20} />
                 <span className="text-[16px] font-semibold leading-[1.5] text-[#1F1F1F]">
                   Google 로그인
+                </span>
+              </button>
+
+              {/* 애플 로그인 */}
+              <button
+                onClick={loginWithApple}
+                disabled={showTermsSheet}
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-black transition-opacity hover:opacity-90 active:opacity-80 disabled:opacity-50"
+              >
+                <Image src={SOCIAL_LOGO_IMAGES.APPLE} alt="Apple" width={20} height={20} />
+                <span className="text-[16px] font-semibold leading-[1.5] text-white">
+                  Apple로 로그인
                 </span>
               </button>
             </div>

@@ -4,6 +4,7 @@ export { OutlineButton } from "./OutlineButton";
 export { Toast } from "./Toast";
 export { Checkbox } from "./Checkbox";
 export { LocationPermissionModal } from "./LocationPermissionModal";
+export { NotificationPermissionModal } from "./NotificationPermissionModal";
 export { BackHeader } from "./BackHeader";
 export { CenterTitleHeader } from "./CenterTitleHeader";
 export { SimpleHeader } from "./SimpleHeader";
