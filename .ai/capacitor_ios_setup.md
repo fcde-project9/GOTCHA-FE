@@ -16,6 +16,7 @@
 8. [iOS 네이티브 설정](#8-ios-네이티브-설정)
 9. [빌드 및 배포](#9-빌드-및-배포)
 10. [주의사항 및 트러블슈팅](#10-주의사항-및-트러블슈팅)
+11. [관련 문서](#11-관련-문서)
 
 ---
 
@@ -205,12 +206,14 @@ export default async function ShopLayout({ children, params }) {
 ### capacitor.config.ts
 
 ```ts
+const isDev = process.env.CAP_DEV_SERVER === "true";
+
 const config: CapacitorConfig = {
   appId: "com.it.gotcha.app",
   appName: "GOTCHA!",
   webDir: "out",
   server: {
-    // url: "https://dev.gotcha.it.com", // 개발 시에만 사용. 배포 시 반드시 제거 (로컬 번들 사용)
+    ...(isDev && { url: "https://dev.gotcha.it.com" }),
     androidScheme: "https",
   },
   plugins: {
@@ -220,10 +223,11 @@ const config: CapacitorConfig = {
 };
 ```
 
-> **주의:** `server.url`을 설정하면 WebView가 해당 원격 URL을 로드합니다.
+> **`server.url` 분기 처리 (2026-02-21 업데이트):**
+> `CAP_DEV_SERVER` 환경변수로 자동 분기됩니다. 수동으로 주석 처리할 필요 없습니다.
 >
-> - **개발/테스트:** `server.url`에 dev 서버 주소를 넣어 빌드 없이 빠르게 테스트 가능
-> - **배포(App Store):** `server.url`을 **반드시 제거**하여 `webDir`(`out/`)의 로컬 번들을 사용
+> - **개발/테스트:** `npm run dev:ios` (`CAP_DEV_SERVER=true`) → 원격 dev 서버 URL 사용
+> - **배포(App Store):** `npm run build:ios` (`CAP_DEV_SERVER` 미설정) → 로컬 번들(`out/`) 사용
 
 ### package.json 스크립트
 
@@ -494,6 +498,11 @@ npm run build:capacitor
 4. Push Notifications capability 추가
 5. 시뮬레이터 또는 실기기에서 빌드/실행
 
+### App Store 제출
+
+App Store Archive → 업로드 → TestFlight → 심사 제출 전체 플로우는 별도 문서 참조:
+→ [App Store 제출 준비 가이드](appstore_submission_guide.md)
+
 ---
 
 ## 10. 주의사항 및 트러블슈팅
@@ -527,34 +536,9 @@ Capacitor 환경에서는 rewrites가 없으므로, `axios` baseURL이 정확한
 3. **Kakao**: `capacitor://localhost` 도메인 + 번들 ID 등록
 4. **APNS**: `POST /api/push/register-device` 엔드포인트 + APNS 인증서
 
-### 변경된 파일 목록
+---
 
-| 파일                                               | 변경 내용                              |
-| -------------------------------------------------- | -------------------------------------- |
-| `next.config.mjs`                                  | 조건부 정적 내보내기                   |
-| `capacitor.config.ts`                              | Capacitor 설정 (신규)                  |
-| `tsconfig.json`                                    | capacitor.config.ts exclude            |
-| `package.json`                                     | Capacitor 패키지 + 빌드 스크립트       |
-| `.gitignore`                                       | `ios/App/Pods/`, `.env.capacitor` 예외 |
-| `.env.capacitor`                                   | Capacitor 빌드 환경변수 템플릿 (신규)  |
-| `src/app/page.tsx`                                 | 클라이언트 사이드 리디렉트             |
-| `src/app/providers.tsx`                            | 통합 푸시, 딥링크, 네이티브 초기화     |
-| `src/app/sitemap.ts`                               | `force-static` 추가                    |
-| `src/app/robots.ts`                                | `force-static` 추가                    |
-| `src/app/shop/[id]/layout.tsx`                     | Capacitor 분기 (SEO 건너뛰기)          |
-| `src/app/shop/[id]/page.tsx`                       | 서버 래퍼로 분리                       |
-| `src/app/shop/[id]/ShopDetailClient.tsx`           | 클라이언트 컴포넌트 (신규)             |
-| `src/app/shop/[id]/images/page.tsx`                | 서버 래퍼로 분리                       |
-| `src/app/shop/[id]/images/ImagesGalleryClient.tsx` | 클라이언트 컴포넌트 (신규)             |
-| `src/app/shop/[id]/reviews/page.tsx`               | 서버 래퍼로 분리                       |
-| `src/app/shop/[id]/reviews/ReviewsListClient.tsx`  | 클라이언트 컴포넌트 (신규)             |
-| `src/utils/platform.ts`                            | 플랫폼 감지 유틸 (신규)                |
-| `src/utils/pushNotifications.ts`                   | 통합 푸시 등록 (신규)                  |
-| `src/utils/support.ts`                             | OAuth 네이티브 분기                    |
-| `src/utils/index.ts`                               | platform export 추가                   |
-| `src/hooks/useDeepLink.ts`                         | 딥링크 훅 (신규)                       |
-| `src/hooks/index.ts`                               | useDeepLink export 추가                |
-| `src/components/pwa/ServiceWorkerRegistration.tsx` | 네이티브 SW 건너뛰기                   |
-| `src/api/endpoints.ts`                             | `PUSH.REGISTER_DEVICE` 추가            |
-| `ios/`                                             | Capacitor iOS 프로젝트 (신규)          |
-| `ios/App/App/Info.plist`                           | 권한 설명 + URL 스킴                   |
+## 11. 관련 문서
+
+- [App Store 제출 준비 가이드](appstore_submission_guide.md) — Archive, 업로드, TestFlight, 심사 제출 전체 플로우
+- [Capacitor 백엔드 요구사항](capacitor-backend-requirements.md) — CORS, OAuth, APNS 등 서버 측 설정
