@@ -45,14 +45,23 @@ GOTCHA! 앱(Next.js + Capacitor iOS)을 App Store에 제출하기 위한 전체 
 
 ### Info.plist 권한 설명
 
-| 키                                    | 설명                                                                                |
-| ------------------------------------- | ----------------------------------------------------------------------------------- |
-| `NSCameraUsageDescription`            | 리뷰 사진 촬영을 위해 카메라 접근 권한이 필요합니다.                                |
-| `NSLocationWhenInUseUsageDescription` | 주변 매장을 찾기 위해 위치 정보가 필요합니다.                                       |
-| `NSPhotoLibraryUsageDescription`      | 리뷰에 사진을 첨부하기 위해 사진 앨범 접근 권한이 필요합니다.                       |
-| `NSUserNotificationsUsageDescription` | 새로운 리뷰 알림, 주변 맛집 추천 등 유용한 정보를 받기 위해 알림 권한이 필요합니다. |
+| 키                                    | 설명                                                          |
+| ------------------------------------- | ------------------------------------------------------------- |
+| `NSCameraUsageDescription`            | 리뷰 사진 촬영을 위해 카메라 접근 권한이 필요합니다.          |
+| `NSLocationWhenInUseUsageDescription` | 주변 매장을 찾기 위해 위치 정보가 필요합니다.                 |
+| `NSPhotoLibraryUsageDescription`      | 리뷰에 사진을 첨부하기 위해 사진 앨범 접근 권한이 필요합니다. |
 
-> `NSUserNotificationsUsageDescription`은 2026-02-21에 추가됨.
+> 푸시 알림(Push Notifications)은 Info.plist에 별도 usage description 키가 없습니다. 권한 다이얼로그는 `UNUserNotificationCenter.requestAuthorization()` 호출 시 시스템이 자동으로 표시합니다.
+
+### Privacy Manifest (PrivacyInfo.xcprivacy)
+
+Apple은 Required Reason API(`UserDefaults`, `NSFileSystemFreeSize` 등)를 사용하는 앱에 Privacy Manifest를 요구합니다. 누락 시 **ITMS-91053** 경고 또는 리젝 대상입니다.
+
+Capacitor 앱은 내부적으로 `UserDefaults`를 사용하므로 이 파일이 필요합니다.
+
+1. Xcode에서 **App 타겟 → Build Phases → Copy Bundle Resources**에 `PrivacyInfo.xcprivacy` 추가
+2. 사용 중인 Required Reason API와 해당 reason code를 명시
+3. Xcode에서 **Product → Archive** 전에 빌드 경고가 없는지 확인
 
 ### Entitlements
 
@@ -186,7 +195,8 @@ npm run build:ios
 
 - [ ] `npm run build:ios`로 배포 빌드 정상 동작 확인
 - [ ] Xcode에서 Signing & Capabilities 설정 완료
-- [ ] Archive 생성 + App Store Connect 업로드 성공
+- [ ] `PrivacyInfo.xcprivacy` 파일이 존재하고 Required Reason API가 명시되어 있는지 확인
+- [ ] Archive 생성 + App Store Connect 업로드 성공 (ITMS-91053 경고 없음)
 - [ ] TestFlight에서 주요 기능 테스트 완료
 - [ ] 앱 스크린샷 업로드 (6.7인치 필수)
 - [ ] 앱 설명, 키워드 등 메타데이터 작성

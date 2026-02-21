@@ -382,8 +382,6 @@ async function redirectToOAuth(provider, providerDisplayName) {
 <string>리뷰에 사진을 첨부하기 위해 사진 앨범 접근 권한이 필요합니다.</string>
 <key>NSLocationWhenInUseUsageDescription</key>
 <string>주변 매장을 찾기 위해 위치 정보가 필요합니다.</string>
-<key>NSUserNotificationsUsageDescription</key>
-<string>새로운 리뷰 알림, 주변 맛집 추천 등 유용한 정보를 받기 위해 알림 권한이 필요합니다.</string>
 
 <!-- 커스텀 URL 스킴 (OAuth 딥링크) -->
 <key>CFBundleURLTypes</key>
