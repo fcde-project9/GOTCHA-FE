@@ -1,6 +1,9 @@
 # GOTCHA! – 가챠샵 지도 서비스
 
-<img src="appstore-assets/screenshots/thumbnail.png" width="100%" />
+<p align="center">
+  <img src="appstore-assets/screenshots/iPad13Air/앱미리보기(아이패드)_1인트로.png" alt="GOTCHA! 앱 인트로 화면 1" width="49%" />
+  <img src="appstore-assets/screenshots/iPad13Air/앱미리보기(아이패드)_2인트로.png" alt="GOTCHA! 앱 인트로 화면 2" width="49%" />
+</p>
 
 가챠샵(Gacha Shop)을 지도 기반으로 탐색하고, 리스트 및 상세 페이지를 통해 매장 정보를 확인할 수 있는 모바일 웹 서비스입니다.
 
