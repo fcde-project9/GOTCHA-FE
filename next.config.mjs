@@ -26,7 +26,6 @@ const nextConfig = {
 
   // 이미지 최적화 도메인 (Capacitor에서는 unoptimized)
   images: {
-    ...(isCapacitor && { unoptimized: true }),
     remotePatterns: [
       {
         protocol: "https",
@@ -37,7 +36,7 @@ const nextConfig = {
         hostname: "localhost",
       },
     ],
-    unoptimized: process.env.NODE_ENV === "development",
+    unoptimized: isCapacitor || process.env.NODE_ENV === "development",
   },
 
   // 외부 스크립트 (Kakao Map SDK)
