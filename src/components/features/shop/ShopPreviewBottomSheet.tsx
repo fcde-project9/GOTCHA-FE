@@ -390,6 +390,7 @@ export default function ShopPreviewBottomSheet({
     (clientY: number) => {
       setIsDragging(true);
       dragStartY.current = clientY;
+      lastDragY.current = clientY;
       dragStartHeight.current = sheetHeight;
     },
     [sheetHeight]
@@ -649,7 +650,11 @@ export default function ShopPreviewBottomSheet({
             onMouseDown={(e) => handleDragStart(e.clientY)}
           >
             <BackHeader onBack={collapseToPreview} />
-            <div className="flex items-center gap-1 ml-3">
+            <div
+              className="flex items-center gap-1 ml-3"
+              onMouseDown={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+            >
               <button
                 onClick={toggleFavorite}
                 disabled={isFavoriteLoading}
