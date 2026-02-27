@@ -326,15 +326,15 @@ export default function ReportLocationPage() {
       </div>
 
       {/* Bottom Sheet */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl px-5 pt-5 pb-[52px] shadow-[0_-4px_10px_rgba(0,0,0,0.2)] z-30">
-        <div className="flex flex-col gap-4">
+      <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl px-5 pt-5 pb-[68px] shadow-[0_-4px_10px_rgba(0,0,0,0.2)] z-30">
+        <div className="flex flex-col gap-[22px]">
           {/* Address */}
           <div className="flex flex-col gap-2">
-            <label className="text-[14px] font-medium leading-[1.5] tracking-[-0.14px] text-grey-600 text-center">
+            <label className="text-[15px] font-normal leading-[1.5] tracking-[-0.15px] text-grey-600 text-center">
               제보할 위치
             </label>
             <div className="bg-grey-100 min-h-11 flex items-center justify-center px-3 py-2 rounded-lg">
-              <p className="text-[15px] font-semibold leading-[1.5] tracking-[-0.15px] text-grey-700 text-center">
+              <p className="text-[16px] font-semibold leading-[1.5] tracking-[-0.16px] text-grey-700 text-center">
                 {address}
               </p>
             </div>
@@ -343,10 +343,10 @@ export default function ReportLocationPage() {
           {/* Nearby Shop Count */}
           {nearbyShops && nearbyShops.count > 0 && (
             <div className="flex flex-col gap-1">
-              <p className="text-[14px] font-semibold leading-[1.5] tracking-[-0.14px] text-grey-900">
+              <p className="text-[18px] font-semibold leading-[1.4] tracking-[-0.18px] text-grey-900">
                 50m 이내에 이미 등록된 {nearbyShops.count}개의 가챠샵이 있어요
               </p>
-              <p className="text-[12px] font-normal leading-[1.5] tracking-[-0.12px] text-grey-500">
+              <p className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-400">
                 등록 전, 중복되는 가챠샵이 있는지 확인해주세요
               </p>
             </div>

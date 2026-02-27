@@ -37,18 +37,13 @@ export function ServiceUnavailablePage() {
       subtitle={<ContactSubtitle />}
       buttons={
         <>
-          <Button
-            variant="tertiary"
-            size="small"
-            className="h-11 flex-1"
-            onClick={() => router.back()}
-          >
+          <Button variant="tertiary" size="medium" className="flex-1" onClick={() => router.back()}>
             이전 페이지
           </Button>
           <Button
             variant="primary"
-            size="small"
-            className="h-11 flex-1"
+            size="medium"
+            className="flex-1"
             onClick={() => router.push("/home")}
           >
             홈으로

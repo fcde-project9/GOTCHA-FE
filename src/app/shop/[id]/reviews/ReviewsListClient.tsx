@@ -263,14 +263,14 @@ export default function ReviewsListClient() {
           <div className="px-5 pt-3">
             {/* 정렬 & 총 개수 */}
             <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center text-[14px] text-grey-900 tracking-[-0.14px]">
+              <div className="flex items-center text-[16px] text-grey-900 tracking-[-0.16px]">
                 <span>총&nbsp;</span>
                 <span>{totalCount}개</span>
               </div>
               <div className="relative" ref={sortDropdownRef}>
                 <button
                   onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
-                  className="flex items-center gap-1 text-[14px] text-grey-700"
+                  className="flex items-center gap-1 text-[16px] text-grey-700"
                 >
                   <span>{sortBy === "LATEST" ? "최신순" : "좋아요순"}</span>
                   <ChevronDown
@@ -304,7 +304,7 @@ export default function ReviewsListClient() {
             </div>
 
             {/* 리뷰 목록 */}
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3">
               {reviews.map((review) => (
                 <ReviewItem
                   key={review.id}

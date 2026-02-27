@@ -232,7 +232,7 @@ export function TimePickerModal({
         {/* Title */}
         <h2
           id="time-picker-title"
-          className="text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900"
+          className="text-[20px] font-semibold leading-[1.5] tracking-[-0.2px] text-grey-900"
         >
           시간 선택
         </h2>
@@ -265,7 +265,7 @@ export function TimePickerModal({
                     period === p ? "text-grey-900" : "text-grey-300"
                   }`}
                 >
-                  <span className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px]">
+                  <span className="text-[18px] font-normal leading-[1.5] tracking-[-0.18px]">
                     {p}
                   </span>
                 </button>
@@ -299,7 +299,7 @@ export function TimePickerModal({
                     hour === h ? "text-grey-900" : "text-grey-300"
                   }`}
                 >
-                  <span className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px]">
+                  <span className="text-[18px] font-normal leading-[1.5] tracking-[-0.18px]">
                     {h}
                   </span>
                 </button>
@@ -333,7 +333,7 @@ export function TimePickerModal({
                     minute === m ? "text-grey-900" : "text-grey-300"
                   }`}
                 >
-                  <span className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px]">
+                  <span className="text-[18px] font-normal leading-[1.5] tracking-[-0.18px]">
                     {String(m).padStart(2, "0")}
                   </span>
                 </button>

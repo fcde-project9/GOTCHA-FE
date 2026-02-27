@@ -58,7 +58,7 @@ export function ReviewItem({
       {/* 닉네임 & 메뉴 */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <span className="text-[12px] text-grey-600 leading-[1.5]">{review.author.nickname}</span>
+          <span className="text-[13px] text-grey-600 leading-[1.5]">{review.author.nickname}</span>
           <div className="relative" ref={menuRef}>
             {(isOwnerOrAdmin || isLoggedIn) && (
               <button
@@ -152,7 +152,7 @@ export function ReviewItem({
         </div>
 
         {/* 리뷰 내용 */}
-        <p className="text-[15px] text-grey-900 leading-[1.5] tracking-[-0.15px]">
+        <p className="text-[17px] text-grey-900 leading-[1.5] tracking-[-0.17px]">
           {review.content}
         </p>
 
@@ -180,7 +180,7 @@ export function ReviewItem({
 
       {/* 날짜 & 좋아요 */}
       <div className="flex items-center gap-[14px]">
-        <span className="text-[12px] text-grey-400 leading-[1.5]">
+        <span className="text-[13px] text-grey-400 leading-[1.5]">
           {formatDate(review.createdAt)}
         </span>
         <button

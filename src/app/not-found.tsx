@@ -45,16 +45,16 @@ export default function NotFound() {
           <div className="flex w-full max-w-[335px] gap-[9px]">
             <Button
               variant="tertiary"
-              size="small"
-              className="h-11 flex-1"
+              size="medium"
+              className="flex-1 text-[17px]"
               onClick={() => router.back()}
             >
               이전 페이지
             </Button>
             <Button
               variant="primary"
-              size="small"
-              className="h-11 flex-1"
+              size="medium"
+              className="flex-1 text-[17px]"
               onClick={() => router.push("/home")}
             >
               홈으로

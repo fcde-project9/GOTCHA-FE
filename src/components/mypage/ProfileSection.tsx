@@ -50,7 +50,7 @@ export function ProfileSection({
   // 게스트 상태 (로그인하지 않은 경우)
   if (!isLoggedIn) {
     return (
-      <div className="flex flex-col items-center gap-3 w-full px-5">
+      <div className="flex flex-col items-center gap-4 w-full px-5">
         {/* 기본 프로필 이미지 */}
         <div className="w-[100px] h-[100px] rounded-full bg-main-50 overflow-hidden flex items-center justify-center">
           <Image
@@ -68,7 +68,7 @@ export function ProfileSection({
           className="flex items-center justify-center gap-0"
           aria-label="로그인하러 가기"
         >
-          <h2 className="text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
+          <h2 className="text-[24px] font-semibold leading-[1.4] tracking-[-0.24px] text-grey-900">
             로그인을 해주세요
           </h2>
           <div className="w-6 h-6 flex items-center justify-center">
@@ -87,7 +87,7 @@ export function ProfileSection({
   return (
     <div className="flex flex-col items-center gap-7 w-full px-5">
       {/* Profile Image */}
-      <div className="flex flex-col items-center gap-3 w-[168px]">
+      <div className="flex flex-col items-center gap-4 w-[168px]">
         <div className="relative w-[100px] h-[100px]">
           <div className="relative w-full h-full rounded-full overflow-hidden">
             <Image
@@ -109,10 +109,10 @@ export function ProfileSection({
         </div>
 
         {/* Nickname & Email */}
-        <div className="flex flex-col items-center gap-1 w-full">
+        <div className="flex flex-col items-center gap-2 w-full">
           {/* Nickname with edit icon */}
           <div className="flex items-center gap-[3px]">
-            <h2 className="text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900 whitespace-nowrap">
+            <h2 className="text-[24px] font-semibold leading-[1.4] tracking-[-0.24px] text-grey-900 whitespace-nowrap">
               {nickname}
             </h2>
             <button
@@ -133,7 +133,7 @@ export function ProfileSection({
               height={16}
               className={`shrink-0${socialProvider === "apple" ? " brightness-0" : ""}`}
             />
-            <p className="text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-800 text-center">
+            <p className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-800 text-center">
               {email}
             </p>
             {isAdmin && (

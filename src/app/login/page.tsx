@@ -134,7 +134,7 @@ export default function LoginPage() {
               disabled={showTermsSheet}
               className="pb-0.5 disabled:opacity-50"
             >
-              <span className="border-b-[0.75px] border-grey-800 text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-800">
+              <span className="border-b-[0.75px] border-grey-800 text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-800">
                 게스트로 둘러보기
               </span>
             </button>

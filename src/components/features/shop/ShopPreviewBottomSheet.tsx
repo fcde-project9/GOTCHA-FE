@@ -78,7 +78,7 @@ function DayBadge({ day, isActive }: { day: string; isActive: boolean }) {
   return (
     <div
       className={`flex items-center justify-center w-[22px] h-[22px] rounded-full text-[12px] font-normal tracking-[-0.12px] leading-[150%] ${
-        isActive ? "bg-grey-500 text-white" : "bg-grey-100 text-grey-400"
+        isActive ? "bg-grey-700 text-white" : "bg-grey-100 text-grey-400"
       }`}
     >
       {day}
@@ -126,7 +126,7 @@ function ReviewItem({
     <div className="bg-grey-50 rounded-[10px] p-[14px] flex flex-col gap-4">
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <span className="text-[12px] text-grey-600 leading-[1.5]">{review.author.nickname}</span>
+          <span className="text-[13px] text-grey-600 leading-[1.5]">{review.author.nickname}</span>
           <div className="relative" ref={menuRef}>
             {(review.isOwner || isLoggedIn) && (
               <button
@@ -209,7 +209,7 @@ function ReviewItem({
             )}
           </div>
         </div>
-        <p className="text-[15px] text-grey-900 leading-[1.5] tracking-[-0.15px]">
+        <p className="text-[17px] text-grey-900 leading-[1.5] tracking-[-0.17px]">
           {review.content}
         </p>
         {review.imageUrls && review.imageUrls.length > 0 && (
@@ -233,7 +233,7 @@ function ReviewItem({
         )}
       </div>
       <div className="flex items-center gap-[14px]">
-        <span className="text-[12px] text-grey-400 leading-[1.5]">
+        <span className="text-[13px] text-grey-400 leading-[1.5]">
           {formatDate(review.createdAt)}
         </span>
         <button
@@ -455,7 +455,7 @@ export default function ShopPreviewBottomSheet({
     return (
       <div className="absolute bottom-0 left-0 right-0 z-20 bg-white rounded-t-[24px] shadow-[0_0_10px_rgba(0,0,0,0.2)] animate-slide-up">
         <div className="flex items-center justify-center py-[10px]">
-          <div className="w-[60px] h-[4px] bg-[#cfcfcf] rounded-[2px]" />
+          <div className="w-[44px] h-[4px] bg-[#cfcfcf] rounded-[2px]" />
         </div>
         <div className="flex items-center justify-center py-16">
           <div className="h-8 w-8 animate-spin rounded-full border-3 border-grey-200 border-t-main" />
@@ -630,13 +630,13 @@ export default function ShopPreviewBottomSheet({
         {/* Grabber (미리보기에서만 표시) */}
         {!isExpanded && !isCollapsing && (
           <div
-            className="flex justify-center pt-3 h-[44px] cursor-grab active:cursor-grabbing"
+            className="flex justify-center pt-3 h-[36px] cursor-grab active:cursor-grabbing"
             onTouchStart={(e) => handleDragStart(e.touches[0].clientY)}
             onTouchMove={(e) => handleDragMove(e.touches[0].clientY)}
             onTouchEnd={handleDragEnd}
             onMouseDown={(e) => handleDragStart(e.clientY)}
           >
-            <div className="w-[80px] h-[4px] bg-[#cfcfcf] rounded-[2px]" />
+            <div className="w-[44px] h-[4px] bg-[#cfcfcf] rounded-[2px]" />
           </div>
         )}
 
@@ -651,7 +651,7 @@ export default function ShopPreviewBottomSheet({
           >
             <BackHeader onBack={collapseToPreview} />
             <div
-              className="flex items-center gap-1 ml-3"
+              className="flex items-center gap-4 ml-3"
               onMouseDown={(e) => e.stopPropagation()}
               onTouchStart={(e) => e.stopPropagation()}
             >
@@ -755,7 +755,7 @@ export default function ShopPreviewBottomSheet({
                 }}
                 className="flex-1 min-w-0 text-left"
               >
-                <h2 className="text-[22px] font-semibold text-grey-900 leading-[150%] tracking-[-0.22px] font-pretendard overflow-hidden text-ellipsis whitespace-nowrap">
+                <h2 className="text-[20px] font-semibold text-grey-900 leading-[150%] tracking-[-0.2px] font-pretendard overflow-hidden text-ellipsis whitespace-nowrap">
                   {shop.name}
                 </h2>
               </button>
@@ -787,10 +787,10 @@ export default function ShopPreviewBottomSheet({
             {isExpanded ? (
               /* 확장: 상세페이지와 동일한 레이아웃 */
               <>
-                <div className="flex flex-col gap-2 py-2">
-                  <div className="flex items-center gap-2">
-                    <span className="shrink-0 w-16 text-[14px] text-grey-400">주소</span>
-                    <p className="text-[14px] text-grey-900 leading-[1.5] tracking-[-0.14px]">
+                <div className="flex flex-col gap-3 py-2">
+                  <div className="flex items-center gap-4">
+                    <span className="shrink-0 w-[52px] text-[13px] text-grey-500">주소</span>
+                    <p className="text-[13px] text-grey-900 leading-[1.5] tracking-[-0.13px]">
                       {shop.addressName}
                     </p>
                     <button
@@ -801,17 +801,17 @@ export default function ShopPreviewBottomSheet({
                     </button>
                   </div>
                   {shop.locationHint && (
-                    <div className="flex items-center gap-2">
-                      <span className="shrink-0 w-16 text-[14px] text-grey-400">위치 힌트</span>
-                      <p className="text-[14px] text-grey-900 leading-[1.5] tracking-[-0.14px]">
+                    <div className="flex items-center gap-4">
+                      <span className="shrink-0 w-[52px] text-[13px] text-grey-500">위치 힌트</span>
+                      <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
                         {shop.locationHint}
                       </p>
                     </div>
                   )}
                 </div>
                 <div className="flex flex-col gap-3 pb-4">
-                  <div className="flex items-center gap-2">
-                    <span className="shrink-0 w-16 text-[14px] text-grey-400">영업일</span>
+                  <div className="flex items-center gap-4">
+                    <span className="shrink-0 w-[52px] text-[13px] text-grey-500">영업일</span>
                     <div className="flex gap-1.5">
                       {ALL_DAYS.map((day) => (
                         <DayBadge
@@ -822,10 +822,10 @@ export default function ShopPreviewBottomSheet({
                       ))}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="shrink-0 w-16 text-[14px] text-grey-400">영업시간</span>
+                  <div className="flex items-center gap-4">
+                    <span className="shrink-0 w-[52px] text-[13px] text-grey-500">영업시간</span>
                     {shop.todayOpenTime && (
-                      <span className="text-[14px] text-grey-900">{shop.todayOpenTime}</span>
+                      <span className="text-[13px] text-grey-900">{shop.todayOpenTime}</span>
                     )}
                     <StatusBadge openStatus={shop.openStatus} />
                   </div>
@@ -834,9 +834,9 @@ export default function ShopPreviewBottomSheet({
             ) : (
               /* 미리보기: 간격 좁게 한 블록 */
               <div className="flex flex-col gap-1 mt-1">
-                <div className="flex items-center gap-2">
-                  <span className="shrink-0 w-16 text-[14px] text-grey-400">주소</span>
-                  <p className="text-[14px] text-grey-900 leading-[1.5] tracking-[-0.14px]">
+                <div className="flex items-center gap-4">
+                  <span className="shrink-0 w-[52px] text-[13px] text-grey-500">주소</span>
+                  <p className="text-[13px] text-grey-900 leading-[1.5] tracking-[-0.13px]">
                     {shop.addressName}
                   </p>
                   <button
@@ -847,15 +847,15 @@ export default function ShopPreviewBottomSheet({
                   </button>
                 </div>
                 {shop.locationHint && (
-                  <div className="flex items-center gap-2">
-                    <span className="shrink-0 w-16 text-[14px] text-grey-400">위치 힌트</span>
-                    <p className="text-[14px] text-grey-900 leading-[1.5] tracking-[-0.14px]">
+                  <div className="flex items-center gap-4">
+                    <span className="shrink-0 w-[52px] text-[13px] text-grey-500">위치 힌트</span>
+                    <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
                       {shop.locationHint}
                     </p>
                   </div>
                 )}
-                <div className="flex items-center gap-2">
-                  <span className="shrink-0 w-16 text-[14px] text-grey-400">영업일</span>
+                <div className="flex items-center gap-4">
+                  <span className="shrink-0 w-[52px] text-[13px] text-grey-500">영업일</span>
                   <div className="flex gap-1.5">
                     {ALL_DAYS.map((day) => (
                       <DayBadge
@@ -866,10 +866,10 @@ export default function ShopPreviewBottomSheet({
                     ))}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="shrink-0 w-16 text-[14px] text-grey-400">영업시간</span>
+                <div className="flex items-center gap-4">
+                  <span className="shrink-0 w-[52px] text-[13px] text-grey-500">영업시간</span>
                   {shop.todayOpenTime && (
-                    <span className="text-[14px] text-grey-900">{shop.todayOpenTime}</span>
+                    <span className="text-[13px] text-grey-900">{shop.todayOpenTime}</span>
                   )}
                   <StatusBadge openStatus={shop.openStatus} />
                 </div>
@@ -902,7 +902,7 @@ export default function ShopPreviewBottomSheet({
                 <div className="py-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <h3 className="text-[20px] font-semibold text-grey-900 leading-[1.4] tracking-[-0.2px]">
+                      <h3 className="text-[19px] font-medium text-grey-900 leading-[1.5] tracking-[-0.19px]">
                         업체 사진
                       </h3>
                       {totalImageCount > 0 && (
@@ -1036,7 +1036,7 @@ export default function ShopPreviewBottomSheet({
             {isExpanded && (
               <>
                 <div className="py-4">
-                  <h3 className="text-[20px] font-semibold text-grey-900 leading-[1.4] tracking-[-0.2px] mb-4">
+                  <h3 className="text-[19px] font-medium text-grey-900 leading-[1.5] tracking-[-0.19px] mb-4">
                     방문리뷰
                   </h3>
 
@@ -1045,7 +1045,7 @@ export default function ShopPreviewBottomSheet({
                     size="medium"
                     fullWidth
                     onClick={() => setIsReviewModalOpen(true)}
-                    className="!bg-grey-700 hover:!bg-grey-800 active:!bg-grey-900 gap-1.5 mb-4"
+                    className="!bg-grey-600 hover:!bg-grey-700 active:!bg-grey-800 gap-1.5 mb-8"
                   >
                     <PencilLine size={16} strokeWidth={2} />
                     <span className="text-[16px] font-medium text-white leading-[1.5] tracking-[-0.16px]">
@@ -1056,7 +1056,7 @@ export default function ShopPreviewBottomSheet({
                   {shop.reviewCount > 0 && (
                     <>
                       <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center text-[14px] text-grey-900 tracking-[-0.14px]">
+                        <div className="flex items-center text-[16px] text-grey-900 tracking-[-0.16px]">
                           <span>총&nbsp;</span>
                           <span>{shop.reviewCount}</span>
                           <span>개</span>
@@ -1064,7 +1064,7 @@ export default function ShopPreviewBottomSheet({
                         <div className="relative" ref={sortDropdownRef}>
                           <button
                             onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
-                            className="flex items-center gap-1 text-[14px] text-grey-700"
+                            className="flex items-center gap-1 text-[16px] text-grey-700"
                           >
                             <span>{sortBy === "LATEST" ? "최신순" : "좋아요순"}</span>
                             <ChevronDown
@@ -1092,7 +1092,7 @@ export default function ShopPreviewBottomSheet({
                         </div>
                       </div>
 
-                      <div className="flex flex-col gap-2">
+                      <div className="flex flex-col gap-3">
                         {shop.reviews.slice(0, 3).map((review) => (
                           <ReviewItem
                             key={review.id}

@@ -44,10 +44,10 @@ export function ExitConfirmModal({ isOpen, onClose, onConfirm }: ExitConfirmModa
         role="dialog"
         aria-labelledby="exit-confirm-title"
         aria-describedby="exit-confirm-description"
-        className="relative bg-white rounded-2xl w-[335px] p-4 flex flex-col gap-5"
+        className="relative bg-white rounded-[16px] w-[335px] px-4 py-5 flex flex-col gap-[22px]"
       >
         {/* Content */}
-        <div className="flex flex-col gap-1 text-center">
+        <div className="flex flex-col gap-3 text-center">
           <h2
             id="exit-confirm-title"
             className="text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900"
@@ -56,7 +56,7 @@ export function ExitConfirmModal({ isOpen, onClose, onConfirm }: ExitConfirmModa
           </h2>
           <p
             id="exit-confirm-description"
-            className="text-[14px] leading-[1.5] tracking-[-0.14px] text-grey-600"
+            className="text-[16px] leading-[1.5] tracking-[-0.16px] text-grey-600"
           >
             지금까지 입력한 정보가 저장되지 않아요
           </p>

@@ -240,7 +240,7 @@ function SearchBar({
         >
           <Search size={20} className="stroke-grey-800" strokeWidth={2} />
           <span
-            className={`text-[15px] font-normal leading-[1.5] tracking-[-0.15px] ${
+            className={`text-[17px] font-normal leading-[1.5] tracking-[-0.17px] ${
               searchQuery ? "text-grey-800" : "text-grey-600"
             }`}
           >
@@ -262,7 +262,7 @@ function SearchBar({
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="지역 또는 지하철역 검색"
             autoFocus
-            className="flex-1 w-[106.7%] bg-transparent text-[16px] font-normal leading-[1.5] tracking-[-0.15px] text-grey-900 placeholder:text-grey-600 focus:outline-none origin-left scale-[0.9375]"
+            className="flex-1 bg-transparent text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-900 placeholder:text-grey-600 focus:outline-none"
           />
           {searchQuery && (
             <button onClick={onClearSearch} aria-label="검색어 지우기">
@@ -385,10 +385,10 @@ function SearchEmptyState() {
         <Image src={DEFAULT_IMAGES.SEARCH} alt="검색" width={72} height={72} />
       </div>
       <div className="flex flex-col gap-2 text-center">
-        <p className="text-[16px] font-semibold leading-[1.5] tracking-[-0.16px] text-grey-900">
+        <p className="text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900">
           지역을 입력해 매장을 찾아보세요
         </p>
-        <p className="text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-500">
+        <p className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-500">
           예시: 강남역, 홍대입구역
         </p>
       </div>

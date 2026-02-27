@@ -77,33 +77,33 @@ export default function BlockedUsersPage() {
       ) : blockedUsers.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-7">
           <Image src="/images/blocked-empty.png" alt="차단한 사용자 없음" width={96} height={87} />
-          <p className="text-xl font-semibold text-grey-900 tracking-[-0.2px] leading-7">
+          <p className="text-[20px] font-semibold text-grey-900 tracking-[-0.2px] leading-[1.4]">
             차단한 사용자가 없어요
           </p>
         </div>
       ) : (
         <div className="flex flex-col px-5 mt-4">
-          <p className="text-sm font-normal text-grey-900 tracking-[-0.14px] leading-[21px] mb-2">
-            총 {totalCount}명
+          <p className="text-[16px] font-normal text-grey-900 tracking-[-0.16px] leading-[1.5] mb-2">
+            총 {totalCount}개
           </p>
           <div className="flex flex-col gap-2">
             {blockedUsers.map((user) => (
               <div
                 key={user.id}
-                className="flex w-full items-center gap-1.5 rounded-[10px] bg-grey-50 px-[18px] py-[14px]"
+                className="flex w-full items-center gap-3 rounded-[10px] bg-grey-50 px-4 py-3"
               >
                 <div className="flex flex-1 min-w-0 flex-col gap-0.5">
-                  <span className="text-[15px] font-semibold text-grey-700 tracking-[-0.15px] leading-[22.5px] truncate">
+                  <span className="text-[16px] font-semibold text-grey-600 tracking-[-0.16px] leading-[1.5] truncate">
                     {user.nickname}
                   </span>
-                  <span className="text-xs font-normal text-grey-400 tracking-[-0.12px] leading-[18px]">
+                  <span className="text-[13px] font-normal text-grey-400 tracking-[-0.13px] leading-[1.5]">
                     차단일시: {formatBlockedDate(user.blockedAt)}
                   </span>
                 </div>
                 <button
                   onClick={() => handleUnblockClick(user.id, user.nickname)}
                   disabled={unblockMutation.isPending}
-                  className="shrink-0 rounded-full border border-grey-300 bg-white px-2 py-1 text-xs font-normal text-grey-700 tracking-[-0.12px] leading-[18px] active:bg-grey-400 disabled:opacity-50"
+                  className="shrink-0 rounded-full border border-grey-300 bg-white px-2 py-1 text-[13px] font-normal text-grey-600 tracking-[-0.13px] leading-[1.5] active:bg-grey-400 disabled:opacity-50"
                 >
                   차단해제
                 </button>

@@ -174,7 +174,7 @@ export default function MyPage() {
   if (isLoading) {
     return (
       <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[70px]">
-        <SimpleHeader title="마이" />
+        <SimpleHeader title="마이페이지" />
       </div>
     );
   }
@@ -221,7 +221,7 @@ export default function MyPage() {
       />
 
       {/* Main Content */}
-      <main className="flex flex-col gap-7 pt-[60px] px-5">
+      <main className="flex flex-col gap-8 pt-[60px] px-5">
         {/* Profile Section */}
         <ProfileSection
           isLoggedIn={isLoggedIn}
@@ -274,13 +274,13 @@ export default function MyPage() {
       {isLoggedIn && (
         <div className="absolute bottom-[70px] pb-8 left-0 w-full flex items-center justify-center gap-9 px-5">
           <button onClick={handleLogout} className="border-b-[0.75px] border-grey-400">
-            <span className="text-[12px] font-medium leading-[1.5] tracking-[-0.12px] text-grey-400">
+            <span className="text-[13px] font-medium leading-[1.5] tracking-[-0.13px] text-grey-400">
               로그아웃
             </span>
           </button>
           <div className="w-0 h-3.5 border-l border-grey-200" />
           <button onClick={handleWithdraw} className="border-b-[0.75px] border-grey-400">
-            <span className="text-[12px] font-medium leading-[1.5] tracking-[-0.12px] text-grey-400">
+            <span className="text-[13px] font-medium leading-[1.5] tracking-[-0.13px] text-grey-400">
               회원탈퇴
             </span>
           </button>

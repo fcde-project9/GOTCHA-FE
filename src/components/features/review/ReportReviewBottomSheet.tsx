@@ -117,7 +117,7 @@ export function ReportBottomSheet({
             <h2 className="text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
               {TARGET_TITLE[targetType]} <span className="text-main">신고하기</span>
             </h2>
-            <p className="text-[12px] font-normal leading-[1.5] tracking-[-0.12px] text-grey-500">
+            <p className="text-[13px] font-normal leading-[1.5] tracking-[-0.13px] text-grey-400">
               * 신고는 익명으로 제보됩니다
             </p>
           </div>
@@ -127,14 +127,14 @@ export function ReportBottomSheet({
         </div>
 
         {/* Reason List */}
-        <div className="flex flex-col gap-[18px] py-[18px] max-h-[50vh] overflow-y-auto">
+        <div className="flex flex-col gap-[24px] py-[18px] max-h-[50vh] overflow-y-auto">
           {reasons.map(({ value, label }) => (
             <button
               key={value}
               onClick={() => handleSelect(value)}
               className="flex items-center justify-between"
             >
-              <span className="text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-900">
+              <span className="text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-900">
                 {label}
               </span>
               <div
@@ -170,7 +170,7 @@ export function ReportBottomSheet({
               onChange={(e) => setDetail(e.target.value)}
               placeholder="신고 사유를 입력해주세요"
               maxLength={500}
-              className="w-full h-24 p-3 border border-grey-200 rounded-lg text-[14px] leading-[1.5] tracking-[-0.14px] text-grey-900 placeholder:text-grey-400 resize-none focus:outline-none focus:border-main"
+              className="w-full h-24 p-3 border border-grey-200 rounded-lg text-[16px] leading-[1.5] tracking-[-0.16px] text-grey-600 placeholder:text-grey-400 resize-none focus:outline-none focus:border-main"
             />
           )}
         </div>
@@ -179,7 +179,7 @@ export function ReportBottomSheet({
         <button
           onClick={handleSubmit}
           disabled={isSubmitDisabled}
-          className="w-full h-11 rounded-lg bg-[#FF4545] text-[16px] font-semibold leading-[1.5] tracking-[-0.35px] text-white disabled:bg-grey-200 disabled:text-grey-400"
+          className="w-full h-[46px] rounded-lg bg-main text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white disabled:bg-grey-200 disabled:text-grey-400"
         >
           {isLoading ? "신고 접수 중..." : "신고하기"}
         </button>

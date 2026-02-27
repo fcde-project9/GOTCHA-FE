@@ -33,13 +33,13 @@ export function OperatingHoursItem({ entry, onDelete }: OperatingHoursItemProps)
   return (
     <div className="flex items-center gap-3 bg-grey-50 rounded-lg px-5 py-4">
       <div className="flex-1 flex gap-1">
-        <span className="text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-800">
+        <span className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-800">
           {formatDays(entry.days)}
         </span>
-        <span className="text-[14px] font-normal leading-[1.5] tracking-[-0.13px] text-grey-800">
+        <span className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-800">
           /
         </span>
-        <span className="text-[14px] font-normal leading-[1.5] tracking-[-0.13px] text-grey-800">
+        <span className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-800">
           {formatTime()}
         </span>
       </div>

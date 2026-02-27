@@ -84,7 +84,7 @@ export default function MyReportsPage() {
     return (
       <>
         <main className="h-[calc(100dvh-var(--footer-height))] overflow-hidden relative bg-default flex flex-col">
-          <BackHeader title="내가 제보한 업체" />
+          <BackHeader title="내가 제보한 매장" />
           <div className="flex flex-1 items-center justify-center">
             <div className="h-12 w-12 animate-spin rounded-full border-4 border-grey-200 border-t-main"></div>
           </div>
@@ -99,10 +99,10 @@ export default function MyReportsPage() {
     return (
       <>
         <main className="h-[calc(100dvh-var(--footer-height))] overflow-hidden relative bg-default flex flex-col">
-          <BackHeader title="내가 제보한 업체" />
+          <BackHeader title="내가 제보한 매장" />
           <div className="flex flex-1 flex-col items-center justify-center gap-4 px-5">
             <p className="text-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-600">
-              {error instanceof Error ? error.message : "제보한 업체 목록을 불러올 수 없어요."}
+              {error instanceof Error ? error.message : "제보한 매장 목록을 불러올 수 없어요."}
             </p>
           </div>
         </main>
@@ -115,12 +115,12 @@ export default function MyReportsPage() {
     <>
       <main className="h-[calc(100dvh-var(--footer-height))] overflow-hidden relative bg-default flex flex-col">
         {/* 헤더 */}
-        <BackHeader title="내가 제보한 업체" />
+        <BackHeader title="내가 제보한 매장" />
 
         {/* 컨텐츠 영역 */}
         {reports.length === 0 ? (
           /* Empty State - 빈 상태 */
-          <div className="flex flex-1 flex-col items-center justify-center gap-7 px-5">
+          <div className="flex flex-1 flex-col items-center pt-[168px] gap-7 px-5">
             <div className="flex flex-col items-center gap-7">
               <Image
                 src={DEFAULT_IMAGES.MY_SHOP}
@@ -140,8 +140,8 @@ export default function MyReportsPage() {
           /* List State - 목록 상태 */
           <>
             {/* 총 개수 & 정렬 */}
-            <div className="flex-shrink-0 mt-3 mb-1 flex items-center justify-between px-5">
-              <div className="flex items-center text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-900">
+            <div className="flex-shrink-0 mt-3 mb-2 flex items-center justify-between px-5">
+              <div className="flex items-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-900">
                 <span>총&nbsp;</span>
                 <span>{totalCount}개</span>
               </div>
@@ -151,10 +151,10 @@ export default function MyReportsPage() {
                 <button
                   type="button"
                   onClick={() => setShowSortDropdown(!showSortDropdown)}
-                  className="flex items-center gap-1 text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-700"
+                  className="flex items-center gap-1 text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-700"
                 >
                   <span>{sortOrder === "latest" ? "최신순" : "오래된순"}</span>
-                  <ChevronDown size={16} className="stroke-grey-700" />
+                  <ChevronDown size={18} className="stroke-grey-700" />
                 </button>
 
                 {showSortDropdown && (
@@ -169,7 +169,7 @@ export default function MyReportsPage() {
                       <button
                         type="button"
                         onClick={() => handleSortChange("latest")}
-                        className={`w-full px-3 py-2 text-left text-[14px] leading-[1.5] tracking-[-0.14px] ${
+                        className={`w-full px-3 py-2 text-left text-[16px] leading-[1.5] tracking-[-0.16px] ${
                           sortOrder === "latest"
                             ? "text-main font-medium"
                             : "text-grey-700 font-normal"
@@ -180,7 +180,7 @@ export default function MyReportsPage() {
                       <button
                         type="button"
                         onClick={() => handleSortChange("oldest")}
-                        className={`w-full px-3 py-2 text-left text-[14px] leading-[1.5] tracking-[-0.14px] ${
+                        className={`w-full px-3 py-2 text-left text-[16px] leading-[1.5] tracking-[-0.16px] ${
                           sortOrder === "oldest"
                             ? "text-main font-medium"
                             : "text-grey-700 font-normal"
@@ -232,11 +232,11 @@ export default function MyReportsPage() {
                         {/* 위치 정보 */}
                         <div className="flex gap-1 items-center">
                           <Navigation
-                            size={16}
+                            size={18}
                             className="fill-grey-600 stroke-grey-600 shrink-0"
                             strokeWidth={1.25}
                           />
-                          <span className="text-[14px] font-normal text-grey-600 tracking-[-0.14px] leading-[150%]">
+                          <span className="text-[16px] font-normal text-grey-600 tracking-[-0.16px] leading-[150%]">
                             {shop.address}
                           </span>
                         </div>

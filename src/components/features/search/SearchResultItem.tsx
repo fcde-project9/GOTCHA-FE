@@ -27,7 +27,7 @@ export function SearchResultItem({ result, searchQuery, onClick }: SearchResultI
     return (
       <span>
         {before && <span className="font-normal text-grey-400">{before}</span>}
-        <span className="font-semibold text-grey-900">{match}</span>
+        <span className="font-semibold text-main">{match}</span>
         {after && <span className="font-normal text-grey-400">{after}</span>}
       </span>
     );

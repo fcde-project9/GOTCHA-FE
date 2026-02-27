@@ -10,11 +10,11 @@ function MenuItem({ label, onClick, showBorder = true }: MenuItemProps) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center justify-between w-full px-0 py-3.5 ${
+      className={`flex items-center justify-between w-full px-0 py-4 ${
         showBorder ? "border-b border-line-100" : ""
       }`}
     >
-      <span className="flex-1 text-left text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-900 h-6">
+      <span className="flex-1 text-left text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-900 h-6">
         {label}
       </span>
       <div className="w-6 h-6 flex items-center justify-center">
@@ -55,7 +55,7 @@ export function MenuList({
 }: MenuListProps) {
   return (
     <div className="flex flex-col items-start w-full">
-      <MenuItem label="내가 제보한 업체" onClick={onMyReports} />
+      <MenuItem label="내가 제보한 매장" onClick={onMyReports} />
       {isLoggedIn && <MenuItem label="차단한 사용자 목록" onClick={onBlockedUsers} />}
       <MenuItem label="약관/라이센스" onClick={onTerms} />
       <MenuItem label="이 서비스를 만든 녀석들" onClick={onAbout} showBorder={false} />
