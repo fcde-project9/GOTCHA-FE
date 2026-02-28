@@ -412,7 +412,7 @@ export default function ShopDetailClient() {
               variant="primary"
               size="medium"
               className="px-6 text-[17px]"
-              onClick={() => router.push("/")}
+              onClick={() => router.push("/home")}
             >
               홈으로 돌아가기
             </Button>

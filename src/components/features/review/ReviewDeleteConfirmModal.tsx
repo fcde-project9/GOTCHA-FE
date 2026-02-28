@@ -19,7 +19,7 @@ export function ReviewDeleteConfirmModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
       <div className="bg-white rounded-[16px] w-[335px] px-4 py-5 flex flex-col gap-6">
         {/* Title & Description */}
         <div className="flex flex-col gap-3">

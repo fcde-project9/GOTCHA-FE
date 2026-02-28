@@ -102,7 +102,7 @@ export default function MyReportsPage() {
           <BackHeader title="내가 제보한 매장" />
           <div className="flex flex-1 flex-col items-center justify-center gap-4 px-5">
             <p className="text-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-600">
-              {error instanceof Error ? error.message : "제보한 매장 목록을 불러올 수 없어요."}
+              제보한 매장 목록을 불러올 수 없어요.
             </p>
           </div>
         </main>

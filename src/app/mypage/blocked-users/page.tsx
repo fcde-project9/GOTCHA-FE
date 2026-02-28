@@ -84,7 +84,7 @@ export default function BlockedUsersPage() {
       ) : (
         <div className="flex flex-col px-5 mt-4">
           <p className="text-[16px] font-normal text-grey-900 tracking-[-0.16px] leading-[1.5] mb-2">
-            총 {totalCount}개
+            총 {totalCount}명
           </p>
           <div className="flex flex-col gap-2">
             {blockedUsers.map((user) => (
