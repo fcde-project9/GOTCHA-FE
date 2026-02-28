@@ -118,7 +118,7 @@ export default function NicknamePage() {
         {/* 컨텐츠 */}
         <main className="flex flex-1 flex-col items-center justify-center px-5">
           {/* 닉네임 영역 */}
-          <div className="flex flex-col items-center gap-7">
+          <div className="flex flex-col items-center gap-5">
             {/* 기본 프로필 이미지 */}
             <div className="w-[108px] h-[108px] rounded-full bg-main-50 overflow-hidden flex items-center justify-center">
               <Image
@@ -131,20 +131,20 @@ export default function NicknamePage() {
             </div>
 
             {/* 닉네임 */}
-            <div className="flex flex-col items-center gap-2">
-              <p className="text-center text-[18px] font-medium leading-[1.3] tracking-[-0.18px] text-grey-900">
+            <div className="flex flex-col items-center">
+              <p className="text-center text-[24px] font-semibold leading-[1.5] tracking-[-0.528px] text-grey-900">
                 닉네임
               </p>
-              <p className="text-center text-[28px] font-bold leading-[1.3] tracking-[-0.28px] text-main">
+              <p className="text-center text-[32px] font-bold leading-[1.5] tracking-[-0.704px] text-main">
                 {nickname}
               </p>
-              <p className="text-center text-[18px] font-medium leading-[1.3] tracking-[-0.18px] text-grey-900">
+              <p className="text-center text-[24px] font-semibold leading-[1.5] tracking-[-0.528px] text-grey-900">
                 (으)로 시작할게요
               </p>
             </div>
 
             {/* 안내 문구 */}
-            <p className="text-center text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-600">
+            <p className="text-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-600">
               닉네임은 마이페이지에서 수정할 수 있어요
             </p>
           </div>
@@ -154,7 +154,7 @@ export default function NicknamePage() {
         <div className="mb-12 left-0 right-0 px-5">
           <button
             onClick={handleStart}
-            className="h-14 w-full rounded-lg bg-main font-semibold text-[16px] leading-[1.5] tracking-[-0.352px] text-white transition-colors hover:bg-main-700 active:bg-main-900"
+            className="h-[46px] w-full rounded-lg bg-main text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white transition-colors hover:bg-main-700 active:bg-main-900"
           >
             시작하기
           </button>

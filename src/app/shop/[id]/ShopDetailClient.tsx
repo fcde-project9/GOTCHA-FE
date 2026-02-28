@@ -402,12 +402,21 @@ export default function ShopDetailClient() {
   if (!isValidShopId) {
     return (
       <div className="h-dvh bg-default flex flex-col">
-        <BackHeader title="업체 상세정보" onBack={handleBack} />
+        <BackHeader onBack={handleBack} />
         <div className="flex-1 flex flex-col items-center justify-center px-5">
-          <p className="text-[15px] text-grey-500 mb-4">잘못된 접근이에요</p>
-          <Button variant="primary" size="small" onClick={() => router.push("/")}>
-            홈으로 돌아가기
-          </Button>
+          <p className="text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900">
+            잘못된 접근이에요
+          </p>
+          <div className="mt-[22px]">
+            <Button
+              variant="primary"
+              size="medium"
+              className="px-6 text-[17px]"
+              onClick={() => router.push("/home")}
+            >
+              홈으로 돌아가기
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -425,13 +434,36 @@ export default function ShopDetailClient() {
   // 에러 상태
   if (error || !shop) {
     return (
-      <div className="h-dvh flex flex-col items-center justify-center gap-4 bg-default px-5">
-        <p className="text-[16px] text-grey-600">
-          {error instanceof Error ? error.message : "업체를 찾을 수 없어요."}
-        </p>
-        <Button variant="primary" size="medium" onClick={() => router.back()}>
-          돌아가기
-        </Button>
+      <div className="h-dvh bg-default flex flex-col">
+        <BackHeader onBack={handleBack} />
+        <div className="flex-1 flex flex-col items-center justify-center px-5">
+          <div className="flex flex-col items-center gap-2 text-center">
+            <p className="text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900">
+              매장을 찾을 수 없어요
+            </p>
+            <p className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-600">
+              잠시 후 다시 시도해 주세요
+            </p>
+          </div>
+          <div className="mt-[22px] flex gap-[9px]">
+            <Button
+              variant="tertiary"
+              size="medium"
+              className="px-6 text-[17px]"
+              onClick={() => router.back()}
+            >
+              이전 페이지
+            </Button>
+            <Button
+              variant="primary"
+              size="medium"
+              className="px-6 text-[17px]"
+              onClick={() => router.push("/home")}
+            >
+              홈으로
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -518,9 +550,9 @@ export default function ShopDetailClient() {
         <section className="px-5 py-2">
           <div className="flex items-start gap-3">
             <div className="flex flex-col min-w-0 gap-2">
-              <div className="flex items-center gap-2">
-                <span className="shrink-0 w-16 text-[14px] text-grey-400">주소</span>
-                <p className="text-[14px] text-grey-900 leading-[1.5] tracking-[-0.14px]">
+              <div className="flex items-center gap-4">
+                <span className="shrink-0 w-[52px] text-[13px] text-grey-500">주소</span>
+                <p className="text-[13px] text-grey-900 leading-[1.5] tracking-[-0.13px]">
                   {shop.addressName}
                 </p>
                 <button
@@ -531,9 +563,9 @@ export default function ShopDetailClient() {
                 </button>
               </div>
               {shop.locationHint && (
-                <div className="flex items-center gap-2">
-                  <span className="shrink-0 w-16 text-[14px] text-grey-400">위치 힌트</span>
-                  <p className="text-[14px] text-grey-900 leading-[1.5] tracking-[-0.14px]">
+                <div className="flex items-center gap-4">
+                  <span className="shrink-0 w-[52px] text-[13px] text-grey-500">위치 힌트</span>
+                  <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
                     {shop.locationHint}
                   </p>
                 </div>
@@ -546,8 +578,8 @@ export default function ShopDetailClient() {
         <section className="px-5 pb-4">
           <div className="flex flex-col gap-3">
             {/* 영업 요일 */}
-            <div className="flex items-center gap-2">
-              <span className="shrink-0 w-16 text-[14px] text-grey-400">영업일</span>
+            <div className="flex items-center gap-4">
+              <span className="shrink-0 w-[52px] text-[13px] text-grey-500">영업일</span>
               <div className="flex gap-1.5">
                 {ALL_DAYS.map((day) => (
                   <DayBadge key={day} day={DAY_MAP[day]} isActive={businessDays.includes(day)} />
@@ -555,10 +587,10 @@ export default function ShopDetailClient() {
               </div>
             </div>
             {/* 영업 시간 */}
-            <div className="flex items-center gap-2">
-              <span className="shrink-0 w-16 text-[14px] text-grey-400">영업시간</span>
+            <div className="flex items-center gap-4">
+              <span className="shrink-0 w-[52px] text-[13px] text-grey-500">영업시간</span>
               {shop.todayOpenTime && (
-                <span className="text-[14px] text-grey-900">{shop.todayOpenTime}</span>
+                <span className="text-[13px] text-grey-900">{shop.todayOpenTime}</span>
               )}
               <StatusBadge openStatus={shop.openStatus} />
             </div>
@@ -584,7 +616,7 @@ export default function ShopDetailClient() {
               <>
                 <div className="flex items-center justify-between px-5 mb-3">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-[20px] font-semibold text-grey-900 leading-[1.4] tracking-[-0.2px]">
+                    <h3 className="text-[19px] font-medium text-grey-900 leading-[1.5] tracking-[-0.19px]">
                       업체 사진
                     </h3>
                     {totalImageCount > 0 && (
@@ -738,7 +770,7 @@ export default function ShopDetailClient() {
         <section className="py-4">
           {/* 섹션 타이틀 */}
           <div className="px-5 mb-4">
-            <h3 className="text-[20px] font-semibold text-grey-900 leading-[1.4] tracking-[-0.2px]">
+            <h3 className="text-[19px] font-medium text-grey-900 leading-[1.5] tracking-[-0.19px]">
               방문리뷰
             </h3>
           </div>
@@ -750,7 +782,7 @@ export default function ShopDetailClient() {
               size="medium"
               fullWidth
               onClick={handleWriteReview}
-              className="!bg-grey-700 hover:!bg-grey-800 active:!bg-grey-900 gap-1.5"
+              className="!bg-grey-600 hover:!bg-grey-700 active:!bg-grey-800 gap-1.5"
             >
               <PencilLine size={16} strokeWidth={2} />
               <span className="text-[16px] font-medium text-white leading-[1.5] tracking-[-0.16px]">
@@ -763,7 +795,7 @@ export default function ShopDetailClient() {
             <div className="px-5">
               {/* 총 개수 & 정렬 */}
               <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center text-[14px] text-grey-900 tracking-[-0.14px]">
+                <div className="flex items-center text-[16px] text-grey-900 tracking-[-0.16px]">
                   <span>총&nbsp;</span>
                   <span>{shop.reviewCount}</span>
                   <span>개</span>
@@ -771,7 +803,7 @@ export default function ShopDetailClient() {
                 <div className="relative" ref={sortDropdownRef}>
                   <button
                     onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
-                    className="flex items-center gap-1 text-[14px] text-grey-700"
+                    className="flex items-center gap-1 text-[16px] text-grey-700"
                   >
                     <span>{sortBy === "LATEST" ? "최신순" : "좋아요순"}</span>
                     <ChevronDown
@@ -805,7 +837,7 @@ export default function ShopDetailClient() {
               </div>
 
               {/* 리뷰 목록 */}
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-3">
                 {shop.reviews.slice(0, 3).map((review) => (
                   <ReviewItem
                     key={review.id}

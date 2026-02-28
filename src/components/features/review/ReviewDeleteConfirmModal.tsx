@@ -19,14 +19,14 @@ export function ReviewDeleteConfirmModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-3xl w-[335px] p-6 flex flex-col gap-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+      <div className="bg-white rounded-[16px] w-[335px] px-4 py-5 flex flex-col gap-6">
         {/* Title & Description */}
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           <h2 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900 text-center">
             리뷰를 삭제할까요?
           </h2>
-          <p className="text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-700 text-center">
+          <p className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-600 text-center">
             삭제된 리뷰는 복구할 수 없어요
           </p>
         </div>
@@ -36,14 +36,14 @@ export function ReviewDeleteConfirmModal({
           <button
             onClick={onClose}
             disabled={isLoading}
-            className="flex-1 h-12 rounded-lg bg-grey-100 text-[14px] font-semibold leading-[1.5] tracking-[-0.14px] text-grey-700 disabled:opacity-50"
+            className="flex-1 h-[46px] rounded-lg bg-grey-100 text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-grey-900 disabled:opacity-50"
           >
             취소
           </button>
           <button
             onClick={onConfirm}
             disabled={isLoading}
-            className="flex-1 h-12 rounded-lg bg-error text-[14px] font-semibold leading-[1.5] tracking-[-0.14px] text-white disabled:opacity-50"
+            className="flex-1 h-[46px] rounded-lg bg-grey-900 text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white disabled:opacity-50"
           >
             {isLoading ? "삭제 중..." : "삭제"}
           </button>

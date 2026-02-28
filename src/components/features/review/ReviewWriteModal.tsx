@@ -226,7 +226,7 @@ export function ReviewWriteModal({
       <div className="absolute inset-0 bg-black/50" onClick={handleExitAttempt} />
 
       {/* 모달 컨텐츠 */}
-      <div className="relative w-full max-w-[480px] mx-auto bg-white rounded-t-[20px] max-h-[580px] flex flex-col animate-slide-up">
+      <div className="relative w-full max-w-[480px] mx-auto bg-white rounded-t-[24px] max-h-[580px] flex flex-col animate-slide-up">
         {/* 헤더 */}
         <div className="relative flex items-center justify-between px-5 py-5">
           {/* X 버튼 */}
@@ -241,7 +241,7 @@ export function ReviewWriteModal({
 
           {/* 타이틀 - 항상 가운데 고정 */}
           <div className="absolute left-1/2 -translate-x-1/2">
-            <span className="text-[20px] font-semibold leading-[1.5] tracking-[-0.2px] text-grey-900">
+            <span className="text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
               {isEditMode ? "리뷰 수정" : "리뷰 작성"}
             </span>
           </div>
@@ -270,7 +270,7 @@ export function ReviewWriteModal({
               }}
               placeholder="10자 이상의 리뷰를 작성해주세요"
               disabled={isProcessing}
-              className="w-[114.3%] h-[100px] text-[16px] leading-[1.5] tracking-[-0.14px] text-grey-900 placeholder:text-grey-400 resize-none focus:outline-none disabled:opacity-50 origin-top-left scale-[0.875]"
+              className="w-full h-[100px] text-[16px] leading-[1.5] tracking-[-0.16px] text-grey-900 placeholder:text-grey-400 resize-none focus:outline-none disabled:opacity-50"
             />
             <div className="flex justify-end text-[13px] tracking-[-0.286px]">
               <span className="text-main">{content.length}&nbsp;</span>

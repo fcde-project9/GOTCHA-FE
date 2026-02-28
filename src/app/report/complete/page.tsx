@@ -31,9 +31,14 @@ export default function ReportCompletePage() {
             className="object-contain"
           />
         </div>
-        <p className="text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-black text-center">
-          제보가 완료되었어요!
-        </p>
+        <div className="flex flex-col items-center gap-2">
+          <p className="text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-black text-center">
+            제보가 완료되었어요!
+          </p>
+          <p className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-500 text-center">
+            소중한 제보는 다른 가챠러들에게 큰 도움이 돼요
+          </p>
+        </div>
       </div>
 
       {/* 하단 버튼 */}

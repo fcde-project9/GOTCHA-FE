@@ -58,6 +58,7 @@ function ReportRegisterContent() {
   const [toast, setToast] = useState({ message: "", isVisible: false });
   const [toastKey, setToastKey] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({ shopName: "", operatingHours: "", image: "" });
 
   const createShopWithUpload = useCreateShopWithUpload();
 
@@ -152,6 +153,7 @@ function ReportRegisterContent() {
     };
 
     setOperatingHours((prev) => [...prev, entry]);
+    setErrors((prev) => ({ ...prev, operatingHours: "" }));
 
     // 입력 상태 초기화
     setSelectedDays([]);
@@ -181,6 +183,7 @@ function ReportRegisterContent() {
         ...prev,
         images: [file], // 대표 이미지 1개만
       }));
+      setErrors((prev) => ({ ...prev, image: "" }));
     }
     // 같은 파일 재업로드를 위해 input value 초기화
     e.target.value = "";
@@ -206,8 +209,6 @@ function ReportRegisterContent() {
       }
     };
   }, [previewUrl]);
-
-  const isFormValid = Boolean(formData.shopName.trim()) && formData.images.length > 0;
 
   /**
    * 시간 포맷 변환: "오전 00:00" -> "00:00" (24시간 형식)
@@ -275,11 +276,22 @@ function ReportRegisterContent() {
   };
 
   const handleSubmit = async () => {
-    if (!isFormValid || isSubmitting) return;
+    if (isSubmitting) return;
 
-    // 영업시간이 추가되지 않은 경우 토스트 표시
+    // 인라인 유효성 검사
+    const newErrors = { shopName: "", operatingHours: "", image: "" };
+    if (formData.shopName.trim().length < 2) {
+      newErrors.shopName = "매장명을 2자 이상 작성해주세요";
+    }
     if (operatingHours.length === 0) {
-      displayToast("영업시간을 추가해주세요");
+      newErrors.operatingHours = "영업정보를 선택해주세요";
+    }
+    if (formData.images.length === 0) {
+      newErrors.image = "매장 사진을 업로드해주세요";
+    }
+    setErrors(newErrors);
+
+    if (newErrors.shopName || newErrors.operatingHours || newErrors.image) {
       return;
     }
 
@@ -317,17 +329,17 @@ function ReportRegisterContent() {
   return (
     <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative">
       {/* Header */}
-      <BackHeader title="업체 정보 등록" onBack={handleBackClick} />
+      <BackHeader title="매장 정보 등록" onBack={handleBackClick} />
 
       {/* Main Content */}
       <main className="flex flex-col gap-7 pt-3 px-5">
         {/* 주소 */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-[2px]">
-            <label className="text-[18px] font-medium leading-[1.5] tracking-[-0.18px] text-grey-900">
+            <label className="text-[19px] font-medium leading-[1.5] tracking-[-0.19px] text-grey-900">
               주소
             </label>
-            <span className="text-[18px] font-medium leading-[1.5] tracking-[-0.18px] text-main">
+            <span className="text-[19px] font-medium leading-[1.5] tracking-[-0.19px] text-main">
               *
             </span>
           </div>
@@ -341,53 +353,69 @@ function ReportRegisterContent() {
         {/* 업체명 */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-[2px]">
-            <label className="text-[18px] font-medium leading-[1.5] tracking-[-0.18px] text-grey-900">
-              업체명
+            <label className="text-[19px] font-medium leading-[1.5] tracking-[-0.19px] text-grey-900">
+              매장명
             </label>
-            <span className="text-[18px] font-medium leading-[1.5] tracking-[-0.18px] text-main">
+            <span className="text-[19px] font-medium leading-[1.5] tracking-[-0.19px] text-main">
               *
             </span>
           </div>
           <input
             type="text"
             value={formData.shopName}
-            onChange={(e) => setFormData((prev) => ({ ...prev, shopName: e.target.value }))}
-            placeholder="업체 이름을 작성해주세요"
-            className="bg-grey-50 w-[106.7%] h-12 px-3 py-2 rounded-lg text-[16px] leading-[1.5] tracking-[-0.15px] placeholder:text-grey-500 text-grey-900 focus:outline-none focus:ring-2 focus:ring-main-400 origin-top-left scale-[0.9375]"
+            onChange={(e) => {
+              setFormData((prev) => ({ ...prev, shopName: e.target.value }));
+              if (e.target.value.trim().length >= 2) {
+                setErrors((prev) => ({ ...prev, shopName: "" }));
+              }
+            }}
+            placeholder="매장명을 2자 이상 작성해주세요"
+            className={`bg-grey-50 h-11 px-3 py-2 rounded-lg text-[17px] leading-[1.5] tracking-[-0.17px] placeholder:text-grey-500 text-grey-900 focus:outline-none ${
+              errors.shopName
+                ? "border-[1.5px] border-[#ff2115]"
+                : "focus:ring-2 focus:ring-main-400"
+            }`}
           />
+          {errors.shopName && (
+            <p className="text-[13px] font-medium leading-[1.5] tracking-[-0.13px] text-[#ff2115]">
+              {errors.shopName}
+            </p>
+          )}
         </div>
 
         {/* 위치 힌트 */}
         <div className="flex flex-col gap-2">
-          <label className="text-[18px] font-medium leading-[1.5] tracking-[-0.18px] text-grey-900">
-            위치 힌트
+          <label className="text-[19px] font-medium leading-[1.5] tracking-[-0.19px] text-grey-900">
+            위치힌트
           </label>
           <input
             type="text"
             value={formData.locationHint}
             onChange={(e) => setFormData((prev) => ({ ...prev, locationHint: e.target.value }))}
             placeholder="예시) 지하 1층 베스킨라빈스 맞은편"
-            className="bg-grey-50 w-[106.7%] min-h-12 px-3 py-2 rounded-lg text-[16px] leading-[1.5] tracking-[-0.15px] placeholder:text-grey-500 text-grey-900 focus:outline-none focus:ring-2 focus:ring-main-400 origin-top-left scale-[0.9375]"
+            className="bg-grey-50 min-h-11 px-3 py-2 rounded-lg text-[17px] leading-[1.5] tracking-[-0.17px] placeholder:text-grey-500 text-grey-900 focus:outline-none focus:ring-2 focus:ring-main-400"
           />
         </div>
 
         {/* 영업시간 */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-[2px]">
-            <label className="text-[18px] font-medium leading-[1.5] tracking-[-0.18px] text-grey-900">
-              영업시간
+            <label className="text-[19px] font-medium leading-[1.5] tracking-[-0.19px] text-grey-900">
+              영업정보
             </label>
-            <span className="text-[18px] font-medium leading-[1.5] tracking-[-0.18px] text-main">
+            <span className="text-[19px] font-medium leading-[1.5] tracking-[-0.19px] text-main">
               *
             </span>
           </div>
-          {/* 영업시간 입력 영역 - 모든 요일이 등록되지 않았을 때만 표시 */}
+          {/* 영업정보 입력 영역 - 모든 요일이 등록되지 않았을 때만 표시 */}
           {existingDays.length < 7 && (
-            <div className="flex flex-col gap-4 p-4 bg-grey-50 rounded-lg">
+            <div
+              className={`flex flex-col gap-4 p-4 bg-grey-50 rounded-lg ${errors.operatingHours ? "border-[1.5px] border-[#ff2115]" : ""}`}
+            >
               {/* 영업일 */}
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[14px] font-medium leading-[1.5] tracking-[-0.14px] text-grey-900">
+                  <span className="text-[15px] font-medium leading-[1.5] tracking-[-0.15px] text-grey-900">
                     영업일
                   </span>
                 </div>
@@ -401,7 +429,7 @@ function ReportRegisterContent() {
                         type="button"
                         onClick={() => handleDayToggle(index)}
                         disabled={isDisabled}
-                        className={`w-10 h-10 rounded-full flex items-center justify-center text-[16px] font-medium leading-[1.5] tracking-[-0.16px] transition-colors ${
+                        className={`size-[37px] rounded-full flex items-center justify-center text-[15px] font-medium leading-[1.5] tracking-[-0.15px] transition-colors ${
                           isDisabled
                             ? "bg-grey-200 text-grey-300 cursor-not-allowed"
                             : isSelected
@@ -428,7 +456,7 @@ function ReportRegisterContent() {
               {/* 영업시간 */}
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[14px] font-medium leading-[1.5] tracking-[-0.14px] text-grey-900">
+                  <span className="text-[15px] font-medium leading-[1.5] tracking-[-0.15px] text-grey-900">
                     시간
                   </span>
                 </div>
@@ -437,7 +465,7 @@ function ReportRegisterContent() {
                     type="button"
                     onClick={() => !isUnknown && !is24Hours && setIsOpenTimeModalOpen(true)}
                     disabled={isUnknown || is24Hours}
-                    className={`flex-1 h-11 flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                    className={`flex-1 h-11 flex items-center gap-1 px-3 py-2 rounded-lg transition-colors ${
                       isUnknown || is24Hours
                         ? "bg-grey-100 cursor-not-allowed"
                         : "bg-white hover:bg-grey-100"
@@ -448,7 +476,7 @@ function ReportRegisterContent() {
                       className={isUnknown || is24Hours ? "stroke-grey-300" : "stroke-grey-500"}
                     />
                     <span
-                      className={`flex-1 text-left text-[14px] leading-[1.5] tracking-[-0.14px] ${
+                      className={`flex-1 text-left text-[15px] leading-[1.5] tracking-[-0.15px] ${
                         isUnknown || is24Hours ? "text-grey-300" : "text-grey-600"
                       }`}
                     >
@@ -456,7 +484,7 @@ function ReportRegisterContent() {
                     </span>
                   </button>
                   <span
-                    className={`text-[14px] leading-[1.5] tracking-[-0.14px] ${isUnknown || is24Hours ? "text-grey-300" : "text-grey-600"}`}
+                    className={`text-[18px] leading-[1.5] tracking-[-0.18px] ${isUnknown || is24Hours ? "text-grey-300" : "text-grey-600"}`}
                   >
                     ~
                   </span>
@@ -464,7 +492,7 @@ function ReportRegisterContent() {
                     type="button"
                     onClick={() => !isUnknown && !is24Hours && setIsCloseTimeModalOpen(true)}
                     disabled={isUnknown || is24Hours}
-                    className={`flex-1 h-11 flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                    className={`flex-1 h-11 flex items-center gap-1 px-3 py-2 rounded-lg transition-colors ${
                       isUnknown || is24Hours
                         ? "bg-grey-100 cursor-not-allowed"
                         : "bg-white hover:bg-grey-100"
@@ -475,7 +503,7 @@ function ReportRegisterContent() {
                       className={isUnknown || is24Hours ? "stroke-grey-300" : "stroke-grey-500"}
                     />
                     <span
-                      className={`flex-1 text-left text-[14px] leading-[1.5] tracking-[-0.14px] ${
+                      className={`flex-1 text-left text-[15px] leading-[1.5] tracking-[-0.15px] ${
                         isUnknown || is24Hours ? "text-grey-300" : "text-grey-600"
                       }`}
                     >
@@ -506,15 +534,15 @@ function ReportRegisterContent() {
                 type="button"
                 onClick={handleAddOperatingHours}
                 disabled={selectedDays.length === 0}
-                className={`flex items-center justify-center gap-1 h-10 rounded-lg transition-colors ${
+                className={`flex items-center justify-center gap-1 h-[46px] rounded-lg transition-colors ${
                   selectedDays.length === 0
-                    ? "bg-grey-200 text-grey-400 cursor-not-allowed"
-                    : "bg-grey-600 text-white hover:bg-grey-700"
+                    ? "bg-grey-200 text-grey-500 cursor-not-allowed"
+                    : "bg-grey-900 text-white hover:bg-grey-800"
                 }`}
               >
                 <Plus size={18} />
-                <span className="text-[14px] font-medium leading-[1.5] tracking-[-0.14px]">
-                  추가
+                <span className="text-[16px] font-medium leading-[1.5] tracking-[-0.16px]">
+                  영업정보 추가
                 </span>
               </button>
             </div>
@@ -525,7 +553,7 @@ function ReportRegisterContent() {
             {operatingHours.length === 0 ? (
               <div className="flex items-center bg-grey-50 rounded-lg px-5 py-4">
                 <span className="text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-400">
-                  영업시간 정보 없음 (+ 추가 버튼을 눌러주세요)
+                  영업정보 없음 (+ 추가 버튼을 눌러주세요)
                 </span>
               </div>
             ) : (
@@ -538,15 +566,20 @@ function ReportRegisterContent() {
               ))
             )}
           </div>
+          {errors.operatingHours && (
+            <p className="text-[13px] font-medium leading-[1.5] tracking-[-0.13px] text-[#ff2115]">
+              {errors.operatingHours}
+            </p>
+          )}
         </div>
 
-        {/* 업체 사진 */}
+        {/* 매장사진 */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-[2px]">
-            <label className="text-[18px] font-medium leading-[1.5] tracking-[-0.18px] text-grey-900">
-              대표 사진
+            <label className="text-[19px] font-medium leading-[1.5] tracking-[-0.19px] text-grey-900">
+              매장사진
             </label>
-            <span className="text-[18px] font-medium leading-[1.5] tracking-[-0.18px] text-main">
+            <span className="text-[19px] font-medium leading-[1.5] tracking-[-0.19px] text-main">
               *
             </span>
           </div>
@@ -570,8 +603,8 @@ function ReportRegisterContent() {
           ) : (
             <label className="w-[105px] h-[105px] border border-dashed border-line-300 rounded-lg flex flex-col items-center justify-center gap-[5px] cursor-pointer hover:border-main-400 transition-colors">
               <Camera size={24} className="stroke-grey-600" />
-              <p className="text-[12px] leading-[1.5] tracking-[-0.12px] text-grey-600 text-center">
-                대표 사진을
+              <p className="text-[13px] leading-[1.5] tracking-[-0.13px] text-grey-600 text-center">
+                매장사진을
                 <br />
                 업로드해주세요
               </p>
@@ -583,6 +616,11 @@ function ReportRegisterContent() {
               />
             </label>
           )}
+          {errors.image && (
+            <p className="text-[13px] font-medium leading-[1.5] tracking-[-0.13px] text-[#ff2115]">
+              {errors.image}
+            </p>
+          )}
         </div>
       </main>
 
@@ -592,7 +630,6 @@ function ReportRegisterContent() {
           variant="primary"
           size="medium"
           fullWidth
-          disabled={!isFormValid}
           loading={isSubmitting}
           onClick={handleSubmit}
         >
