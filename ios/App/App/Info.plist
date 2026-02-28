@@ -66,6 +66,8 @@
 	</array>
 	<key>NSAppTransportSecurity</key>
 	<dict>
+		<key>NSAllowsArbitraryLoadsInWebContent</key>
+		<true/>
 		<key>NSExceptionDomains</key>
 		<dict>
 			<key>daumcdn.net</key>
