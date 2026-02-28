@@ -439,7 +439,7 @@ export default function ShopDetailClient() {
         <div className="flex-1 flex flex-col items-center justify-center px-5">
           <div className="flex flex-col items-center gap-2 text-center">
             <p className="text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900">
-              {error instanceof Error ? error.message : "매장을 찾을 수 없어요"}
+              매장을 찾을 수 없어요
             </p>
             <p className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-600">
               잠시 후 다시 시도해 주세요
