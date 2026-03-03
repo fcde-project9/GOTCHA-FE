@@ -133,7 +133,7 @@ export default function ReviewsListClient() {
       { reviewId, isLiked: review.isLiked, shopId: validShopId },
       {
         onError: (error) => {
-          showToast(error.message || "좋아요 처리에 실패했어요.");
+          showToast(error.message || "좋아요 처리에 실패했어요.", { variant: "warning" });
         },
       }
     );
@@ -163,7 +163,7 @@ export default function ReviewsListClient() {
         refetch();
       },
       onError: (error) => {
-        showToast(error.message || "리뷰 삭제에 실패했어요.");
+        showToast(error.message || "리뷰 삭제에 실패했어요.", { variant: "warning" });
       },
     });
   };
@@ -189,7 +189,7 @@ export default function ReviewsListClient() {
           setIsReportSuccessOpen(true);
         },
         onError: (error) => {
-          showToast(error.message || "신고 접수에 실패했어요.");
+          showToast(error.message || "신고 접수에 실패했어요.", { variant: "warning" });
         },
       }
     );
@@ -214,7 +214,7 @@ export default function ReviewsListClient() {
         }
       },
       onError: (error) => {
-        showToast(error.message || "사용자 차단에 실패했어요.");
+        showToast(error.message || "사용자 차단에 실패했어요.", { variant: "warning" });
       },
     });
   };

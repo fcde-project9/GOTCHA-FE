@@ -128,7 +128,9 @@ export function ReviewWriteModal({
     const MAX_FILE_SIZE = 20 * 1024 * 1024;
     const validFiles = newFiles.filter((file) => {
       if (file.size > MAX_FILE_SIZE) {
-        showToast(`${file.name}은(는) 20MB를 초과해요. 파일 크기를 줄여주세요.`);
+        showToast(`${file.name}은(는) 20MB를 초과해요. 파일 크기를 줄여주세요.`, {
+          variant: "warning",
+        });
         return false;
       }
       return true;
@@ -154,7 +156,7 @@ export function ReviewWriteModal({
       // 업로드 실패 시 미리보기 URL 제거
       newPreviewUrls.forEach((url) => URL.revokeObjectURL(url));
       setImagePreviewUrls((prev) => prev.slice(0, prev.length - newPreviewUrls.length));
-      showToast("이미지 업로드에 실패했어요.");
+      showToast("이미지 업로드에 실패했어요.", { variant: "warning" });
     } finally {
       setIsUploading(false);
     }
@@ -178,7 +180,7 @@ export function ReviewWriteModal({
   // 리뷰 작성/수정 제출
   const handleSubmit = () => {
     if (content.trim().length < MIN_CONTENT_LENGTH) {
-      showToast(`${MIN_CONTENT_LENGTH}자 이상 작성해주세요.`);
+      showToast(`${MIN_CONTENT_LENGTH}자 이상 작성해주세요.`, { variant: "warning" });
       return;
     }
 
@@ -196,7 +198,7 @@ export function ReviewWriteModal({
           onSuccess?.();
         },
         onError: (error) => {
-          showToast(error.message || "수정에 실패했어요.");
+          showToast(error.message || "수정에 실패했어요.", { variant: "warning" });
         },
       });
     } else {
@@ -208,7 +210,7 @@ export function ReviewWriteModal({
           onSuccess?.();
         },
         onError: (error) => {
-          showToast(error.message || "등록에 실패했어요.");
+          showToast(error.message || "등록에 실패했어요.", { variant: "warning" });
         },
       });
     }

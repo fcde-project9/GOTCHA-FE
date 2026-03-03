@@ -33,7 +33,7 @@ export default function ShopListItem({
     shopId,
     initialIsFavorite,
     onUnauthorized: () => {
-      showToast("찜하기는 로그인 후 이용 가능해요.");
+      showToast("찜하기는 로그인 후 이용 가능해요.", { variant: "warning" });
     },
   });
 

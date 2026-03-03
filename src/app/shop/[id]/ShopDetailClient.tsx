@@ -138,7 +138,7 @@ export default function ShopDetailClient() {
     shopId: validShopId,
     initialIsFavorite: shop?.isFavorite ?? false,
     onUnauthorized: () => {
-      showToast("찜하기는 로그인 후 이용 가능해요.");
+      showToast("찜하기는 로그인 후 이용 가능해요.", { variant: "warning" });
     },
   });
 
@@ -215,7 +215,7 @@ export default function ShopDetailClient() {
       await navigator.clipboard.writeText(shop.addressName);
       showToast("주소를 복사했어요!");
     } catch {
-      showToast("주소 복사에 실패했어요.");
+      showToast("주소 복사에 실패했어요.", { variant: "warning" });
     }
   };
 
@@ -261,7 +261,7 @@ export default function ShopDetailClient() {
       { reviewId, isLiked: review.isLiked, shopId: validShopId },
       {
         onError: (error) => {
-          showToast(error.message || "좋아요 처리에 실패했어요.");
+          showToast(error.message || "좋아요 처리에 실패했어요.", { variant: "warning" });
         },
       }
     );
@@ -291,7 +291,7 @@ export default function ShopDetailClient() {
         refetch();
       },
       onError: (error) => {
-        showToast(error.message || "리뷰 삭제에 실패했어요.");
+        showToast(error.message || "리뷰 삭제에 실패했어요.", { variant: "warning" });
       },
     });
   };
@@ -317,7 +317,7 @@ export default function ShopDetailClient() {
           setIsReportSuccessOpen(true);
         },
         onError: (error) => {
-          showToast(error.message || "신고 접수에 실패했어요.");
+          showToast(error.message || "신고 접수에 실패했어요.", { variant: "warning" });
         },
       }
     );
@@ -339,7 +339,7 @@ export default function ShopDetailClient() {
         refetch();
       },
       onError: (error) => {
-        showToast(error.message || "사용자 차단에 실패했어요.");
+        showToast(error.message || "사용자 차단에 실패했어요.", { variant: "warning" });
       },
     });
   };
@@ -372,7 +372,7 @@ export default function ShopDetailClient() {
         router.push("/home");
       },
       onError: (error) => {
-        showToast(error.message || "가게 삭제에 실패했어요.");
+        showToast(error.message || "가게 삭제에 실패했어요.", { variant: "warning" });
       },
     });
   };
@@ -392,7 +392,7 @@ export default function ShopDetailClient() {
           setIsShopEditModalOpen(false);
         },
         onError: (error) => {
-          showToast(error.message || "가게 정보 수정에 실패했어요.");
+          showToast(error.message || "가게 정보 수정에 실패했어요.", { variant: "warning" });
         },
       }
     );

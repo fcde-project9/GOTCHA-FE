@@ -49,19 +49,20 @@ export default function BlockedUsersPage() {
     unblockMutation.mutate(userId, {
       onSuccess: () => {
         setUnblockTarget(null);
-        showToast(`${nickname}님의 차단이 해제되었어요`, 3000, {
+        const displayName = nickname.includes("#") ? `${nickname.split("#")[0]}#...` : nickname;
+        showToast(`${displayName}님의 차단이 해제되었어요`, 3000, {
           label: "취소",
           onPress: () => {
             blockMutation.mutate(userId, {
               onError: (error) => {
-                showToast(error.message || "차단 복원에 실패했어요.");
+                showToast(error.message || "차단 복원에 실패했어요.", { variant: "warning" });
               },
             });
           },
         });
       },
       onError: (error) => {
-        showToast(error.message || "차단 해제에 실패했어요.");
+        showToast(error.message || "차단 해제에 실패했어요.", { variant: "warning" });
       },
     });
   };

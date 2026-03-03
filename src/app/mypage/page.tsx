@@ -45,7 +45,7 @@ export default function MyPage() {
       await updateProfileImageWithUploadMutation.mutateAsync(file);
       showToast("프로필 이미지가 변경되었어요");
     } catch {
-      showToast("프로필 이미지 변경에 실패했어요");
+      showToast("프로필 이미지 변경에 실패했어요", { variant: "warning" });
     }
   };
 
@@ -165,7 +165,7 @@ export default function MyPage() {
       showToast("회원탈퇴가 완료되었어요");
       router.push("/");
     } catch {
-      showToast("회원탈퇴에 실패했어요. 다시 시도해주세요.");
+      showToast("회원탈퇴에 실패했어요. 다시 시도해주세요.", { variant: "warning" });
     }
   };
 
@@ -173,9 +173,12 @@ export default function MyPage() {
   const isLoading = authLoading || userLoading;
   if (isLoading) {
     return (
-      <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[70px]">
-        <SimpleHeader title="마이페이지" />
-      </div>
+      <>
+        <main className="h-[calc(100dvh-var(--footer-height))] max-w-[480px] bg-default flex flex-col">
+          <SimpleHeader title="마이페이지" />
+        </main>
+        <Footer />
+      </>
     );
   }
 
@@ -205,45 +208,64 @@ export default function MyPage() {
     | undefined;
 
   return (
-    <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[70px]">
-      {/* Header */}
-      <SimpleHeader
-        title="마이페이지"
-        rightElement={
-          <button
-            onClick={handleSupport}
-            className="w-6 h-6 flex items-center justify-center"
-            aria-label="문의하기"
-          >
-            <Headset size={24} className="stroke-icon" strokeWidth={2} />
-          </button>
-        }
-      />
-
-      {/* Main Content */}
-      <main className="flex flex-col gap-8 pt-[60px] px-5">
-        {/* Profile Section */}
-        <ProfileSection
-          isLoggedIn={isLoggedIn}
-          nickname={loggedInUser?.nickname}
-          email={loggedInUser?.email}
-          profileImage={loggedInUser?.profileImageUrl ?? undefined}
-          socialProvider={socialProvider}
-          isAdmin={isAdmin}
-          onEditProfile={handleEditProfile}
-          onEditNickname={handleEditNickname}
-          onLogin={handleLogin}
+    <>
+      <main className="h-[calc(100dvh-var(--footer-height))] max-w-[480px] bg-default flex flex-col overflow-y-auto">
+        {/* Header */}
+        <SimpleHeader
+          title="마이페이지"
+          rightElement={
+            <button
+              onClick={handleSupport}
+              className="w-6 h-6 flex items-center justify-center"
+              aria-label="문의하기"
+            >
+              <Headset size={24} className="stroke-icon" strokeWidth={2} />
+            </button>
+          }
         />
 
-        {/* Menu List */}
-        <div className="w-full max-w-[335px] mx-auto">
-          <MenuList
-            onMyReports={handleMyReports}
-            onBlockedUsers={handleBlockedUsers}
-            onTerms={handleTerms}
-            onAbout={handleAbout}
+        {/* Main Content */}
+        <div className="flex flex-col gap-8 px-5 pb-5">
+          {/* Profile Section */}
+          <ProfileSection
             isLoggedIn={isLoggedIn}
+            nickname={loggedInUser?.nickname}
+            email={loggedInUser?.email}
+            profileImage={loggedInUser?.profileImageUrl ?? undefined}
+            socialProvider={socialProvider}
+            isAdmin={isAdmin}
+            onEditProfile={handleEditProfile}
+            onEditNickname={handleEditNickname}
+            onLogin={handleLogin}
           />
+
+          {/* Menu List */}
+          <div className="w-full max-w-[335px] mx-auto">
+            <MenuList
+              onMyReports={handleMyReports}
+              onBlockedUsers={handleBlockedUsers}
+              onTerms={handleTerms}
+              onAbout={handleAbout}
+              isLoggedIn={isLoggedIn}
+            />
+          </div>
+
+          {/* Logout / Withdraw - 로그인 상태일 때만 표시 */}
+          {isLoggedIn && (
+            <div className="flex items-center justify-center gap-9 py-4">
+              <button onClick={handleLogout} className="border-b-[0.75px] border-grey-400">
+                <span className="text-[13px] font-medium leading-[1.5] tracking-[-0.13px] text-grey-400">
+                  로그아웃
+                </span>
+              </button>
+              <div className="w-0 h-3.5 border-l border-grey-200" />
+              <button onClick={handleWithdraw} className="border-b-[0.75px] border-grey-400">
+                <span className="text-[13px] font-medium leading-[1.5] tracking-[-0.13px] text-grey-400">
+                  회원탈퇴
+                </span>
+              </button>
+            </div>
+          )}
         </div>
       </main>
 
@@ -270,25 +292,8 @@ export default function MyPage() {
         onConfirm={handleWithdrawConfirm}
       />
 
-      {/* Logout / Withdraw - 로그인 상태일 때만 표시 */}
-      {isLoggedIn && (
-        <div className="absolute bottom-[70px] pb-8 left-0 w-full flex items-center justify-center gap-9 px-5">
-          <button onClick={handleLogout} className="border-b-[0.75px] border-grey-400">
-            <span className="text-[13px] font-medium leading-[1.5] tracking-[-0.13px] text-grey-400">
-              로그아웃
-            </span>
-          </button>
-          <div className="w-0 h-3.5 border-l border-grey-200" />
-          <button onClick={handleWithdraw} className="border-b-[0.75px] border-grey-400">
-            <span className="text-[13px] font-medium leading-[1.5] tracking-[-0.13px] text-grey-400">
-              회원탈퇴
-            </span>
-          </button>
-        </div>
-      )}
-
       {/* Footer Navigation */}
       <Footer />
-    </div>
+    </>
   );
 }

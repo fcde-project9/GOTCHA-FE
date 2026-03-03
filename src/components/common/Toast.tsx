@@ -1,62 +1,69 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
-interface ToastAction {
+export type ToastVariant = "success" | "warning";
+
+export interface ToastAction {
   label: string;
   onPress: () => void;
 }
 
-interface ToastProps {
+export interface ToastProps {
   message: string;
   isVisible: boolean;
   onClose: () => void;
   duration?: number;
+  variant?: ToastVariant;
   action?: ToastAction;
 }
 
-/**
- * 토스트 메시지 컴포넌트
- * 화면 하단에 일정 시간 동안 메시지를 표시합니다.
- */
-export function Toast({ message, isVisible, onClose, duration = 2000, action }: ToastProps) {
+const ANIMATION_MS = 700;
+
+const ICON_MAP: Record<ToastVariant, string> = {
+  success: "/images/icons/toast-check.svg",
+  warning: "/images/icons/toast-warning.svg",
+};
+
+export function Toast({
+  message,
+  isVisible,
+  onClose,
+  duration = 2000,
+  variant = "success",
+  action,
+}: ToastProps) {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    if (isVisible) {
-      let fadeInTimer: ReturnType<typeof setTimeout> | null = null;
-      let fadeOutTimer: ReturnType<typeof setTimeout> | null = null;
-      let onCloseTimer: ReturnType<typeof setTimeout> | null = null;
+    if (!isVisible) return;
 
-      // 약간의 딜레이 후 fade-in 시작
-      fadeInTimer = setTimeout(() => setShow(true), 10);
-
-      fadeOutTimer = setTimeout(() => {
-        setShow(false);
-        // fade-out 애니메이션 후 onClose 호출
-        onCloseTimer = setTimeout(() => onClose(), 300);
-      }, duration);
-
-      return () => {
-        if (fadeInTimer) clearTimeout(fadeInTimer);
-        if (fadeOutTimer) clearTimeout(fadeOutTimer);
-        if (onCloseTimer) clearTimeout(onCloseTimer);
-      };
-    } else {
+    const fadeInTimer = setTimeout(() => setShow(true), 10);
+    const fadeOutTimer = setTimeout(() => {
       setShow(false);
-    }
+    }, duration);
+    const closeTimer = setTimeout(() => onClose(), duration + ANIMATION_MS);
+
+    return () => {
+      clearTimeout(fadeInTimer);
+      clearTimeout(fadeOutTimer);
+      clearTimeout(closeTimer);
+      setShow(false);
+    };
   }, [isVisible, onClose, duration]);
 
   if (!isVisible) return null;
 
   return (
     <div
-      className={`fixed top-[60px] left-1/2 transform -translate-x-1/2 z-50 transition-opacity duration-300 ${
-        show ? "opacity-100" : "opacity-0"
+      className={`fixed top-[48px] left-1/2 z-50 -translate-x-1/2 transition-all duration-700 ease-out ${
+        show ? "translate-y-0 opacity-100" : "-translate-y-[200%] opacity-0"
       }`}
     >
-      <div className="bg-grey-900 rounded-xl px-6 py-3 shadow-lg flex items-center gap-2.5">
-        <p className="text-[14px] font-medium leading-[1.5] tracking-[-0.14px] text-white whitespace-nowrap">
+      <div className="w-[345px] h-[53px] bg-grey-900 rounded-[10px] px-[18px] shadow-lg flex items-center gap-3">
+        <Image src={ICON_MAP[variant]} alt="" width={20} height={20} className="shrink-0" />
+        <p className="text-[16px] font-medium leading-[1.5] text-white whitespace-nowrap">
           {message}
         </p>
         {action && (
@@ -65,7 +72,7 @@ export function Toast({ message, isVisible, onClose, duration = 2000, action }: 
               action.onPress();
               onClose();
             }}
-            className="text-[14px] font-semibold leading-[1.5] tracking-[-0.14px] text-white underline whitespace-nowrap shrink-0"
+            className="text-[16px] font-normal leading-[1.5] text-[#7dcfff] whitespace-nowrap shrink-0"
           >
             {action.label}
           </button>

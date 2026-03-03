@@ -2,6 +2,7 @@ export { default as Footer } from "./Footer";
 export { Button } from "./Button";
 export { OutlineButton } from "./OutlineButton";
 export { Toast } from "./Toast";
+export type { ToastVariant, ToastAction } from "./Toast";
 export { Checkbox } from "./Checkbox";
 export { LocationPermissionModal } from "./LocationPermissionModal";
 export { NotificationPermissionModal } from "./NotificationPermissionModal";
