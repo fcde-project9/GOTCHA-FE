@@ -2,7 +2,7 @@
 
 ## 구조
 
-```
+```text
 src/
 ├── components/common/Toast.tsx   # UI 컴포넌트
 ├── hooks/useToast.tsx            # Context Provider + Hook

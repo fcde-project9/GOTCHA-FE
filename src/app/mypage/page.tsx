@@ -174,7 +174,7 @@ export default function MyPage() {
   if (isLoading) {
     return (
       <>
-        <main className="h-[calc(100dvh-var(--footer-height))] max-w-[480px] bg-default flex flex-col">
+        <main className="h-[calc(100dvh-var(--footer-height))] w-full max-w-[480px] mx-auto bg-default flex flex-col">
           <SimpleHeader title="마이페이지" />
         </main>
         <Footer />
@@ -209,7 +209,7 @@ export default function MyPage() {
 
   return (
     <>
-      <main className="h-[calc(100dvh-var(--footer-height))] max-w-[480px] bg-default flex flex-col overflow-y-auto">
+      <main className="h-[calc(100dvh-var(--footer-height))] w-full max-w-[480px] mx-auto bg-default flex flex-col overflow-y-auto">
         {/* Header */}
         <SimpleHeader
           title="마이페이지"
