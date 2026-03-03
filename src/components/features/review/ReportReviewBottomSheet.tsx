@@ -170,7 +170,7 @@ export function ReportBottomSheet({
               onChange={(e) => setDetail(e.target.value)}
               placeholder="신고 사유를 입력해주세요"
               maxLength={500}
-              className="w-full h-24 p-3 border border-grey-200 rounded-lg text-[16px] leading-[1.5] tracking-[-0.16px] text-grey-600 placeholder:text-grey-400 resize-none focus:outline-none focus:border-main"
+              className="w-full min-h-32 shrink-0 p-3 border border-grey-200 rounded-lg text-[16px] leading-[1.5] tracking-[-0.16px] text-grey-600 placeholder:text-grey-400 resize-none focus:outline-none focus:border-main"
             />
           )}
         </div>

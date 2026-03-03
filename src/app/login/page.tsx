@@ -29,7 +29,7 @@ export default function LoginPage() {
     const sessionExpired = sessionStorage.getItem("sessionExpired");
     if (sessionExpired === "true") {
       sessionStorage.removeItem("sessionExpired");
-      showToast("로그인 세션이 만료되었어요");
+      showToast("로그인 세션이 만료되었어요", { variant: "warning" });
     }
   }, [showToast]);
 

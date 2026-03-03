@@ -24,7 +24,7 @@ export default function TermsPage() {
   };
 
   return (
-    <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[70px]">
+    <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[var(--footer-height)]">
       {/* Header */}
       <BackHeader title="약관/라이센스" onBack={handleBack} />
 

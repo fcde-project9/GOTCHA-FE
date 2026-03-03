@@ -10,24 +10,62 @@ import {
   type ReactNode,
 } from "react";
 import { Toast } from "@/components/common";
+import type { ToastVariant, ToastAction } from "@/components/common/Toast";
 
-interface ToastAction {
-  label: string;
-  onPress: () => void;
+interface ShowToastOptions {
+  duration?: number;
+  action?: ToastAction;
+  variant?: ToastVariant;
 }
 
 interface ToastContextValue {
-  showToast: (message: string, duration?: number, action?: ToastAction) => void;
+  showToast: (
+    message: string,
+    durationOrOptions?: number | ShowToastOptions,
+    action?: ToastAction,
+    variant?: ToastVariant
+  ) => void;
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null);
+
+const DEFAULT_DURATION = 2000;
 
 interface ToastState {
   message: string;
   isVisible: boolean;
   duration: number;
   key: number;
+  variant: ToastVariant;
   action?: ToastAction;
+}
+
+function resolveArgs(
+  durationOrOptions?: number | ShowToastOptions,
+  action?: ToastAction,
+  variant?: ToastVariant
+) {
+  if (typeof durationOrOptions === "number") {
+    return {
+      duration: durationOrOptions,
+      action,
+      variant: variant ?? ("success" as ToastVariant),
+    };
+  }
+
+  if (durationOrOptions && typeof durationOrOptions === "object") {
+    return {
+      duration: durationOrOptions.duration ?? DEFAULT_DURATION,
+      action: durationOrOptions.action ?? action,
+      variant: durationOrOptions.variant ?? variant ?? ("success" as ToastVariant),
+    };
+  }
+
+  return {
+    duration: DEFAULT_DURATION,
+    action,
+    variant: variant ?? ("success" as ToastVariant),
+  };
 }
 
 /**
@@ -38,45 +76,48 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const [toast, setToast] = useState<ToastState>({
     message: "",
     isVisible: false,
-    duration: 2000,
+    duration: DEFAULT_DURATION,
     key: 0,
+    variant: "success",
   });
 
   const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 컴포넌트 언마운트 시 타이머 정리
   useEffect(() => {
     return () => {
-      if (toastTimeoutRef.current) {
-        clearTimeout(toastTimeoutRef.current);
-      }
+      if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
     };
   }, []);
 
   const showToast = useCallback(
-    (message: string, duration: number = 2000, action?: ToastAction) => {
-      // 기존 타이머 정리
-      if (toastTimeoutRef.current) {
-        clearTimeout(toastTimeoutRef.current);
-      }
+    (
+      message: string,
+      durationOrOptions?: number | ShowToastOptions,
+      action?: ToastAction,
+      variant?: ToastVariant
+    ) => {
+      const resolved = resolveArgs(durationOrOptions, action, variant);
 
-      // 먼저 기존 토스트를 숨기고 새로운 토스트를 표시 (연속 호출 대응)
+      if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+
+      // 기존 토스트를 숨기고 새 토스트 표시 (연속 호출 대응)
       setToast((prev) => ({
         message,
         isVisible: false,
-        duration,
+        duration: resolved.duration,
         key: prev.key,
-        action,
+        variant: resolved.variant,
+        action: resolved.action,
       }));
 
-      // 다음 틱에서 새 토스트 표시
       toastTimeoutRef.current = setTimeout(() => {
         setToast((prev) => ({
           message,
           isVisible: true,
-          duration,
+          duration: resolved.duration,
           key: prev.key + 1,
-          action,
+          variant: resolved.variant,
+          action: resolved.action,
         }));
       }, 0);
     },
@@ -96,6 +137,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         isVisible={toast.isVisible}
         onClose={handleClose}
         duration={toast.duration}
+        variant={toast.variant}
         action={toast.action}
       />
     </ToastContext.Provider>
@@ -110,12 +152,17 @@ export function ToastProvider({ children }: { children: ReactNode }) {
  * ```tsx
  * const { showToast } = useToast();
  *
- * const handleClick = () => {
- *   showToast("저장되었어요");
- * };
+ * // 성공 토스트 (기본)
+ * showToast("저장되었어요");
  *
- * // 커스텀 duration
+ * // 경고 토스트 (옵션 객체 방식 - 권장)
+ * showToast("이미 찜한 가게에요", { variant: "warning" });
+ *
+ * // 커스텀 duration (기존 방식 호환)
  * showToast("잠시만 기다려주세요", 3000);
+ *
+ * // 액션 포함 (기존 방식 호환)
+ * showToast("차단이 해제되었어요", 3000, { label: "취소", onPress: () => {} });
  * ```
  */
 export function useToast(): ToastContextValue {

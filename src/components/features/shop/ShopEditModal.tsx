@@ -163,7 +163,7 @@ export function ShopEditModal({
       } catch {
         // 실패 시 원래 이미지로 복원
         setPreviewImageUrl(shopData.mainImageUrl);
-        showToast("이미지 업로드에 실패했어요.");
+        showToast("이미지 업로드에 실패했어요.", { variant: "warning" });
       }
     };
     input.click();
