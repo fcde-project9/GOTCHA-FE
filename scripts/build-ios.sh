@@ -14,21 +14,13 @@ fi
 
 # .env.local 백업 및 운영 환경으로 교체
 cp .env.local .env.local.bak
+trap 'cp .env.local.bak .env.local && rm -f .env.local.bak' EXIT
 sed -e 's|^NEXT_PUBLIC_API_BASE_URL=.*|NEXT_PUBLIC_API_BASE_URL=https://api.gotcha.it.com|' \
     -e 's|^NEXT_PUBLIC_SITE_URL=.*|NEXT_PUBLIC_SITE_URL=https://gotcha.it.com|' \
     .env.local.bak > .env.local
 
-# 빌드 (성공/실패 관계없이 롤백)
+# 빌드 (실패 시 trap에서 롤백 후 set -e로 종료)
 NEXT_PUBLIC_BUILD_TARGET=capacitor npx next build
-BUILD_EXIT=$?
-
-# .env.local 롤백
-cp .env.local.bak .env.local && rm .env.local.bak
-
-if [ $BUILD_EXIT -ne 0 ]; then
-  echo "Build failed"
-  exit 1
-fi
 
 # Capacitor sync & Xcode 열기
 npx cap sync ios
