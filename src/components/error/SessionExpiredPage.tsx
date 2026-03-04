@@ -38,8 +38,8 @@ export function SessionExpiredPage() {
       buttons={
         <Button
           variant="primary"
-          size="small"
-          className="h-[46px] flex-1"
+          size="medium"
+          className="flex-1"
           onClick={() => router.push("/login")}
         >
           로그인 화면으로

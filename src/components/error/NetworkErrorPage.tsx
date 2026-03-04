@@ -28,7 +28,7 @@ export function NetworkErrorPage({ onRetry }: NetworkErrorPageProps) {
       title="오프라인 상태에요"
       subtitle="인터넷 연결을 확인해주세요"
       buttons={
-        <Button variant="primary" size="small" className="h-[46px] flex-1" onClick={handleRetry}>
+        <Button variant="primary" size="medium" className="flex-1" onClick={handleRetry}>
           다시 시도
         </Button>
       }

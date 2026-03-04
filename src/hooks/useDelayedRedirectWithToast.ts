@@ -29,7 +29,7 @@ export function useDelayedRedirectWithToast(delay: number = 2500) {
    */
   const redirectWithToast = useCallback(
     (message: string, path: string) => {
-      showToast(message, delay);
+      showToast(message, { duration: delay, variant: "warning" });
 
       // 기존 타이머가 있으면 제거
       if (timeoutIdRef.current) {

@@ -1,6 +1,9 @@
 # GOTCHA! – 가챠샵 지도 서비스
 
-![GOTCHA! OG Image](public/images/og-image.png)
+<p align="center">
+  <img src="appstore-assets/screenshots/iPad13Air/앱미리보기(아이패드)_1인트로.png" alt="GOTCHA! 앱 인트로 화면 1" width="49%" />
+  <img src="appstore-assets/screenshots/iPad13Air/앱미리보기(아이패드)_2인트로.png" alt="GOTCHA! 앱 인트로 화면 2" width="49%" />
+</p>
 
 가챠샵(Gacha Shop)을 지도 기반으로 탐색하고, 리스트 및 상세 페이지를 통해 매장 정보를 확인할 수 있는 모바일 웹 서비스입니다.
 
@@ -118,15 +121,17 @@ GitHub Actions + Vercel을 사용한 자동 배포 파이프라인
 
 ### 사용 가능한 스크립트
 
-| 명령어              | 설명                             |
-| ------------------- | -------------------------------- |
-| `npm run dev`       | 개발 서버 실행 (localhost:3000)  |
-| `npm run build`     | 프로덕션 빌드                    |
-| `npm run start`     | 프로덕션 서버 실행               |
-| `npm run lint`      | ESLint 검사                      |
-| `npm run lint:fix`  | ESLint 자동 수정                 |
-| `npm run format`    | Prettier 포맷팅                  |
-| `npm run build:ios` | Capacitor iOS 빌드 및 Xcode 열기 |
+| 명령어                    | 설명                                   |
+| ------------------------- | -------------------------------------- |
+| `npm run dev`             | 개발 서버 실행 (localhost:3000)        |
+| `npm run build`           | 프로덕션 빌드                          |
+| `npm run start`           | 프로덕션 서버 실행                     |
+| `npm run dev:ios`         | 개발 서버 연결로 iOS 시뮬레이터 실행   |
+| `npm run build:capacitor` | Capacitor 타겟 프로덕션 빌드           |
+| `npm run build:ios`       | Capacitor 빌드 + iOS sync + Xcode 열기 |
+| `npm run lint`            | ESLint 검사                            |
+| `npm run lint:fix`        | ESLint 자동 수정                       |
+| `npm run format`          | Prettier 포맷팅 (전체 프로젝트 파일)   |
 
 ### Git Hooks (Husky)
 

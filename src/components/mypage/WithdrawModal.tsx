@@ -61,7 +61,7 @@ export function WithdrawModal({ isOpen, onClose, onConfirm }: WithdrawModalProps
       <div className="h-full w-full max-w-[480px] flex flex-col bg-white">
         {/* Header */}
         <header className="bg-white h-12 flex items-center px-5 py-2">
-          <h1 className="flex-1 text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900">
+          <h1 className="flex-1 text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
             회원탈퇴
           </h1>
         </header>
@@ -69,20 +69,22 @@ export function WithdrawModal({ isOpen, onClose, onConfirm }: WithdrawModalProps
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-5 pt-6 pb-4">
           {/* Title */}
-          <div className="mb-6">
-            <h2 className="text-[20px] font-semibold leading-[1.5] tracking-[-0.2px] text-grey-900 mb-2">
-              떠나시는 이유를 알고 싶어요
-            </h2>
-            <p className="text-[12px] font-normal leading-[1.5] tracking-[-0.12px] text-main-500">
-              * 중복선택 가능
-            </p>
+          <div className="mb-7">
+            <div className="flex flex-col gap-1">
+              <h2 className="text-[16px] font-semibold leading-[1.5] tracking-[-0.16px] text-grey-900">
+                떠나시는 이유를 알고 싶어요
+              </h2>
+              <p className="text-[13px] font-medium leading-[1.5] tracking-[-0.13px] text-main">
+                * 중복선택 가능
+              </p>
+            </div>
           </div>
 
           {/* Reasons List */}
-          <div className="flex flex-col gap-4 mb-6">
+          <div className="flex flex-col gap-6 mb-6">
             {WITHDRAW_REASONS.map((reason) => (
               <div key={reason.value} className="flex items-center justify-between">
-                <span className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-900">
+                <span className="text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-900">
                   {reason.label}
                 </span>
                 <Checkbox
@@ -96,30 +98,30 @@ export function WithdrawModal({ isOpen, onClose, onConfirm }: WithdrawModalProps
 
           {/* Other Reason Input */}
           {isOtherSelected && (
-            <div className="mb-6">
+            <div className="mt-3 mb-6">
               <input
                 type="text"
                 value={otherReason}
                 onChange={(e) => setOtherReason(e.target.value)}
                 placeholder="직접 입력하기"
-                className="w-[114.3%] h-14 px-4 rounded-lg border border-line-100 text-[16px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-900 placeholder:text-grey-400 focus:outline-none focus:border-line-100 origin-top-left scale-[0.875]"
+                className="w-full border-b border-[#ffcdd1] py-2.5 pr-2.5 text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-600 placeholder:text-grey-400 focus:outline-none"
               />
             </div>
           )}
         </div>
 
         {/* Buttons */}
-        <div className="px-5 pb-8 pt-4 flex gap-2">
+        <div className="px-5 pb-8 pt-4 flex gap-[9px]">
           <button
             onClick={handleClose}
-            className="flex-1 h-12 rounded-lg bg-grey-100 text-[14px] font-semibold leading-[1.5] tracking-[-0.14px] text-grey-700"
+            className="flex-1 h-[46px] rounded-lg bg-grey-100 text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-grey-900"
           >
             취소
           </button>
           <button
             onClick={handleConfirm}
             disabled={isButtonDisabled}
-            className="flex-1 h-12 rounded-lg bg-main-500 text-[14px] font-semibold leading-[1.5] tracking-[-0.14px] text-white disabled:bg-grey-300 disabled:text-grey-500"
+            className="flex-1 h-[46px] rounded-lg bg-main text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white disabled:bg-grey-200 disabled:text-grey-500"
           >
             확인
           </button>

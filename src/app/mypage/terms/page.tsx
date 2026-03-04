@@ -24,7 +24,7 @@ export default function TermsPage() {
   };
 
   return (
-    <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[70px]">
+    <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[var(--footer-height)]">
       {/* Header */}
       <BackHeader title="약관/라이센스" onBack={handleBack} />
 
@@ -34,9 +34,9 @@ export default function TermsPage() {
           {/* 커뮤니티 가이드 */}
           <button
             onClick={handleCommunityGuideClick}
-            className="flex items-center justify-between w-full px-0 py-3.5 border-b border-line-100"
+            className="flex items-center justify-between w-full px-0 py-4 border-b border-line-100"
           >
-            <span className="flex-1 text-left text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-900 h-6">
+            <span className="flex-1 text-left text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-900 h-6">
               커뮤니티 가이드
             </span>
             <div className="w-6 h-6 flex items-center justify-center">
@@ -61,9 +61,9 @@ export default function TermsPage() {
           {/* 이용약관 */}
           <button
             onClick={handleTermsClick}
-            className="flex items-center justify-between w-full px-0 py-3.5 border-b border-line-100"
+            className="flex items-center justify-between w-full px-0 py-4 border-b border-line-100"
           >
-            <span className="flex-1 text-left text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-900 h-6">
+            <span className="flex-1 text-left text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-900 h-6">
               이용약관
             </span>
             <div className="w-6 h-6 flex items-center justify-center">
@@ -88,9 +88,9 @@ export default function TermsPage() {
           {/* 라이센스 */}
           <button
             onClick={handleLicenseClick}
-            className="flex items-center justify-between w-full px-0 py-3.5"
+            className="flex items-center justify-between w-full px-0 py-4"
           >
-            <span className="flex-1 text-left text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-900 h-6">
+            <span className="flex-1 text-left text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-900 h-6">
               라이센스
             </span>
             <div className="w-6 h-6 flex items-center justify-center">

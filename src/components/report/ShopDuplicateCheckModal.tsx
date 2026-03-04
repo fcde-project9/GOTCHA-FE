@@ -66,12 +66,12 @@ export function ShopDuplicateCheckModal({
         role="dialog"
         aria-labelledby="duplicate-check-title"
         aria-describedby="duplicate-check-description"
-        className="relative bg-white rounded-t-3xl w-full max-w-[480px] pb-[52px] flex flex-col gap-5"
+        className="relative bg-white rounded-t-3xl w-full max-w-[480px] pb-[52px] flex flex-col gap-[22px]"
       >
         {/* Content */}
         <div className="px-5 pt-5">
           {/* Title & Close Button */}
-          <div className="flex items-start justify-between mb-3">
+          <div className="flex items-start justify-between mb-4">
             <div className="flex-1 pr-2">
               <h2
                 id="duplicate-check-title"
@@ -81,7 +81,7 @@ export function ShopDuplicateCheckModal({
               </h2>
               <p
                 id="duplicate-check-description"
-                className="text-[14px] leading-[1.5] tracking-[-0.14px] text-grey-400"
+                className="text-[16px] leading-[1.5] tracking-[-0.16px] text-grey-400"
               >
                 등록 전, 중복되는 가챠샵이 있는지 확인해주세요
               </p>
@@ -97,7 +97,7 @@ export function ShopDuplicateCheckModal({
 
           {/* Shop List - Horizontal Scroll in Border Box */}
           <div className="border border-line-200 rounded-lg px-3 py-2 flex flex-col gap-2">
-            <p className="text-[12px] font-medium leading-[1.5] tracking-[-0.12px] text-grey-500 select-none">
+            <p className="text-[13px] font-medium leading-[1.5] tracking-[-0.13px] text-grey-500 select-none">
               근처 가게
             </p>
             <div
@@ -129,7 +129,7 @@ export function ShopDuplicateCheckModal({
                     )}
                   </div>
                   {/* Shop Name */}
-                  <p className="text-[15px] leading-[1.5] tracking-[-0.15px] text-grey-900 text-center truncate w-[85px]">
+                  <p className="text-[16px] leading-[1.5] tracking-[-0.16px] text-grey-900 text-center truncate w-[85px]">
                     {shop.name}
                   </p>
                 </div>

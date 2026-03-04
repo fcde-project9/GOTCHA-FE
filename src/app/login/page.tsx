@@ -29,7 +29,7 @@ export default function LoginPage() {
     const sessionExpired = sessionStorage.getItem("sessionExpired");
     if (sessionExpired === "true") {
       sessionStorage.removeItem("sessionExpired");
-      showToast("로그인 세션이 만료되었어요");
+      showToast("로그인 세션이 만료되었어요", { variant: "warning" });
     }
   }, [showToast]);
 
@@ -134,7 +134,7 @@ export default function LoginPage() {
               disabled={showTermsSheet}
               className="pb-0.5 disabled:opacity-50"
             >
-              <span className="border-b-[0.75px] border-grey-800 text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-800">
+              <span className="border-b-[0.75px] border-grey-800 text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-800">
                 게스트로 둘러보기
               </span>
             </button>

@@ -18,7 +18,7 @@ export function ReviewExitConfirmModal({
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70">
-      <div className="bg-white rounded-2xl w-[310px] p-4 flex flex-col gap-5">
+      <div className="bg-white rounded-[16px] w-[335px] px-4 py-5 flex flex-col gap-[22px]">
         {/* Title */}
         <div className="text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900 text-center whitespace-pre-line">
           아직 작성중인 내용이 있어요{"\n"}나가면 작성한 내용이 사라져요
@@ -28,13 +28,13 @@ export function ReviewExitConfirmModal({
         <div className="flex justify-between gap-2">
           <button
             onClick={onCancel}
-            className="flex-1 h-11 rounded-lg bg-grey-100 text-[16px] font-semibold leading-[1.5] tracking-[-0.16px] text-grey-900"
+            className="flex-1 h-[46px] rounded-lg bg-grey-100 text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-grey-900"
           >
             취소
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 h-11 rounded-lg bg-grey-900 text-[16px] font-semibold leading-[1.5] tracking-[-0.16px] text-white"
+            className="flex-1 h-[46px] rounded-lg bg-grey-900 text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white"
           >
             나가기
           </button>

@@ -13,9 +13,9 @@ export default function TermsLayout({ title, content }: TermsLayoutProps) {
       {/* Header */}
       <BackHeader title={title} sticky />
       {/* Content */}
-      <main className="px-5 pt-[11px] pb-6">
+      <main className="px-5 pt-3 pb-6">
         <div className="bg-grey-50 rounded-lg p-4">
-          <div className="whitespace-pre-wrap break-all text-[12px] leading-[1.5] tracking-[-0.12px] text-grey-700 font-medium">
+          <div className="whitespace-pre-wrap break-all text-[13px] leading-[1.5] tracking-[-0.13px] text-grey-700 font-normal">
             {content}
           </div>
         </div>

@@ -128,7 +128,9 @@ export function ReviewWriteModal({
     const MAX_FILE_SIZE = 20 * 1024 * 1024;
     const validFiles = newFiles.filter((file) => {
       if (file.size > MAX_FILE_SIZE) {
-        showToast(`${file.name}은(는) 20MB를 초과해요. 파일 크기를 줄여주세요.`);
+        showToast(`${file.name}은(는) 20MB를 초과해요. 파일 크기를 줄여주세요.`, {
+          variant: "warning",
+        });
         return false;
       }
       return true;
@@ -154,7 +156,7 @@ export function ReviewWriteModal({
       // 업로드 실패 시 미리보기 URL 제거
       newPreviewUrls.forEach((url) => URL.revokeObjectURL(url));
       setImagePreviewUrls((prev) => prev.slice(0, prev.length - newPreviewUrls.length));
-      showToast("이미지 업로드에 실패했어요.");
+      showToast("이미지 업로드에 실패했어요.", { variant: "warning" });
     } finally {
       setIsUploading(false);
     }
@@ -178,7 +180,7 @@ export function ReviewWriteModal({
   // 리뷰 작성/수정 제출
   const handleSubmit = () => {
     if (content.trim().length < MIN_CONTENT_LENGTH) {
-      showToast(`${MIN_CONTENT_LENGTH}자 이상 작성해주세요.`);
+      showToast(`${MIN_CONTENT_LENGTH}자 이상 작성해주세요.`, { variant: "warning" });
       return;
     }
 
@@ -196,7 +198,7 @@ export function ReviewWriteModal({
           onSuccess?.();
         },
         onError: (error) => {
-          showToast(error.message || "수정에 실패했어요.");
+          showToast(error.message || "수정에 실패했어요.", { variant: "warning" });
         },
       });
     } else {
@@ -208,7 +210,7 @@ export function ReviewWriteModal({
           onSuccess?.();
         },
         onError: (error) => {
-          showToast(error.message || "등록에 실패했어요.");
+          showToast(error.message || "등록에 실패했어요.", { variant: "warning" });
         },
       });
     }
@@ -226,7 +228,7 @@ export function ReviewWriteModal({
       <div className="absolute inset-0 bg-black/50" onClick={handleExitAttempt} />
 
       {/* 모달 컨텐츠 */}
-      <div className="relative w-full max-w-[480px] mx-auto bg-white rounded-t-[20px] max-h-[580px] flex flex-col animate-slide-up">
+      <div className="relative w-full max-w-[480px] mx-auto bg-white rounded-t-[24px] max-h-[580px] flex flex-col animate-slide-up">
         {/* 헤더 */}
         <div className="relative flex items-center justify-between px-5 py-5">
           {/* X 버튼 */}
@@ -241,7 +243,7 @@ export function ReviewWriteModal({
 
           {/* 타이틀 - 항상 가운데 고정 */}
           <div className="absolute left-1/2 -translate-x-1/2">
-            <span className="text-[20px] font-semibold leading-[1.5] tracking-[-0.2px] text-grey-900">
+            <span className="text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
               {isEditMode ? "리뷰 수정" : "리뷰 작성"}
             </span>
           </div>
@@ -270,7 +272,7 @@ export function ReviewWriteModal({
               }}
               placeholder="10자 이상의 리뷰를 작성해주세요"
               disabled={isProcessing}
-              className="w-[114.3%] h-[100px] text-[16px] leading-[1.5] tracking-[-0.14px] text-grey-900 placeholder:text-grey-400 resize-none focus:outline-none disabled:opacity-50 origin-top-left scale-[0.875]"
+              className="w-full h-[100px] text-[16px] leading-[1.5] tracking-[-0.16px] text-grey-900 placeholder:text-grey-400 resize-none focus:outline-none disabled:opacity-50"
             />
             <div className="flex justify-end text-[13px] tracking-[-0.286px]">
               <span className="text-main">{content.length}&nbsp;</span>

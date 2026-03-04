@@ -81,7 +81,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     // Size별 스타일
     const sizeStyles: Record<ButtonSize, string> = {
       large: "h-[56px] px-6 text-[16px] leading-[1.5]",
-      medium: "h-[48px] px-5 text-[15px] leading-[1.5]",
+      medium: "h-[46px] px-5 text-[15px] leading-[1.5]",
       small: "h-[40px] px-4 text-[14px] leading-[1.5]",
     };
 

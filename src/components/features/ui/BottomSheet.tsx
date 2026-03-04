@@ -227,19 +227,19 @@ export default function BottomSheet({
     >
       {/* Grabber */}
       <div
-        className="flex justify-center pt-3 h-[44px] cursor-grab active:cursor-grabbing"
+        className="flex justify-center pt-3 h-[36px] cursor-grab active:cursor-grabbing"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onMouseDown={handleMouseDown}
       >
-        <div className="w-[80px] h-[4px] bg-[#cfcfcf] rounded-[2px]" />
+        <div className="w-[44px] h-[4px] bg-[#cfcfcf] rounded-[2px]" />
       </div>
 
       {/* Content */}
       <div
         ref={contentRef}
-        className={`h-[calc(100%-44px)] ${scrollable ? "overflow-y-auto" : "overflow-hidden"}`}
+        className={`h-[calc(100%-36px)] ${scrollable ? "overflow-y-auto" : "overflow-hidden"}`}
       >
         {children}
       </div>

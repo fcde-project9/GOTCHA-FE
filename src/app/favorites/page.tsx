@@ -46,7 +46,7 @@ export default function FavoritesPage() {
     <>
       <main className="h-[calc(100dvh-var(--footer-height))] overflow-hidden relative bg-default flex flex-col">
         {/* 헤더 */}
-        <SimpleHeader title="찜한 업체" />
+        <SimpleHeader title="찜한업체" />
 
         {/* 검색창 - 찜한 업체가 있을 때만 표시 */}
         {favoritesData && favoritesData.length > 0 && (
@@ -56,8 +56,8 @@ export default function FavoritesPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="찜한 업체 검색"
-                className="flex-1 w-[106.7%] bg-transparent text-[16px] font-normal leading-[1.5] tracking-[-0.15px] text-grey-900 placeholder:text-grey-500 focus:outline-none origin-left scale-[0.9375]"
+                placeholder="찜한업체 검색"
+                className="flex-1 bg-transparent text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-900 placeholder:text-grey-500 focus:outline-none"
               />
               {searchQuery ? (
                 <button type="button" onClick={handleClearSearch} aria-label="검색어 지우기">
@@ -84,7 +84,7 @@ export default function FavoritesPage() {
             <button
               type="button"
               onClick={handleRefresh}
-              className="rounded-lg bg-grey-900 w-[174px] h-[44px] flex items-center justify-center gap-1 text-white"
+              className="rounded-lg bg-grey-900 w-[174px] h-[46px] flex items-center justify-center gap-1 text-white"
             >
               <span className="text-[16px] text-white font-normal leading-[1.5] tracking-[-0.16px]">
                 다시 시도
@@ -105,16 +105,16 @@ export default function FavoritesPage() {
               />
             </div>
             {isLoggedIn ? (
-              <p className="text-center text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900 pb-16">
+              <p className="text-center text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
                 관심있는 매장을 찜 해보세요!
               </p>
             ) : (
-              <div className="flex flex-col items-center gap-6 pb-8">
+              <div className="flex flex-col items-center gap-6">
                 <div className="flex flex-col items-center gap-2">
                   <p className="text-center text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
                     로그인이 필요해요
                   </p>
-                  <p className="text-center text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-600">
+                  <p className="text-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-600">
                     로그인하고 관심있는 매장을 찜 해보세요
                   </p>
                 </div>
@@ -127,8 +127,8 @@ export default function FavoritesPage() {
         ) : (
           <>
             {/* 총 개수 - 고정 */}
-            <div className="flex-shrink-0 mt-4 mb-3 flex items-center justify-between px-5">
-              <div className="flex items-center text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-900">
+            <div className="flex-shrink-0 mt-5 mb-2 flex items-center justify-between px-5">
+              <div className="flex items-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-900">
                 <span>총&nbsp;</span>
                 <span>{filteredFavorites.length}개</span>
               </div>

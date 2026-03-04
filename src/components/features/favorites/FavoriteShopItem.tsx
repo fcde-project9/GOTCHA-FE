@@ -23,7 +23,7 @@ export function FavoriteShopItem({ shop }: FavoriteShopItemProps) {
     shopId: shop.id,
     initialIsFavorite: true, // 찜 목록에 있으므로 초기값 true
     onUnauthorized: () => {
-      showToast("찜하기는 로그인 후 이용 가능해요.");
+      showToast("찜하기는 로그인 후 이용 가능해요.", { variant: "warning" });
     },
   });
 
@@ -39,7 +39,7 @@ export function FavoriteShopItem({ shop }: FavoriteShopItemProps) {
   return (
     <div
       onClick={handleItemClick}
-      className="flex cursor-pointer gap-2.5 border-b border-line-100 py-4 last:border-b-0"
+      className="flex cursor-pointer gap-3 border-b border-line-100 py-4 last:border-b-0"
     >
       {/* 업체 이미지 */}
       <div className="relative h-[85px] w-[85px] shrink-0 overflow-hidden rounded-[5px]">
@@ -81,8 +81,8 @@ export function FavoriteShopItem({ shop }: FavoriteShopItemProps) {
 
         {/* 주소 */}
         <div className="flex items-center gap-1 min-w-0">
-          <MapPin size={16} className="shrink-0 stroke-grey-600" strokeWidth={2} />
-          <p className="flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-600">
+          <MapPin size={18} className="shrink-0 stroke-grey-600" strokeWidth={2} />
+          <p className="flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-600">
             {shop.address}
           </p>
         </div>
