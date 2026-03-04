@@ -6,6 +6,7 @@ import "./globals.css";
 export const viewport = {
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover" as const,
   // maximumScale 제거 - 접근성을 위해 핀치 줌 허용
   themeColor: "#ffffff", // Safe area 배경색 흰색
 };
@@ -166,7 +167,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://dapi.kakao.com" />
         <link rel="preconnect" href="https://t1.daumcdn.net" crossOrigin="anonymous" />
       </head>
-      <body className="w-full max-w-[480px] mx-auto bg-white">
+      <body className="w-full max-w-[480px] mx-auto bg-white pt-[env(safe-area-inset-top)]">
         <GoogleAnalytics />
         <Providers>{children}</Providers>
       </body>
