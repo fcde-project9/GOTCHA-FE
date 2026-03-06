@@ -125,7 +125,7 @@ export default function FavoritesPage() {
             )}
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto px-5">
+          <div className="flex-1 overflow-y-auto px-5 pb-3">
             {/* 총 개수 */}
             <div className="mt-2 mb-2 flex items-center justify-between">
               <div className="flex items-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-900">
