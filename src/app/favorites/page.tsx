@@ -51,7 +51,7 @@ export default function FavoritesPage() {
         {/* 검색창 - 찜한 업체가 있을 때만 표시 */}
         {favoritesData && favoritesData.length > 0 && (
           <div className="flex-shrink-0">
-            <div className="flex h-11 items-center justify-between rounded-lg bg-grey-50 px-3 py-2.5 mx-5">
+            <div className="flex h-11 items-center justify-between rounded-lg bg-grey-50 px-3 py-2.5 mx-5 mb-3">
               <input
                 type="text"
                 value={searchQuery}
@@ -127,7 +127,7 @@ export default function FavoritesPage() {
         ) : (
           <div className="flex-1 overflow-y-auto px-5">
             {/* 총 개수 */}
-            <div className="mt-5 mb-2 flex items-center justify-between">
+            <div className="mt-2 mb-2 flex items-center justify-between">
               <div className="flex items-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-900">
                 <span>총&nbsp;</span>
                 <span>{filteredFavorites.length}개</span>
