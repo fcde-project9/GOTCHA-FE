@@ -15,8 +15,11 @@ import {
   MoreVertical,
   Pencil,
   Trash2,
-  Flag,
   Ban,
+  Flag,
+  X,
+  SquarePen,
+  Siren,
 } from "lucide-react";
 import { useBlockUser } from "@/api/mutations/useBlockUser";
 import { useCreateReport } from "@/api/mutations/useCreateReport";
@@ -312,7 +315,6 @@ export default function ShopPreviewBottomSheet({
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
   const adminMenuRef = useRef<HTMLDivElement>(null);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const userMenuRef = useRef<HTMLDivElement>(null);
 
   // 정렬 드롭다운 외부 클릭 시 닫기
   useEffect(() => {
@@ -339,19 +341,6 @@ export default function ShopPreviewBottomSheet({
       return () => document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [isAdminMenuOpen]);
-
-  // 비관리자 메뉴 외부 클릭 시 닫기
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
-        setIsUserMenuOpen(false);
-      }
-    };
-    if (isUserMenuOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [isUserMenuOpen]);
 
   // 드래그 상태
   const DEFAULT_HEIGHT = 348;
@@ -716,31 +705,13 @@ export default function ShopPreviewBottomSheet({
                   )}
                 </div>
               ) : isLoggedIn ? (
-                <div className="relative" ref={userMenuRef}>
-                  <button
-                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex items-center justify-center w-8 h-10 rounded-full"
-                    aria-label="메뉴"
-                  >
-                    <MoreVertical size={24} className="stroke-icon-default" strokeWidth={1.5} />
-                  </button>
-                  {isUserMenuOpen && (
-                    <div className="absolute right-0 top-10 z-10 bg-white rounded-lg shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden">
-                      <button
-                        onClick={() => {
-                          setIsUserMenuOpen(false);
-                          handleReportShop();
-                        }}
-                        className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
-                      >
-                        <Flag size={16} className="text-grey-900" />
-                        <span className="text-[14px] text-grey-900 whitespace-nowrap">
-                          매장 신고하기
-                        </span>
-                      </button>
-                    </div>
-                  )}
-                </div>
+                <button
+                  onClick={() => setIsUserMenuOpen(true)}
+                  className="flex items-center justify-center w-8 h-10 rounded-full"
+                  aria-label="메뉴"
+                >
+                  <MoreVertical size={24} className="stroke-icon-default" strokeWidth={1.5} />
+                </button>
               ) : null}
             </div>
           </div>
@@ -1229,6 +1200,45 @@ export default function ShopPreviewBottomSheet({
         onClose={() => setBlockTarget(null)}
         onConfirm={handleConfirmBlock}
       />
+
+      {/* 유저 액션 바텀시트 */}
+      {isUserMenuOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-end bg-black/50"
+          onClick={() => setIsUserMenuOpen(false)}
+        >
+          <div
+            className="w-full max-w-[480px] mx-auto bg-white rounded-t-2xl pb-safe h-[188px]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-end px-5 pt-4 pb-2">
+              <button onClick={() => setIsUserMenuOpen(false)} aria-label="닫기">
+                <X size={20} className="text-grey-900" />
+              </button>
+            </div>
+            <button
+              onClick={() => {
+                setIsUserMenuOpen(false);
+                // TODO: 정보 수정 제안하기 처리
+              }}
+              className="flex items-center gap-[8px] px-5 w-full h-[46px] border-b border-[#F7F7F9]"
+            >
+              <SquarePen size={20} className="text-grey-900" />
+              <span className="text-[16px] text-grey-900">정보 수정 제안하기</span>
+            </button>
+            <button
+              onClick={() => {
+                setIsUserMenuOpen(false);
+                handleReportShop();
+              }}
+              className="flex items-center gap-[8px] px-5 w-full h-[46px]"
+            >
+              <Siren size={20} className="text-error" />
+              <span className="text-[16px] text-error">매장 신고하기</span>
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
