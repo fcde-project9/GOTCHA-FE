@@ -29,7 +29,9 @@ export function BlockUserConfirmModal({
             이 사용자를 차단하시겠어요?
           </h2>
           <p className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-600 text-center">
-            {nickname}님의 모든 게시물을 보지 않게 돼요
+            {nickname}님의
+            <br />
+            모든 활동이 보이지 않게 돼요
           </p>
         </div>
 

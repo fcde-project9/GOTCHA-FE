@@ -61,9 +61,13 @@ export function Toast({
         show ? "translate-y-0 opacity-100" : "-translate-y-[200%] opacity-0"
       }`}
     >
-      <div className="w-[calc(100vw-30px)] max-w-[345px] min-h-[53px] bg-grey-900 rounded-[10px] px-[18px] shadow-lg flex items-center gap-3">
-        <Image src={ICON_MAP[variant]} alt="" width={20} height={20} className="shrink-0" />
-        <p className="text-[16px] font-medium leading-[1.5] text-white break-words">{message}</p>
+      <div className="w-[calc(100vw-30px)] max-w-[345px] min-h-[53px] bg-grey-900 rounded-[10px] px-[18px] py-[14px] shadow-lg flex items-center gap-3">
+        {!action && (
+          <Image src={ICON_MAP[variant]} alt="" width={20} height={20} className="shrink-0" />
+        )}
+        <p className="flex-1 text-[16px] font-medium leading-[1.5] text-white break-words">
+          {message}
+        </p>
         {action && (
           <button
             onClick={() => {
