@@ -152,7 +152,7 @@ export function ReviewItem({
         </div>
 
         {/* 리뷰 내용 */}
-        <p className="text-[17px] text-grey-900 leading-[1.5] tracking-[-0.17px]">
+        <p className="text-[17px] text-grey-900 leading-[1.5] tracking-[-0.17px] select-text">
           {review.content}
         </p>
 

@@ -227,24 +227,22 @@ export function ReviewWriteModal({
   // Capacitor 네이티브 갤러리 열기
   const handleNativeGallerySelect = useCallback(async () => {
     try {
-      const {
-        Camera: CapCamera,
-        CameraResultType,
-        CameraSource,
-      } = await import("@capacitor/camera");
+      const { Camera: CapCamera } = await import("@capacitor/camera");
       const result = await CapCamera.pickImages({
         quality: 90,
         limit: MAX_IMAGES - imageUrls.length,
       });
 
       const files = await Promise.all(
-        result.photos.map(async (photo) => {
-          const response = await fetch(photo.webPath!);
-          const blob = await response.blob();
-          return new File([blob], `photo_${Date.now()}.${photo.format || "jpeg"}`, {
-            type: `image/${photo.format || "jpeg"}`,
-          });
-        })
+        result.photos
+          .filter((photo) => photo.webPath)
+          .map(async (photo) => {
+            const response = await fetch(photo.webPath!);
+            const blob = await response.blob();
+            return new File([blob], `photo_${Date.now()}.${photo.format || "jpeg"}`, {
+              type: `image/${photo.format || "jpeg"}`,
+            });
+          })
       );
 
       await uploadFiles(files);
