@@ -65,7 +65,7 @@ export function BackHeader({
 
   return (
     <header
-      className={`flex h-14 items-center justify-between bg-white px-4 relative z-10 ${
+      className={`flex h-[48px] items-center justify-between bg-default px-[20px] relative z-10 ${
         absolute ? "absolute top-0 left-0 right-0" : sticky ? "sticky top-0" : "shrink-0"
       } ${showBorder ? "border-b border-grey-100" : ""}`}
     >

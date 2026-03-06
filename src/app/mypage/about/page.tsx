@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { BackHeader } from "@/components/common";
-import Footer from "@/components/common/Footer";
 import { SOCIAL_URLS } from "@/constants";
 
 export default function AboutPage() {
@@ -18,12 +17,12 @@ export default function AboutPage() {
   };
 
   return (
-    <div className="bg-default h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[70px]">
+    <div className="bg-default h-[100dvh] w-full max-w-[480px] mx-auto relative">
       {/* Header */}
       <BackHeader title="이 앱을 만든 녀석들" onBack={handleBack} />
 
       {/* Main Content */}
-      <main className="flex flex-col justify-between h-full items-center px-5 pt-12 pb-[78px] relative">
+      <main className="flex flex-col gap-7 items-center px-5 pt-12 pb-[78px] relative">
         {/* Speech Bubble */}
         <div className="relative flex flex-col items-center">
           <div className="relative w-[207px] h-[110px]">
@@ -46,7 +45,7 @@ export default function AboutPage() {
             <div className="absolute inset-0 flex items-start justify-center pt-8">
               <button
                 onClick={handleInstagramClick}
-                className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-800 border-b border-grey-900"
+                className="text-[17px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-800 border-b border-grey-900"
               >
                 우리 인스타 한번 볼래요?
               </button>
@@ -55,8 +54,8 @@ export default function AboutPage() {
         </div>
 
         {/* Team Members Image */}
-        <div className="relative w-full max-w-[375px] flex items-center justify-center">
-          <div className="relative w-[280px] h-[282.36px]">
+        <div className="relative w-full">
+          <div className="relative w-full aspect-square">
             <Image
               src="/images/members.jpg"
               alt="팀 멤버들"
@@ -75,9 +74,6 @@ export default function AboutPage() {
           @gotcha_finder
         </button>
       </main>
-
-      {/* Footer Navigation */}
-      <Footer />
     </div>
   );
 }
