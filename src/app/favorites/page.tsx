@@ -125,23 +125,22 @@ export default function FavoritesPage() {
             )}
           </div>
         ) : (
-          <>
-            {/* 총 개수 - 고정 */}
-            <div className="flex-shrink-0 mt-5 mb-2 flex items-center justify-between mx-5">
+          <div className="flex-1 overflow-y-auto px-5">
+            {/* 총 개수 */}
+            <div className="mt-5 mb-2 flex items-center justify-between">
               <div className="flex items-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-900">
                 <span>총&nbsp;</span>
                 <span>{filteredFavorites.length}개</span>
               </div>
             </div>
 
-            {/* 찜한 업체 리스트 - 스크롤 영역 */}
-
-            <div className="flex flex-col justify-between mx-5">
+            {/* 찜한 업체 리스트 */}
+            <div className="flex flex-col">
               {filteredFavorites.map((shop) => (
                 <FavoriteShopItem key={shop.id} shop={shop} />
               ))}
             </div>
-          </>
+          </div>
         )}
       </main>
       <Footer />
