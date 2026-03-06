@@ -794,7 +794,7 @@ export default function ShopPreviewBottomSheet({
                 <div className="flex flex-col gap-3 py-2">
                   <div className="flex items-center gap-4">
                     <span className="shrink-0 w-[52px] text-[13px] text-grey-500">주소</span>
-                    <p className="text-[13px] text-grey-900 leading-[1.5] tracking-[-0.13px]">
+                    <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
                       {shop.addressName}
                     </p>
                     <button
@@ -829,7 +829,7 @@ export default function ShopPreviewBottomSheet({
                   <div className="flex items-center gap-4">
                     <span className="shrink-0 w-[52px] text-[13px] text-grey-500">영업시간</span>
                     {shop.todayOpenTime && (
-                      <span className="text-[13px] text-grey-900">{shop.todayOpenTime}</span>
+                      <span className="text-[16px] text-grey-900">{shop.todayOpenTime}</span>
                     )}
                     <StatusBadge openStatus={shop.openStatus} />
                   </div>
@@ -840,7 +840,7 @@ export default function ShopPreviewBottomSheet({
               <div className="flex flex-col gap-1 mt-1">
                 <div className="flex items-center gap-4">
                   <span className="shrink-0 w-[52px] text-[13px] text-grey-500">주소</span>
-                  <p className="text-[13px] text-grey-900 leading-[1.5] tracking-[-0.13px]">
+                  <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
                     {shop.addressName}
                   </p>
                   <button
@@ -873,7 +873,7 @@ export default function ShopPreviewBottomSheet({
                 <div className="flex items-center gap-4">
                   <span className="shrink-0 w-[52px] text-[13px] text-grey-500">영업시간</span>
                   {shop.todayOpenTime && (
-                    <span className="text-[13px] text-grey-900">{shop.todayOpenTime}</span>
+                    <span className="text-[16px] text-grey-900">{shop.todayOpenTime}</span>
                   )}
                   <StatusBadge openStatus={shop.openStatus} />
                 </div>
