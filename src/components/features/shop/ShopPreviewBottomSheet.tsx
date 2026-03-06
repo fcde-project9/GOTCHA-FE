@@ -765,8 +765,12 @@ export default function ShopPreviewBottomSheet({
               /* 확장: 상세페이지와 동일한 레이아웃 */
               <>
                 <div className="flex flex-col gap-3 py-2">
-                  <div className="flex items-center gap-4">
-                    <span className="shrink-0 w-[52px] text-[13px] text-grey-500">주소</span>
+                  <div className="flex items-center gap-2">
+                    <img
+                      src="/images/icons/shop-location.png"
+                      alt=""
+                      className="shrink-0 w-5 h-5"
+                    />
                     <div className="flex items-center gap-0.5">
                       <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
                         {shop.addressName}
@@ -780,8 +784,8 @@ export default function ShopPreviewBottomSheet({
                     </div>
                   </div>
                   {shop.locationHint && (
-                    <div className="flex items-center gap-4">
-                      <span className="shrink-0 w-[52px] text-[13px] text-grey-500">위치 힌트</span>
+                    <div className="flex items-center gap-2">
+                      <img src="/images/icons/shop-star.png" alt="" className="shrink-0 w-5 h-5" />
                       <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
                         {shop.locationHint}
                       </p>
@@ -789,8 +793,12 @@ export default function ShopPreviewBottomSheet({
                   )}
                 </div>
                 <div className="flex flex-col gap-3 pb-4 mt-1">
-                  <div className="flex items-center gap-4">
-                    <span className="shrink-0 w-[52px] text-[13px] text-grey-500">영업일</span>
+                  <div className="flex items-center gap-2">
+                    <img
+                      src="/images/icons/shop-calendar.png"
+                      alt=""
+                      className="shrink-0 w-5 h-5"
+                    />
                     <div className="flex gap-1.5">
                       {ALL_DAYS.map((day) => (
                         <DayBadge
@@ -801,8 +809,8 @@ export default function ShopPreviewBottomSheet({
                       ))}
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <span className="shrink-0 w-[52px] text-[13px] text-grey-500">영업시간</span>
+                  <div className="flex items-center gap-2">
+                    <img src="/images/icons/shop-time.png" alt="" className="shrink-0 w-5 h-5" />
                     {shop.todayOpenTime && (
                       <span className="text-[16px] text-grey-900">{shop.todayOpenTime}</span>
                     )}
@@ -813,8 +821,8 @@ export default function ShopPreviewBottomSheet({
             ) : (
               /* 미리보기: 간격 좁게 한 블록 */
               <div className="flex flex-col gap-3 mt-3">
-                <div className="flex items-center gap-4">
-                  <span className="shrink-0 w-[52px] text-[13px] text-grey-500">주소</span>
+                <div className="flex items-center gap-2">
+                  <img src="/images/icons/shop-location.png" alt="" className="shrink-0 w-5 h-5" />
                   <div className="flex items-center gap-0.5">
                     <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
                       {shop.addressName}
@@ -828,15 +836,15 @@ export default function ShopPreviewBottomSheet({
                   </div>
                 </div>
                 {shop.locationHint && (
-                  <div className="flex items-center gap-4">
-                    <span className="shrink-0 w-[52px] text-[13px] text-grey-500">위치 힌트</span>
+                  <div className="flex items-center gap-2">
+                    <img src="/images/icons/shop-star.png" alt="" className="shrink-0 w-5 h-5" />
                     <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
                       {shop.locationHint}
                     </p>
                   </div>
                 )}
-                <div className="flex items-center gap-4">
-                  <span className="shrink-0 w-[52px] text-[13px] text-grey-500">영업일</span>
+                <div className="flex items-center gap-2">
+                  <img src="/images/icons/shop-calendar.png" alt="" className="shrink-0 w-5 h-5" />
                   <div className="flex gap-1.5">
                     {ALL_DAYS.map((day) => (
                       <DayBadge
@@ -847,8 +855,8 @@ export default function ShopPreviewBottomSheet({
                     ))}
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <span className="shrink-0 w-[52px] text-[13px] text-grey-500">영업시간</span>
+                <div className="flex items-center gap-2">
+                  <img src="/images/icons/shop-time.png" alt="" className="shrink-0 w-5 h-5" />
                   {shop.todayOpenTime && (
                     <span className="text-[16px] text-grey-900">{shop.todayOpenTime}</span>
                   )}
