@@ -48,10 +48,12 @@ function ReportRegisterContent() {
   // 영업시간 입력 상태
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
   const [isEveryDay, setIsEveryDay] = useState(false);
+  const [isDaysUnknown, setIsDaysUnknown] = useState(false);
   const [openTime, setOpenTime] = useState("오전 10:00");
   const [closeTime, setCloseTime] = useState("오후 10:00");
   const [isUnknown, setIsUnknown] = useState(false);
   const [is24Hours, setIs24Hours] = useState(false);
+  const [isTimeConfirmed, setIsTimeConfirmed] = useState(false);
   const [isOpenTimeModalOpen, setIsOpenTimeModalOpen] = useState(false);
   const [isCloseTimeModalOpen, setIsCloseTimeModalOpen] = useState(false);
   const [isExitConfirmModalOpen, setIsExitConfirmModalOpen] = useState(false);
@@ -117,8 +119,18 @@ function ReportRegisterContent() {
   const handleEveryDayToggle = (checked: boolean) => {
     setIsEveryDay(checked);
     if (checked) {
+      setIsDaysUnknown(false);
       setSelectedDays(availableDays);
     } else {
+      setSelectedDays([]);
+    }
+  };
+
+  // 영업일 모름 체크박스 토글
+  const handleDaysUnknownToggle = (checked: boolean) => {
+    setIsDaysUnknown(checked);
+    if (checked) {
+      setIsEveryDay(false);
       setSelectedDays([]);
     }
   };
@@ -126,6 +138,7 @@ function ReportRegisterContent() {
   // 모름 체크박스 토글
   const handleUnknownToggle = (checked: boolean) => {
     setIsUnknown(checked);
+    setIsTimeConfirmed(checked);
     if (checked) {
       setIs24Hours(false);
     }
@@ -134,6 +147,7 @@ function ReportRegisterContent() {
   // 24시간 체크박스 토글
   const handle24HoursToggle = (checked: boolean) => {
     setIs24Hours(checked);
+    setIsTimeConfirmed(checked);
     if (checked) {
       setIsUnknown(false);
     }
@@ -141,11 +155,11 @@ function ReportRegisterContent() {
 
   // 영업시간 추가
   const handleAddOperatingHours = () => {
-    if (selectedDays.length === 0) return;
+    if (selectedDays.length === 0 && !isDaysUnknown) return;
 
     const entry: OperatingHoursEntry = {
       id: Date.now().toString(),
-      days: [...selectedDays].sort((a, b) => a - b),
+      days: isDaysUnknown ? availableDays : [...selectedDays].sort((a, b) => a - b),
       openTime: is24Hours ? "00:00" : openTime,
       closeTime: is24Hours ? "24:00" : closeTime,
       isUnknown,
@@ -158,10 +172,12 @@ function ReportRegisterContent() {
     // 입력 상태 초기화
     setSelectedDays([]);
     setIsEveryDay(false);
+    setIsDaysUnknown(false);
     setOpenTime("오전 10:00");
     setCloseTime("오후 10:00");
     setIsUnknown(false);
     setIs24Hours(false);
+    setIsTimeConfirmed(false);
   };
 
   // 영업시간 삭제
@@ -329,7 +345,7 @@ function ReportRegisterContent() {
   return (
     <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative">
       {/* Header */}
-      <BackHeader title="매장 정보 등록" onBack={handleBackClick} />
+      <BackHeader title="매장 정보 등록" onBack={handleBackClick} sticky />
 
       {/* Main Content */}
       <main className="flex flex-col gap-7 pt-3 px-5">
@@ -421,17 +437,17 @@ function ReportRegisterContent() {
                 </div>
                 <div className="flex gap-2">
                   {DAYS_OF_WEEK.map((day, index) => {
-                    const isDisabled = existingDays.includes(index);
-                    const isSelected = selectedDays.includes(index);
+                    const isDisabled = existingDays.includes(index) || isDaysUnknown;
+                    const isSelected = !isDaysUnknown && selectedDays.includes(index);
                     return (
                       <button
                         key={day}
                         type="button"
                         onClick={() => handleDayToggle(index)}
                         disabled={isDisabled}
-                        className={`size-[37px] rounded-full flex items-center justify-center text-[15px] font-medium leading-[1.5] tracking-[-0.15px] transition-colors ${
+                        className={`flex-1 aspect-square rounded-full flex items-center justify-center text-[clamp(12px,3.5vw,15px)] font-medium leading-[1.5] tracking-[-0.15px] transition-colors ${
                           isDisabled
-                            ? "bg-grey-200 text-grey-300 cursor-not-allowed"
+                            ? `${isDaysUnknown ? "bg-grey-100 text-grey-300" : "bg-grey-200 text-grey-300"} cursor-not-allowed`
                             : isSelected
                               ? "bg-grey-600 text-white"
                               : "bg-white text-grey-400 border border-grey-200"
@@ -442,11 +458,18 @@ function ReportRegisterContent() {
                     );
                   })}
                 </div>
-                <div className="flex items-center justify-end pt-2">
+                <div className="flex items-center justify-end gap-3 pt-2">
                   <Checkbox
                     checked={isEveryDay}
                     onChange={handleEveryDayToggle}
                     label="매일"
+                    variant="filled"
+                    size="small"
+                  />
+                  <Checkbox
+                    checked={isDaysUnknown}
+                    onChange={handleDaysUnknownToggle}
+                    label="모름"
                     variant="filled"
                     size="small"
                   />
@@ -477,14 +500,14 @@ function ReportRegisterContent() {
                     />
                     <span
                       className={`flex-1 text-left text-[15px] leading-[1.5] tracking-[-0.15px] ${
-                        isUnknown || is24Hours ? "text-grey-300" : "text-grey-600"
+                        isUnknown || is24Hours ? "text-grey-400" : "text-grey-600"
                       }`}
                     >
                       {isUnknown ? "-" : is24Hours ? "00:00" : openTime}
                     </span>
                   </button>
                   <span
-                    className={`text-[18px] leading-[1.5] tracking-[-0.18px] ${isUnknown || is24Hours ? "text-grey-300" : "text-grey-600"}`}
+                    className={`text-[18px] leading-[1.5] tracking-[-0.18px] ${isUnknown || is24Hours ? "text-grey-400" : "text-grey-600"}`}
                   >
                     ~
                   </span>
@@ -504,7 +527,7 @@ function ReportRegisterContent() {
                     />
                     <span
                       className={`flex-1 text-left text-[15px] leading-[1.5] tracking-[-0.15px] ${
-                        isUnknown || is24Hours ? "text-grey-300" : "text-grey-600"
+                        isUnknown || is24Hours ? "text-grey-400" : "text-grey-600"
                       }`}
                     >
                       {isUnknown ? "-" : is24Hours ? "24:00" : closeTime}
@@ -533,9 +556,9 @@ function ReportRegisterContent() {
               <button
                 type="button"
                 onClick={handleAddOperatingHours}
-                disabled={selectedDays.length === 0}
+                disabled={(selectedDays.length === 0 && !isDaysUnknown) || !isTimeConfirmed}
                 className={`flex items-center justify-center gap-1 h-[46px] rounded-lg transition-colors ${
-                  selectedDays.length === 0
+                  (selectedDays.length === 0 && !isDaysUnknown) || !isTimeConfirmed
                     ? "bg-grey-200 text-grey-500 cursor-not-allowed"
                     : "bg-grey-900 text-white hover:bg-grey-800"
                 }`}
@@ -631,6 +654,9 @@ function ReportRegisterContent() {
           size="medium"
           fullWidth
           loading={isSubmitting}
+          disabled={
+            !formData.shopName.trim() || operatingHours.length === 0 || formData.images.length === 0
+          }
           onClick={handleSubmit}
         >
           등록하기
@@ -642,13 +668,19 @@ function ReportRegisterContent() {
         isOpen={isOpenTimeModalOpen}
         initialTime={openTime}
         onClose={() => setIsOpenTimeModalOpen(false)}
-        onSelect={(time) => setOpenTime(time)}
+        onSelect={(time) => {
+          setOpenTime(time);
+          setIsTimeConfirmed(true);
+        }}
       />
       <TimePickerModal
         isOpen={isCloseTimeModalOpen}
         initialTime={closeTime}
         onClose={() => setIsCloseTimeModalOpen(false)}
-        onSelect={(time) => setCloseTime(time)}
+        onSelect={(time) => {
+          setCloseTime(time);
+          setIsTimeConfirmed(true);
+        }}
       />
 
       {/* Exit Confirm Modal */}
