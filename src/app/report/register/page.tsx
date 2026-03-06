@@ -3,8 +3,10 @@
 import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Camera, Clock, Plus } from "lucide-react";
 import { useCreateShopWithUpload } from "@/api/mutations/useCreateShopWithUpload";
+import { queryKeys } from "@/api/queryKeys";
 import { BackHeader, Button, Checkbox } from "@/components/common";
 import { Toast } from "@/components/common/Toast";
 import { ExitConfirmModal } from "@/components/report/ExitConfirmModal";
@@ -17,6 +19,7 @@ const DAYS_OF_WEEK = ["월", "화", "수", "목", "금", "토", "일"] as const;
 
 function ReportRegisterContent() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const searchParams = useSearchParams();
 
   const address = searchParams.get("address") || "";
@@ -49,11 +52,12 @@ function ReportRegisterContent() {
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
   const [isEveryDay, setIsEveryDay] = useState(false);
   const [isDaysUnknown, setIsDaysUnknown] = useState(false);
-  const [openTime, setOpenTime] = useState("오전 10:00");
-  const [closeTime, setCloseTime] = useState("오후 10:00");
+  const [openTime, setOpenTime] = useState("");
+  const [closeTime, setCloseTime] = useState("");
   const [isUnknown, setIsUnknown] = useState(false);
   const [is24Hours, setIs24Hours] = useState(false);
-  const [isTimeConfirmed, setIsTimeConfirmed] = useState(false);
+  const [isOpenTimeConfirmed, setIsOpenTimeConfirmed] = useState(false);
+  const [isCloseTimeConfirmed, setIsCloseTimeConfirmed] = useState(false);
   const [isOpenTimeModalOpen, setIsOpenTimeModalOpen] = useState(false);
   const [isCloseTimeModalOpen, setIsCloseTimeModalOpen] = useState(false);
   const [isExitConfirmModalOpen, setIsExitConfirmModalOpen] = useState(false);
@@ -138,7 +142,8 @@ function ReportRegisterContent() {
   // 모름 체크박스 토글
   const handleUnknownToggle = (checked: boolean) => {
     setIsUnknown(checked);
-    setIsTimeConfirmed(checked);
+    setIsOpenTimeConfirmed(checked);
+    setIsCloseTimeConfirmed(checked);
     if (checked) {
       setIs24Hours(false);
     }
@@ -147,7 +152,8 @@ function ReportRegisterContent() {
   // 24시간 체크박스 토글
   const handle24HoursToggle = (checked: boolean) => {
     setIs24Hours(checked);
-    setIsTimeConfirmed(checked);
+    setIsOpenTimeConfirmed(checked);
+    setIsCloseTimeConfirmed(checked);
     if (checked) {
       setIsUnknown(false);
     }
@@ -173,11 +179,12 @@ function ReportRegisterContent() {
     setSelectedDays([]);
     setIsEveryDay(false);
     setIsDaysUnknown(false);
-    setOpenTime("오전 10:00");
-    setCloseTime("오후 10:00");
+    setOpenTime("");
+    setCloseTime("");
     setIsUnknown(false);
     setIs24Hours(false);
-    setIsTimeConfirmed(false);
+    setIsOpenTimeConfirmed(false);
+    setIsCloseTimeConfirmed(false);
   };
 
   // 영업시간 삭제
@@ -333,7 +340,10 @@ function ReportRegisterContent() {
         coordinate,
       });
 
-      // 제보 완료 페이지로 이동
+      // 캐시 무효화 완료 후 페이지 이동
+      await queryClient.invalidateQueries({ queryKey: queryKeys.shops.all });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.user.myReports() });
+
       router.push("/report/complete");
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "업체 등록에 실패했어요.";
@@ -449,7 +459,7 @@ function ReportRegisterContent() {
                           isDisabled
                             ? `${isDaysUnknown ? "bg-grey-100 text-grey-300" : "bg-grey-200 text-grey-300"} cursor-not-allowed`
                             : isSelected
-                              ? "bg-grey-600 text-white"
+                              ? "bg-grey-800 text-white"
                               : "bg-white text-grey-400 border border-grey-200"
                         }`}
                       >
@@ -500,14 +510,16 @@ function ReportRegisterContent() {
                     />
                     <span
                       className={`flex-1 text-left text-[15px] leading-[1.5] tracking-[-0.15px] ${
-                        isUnknown || is24Hours ? "text-grey-400" : "text-grey-600"
+                        isUnknown || is24Hours || !isOpenTimeConfirmed
+                          ? "text-grey-400"
+                          : "text-grey-600"
                       }`}
                     >
-                      {isUnknown ? "-" : is24Hours ? "00:00" : openTime}
+                      {isUnknown || !isOpenTimeConfirmed ? "-" : is24Hours ? "00:00" : openTime}
                     </span>
                   </button>
                   <span
-                    className={`text-[18px] leading-[1.5] tracking-[-0.18px] ${isUnknown || is24Hours ? "text-grey-400" : "text-grey-600"}`}
+                    className={`text-[18px] leading-[1.5] tracking-[-0.18px] ${isUnknown || is24Hours || !(isOpenTimeConfirmed && isCloseTimeConfirmed) ? "text-grey-400" : "text-grey-600"}`}
                   >
                     ~
                   </span>
@@ -527,10 +539,12 @@ function ReportRegisterContent() {
                     />
                     <span
                       className={`flex-1 text-left text-[15px] leading-[1.5] tracking-[-0.15px] ${
-                        isUnknown || is24Hours ? "text-grey-400" : "text-grey-600"
+                        isUnknown || is24Hours || !isCloseTimeConfirmed
+                          ? "text-grey-400"
+                          : "text-grey-600"
                       }`}
                     >
-                      {isUnknown ? "-" : is24Hours ? "24:00" : closeTime}
+                      {isUnknown || !isCloseTimeConfirmed ? "-" : is24Hours ? "24:00" : closeTime}
                     </span>
                   </button>
                 </div>
@@ -556,9 +570,13 @@ function ReportRegisterContent() {
               <button
                 type="button"
                 onClick={handleAddOperatingHours}
-                disabled={(selectedDays.length === 0 && !isDaysUnknown) || !isTimeConfirmed}
+                disabled={
+                  (selectedDays.length === 0 && !isDaysUnknown) ||
+                  !(isOpenTimeConfirmed && isCloseTimeConfirmed)
+                }
                 className={`flex items-center justify-center gap-1 h-[46px] rounded-lg transition-colors ${
-                  (selectedDays.length === 0 && !isDaysUnknown) || !isTimeConfirmed
+                  (selectedDays.length === 0 && !isDaysUnknown) ||
+                  !(isOpenTimeConfirmed && isCloseTimeConfirmed)
                     ? "bg-grey-200 text-grey-500 cursor-not-allowed"
                     : "bg-grey-900 text-white hover:bg-grey-800"
                 }`}
@@ -666,20 +684,20 @@ function ReportRegisterContent() {
       {/* Time Picker Modals */}
       <TimePickerModal
         isOpen={isOpenTimeModalOpen}
-        initialTime={openTime}
+        initialTime={openTime || "오전 10:00"}
         onClose={() => setIsOpenTimeModalOpen(false)}
         onSelect={(time) => {
           setOpenTime(time);
-          setIsTimeConfirmed(true);
+          setIsOpenTimeConfirmed(true);
         }}
       />
       <TimePickerModal
         isOpen={isCloseTimeModalOpen}
-        initialTime={closeTime}
+        initialTime={closeTime || "오후 10:00"}
         onClose={() => setIsCloseTimeModalOpen(false)}
         onSelect={(time) => {
           setCloseTime(time);
-          setIsTimeConfirmed(true);
+          setIsCloseTimeConfirmed(true);
         }}
       />
 
