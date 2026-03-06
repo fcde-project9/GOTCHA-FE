@@ -767,15 +767,17 @@ export default function ShopPreviewBottomSheet({
                 <div className="flex flex-col gap-3 py-2">
                   <div className="flex items-center gap-4">
                     <span className="shrink-0 w-[52px] text-[13px] text-grey-500">주소</span>
-                    <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
-                      {shop.addressName}
-                    </p>
-                    <button
-                      onClick={handleCopyAddress}
-                      className="shrink-0 flex items-center gap-1 py-1 rounded text-[12px] text-grey-600"
-                    >
-                      <Copy size={12} strokeWidth={1.5} />
-                    </button>
+                    <div className="flex items-center gap-0.5">
+                      <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
+                        {shop.addressName}
+                      </p>
+                      <button
+                        onClick={handleCopyAddress}
+                        className="shrink-0 flex items-center justify-center w-5 h-5 rounded text-[12px] text-grey-600"
+                      >
+                        <Copy size={12} strokeWidth={1.5} />
+                      </button>
+                    </div>
                   </div>
                   {shop.locationHint && (
                     <div className="flex items-center gap-4">
@@ -813,15 +815,17 @@ export default function ShopPreviewBottomSheet({
               <div className="flex flex-col gap-3 mt-3">
                 <div className="flex items-center gap-4">
                   <span className="shrink-0 w-[52px] text-[13px] text-grey-500">주소</span>
-                  <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
-                    {shop.addressName}
-                  </p>
-                  <button
-                    onClick={handleCopyAddress}
-                    className="shrink-0 flex items-center gap-1 py-1 rounded text-[12px] text-grey-600"
-                  >
-                    <Copy size={12} strokeWidth={1.5} />
-                  </button>
+                  <div className="flex items-center gap-0.5">
+                    <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
+                      {shop.addressName}
+                    </p>
+                    <button
+                      onClick={handleCopyAddress}
+                      className="shrink-0 flex items-center justify-center w-5 h-5 rounded text-[12px] text-grey-600"
+                    >
+                      <Copy size={12} strokeWidth={1.5} />
+                    </button>
+                  </div>
                 </div>
                 {shop.locationHint && (
                   <div className="flex items-center gap-4">
