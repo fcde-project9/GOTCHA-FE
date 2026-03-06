@@ -646,7 +646,7 @@ export default function ShopPreviewBottomSheet({
           >
             <BackHeader onBack={collapseToPreview} />
             <div
-              className="flex items-center gap-4 ml-3"
+              className="flex items-center ml-3"
               onMouseDown={(e) => e.stopPropagation()}
               onTouchStart={(e) => e.stopPropagation()}
             >
@@ -737,25 +737,25 @@ export default function ShopPreviewBottomSheet({
                 </h2>
               </button>
               {!isExpanded && (
-                <div className="flex items-center gap-3 shrink-0 ml-3">
+                <div className="flex items-center shrink-0 ml-3">
                   <button
                     onClick={toggleFavorite}
                     disabled={isFavoriteLoading}
-                    className="w-6 h-6 flex items-center justify-center disabled:opacity-50"
+                    className="w-10 h-10 flex items-center justify-center disabled:opacity-50"
                     aria-label={isFavorite ? "찜 취소" : "찜하기"}
                   >
                     <Heart
-                      size={20}
+                      size={24}
                       className={isFavorite ? "fill-main stroke-main" : "stroke-grey-700 fill-none"}
                       strokeWidth={1.5}
                     />
                   </button>
                   <button
                     onClick={handleShare}
-                    className="w-6 h-6 flex items-center justify-center"
+                    className="w-10 h-10 flex items-center justify-center"
                     aria-label="공유하기"
                   >
-                    <Share size={20} className="stroke-grey-700" strokeWidth={1.5} />
+                    <Share size={24} className="stroke-grey-700" strokeWidth={1.5} />
                   </button>
                 </div>
               )}
