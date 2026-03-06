@@ -352,6 +352,7 @@ export default function ShopPreviewBottomSheet({
   const dragStartY = useRef(0);
   const dragStartHeight = useRef(DEFAULT_HEIGHT);
   const lastDragY = useRef(0);
+  const sheetHeightRef = useRef(DEFAULT_HEIGHT);
 
   // shopId 변경 시 미리보기 상태로 리셋 (렌더 중 상태 조정 패턴)
   const [prevShopId, setPrevShopId] = useState(shopId);
@@ -392,6 +393,7 @@ export default function ShopPreviewBottomSheet({
       if (!isExpanded) {
         const delta = dragStartY.current - clientY;
         const newHeight = Math.max(0, dragStartHeight.current + delta);
+        sheetHeightRef.current = newHeight;
         setSheetHeight(newHeight);
       }
     },
@@ -409,7 +411,7 @@ export default function ShopPreviewBottomSheet({
         collapseToPreview();
       }
     } else {
-      const delta = dragStartHeight.current - sheetHeight;
+      const delta = dragStartHeight.current - sheetHeightRef.current;
       const threshold = 50;
 
       if (delta > threshold) {
@@ -424,7 +426,7 @@ export default function ShopPreviewBottomSheet({
         setSheetHeight(DEFAULT_HEIGHT);
       }
     }
-  }, [isDragging, isExpanded, sheetHeight, onClose, collapseToPreview]);
+  }, [isDragging, isExpanded, onClose, collapseToPreview]);
 
   useEffect(() => {
     if (!isDragging) return;
