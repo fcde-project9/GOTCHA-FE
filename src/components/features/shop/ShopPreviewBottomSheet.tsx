@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
@@ -27,6 +27,7 @@ import { useDeleteReview } from "@/api/mutations/useDeleteReview";
 import { useDeleteShop } from "@/api/mutations/useDeleteShop";
 import { useToggleReviewLike } from "@/api/mutations/useToggleReviewLike";
 import { useUpdateShop } from "@/api/mutations/useUpdateShop";
+import { useInfiniteReviews } from "@/api/queries/useInfiniteReviews";
 import { useShopDetail } from "@/api/queries/useShopDetail";
 import { useUser } from "@/api/queries/useUser";
 import type { ReportReason, ReportTargetType } from "@/api/types";
@@ -314,6 +315,14 @@ export default function ShopPreviewBottomSheet({
   const adminMenuRef = useRef<HTMLDivElement>(null);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
+  // 리뷰 전체보기 오버레이 상태
+  const [showAllReviews, setShowAllReviews] = useState(false);
+  const [isAllReviewsClosing, setIsAllReviewsClosing] = useState(false);
+  const [allReviewsSortBy, setAllReviewsSortBy] = useState<ReviewSortOption>("LATEST");
+  const [isAllReviewsSortOpen, setIsAllReviewsSortOpen] = useState(false);
+  const allReviewsSortRef = useRef<HTMLDivElement>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
   // 정렬 드롭다운 외부 클릭 시 닫기
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -340,6 +349,55 @@ export default function ShopPreviewBottomSheet({
     }
   }, [isAdminMenuOpen]);
 
+  // 리뷰 전체보기 정렬 드롭다운 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (allReviewsSortRef.current && !allReviewsSortRef.current.contains(event.target as Node)) {
+        setIsAllReviewsSortOpen(false);
+      }
+    };
+    if (isAllReviewsSortOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isAllReviewsSortOpen]);
+
+  // 리뷰 전체보기 무한 스크롤 훅
+  const {
+    data: allReviewsData,
+    isLoading: isAllReviewsLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    refetch: refetchAllReviews,
+  } = useInfiniteReviews(shopId ?? 0, allReviewsSortBy);
+
+  const allReviews = useMemo(
+    () => allReviewsData?.pages.flatMap((page) => page.content) ?? [],
+    [allReviewsData]
+  );
+  const allReviewsTotalCount = allReviewsData?.pages[0]?.totalCount ?? 0;
+
+  // 무한 스크롤 Intersection Observer
+  useEffect(() => {
+    if (!showAllReviews || isAllReviewsLoading || isFetchingNextPage || !hasNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [showAllReviews, isAllReviewsLoading, isFetchingNextPage, hasNextPage, fetchNextPage]);
+
   // 드래그 상태
   const DEFAULT_HEIGHT = 348;
   const [sheetHeight, setSheetHeight] = useState(DEFAULT_HEIGHT);
@@ -360,6 +418,7 @@ export default function ShopPreviewBottomSheet({
     setIsCollapsing(false);
     setSheetHeight(DEFAULT_HEIGHT);
     setHasExpandedOnce(false);
+    setShowAllReviews(false);
   }
 
   // 확장 → 미리보기 축소 (숨겼다가 미리보기로 다시 올라옴)
@@ -464,7 +523,7 @@ export default function ShopPreviewBottomSheet({
   const remainingCount = totalImageCount > 5 ? totalImageCount - 4 : 0;
 
   const handleViewAllImages = () => router.push(`/shop/${shop.id}/images`);
-  const handleViewAllReviews = () => router.push(`/shop/${shop.id}/reviews`);
+  const handleViewAllReviews = () => setShowAllReviews(true);
 
   const handleCopyAddress = async () => {
     try {
@@ -547,6 +606,7 @@ export default function ShopPreviewBottomSheet({
       onSuccess: async () => {
         try {
           await refetch();
+          if (showAllReviews) await refetchAllReviews();
         } finally {
           setBlockTarget(null);
           showToast("사용자 차단이 완료되었어요!");
@@ -564,6 +624,7 @@ export default function ShopPreviewBottomSheet({
         showToast("리뷰가 삭제되었어요.");
         setDeletingReviewId(null);
         refetch();
+        if (showAllReviews) refetchAllReviews();
       },
       onError: (error) =>
         showToast(error.message || "리뷰 삭제에 실패했어요.", { variant: "warning" }),
@@ -574,6 +635,40 @@ export default function ShopPreviewBottomSheet({
     setSortBy(newSortBy);
     setIsSortDropdownOpen(false);
   };
+
+  // 리뷰 전체보기 닫기 (slide-down 후 unmount)
+  const handleCloseAllReviews = () => {
+    setIsAllReviewsClosing(true);
+    setTimeout(() => {
+      setShowAllReviews(false);
+      setIsAllReviewsClosing(false);
+    }, 450);
+  };
+
+  // 리뷰 전체보기 오버레이용 핸들러
+  const handleAllReviewsSortChange = (newSortBy: ReviewSortOption) => {
+    setAllReviewsSortBy(newSortBy);
+    setIsAllReviewsSortOpen(false);
+  };
+
+  const handleAllReviewsLikeToggle = (reviewId: number) => {
+    const review = allReviews.find((r) => r.id === reviewId);
+    if (!review || !shopId) return;
+    toggleReviewLikeMutation.mutate(
+      { reviewId, isLiked: review.isLiked, shopId },
+      {
+        onError: (error) =>
+          showToast(error.message || "좋아요 처리에 실패했어요.", { variant: "warning" }),
+      }
+    );
+  };
+
+  const handleAllReviewsEdit = (reviewId: number) => {
+    const reviewToEdit = allReviews.find((r) => r.id === reviewId);
+    if (reviewToEdit) setEditingReview(reviewToEdit);
+  };
+
+  const handleAllReviewsDelete = (reviewId: number) => setDeletingReviewId(reviewId);
 
   const handleConfirmShopDelete = () => {
     if (!shopId) return;
@@ -1060,17 +1155,17 @@ export default function ShopPreviewBottomSheet({
                             />
                           </button>
                           {isSortDropdownOpen && (
-                            <div className="absolute right-0 top-6 z-10 bg-white rounded-lg shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden min-w-[80px]">
+                            <div className="absolute right-0 top-6 z-10 bg-white rounded-lg rounded-tr-none shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden w-[112px]">
                               <button
                                 onClick={() => handleSortChange("LATEST")}
-                                className={`flex items-center px-3 py-2 w-full text-[14px] ${sortBy === "LATEST" ? "text-main font-medium" : "text-grey-700"} hover:bg-grey-50`}
+                                className={`flex items-center px-3 py-2 w-full text-[14px] ${sortBy === "LATEST" ? "text-main" : "text-grey-700"} hover:bg-grey-50`}
                               >
                                 최신순
                               </button>
                               <div className="border-t border-grey-100" />
                               <button
                                 onClick={() => handleSortChange("LIKE_COUNT")}
-                                className={`flex items-center px-3 py-2 w-full text-[14px] ${sortBy === "LIKE_COUNT" ? "text-main font-medium" : "text-grey-700"} hover:bg-grey-50`}
+                                className={`flex items-center px-3 py-2 w-full text-[14px] ${sortBy === "LIKE_COUNT" ? "text-main" : "text-grey-700"} hover:bg-grey-50`}
                               >
                                 좋아요순
                               </button>
@@ -1080,34 +1175,38 @@ export default function ShopPreviewBottomSheet({
                       </div>
 
                       <div className="flex flex-col gap-3">
-                        {shop.reviews.slice(0, 3).map((review) => (
-                          <ReviewItem
-                            key={review.id}
-                            review={review}
-                            onLikeToggle={handleLikeToggle}
-                            onEdit={handleEditReview}
-                            onDelete={handleDeleteReview}
-                            onReport={handleReportReview}
-                            onReportUser={handleReportUser}
-                            onBlock={handleBlockUser}
-                            isLoggedIn={isLoggedIn}
-                            onImageClick={(images, index) =>
-                              setGalleryState({ images, initialIndex: index })
-                            }
-                          />
-                        ))}
+                        {shop.reviews
+                          .slice(0, shop.reviewCount >= 6 ? 5 : shop.reviewCount)
+                          .map((review) => (
+                            <ReviewItem
+                              key={review.id}
+                              review={review}
+                              onLikeToggle={handleLikeToggle}
+                              onEdit={handleEditReview}
+                              onDelete={handleDeleteReview}
+                              onReport={handleReportReview}
+                              onReportUser={handleReportUser}
+                              onBlock={handleBlockUser}
+                              isLoggedIn={isLoggedIn}
+                              onImageClick={(images, index) =>
+                                setGalleryState({ images, initialIndex: index })
+                              }
+                            />
+                          ))}
                       </div>
 
-                      <OutlineButton
-                        onClick={handleViewAllReviews}
-                        fullWidth
-                        rightIcon={
-                          <ChevronRight size={24} className="text-grey-700" strokeWidth={1.5} />
-                        }
-                        className="mt-4"
-                      >
-                        리뷰 전체보기
-                      </OutlineButton>
+                      {shop.reviewCount >= 6 && (
+                        <OutlineButton
+                          onClick={handleViewAllReviews}
+                          fullWidth
+                          rightIcon={
+                            <ChevronRight size={24} className="text-grey-700" strokeWidth={1.5} />
+                          }
+                          className="mt-4"
+                        >
+                          리뷰 전체보기
+                        </OutlineButton>
+                      )}
                     </>
                   )}
 
@@ -1212,6 +1311,96 @@ export default function ShopPreviewBottomSheet({
         onClose={() => setBlockTarget(null)}
         onConfirm={handleConfirmBlock}
       />
+
+      {/* 리뷰 전체보기 오버레이 */}
+      {showAllReviews && (
+        <div className="fixed inset-0 z-50 flex justify-center bg-black/0">
+          <div
+            className={`flex flex-col w-full max-w-[480px] bg-white ${isAllReviewsClosing ? "animate-slide-down" : "animate-slide-up"}`}
+          >
+            <BackHeader title="방문 리뷰 상세" onBack={handleCloseAllReviews} />
+            <div className="flex-1 overflow-y-auto">
+              {isAllReviewsLoading ? (
+                <div className="flex items-center justify-center h-64">
+                  <div className="h-10 w-10 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
+                </div>
+              ) : allReviews.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-64 px-5">
+                  <p className="text-[15px] text-grey-500 mb-4">아직 작성된 리뷰가 없어요.</p>
+                </div>
+              ) : (
+                <div className="px-5 pt-3">
+                  {/* 정렬 & 총 개수 */}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center text-[16px] text-grey-900 tracking-[-0.16px]">
+                      <span>총&nbsp;</span>
+                      <span>{allReviewsTotalCount}개</span>
+                    </div>
+                    <div className="relative" ref={allReviewsSortRef}>
+                      <button
+                        onClick={() => setIsAllReviewsSortOpen(!isAllReviewsSortOpen)}
+                        className="flex items-center gap-1 text-[16px] text-grey-700"
+                      >
+                        <span>{allReviewsSortBy === "LATEST" ? "최신순" : "좋아요순"}</span>
+                        <ChevronDown
+                          size={16}
+                          className={`text-grey-700 transition-transform ${isAllReviewsSortOpen ? "rotate-180" : ""}`}
+                        />
+                      </button>
+                      {isAllReviewsSortOpen && (
+                        <div className="absolute right-0 top-6 z-10 bg-white rounded-lg rounded-tr-none shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden w-[112px]">
+                          <button
+                            onClick={() => handleAllReviewsSortChange("LATEST")}
+                            className={`flex items-center px-3 py-2 w-full text-[14px] ${allReviewsSortBy === "LATEST" ? "text-main" : "text-grey-700"} hover:bg-grey-50`}
+                          >
+                            최신순
+                          </button>
+                          <div className="border-t border-grey-100" />
+                          <button
+                            onClick={() => handleAllReviewsSortChange("LIKE_COUNT")}
+                            className={`flex items-center px-3 py-2 w-full text-[14px] ${allReviewsSortBy === "LIKE_COUNT" ? "text-main" : "text-grey-700"} hover:bg-grey-50`}
+                          >
+                            좋아요순
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 리뷰 목록 */}
+                  <div className="flex flex-col gap-3">
+                    {allReviews.map((review) => (
+                      <ReviewItem
+                        key={review.id}
+                        review={review}
+                        onLikeToggle={handleAllReviewsLikeToggle}
+                        onEdit={handleAllReviewsEdit}
+                        onDelete={handleAllReviewsDelete}
+                        onReport={handleReportReview}
+                        onReportUser={handleReportUser}
+                        onBlock={handleBlockUser}
+                        isLoggedIn={isLoggedIn}
+                        onImageClick={(images, index) =>
+                          setGalleryState({ images, initialIndex: index })
+                        }
+                      />
+                    ))}
+                  </div>
+
+                  {/* 무한 스크롤 로딩 */}
+                  <div ref={loadMoreRef} className="py-4">
+                    {isFetchingNextPage && (
+                      <div className="flex items-center justify-center">
+                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-grey-200 border-t-main" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 유저 액션 바텀시트 */}
       {isUserMenuOpen && (

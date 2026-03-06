@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { X, Camera, ImageIcon } from "lucide-react";
 import { useCreateReview } from "@/api/mutations/useCreateReview";
@@ -9,6 +9,8 @@ import { useUploadFile } from "@/api/mutations/useUploadFile";
 import { useToast } from "@/hooks";
 import type { ReviewResponse } from "@/types/api";
 import { ReviewExitConfirmModal } from "./ReviewExitConfirmModal";
+
+const isCapacitor = process.env.NEXT_PUBLIC_BUILD_TARGET === "capacitor";
 
 const MAX_IMAGES = 10;
 const MAX_CONTENT_LENGTH = 150;
@@ -39,6 +41,7 @@ export function ReviewWriteModal({
   const { showToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   const isEditMode = !!reviewId && !!initialData;
 
@@ -67,6 +70,25 @@ export function ReviewWriteModal({
     return () => {
       document.body.style.overflow = "";
     };
+  }, [isOpen]);
+
+  // 키보드 높이 감지 (모바일 앱)
+  useEffect(() => {
+    if (!isOpen) {
+      setKeyboardHeight(0);
+      return;
+    }
+
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+
+    const handleResize = () => {
+      const height = window.innerHeight - viewport.height;
+      setKeyboardHeight(height > 0 ? height : 0);
+    };
+
+    viewport.addEventListener("resize", handleResize);
+    return () => viewport.removeEventListener("resize", handleResize);
   }, [isOpen]);
 
   // 수정 모드일 때 초기 데이터 설정
@@ -165,6 +187,74 @@ export function ReviewWriteModal({
     e.target.value = "";
   };
 
+  // 파일 업로드 공통 로직 (File 배열)
+  const uploadFiles = useCallback(
+    async (files: File[]) => {
+      const remainingSlots = MAX_IMAGES - imageUrls.length;
+      const newFiles = files.slice(0, remainingSlots);
+
+      const MAX_FILE_SIZE = 20 * 1024 * 1024;
+      const validFiles = newFiles.filter((file) => {
+        if (file.size > MAX_FILE_SIZE) {
+          showToast(`파일이 20MB를 초과해요. 파일 크기를 줄여주세요.`, { variant: "warning" });
+          return false;
+        }
+        return true;
+      });
+
+      if (validFiles.length === 0) return;
+
+      const newPreviewUrls = validFiles.map((file) => URL.createObjectURL(file));
+      setImagePreviewUrls((prev) => [...prev, ...newPreviewUrls]);
+
+      setIsUploading(true);
+      try {
+        const uploadPromises = validFiles.map((file) => uploadFileMutation.mutateAsync(file));
+        const results = await Promise.all(uploadPromises);
+        const uploadedUrls = results.map((result) => result.fileUrl);
+        setImageUrls((prev) => [...prev, ...uploadedUrls]);
+      } catch {
+        newPreviewUrls.forEach((url) => URL.revokeObjectURL(url));
+        setImagePreviewUrls((prev) => prev.slice(0, prev.length - newPreviewUrls.length));
+        showToast("이미지 업로드에 실패했어요.", { variant: "warning" });
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    [imageUrls.length, showToast, uploadFileMutation]
+  );
+
+  // Capacitor 네이티브 갤러리 열기
+  const handleNativeGallerySelect = useCallback(async () => {
+    try {
+      const {
+        Camera: CapCamera,
+        CameraResultType,
+        CameraSource,
+      } = await import("@capacitor/camera");
+      const result = await CapCamera.pickImages({
+        quality: 90,
+        limit: MAX_IMAGES - imageUrls.length,
+      });
+
+      const files = await Promise.all(
+        result.photos.map(async (photo) => {
+          const response = await fetch(photo.webPath!);
+          const blob = await response.blob();
+          return new File([blob], `photo_${Date.now()}.${photo.format || "jpeg"}`, {
+            type: `image/${photo.format || "jpeg"}`,
+          });
+        })
+      );
+
+      await uploadFiles(files);
+    } catch (error: unknown) {
+      // 사용자가 취소한 경우 무시
+      if (error instanceof Error && error.message?.includes("cancel")) return;
+      showToast("갤러리를 열 수 없어요.", { variant: "warning" });
+    }
+  }, [imageUrls.length, uploadFiles, showToast]);
+
   // 이미지 삭제
   const handleImageRemove = (index: number) => {
     // 새로 추가된 로컬 미리보기 URL만 해제 (기존 서버 URL은 제외)
@@ -228,7 +318,10 @@ export function ReviewWriteModal({
       <div className="absolute inset-0 bg-black/50" onClick={handleExitAttempt} />
 
       {/* 모달 컨텐츠 */}
-      <div className="relative w-full max-w-[480px] mx-auto bg-white rounded-t-[24px] max-h-[580px] flex flex-col animate-slide-up">
+      <div
+        className="relative w-full max-w-[480px] mx-auto bg-white rounded-t-[24px] max-h-[580px] flex flex-col animate-slide-up transition-transform duration-200"
+        style={{ transform: keyboardHeight > 0 ? `translateY(-${keyboardHeight}px)` : undefined }}
+      >
         {/* 헤더 */}
         <div className="relative flex items-center justify-between px-5 py-5">
           {/* X 버튼 */}
@@ -318,27 +411,29 @@ export function ReviewWriteModal({
         )}
 
         {/* 하단 툴바 */}
-        <div className="flex items-center gap-4 px-5 py-3 border-t border-grey-100 pb-safe">
+        <div className="flex items-center gap-5 px-5 pt-2 pb-[31px] border-t border-grey-100">
           {/* 카메라 버튼 */}
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={isProcessing || imageUrls.length >= MAX_IMAGES}
-            className="w-10 h-10 flex items-center justify-center disabled:opacity-50"
+            className="flex items-center justify-center disabled:opacity-50"
             aria-label="카메라로 촬영"
           >
-            <Camera size={24} className="stroke-grey-600" strokeWidth={1.5} />
+            <Camera size={24} className="stroke-grey-800" strokeWidth={1.5} />
           </button>
 
           {/* 갤러리 버튼 */}
           <button
             type="button"
-            onClick={() => galleryInputRef.current?.click()}
+            onClick={
+              isCapacitor ? handleNativeGallerySelect : () => galleryInputRef.current?.click()
+            }
             disabled={isProcessing || imageUrls.length >= MAX_IMAGES}
-            className="w-10 h-10 flex items-center justify-center disabled:opacity-50"
+            className="flex items-center justify-center disabled:opacity-50"
             aria-label="갤러리에서 선택"
           >
-            <ImageIcon size={24} className="stroke-grey-600" strokeWidth={1.5} />
+            <ImageIcon size={24} className="stroke-grey-800" strokeWidth={1.5} />
           </button>
 
           {/* 파일 input (카메라) */}
