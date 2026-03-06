@@ -500,14 +500,16 @@ function ReportRegisterContent() {
                     />
                     <span
                       className={`flex-1 text-left text-[15px] leading-[1.5] tracking-[-0.15px] ${
-                        isUnknown || is24Hours ? "text-grey-400" : "text-grey-600"
+                        isUnknown || is24Hours || !isTimeConfirmed
+                          ? "text-grey-400"
+                          : "text-grey-600"
                       }`}
                     >
-                      {isUnknown ? "-" : is24Hours ? "00:00" : openTime}
+                      {isUnknown || !isTimeConfirmed ? "-" : is24Hours ? "00:00" : openTime}
                     </span>
                   </button>
                   <span
-                    className={`text-[18px] leading-[1.5] tracking-[-0.18px] ${isUnknown || is24Hours ? "text-grey-400" : "text-grey-600"}`}
+                    className={`text-[18px] leading-[1.5] tracking-[-0.18px] ${isUnknown || is24Hours || !isTimeConfirmed ? "text-grey-400" : "text-grey-600"}`}
                   >
                     ~
                   </span>
@@ -527,10 +529,12 @@ function ReportRegisterContent() {
                     />
                     <span
                       className={`flex-1 text-left text-[15px] leading-[1.5] tracking-[-0.15px] ${
-                        isUnknown || is24Hours ? "text-grey-400" : "text-grey-600"
+                        isUnknown || is24Hours || !isTimeConfirmed
+                          ? "text-grey-400"
+                          : "text-grey-600"
                       }`}
                     >
-                      {isUnknown ? "-" : is24Hours ? "24:00" : closeTime}
+                      {isUnknown || !isTimeConfirmed ? "-" : is24Hours ? "24:00" : closeTime}
                     </span>
                   </button>
                 </div>
