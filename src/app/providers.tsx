@@ -35,8 +35,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         // 상태바: 어두운 텍스트 (밝은 배경)
         await StatusBar.setStyle({ style: Style.Light });
 
-        // 키보드: 리사이즈 모드 (키보드가 올라와도 레이아웃이 밀리지 않도록 None으로 설정)
-        await Keyboard.setResizeMode({ mode: KeyboardResize.None });
+        // 키보드: 리사이즈 모드 (기본값인 Body로 복구하여 입력창 가림 방지)
+        await Keyboard.setResizeMode({ mode: KeyboardResize.Body });
       } finally {
         // import/초기화 실패 시에도 스플래시는 반드시 숨기기
         try {
