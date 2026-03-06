@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ChevronLeft, Plus, SquarePen } from "lucide-react";
+import { Plus, SquarePen } from "lucide-react";
 import { DEFAULT_IMAGES, getSocialProviderIcon } from "@/constants";
 
 const SOCIAL_PROVIDER_LABELS = {
@@ -97,7 +97,7 @@ export function ProfileSection({
   return (
     <div className="flex flex-col items-center gap-7 w-full px-5">
       {/* Profile Image */}
-      <div className="flex flex-col items-center gap-4 w-[168px]">
+      <div className="flex flex-col items-center gap-4">
         <div className="relative w-[100px] h-[100px]">
           <div className="relative w-full h-full rounded-full overflow-hidden">
             <Image
@@ -135,7 +135,7 @@ export function ProfileSection({
           </div>
 
           {/* Social Login Info */}
-          <div className="bg-grey-50 rounded-md px-2 py-0.5 inline-flex items-center gap-2 justify-center">
+          <div className="bg-grey-50 rounded-md px-4 py-0.5 inline-flex items-center gap-2 justify-center">
             <Image
               src={getSocialProviderIcon(socialProvider)}
               alt={socialProvider ? SOCIAL_PROVIDER_LABELS[socialProvider] : ""}

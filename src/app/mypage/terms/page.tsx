@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { BackHeader } from "@/components/common";
-import Footer from "@/components/common/Footer";
 
 export default function TermsPage() {
   const router = useRouter();
@@ -24,7 +23,7 @@ export default function TermsPage() {
   };
 
   return (
-    <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative pb-[var(--footer-height)]">
+    <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative">
       {/* Header */}
       <BackHeader title="약관/라이센스" onBack={handleBack} />
 
@@ -113,9 +112,6 @@ export default function TermsPage() {
           </button>
         </div>
       </main>
-
-      {/* Footer Navigation */}
-      <Footer />
     </div>
   );
 }
