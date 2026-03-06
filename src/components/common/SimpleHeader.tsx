@@ -32,12 +32,12 @@ interface SimpleHeaderProps {
 export function SimpleHeader({ title, rightElement, showBorder = false }: SimpleHeaderProps) {
   return (
     <header
-      className={`shrink-0 flex h-14 items-center justify-between bg-default px-4 py-2 ${
+      className={`shrink-0 flex w-full h-[48px] items-center justify-between bg-default px-[20px] py-[8px] ${
         showBorder ? "border-b border-grey-100" : ""
       }`}
     >
       {/* 타이틀 */}
-      <h1 className="text-[20px] font-semibold leading-[1.4] tracking-[-0.20px] text-grey-900">
+      <h1 className="text-[20px] font-semibold leading-[24px] tracking-[-0.20px] text-grey-900">
         {title}
       </h1>
 

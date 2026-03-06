@@ -240,7 +240,7 @@ export default function MyPage() {
           />
 
           {/* Menu List */}
-          <div className="w-full max-w-[335px] mx-auto">
+          <div className="w-full">
             <MenuList
               onMyReports={handleMyReports}
               onBlockedUsers={handleBlockedUsers}

@@ -26,7 +26,7 @@ export function Checkbox({
   };
 
   const variantClasses = {
-    filled: checked ? "bg-main border-0" : "bg-grey-200 border-0",
+    filled: checked ? "bg-main border-0" : "bg-white border border-grey-200",
     outlined: checked ? "bg-main border-2 border-main" : "bg-white border-2 border-grey-300",
   };
 
@@ -42,23 +42,21 @@ export function Checkbox({
         <div
           className={`${sizeClasses[size]} ${variantClasses[variant]} rounded-full flex items-center justify-center transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-main`}
         >
-          {checked && (
-            <svg
-              width="10"
-              height="10"
-              viewBox="0 0 14 10"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M1 5L5 9L13 1"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          )}
+          <svg
+            width="10"
+            height="10"
+            viewBox="0 0 14 10"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M1 5L5 9L13 1"
+              stroke={checked ? "white" : "#E2E2E3"}
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </div>
       </div>
       {label && (

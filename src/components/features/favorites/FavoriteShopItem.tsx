@@ -39,7 +39,7 @@ export function FavoriteShopItem({ shop }: FavoriteShopItemProps) {
   return (
     <div
       onClick={handleItemClick}
-      className="flex cursor-pointer gap-3 border-b border-line-100 py-4 last:border-b-0"
+      className="-mx-1 flex cursor-pointer gap-3 border-b border-line-100 py-4 px-1 last:border-b-0"
     >
       {/* 업체 이미지 */}
       <div className="relative h-[85px] w-[85px] shrink-0 overflow-hidden rounded-[5px]">
