@@ -120,7 +120,7 @@ export default function MyReportsPage() {
         {/* 컨텐츠 영역 */}
         {reports.length === 0 ? (
           /* Empty State - 빈 상태 */
-          <div className="flex flex-1 flex-col items-center pt-[168px] gap-7 px-5">
+          <div className="flex flex-1 flex-col items-center justify-center gap-7 px-5 -mt-14">
             <div className="flex flex-col items-center gap-7">
               <Image
                 src={DEFAULT_IMAGES.MY_SHOP}

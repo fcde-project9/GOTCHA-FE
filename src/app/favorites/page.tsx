@@ -94,7 +94,7 @@ export default function FavoritesPage() {
           </div>
         ) : filteredFavorites.length === 0 ? (
           // Empty State
-          <div className="flex flex-1 flex-col items-center justify-center gap-7 px-5">
+          <div className="flex flex-1 flex-col items-center justify-center gap-7 px-5 -mt-12">
             <div>
               <Image
                 src={DEFAULT_IMAGES.SHOP}
