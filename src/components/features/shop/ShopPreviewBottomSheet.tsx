@@ -245,10 +245,8 @@ function ReviewItem({
           aria-label={review.isLiked ? "좋아요 취소" : "좋아요"}
         >
           <ThumbsUp
-            size={16}
-            className={
-              review.isLiked ? "fill-grey-800 stroke-grey-800" : "stroke-grey-500 fill-none"
-            }
+            size={14}
+            className={`relative -top-[1px] ${review.isLiked ? "fill-grey-800 stroke-grey-800" : "stroke-grey-500 fill-none"}`}
             strokeWidth={1.5}
           />
           <span className="text-[12px] text-grey-800 tracking-[-0.264px]">{review.likeCount}</span>
@@ -779,7 +777,7 @@ export default function ShopPreviewBottomSheet({
                         onClick={handleCopyAddress}
                         className="shrink-0 flex items-center justify-center w-5 h-5 rounded text-[12px] text-grey-600"
                       >
-                        <Copy size={12} strokeWidth={1.5} />
+                        <Copy size={14} strokeWidth={1.5} />
                       </button>
                     </div>
                   </div>
@@ -831,7 +829,7 @@ export default function ShopPreviewBottomSheet({
                       onClick={handleCopyAddress}
                       className="shrink-0 flex items-center justify-center w-5 h-5 rounded text-[12px] text-grey-600"
                     >
-                      <Copy size={12} strokeWidth={1.5} />
+                      <Copy size={14} strokeWidth={1.5} />
                     </button>
                   </div>
                 </div>
