@@ -9,6 +9,18 @@
 }
 
 @layer base {
+  * {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  input,
+  textarea,
+  [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
   :root {
     --footer-height: 84px;
     --background: 0 0% 100%;
@@ -109,5 +121,5 @@
 }
 
 .animate-slide-up {
-  animation: slide-up 0.3s ease-out;
+  animation: slide-up 0.45s ease-out;
 }

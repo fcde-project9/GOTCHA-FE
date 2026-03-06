@@ -222,7 +222,7 @@ export default function ReviewsListClient() {
   // 유효하지 않은 shopId 처리
   if (!isValidShopId) {
     return (
-      <div className="min-h-dvh bg-default flex flex-col">
+      <div className="min-h-dvh bg-default flex flex-col w-full max-w-[480px] mx-auto">
         <BackHeader title="방문 리뷰 상세" />
         <div className="flex-1 flex flex-col items-center justify-center px-5">
           <p className="text-[15px] text-grey-500 mb-4">잘못된 접근이에요</p>
@@ -235,12 +235,12 @@ export default function ReviewsListClient() {
   }
 
   return (
-    <div className="min-h-dvh bg-default flex flex-col">
+    <div className="h-dvh bg-default flex flex-col overflow-hidden max-w-[480px] mx-auto">
       {/* 헤더 */}
       <BackHeader title="방문 리뷰 상세" />
 
       {/* 컨텐츠 */}
-      <div className="flex-1">
+      <div className="flex-1 overflow-y-auto pb-safe">
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
