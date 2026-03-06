@@ -49,7 +49,12 @@ export default function BlockedUsersPage() {
     unblockMutation.mutate(userId, {
       onSuccess: () => {
         setUnblockTarget(null);
-        const displayName = nickname.includes("#") ? `${nickname.split("#")[0]}#...` : nickname;
+        const baseName = nickname.includes("#") ? nickname.split("#")[0] : nickname;
+        const isKorean = /[가-힣]/.test(baseName);
+        const maxLength = isKorean ? 4 : 8;
+        const truncatedName =
+          baseName.length > maxLength ? `${baseName.slice(0, maxLength)}...` : baseName;
+        const displayName = nickname.includes("#") ? `${truncatedName}#...` : truncatedName;
         showToast(`${displayName}님의 차단이 해제되었어요`, 3000, {
           label: "취소",
           onPress: () => {

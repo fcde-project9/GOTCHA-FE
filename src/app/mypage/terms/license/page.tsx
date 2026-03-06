@@ -1,13 +1,16 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { BackHeader } from "@/components/common";
 import { OSS_NOTICE, LICENSE } from "@/data/terms";
 
 export default function LicensePage() {
+  const router = useRouter();
+
   return (
     <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto">
       {/* Header */}
-      <BackHeader title="라이선스" sticky />
+      <BackHeader title="라이선스" sticky onBack={() => router.push("/mypage/terms")} />
 
       {/* Content */}
       <main className="px-5 pt-3 pb-6 flex flex-col gap-3">
