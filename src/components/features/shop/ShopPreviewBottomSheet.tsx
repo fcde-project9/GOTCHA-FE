@@ -784,7 +784,7 @@ export default function ShopPreviewBottomSheet({
                     </div>
                   )}
                 </div>
-                <div className="flex flex-col gap-3 pb-4">
+                <div className="flex flex-col gap-3 pb-4 mt-1">
                   <div className="flex items-center gap-4">
                     <span className="shrink-0 w-[52px] text-[13px] text-grey-500">영업일</span>
                     <div className="flex gap-1.5">
@@ -808,7 +808,7 @@ export default function ShopPreviewBottomSheet({
               </>
             ) : (
               /* 미리보기: 간격 좁게 한 블록 */
-              <div className="flex flex-col gap-1 mt-1">
+              <div className="flex flex-col gap-3 mt-3">
                 <div className="flex items-center gap-4">
                   <span className="shrink-0 w-[52px] text-[13px] text-grey-500">주소</span>
                   <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
@@ -853,7 +853,7 @@ export default function ShopPreviewBottomSheet({
 
             {/* 대표 이미지 (미리보기) */}
             {!isExpanded && shopImages.length > 0 && (
-              <div className="mt-2">
+              <div className="mt-3">
                 <button
                   onClick={() => setGalleryState({ images: shopImages, initialIndex: 0 })}
                   className="w-full h-[173px] rounded-lg overflow-hidden bg-grey-100"
