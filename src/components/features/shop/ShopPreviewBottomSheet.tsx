@@ -78,7 +78,7 @@ function DayBadge({ day, isActive }: { day: string; isActive: boolean }) {
   return (
     <div
       className={`flex items-center justify-center w-[22px] h-[22px] rounded-full text-[12px] font-normal tracking-[-0.12px] leading-[150%] ${
-        isActive ? "bg-grey-700 text-white" : "bg-grey-100 text-grey-400"
+        isActive ? "bg-grey-800 text-white" : "bg-grey-100 text-grey-400"
       }`}
     >
       {day}
@@ -735,7 +735,7 @@ export default function ShopPreviewBottomSheet({
                       >
                         <Flag size={16} className="text-grey-900" />
                         <span className="text-[14px] text-grey-900 whitespace-nowrap">
-                          가게 신고하기
+                          매장 신고하기
                         </span>
                       </button>
                     </div>
