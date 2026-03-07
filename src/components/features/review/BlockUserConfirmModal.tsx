@@ -23,7 +23,7 @@ export function BlockUserConfirmModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-      <div className="bg-white rounded-[16px] w-[335px] px-4 py-5 flex flex-col gap-5">
+      <div className="bg-white rounded-[16px] w-[335px] px-4 py-5 flex flex-col gap-[22px]">
         <div className="flex flex-col gap-3">
           <h2 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900 text-center">
             이 사용자를 차단하시겠어요?
