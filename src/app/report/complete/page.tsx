@@ -20,7 +20,7 @@ export default function ReportCompletePage() {
   };
 
   return (
-    <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative flex flex-col">
+    <div className="bg-default h-[100dvh] w-full max-w-[480px] mx-auto relative flex flex-col overflow-hidden">
       {/* 중앙 콘텐츠 */}
       <div className="flex-1 flex flex-col items-center justify-center gap-7">
         <div className="relative w-[82px] h-[82px]">

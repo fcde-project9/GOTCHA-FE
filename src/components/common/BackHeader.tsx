@@ -65,8 +65,8 @@ export function BackHeader({
 
   return (
     <header
-      className={`flex h-[48px] items-center justify-between bg-default px-[20px] relative z-10 ${
-        absolute ? "absolute top-0 left-0 right-0" : sticky ? "sticky top-0" : "shrink-0"
+      className={`flex h-[48px] items-center justify-between bg-default px-[20px] z-10 ${
+        absolute ? "absolute top-0 left-0 right-0" : sticky ? "sticky top-0" : "relative shrink-0"
       } ${showBorder ? "border-b border-grey-100" : ""}`}
     >
       {/* 뒤로가기 버튼 & 타이틀 */}
