@@ -221,6 +221,20 @@ export interface ReportResponse {
   createdAt: string;
 }
 
+// ── 정보 수정 제안 ──
+
+export type ShopSuggestReason =
+  | "WRONG_ADDRESS"
+  | "WRONG_PHOTO"
+  | "WRONG_LOCATION_HINT"
+  | "WRONG_BUSINESS_HOURS"
+  | "WRONG_PAYMENT_INFO"
+  | "OTHER";
+
+export interface CreateShopSuggestRequest {
+  reasons: ShopSuggestReason[];
+}
+
 // ── 차단 ──
 
 export interface BlockResponse {

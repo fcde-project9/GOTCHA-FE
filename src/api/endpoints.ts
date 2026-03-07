@@ -44,6 +44,10 @@ export const ENDPOINTS = {
   REPORTS: {
     CREATE: "/api/reports",
   },
+  // 정보 수정 제안
+  SUGGESTS: {
+    CREATE: (shopId: number) => `/api/shops/${shopId}/suggest`,
+  },
   // 차단
   BLOCKS: {
     LIST: "/api/users/me/blocks",
