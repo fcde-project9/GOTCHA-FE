@@ -459,7 +459,7 @@ function ReportRegisterContent() {
                           isDisabled
                             ? `${isDaysUnknown ? "bg-grey-100 text-grey-300" : "bg-grey-200 text-grey-300"} cursor-not-allowed`
                             : isSelected
-                              ? "bg-grey-800 text-white"
+                              ? "bg-grey-900 text-white border border-grey-900"
                               : "bg-white text-grey-400 border border-grey-200"
                         }`}
                       >
@@ -498,7 +498,7 @@ function ReportRegisterContent() {
                     type="button"
                     onClick={() => !isUnknown && !is24Hours && setIsOpenTimeModalOpen(true)}
                     disabled={isUnknown || is24Hours}
-                    className={`flex-1 h-11 flex items-center gap-1 px-3 py-2 rounded-lg transition-colors ${
+                    className={`flex-1 h-11 flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                       isUnknown || is24Hours
                         ? "bg-grey-100 cursor-not-allowed"
                         : "bg-white hover:bg-grey-100"
@@ -527,7 +527,7 @@ function ReportRegisterContent() {
                     type="button"
                     onClick={() => !isUnknown && !is24Hours && setIsCloseTimeModalOpen(true)}
                     disabled={isUnknown || is24Hours}
-                    className={`flex-1 h-11 flex items-center gap-1 px-3 py-2 rounded-lg transition-colors ${
+                    className={`flex-1 h-11 flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                       isUnknown || is24Hours
                         ? "bg-grey-100 cursor-not-allowed"
                         : "bg-white hover:bg-grey-100"

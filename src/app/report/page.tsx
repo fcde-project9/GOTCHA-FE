@@ -265,7 +265,7 @@ export default function ReportLocationPage() {
   }
 
   return (
-    <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative">
+    <div className="bg-default h-[100dvh] w-full max-w-[480px] mx-auto relative overflow-hidden">
       {/* Header */}
       <BackHeader
         title="제보하기"
