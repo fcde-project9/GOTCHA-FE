@@ -258,7 +258,7 @@ export default function ReportLocationPage() {
 
   if (isLoading) {
     return (
-      <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto flex items-center justify-center">
+      <div className="bg-default h-[100dvh] w-full max-w-[480px] mx-auto flex items-center justify-center overflow-hidden">
         <p className="text-grey-600">위치 정보를 불러오는 중...</p>
       </div>
     );
