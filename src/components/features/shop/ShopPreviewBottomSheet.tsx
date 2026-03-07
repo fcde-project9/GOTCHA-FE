@@ -1409,7 +1409,7 @@ export default function ShopPreviewBottomSheet({
           onClick={() => setIsUserMenuOpen(false)}
         >
           <div
-            className="w-full max-w-[480px] mx-auto bg-white rounded-t-2xl pb-safe h-[188px]"
+            className="w-full max-w-[480px] mx-auto bg-white rounded-t-2xl pb-safe h-[188px] animate-slide-up"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-end px-5 pt-4 pb-2">

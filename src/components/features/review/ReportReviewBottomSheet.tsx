@@ -108,7 +108,7 @@ export function ReportBottomSheet({
   return (
     <div className="fixed inset-0 z-50 flex items-end bg-black/70" onClick={handleClose}>
       <div
-        className="w-full bg-white rounded-t-3xl px-5 pt-5 pb-[52px] animate-slide-up"
+        className="w-full max-w-[480px] mx-auto bg-white rounded-t-3xl px-5 pt-5 pb-[52px] animate-slide-up"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -138,14 +138,14 @@ export function ReportBottomSheet({
                 {label}
               </span>
               <div
-                className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
+                className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
                   selectedReason === value ? "bg-main" : "border-2 border-grey-300"
                 }`}
               >
                 {selectedReason === value && (
                   <svg
-                    width="10"
-                    height="10"
+                    width="12"
+                    height="12"
                     viewBox="0 0 14 10"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"

@@ -33,7 +33,7 @@ export function ReportSuccessModal({ isOpen, onClose }: ReportSuccessModalProps)
 
         <button
           onClick={onClose}
-          className="w-full h-[46px] rounded-lg bg-grey-900 text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white"
+          className="w-full h-[46px] rounded-lg bg-main-400 text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white"
         >
           확인
         </button>
