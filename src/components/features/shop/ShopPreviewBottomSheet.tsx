@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useBlockUser } from "@/api/mutations/useBlockUser";
 import { useCreateReport } from "@/api/mutations/useCreateReport";
+import { useCreateSuggest } from "@/api/mutations/useCreateSuggest";
 import { useDeleteReview } from "@/api/mutations/useDeleteReview";
 import { useDeleteShop } from "@/api/mutations/useDeleteShop";
 import { useToggleReviewLike } from "@/api/mutations/useToggleReviewLike";
@@ -30,7 +31,7 @@ import { useUpdateShop } from "@/api/mutations/useUpdateShop";
 import { useInfiniteReviews } from "@/api/queries/useInfiniteReviews";
 import { useShopDetail } from "@/api/queries/useShopDetail";
 import { useUser } from "@/api/queries/useUser";
-import type { ReportReason, ReportTargetType } from "@/api/types";
+import type { ReportReason, ReportTargetType, ShopSuggestReason } from "@/api/types";
 import { BackHeader, Button, OutlineButton, ImageViewerModal } from "@/components/common";
 import { BlockUserConfirmModal } from "@/components/features/review/BlockUserConfirmModal";
 import { ReportBottomSheet } from "@/components/features/review/ReportReviewBottomSheet";
@@ -39,6 +40,7 @@ import { ReviewDeleteConfirmModal } from "@/components/features/review/ReviewDel
 import { ReviewWriteModal } from "@/components/features/review/ReviewWriteModal";
 import { ShopDeleteConfirmModal } from "@/components/features/shop/ShopDeleteConfirmModal";
 import { ShopEditModal } from "@/components/features/shop/ShopEditModal";
+import { ShopSuggestModal } from "@/components/features/shop/ShopSuggestModal";
 // BottomSheet 미사용 - 직접 드래그 처리
 import { useAuth, useFavorite, useToast } from "@/hooks";
 import type { OpenTime, ReviewResponse, ReviewSortOption } from "@/types/api";
@@ -303,6 +305,7 @@ export default function ShopPreviewBottomSheet({
   const deleteReviewMutation = useDeleteReview(shopId ?? 0, deletingReviewId ?? 0);
   const toggleReviewLikeMutation = useToggleReviewLike();
   const createReportMutation = useCreateReport();
+  const createSuggestMutation = useCreateSuggest();
   const blockUserMutation = useBlockUser();
   const deleteShopMutation = useDeleteShop();
   const updateShopMutation = useUpdateShop();
@@ -314,6 +317,7 @@ export default function ShopPreviewBottomSheet({
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
   const adminMenuRef = useRef<HTMLDivElement>(null);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
 
   // 리뷰 전체보기 오버레이 상태
   const [showAllReviews, setShowAllReviews] = useState(false);
@@ -579,6 +583,21 @@ export default function ShopPreviewBottomSheet({
   const handleReportShop = () => {
     if (!shopId) return;
     setReportTarget({ type: "SHOP", id: shopId });
+  };
+
+  const handleSubmitSuggest = (reasons: ShopSuggestReason[]) => {
+    if (!shopId) return;
+    createSuggestMutation.mutate(
+      { shopId, data: { reasons } },
+      {
+        onSuccess: () => {
+          setIsSuggestModalOpen(false);
+          showToast("제안이 접수되었어요. 감사합니다!");
+        },
+        onError: (error) =>
+          showToast(error.message || "제안 접수에 실패했어요.", { variant: "warning" }),
+      }
+    );
   };
 
   const handleSubmitReport = (reason: ReportReason, detail?: string) => {
@@ -1420,7 +1439,7 @@ export default function ShopPreviewBottomSheet({
             <button
               onClick={() => {
                 setIsUserMenuOpen(false);
-                // TODO: 정보 수정 제안하기 처리
+                setIsSuggestModalOpen(true);
               }}
               className="flex items-center gap-[8px] px-5 w-full h-[46px] border-b border-[#F7F7F9]"
             >
@@ -1440,6 +1459,13 @@ export default function ShopPreviewBottomSheet({
           </div>
         </div>
       )}
+
+      <ShopSuggestModal
+        isOpen={isSuggestModalOpen}
+        isLoading={createSuggestMutation.isPending}
+        onClose={() => setIsSuggestModalOpen(false)}
+        onSubmit={handleSubmitSuggest}
+      />
     </>
   );
 }
