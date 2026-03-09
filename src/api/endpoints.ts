@@ -2,15 +2,13 @@
 export const ENDPOINTS = {
   // 인증
   AUTH: {
-    LOGIN: "/auth/login",
     LOGOUT: "/api/auth/logout",
-    REFRESH: "/auth/refresh",
+    REISSUE: "/api/auth/reissue",
     TOKEN: "/api/auth/token",
   },
   // 매장
   SHOPS: {
-    LIST: "/shops",
-    DETAIL: (id: string) => `/shops/${id}`,
+    DETAIL: (id: number) => `/api/shops/${id}`,
     NEARBY: "/api/shops/nearby",
     SAVE: "/api/shops/save",
     // ADMIN 전용
@@ -24,8 +22,6 @@ export const ENDPOINTS = {
     UPDATE_NICKNAME: "/api/users/me/nickname",
     UPDATE_PROFILE_IMAGE: "/api/users/me/profile-image",
     WITHDRAW: "/api/users/me",
-    PROFILE: "/user/profile",
-    UPDATE: "/user/update",
     MY_SHOPS: "/api/users/me/shops",
   },
   // 파일

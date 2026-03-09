@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { ENDPOINTS } from "@/api/endpoints";
 import { queryKeys } from "@/api/queryKeys";
 import { get } from "@/api/request";
 import type { ShopDetailResponse, ReviewSortOption } from "@/types/api";
@@ -14,7 +15,7 @@ export const useShopDetail = (shopId: number, sortBy: ReviewSortOption = "LATEST
     queryKey: queryKeys.shops.detail(shopId, sortBy),
     queryFn: () =>
       get<ShopDetailResponse>(
-        `/api/shops/${shopId}`,
+        ENDPOINTS.SHOPS.DETAIL(shopId),
         { sortBy },
         {
           errorMessage: "업체 정보를 불러오는데 실패했어요.",

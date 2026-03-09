@@ -1,4 +1,5 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
+import { ENDPOINTS } from "./endpoints";
 
 // 커스텀 config 타입 확장
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
@@ -76,7 +77,7 @@ const refreshAccessToken = async (): Promise<string | null> => {
     }
 
     const response = await axios.post(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/reissue`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}${ENDPOINTS.AUTH.REISSUE}`,
       { refreshToken },
       {
         headers: {
@@ -148,7 +149,7 @@ apiClient.interceptors.response.use(
       );
 
       // reissue 요청 자체가 실패한 경우 무한 루프 방지
-      if (originalRequest.url?.includes("/api/auth/reissue")) {
+      if (originalRequest.url?.includes(ENDPOINTS.AUTH.REISSUE)) {
         handleLogout();
         // 리다이렉트 완료까지 pending 상태 유지 (에러 페이지 방지)
         return new Promise(() => {});
