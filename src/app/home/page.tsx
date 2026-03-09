@@ -232,7 +232,7 @@ function SearchBar({
   onClearSearch,
 }: SearchBarProps) {
   return (
-    <div className="absolute left-0 right-0 top-8 z-30 mx-auto w-full max-w-[480px] px-5">
+    <div className="absolute left-0 right-0 top-5 z-30 mx-auto w-full max-w-[480px] px-5">
       {!isSearching ? (
         <button
           onClick={onSearchClick}
@@ -248,7 +248,7 @@ function SearchBar({
           </span>
         </button>
       ) : (
-        <div className="flex h-11 items-center gap-2 rounded-lg bg-grey-100 px-1.5 py-2.5">
+        <div className="flex h-11 items-center gap-2 rounded-lg bg-grey-100 pl-1.5 pr-2 py-2.5">
           <button
             onClick={onSearchCancel}
             className="flex size-6 items-center justify-center"
@@ -266,7 +266,7 @@ function SearchBar({
           />
           {searchQuery && (
             <button onClick={onClearSearch} aria-label="검색어 지우기">
-              <CircleX size={24} className="fill-grey-500 stroke-grey-50" strokeWidth={2} />
+              <CircleX size={24} className="fill-grey-500 stroke-grey-100" strokeWidth={2} />
             </button>
           )}
         </div>
@@ -367,10 +367,23 @@ function SearchOverlay({ searchQuery, results, onResultClick }: SearchOverlayPro
             ))}
           </div>
         ) : (
-          <div className="flex items-center justify-center pt-8">
-            <p className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-500">
-              검색 결과가 없어요.
-            </p>
+          <div className="flex flex-col items-center justify-center pt-[calc(50vh-260px)]">
+            <div className="mb-6 flex items-center justify-center">
+              <Image
+                src={DEFAULT_IMAGES.SHOP_LIST_EMPTY}
+                alt="검색 결과 없음"
+                width={79}
+                height={50}
+              />
+            </div>
+            <div className="flex flex-col gap-1 text-center">
+              <p className="text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900">
+                검색 결과가 없어요
+              </p>
+              <p className="text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-500">
+                오타가 있는지 확인해보세요
+              </p>
+            </div>
           </div>
         )}
       </div>
