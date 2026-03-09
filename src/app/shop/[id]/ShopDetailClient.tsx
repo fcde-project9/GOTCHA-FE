@@ -24,7 +24,13 @@ import { useUpdateShop } from "@/api/mutations/useUpdateShop";
 import { useShopDetail } from "@/api/queries/useShopDetail";
 import { useUser } from "@/api/queries/useUser";
 import type { ReportReason, ReportTargetType } from "@/api/types";
-import { Button, BackHeader, OutlineButton, ImageViewerModal } from "@/components/common";
+import {
+  Button,
+  BackHeader,
+  OutlineButton,
+  ImageViewerModal,
+  ImagesGalleryOverlay,
+} from "@/components/common";
 import { BlockUserConfirmModal } from "@/components/features/review/BlockUserConfirmModal";
 import { ReportBottomSheet } from "@/components/features/review/ReportReviewBottomSheet";
 import { ReportSuccessModal } from "@/components/features/review/ReportSuccessModal";
@@ -151,6 +157,7 @@ export default function ShopDetailClient() {
     images: string[];
     initialIndex: number;
   } | null>(null);
+  const [allImagesOpen, setAllImagesOpen] = useState(false);
 
   // 리뷰 작성 모달 상태
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
@@ -351,9 +358,7 @@ export default function ShopDetailClient() {
   };
 
   // 전체 사진 보기
-  const handleViewAllImages = () => {
-    router.push(`/shop/${validShopId}/images`);
-  };
+  const handleViewAllImages = () => setAllImagesOpen(true);
 
   const handleBack = useCallback(() => {
     if (window.history.length > 1) {
@@ -656,6 +661,36 @@ export default function ShopDetailClient() {
                       />
                     </button>
                   </div>
+                ) : shopImages.length === 2 ? (
+                  /* 사진 2개: 좌우 동일 크기 */
+                  <div className="px-5">
+                    <div className="flex gap-px">
+                      <button
+                        onClick={() => setGalleryState({ images: shopImages, initialIndex: 0 })}
+                        className="flex-1 aspect-square rounded-l-lg overflow-hidden bg-grey-100"
+                      >
+                        <Image
+                          src={shopImages[0]}
+                          alt="업체 사진 1"
+                          width={167}
+                          height={167}
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                      <button
+                        onClick={() => setGalleryState({ images: shopImages, initialIndex: 1 })}
+                        className="flex-1 aspect-square rounded-r-lg overflow-hidden bg-grey-100"
+                      >
+                        <Image
+                          src={shopImages[1]}
+                          alt="업체 사진 2"
+                          width={167}
+                          height={167}
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                    </div>
+                  </div>
                 ) : (
                   /* 사진 여러 개: 왼쪽 큰 이미지 + 오른쪽 2x2 그리드 */
                   <div className="px-5">
@@ -887,6 +922,16 @@ export default function ShopDetailClient() {
           initialIndex={galleryState.initialIndex}
           onClose={() => setGalleryState(null)}
           alt="이미지"
+        />
+      )}
+
+      {allImagesOpen && shop && (
+        <ImagesGalleryOverlay
+          images={[
+            ...(shop.mainImageUrl ? [shop.mainImageUrl] : []),
+            ...shop.reviews.flatMap((review) => review.imageUrls),
+          ]}
+          onClose={() => setAllImagesOpen(false)}
         />
       )}
 
