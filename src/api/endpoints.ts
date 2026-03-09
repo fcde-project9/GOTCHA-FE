@@ -8,7 +8,7 @@ export const ENDPOINTS = {
   },
   // 매장
   SHOPS: {
-    DETAIL: (id: string) => `/api/shops/${id}`,
+    DETAIL: (id: number) => `/api/shops/${id}`,
     NEARBY: "/api/shops/nearby",
     SAVE: "/api/shops/save",
     // ADMIN 전용

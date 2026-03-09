@@ -15,7 +15,7 @@ export const useShopDetail = (shopId: number, sortBy: ReviewSortOption = "LATEST
     queryKey: queryKeys.shops.detail(shopId, sortBy),
     queryFn: () =>
       get<ShopDetailResponse>(
-        ENDPOINTS.SHOPS.DETAIL(String(shopId)),
+        ENDPOINTS.SHOPS.DETAIL(shopId),
         { sortBy },
         {
           errorMessage: "업체 정보를 불러오는데 실패했어요.",
