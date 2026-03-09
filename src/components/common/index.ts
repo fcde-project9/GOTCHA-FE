@@ -10,6 +10,7 @@ export { BackHeader } from "./BackHeader";
 export { CenterTitleHeader } from "./CenterTitleHeader";
 export { SimpleHeader } from "./SimpleHeader";
 export { ImageViewerModal } from "./ImageViewerModal";
+export { ImagesGalleryOverlay } from "./ImagesGalleryOverlay";
 export { SplashScreen } from "./SplashScreen";
 export { ErrorBoundary, DefaultErrorFallback, InlineErrorFallback } from "./ErrorBoundary";
 export {
