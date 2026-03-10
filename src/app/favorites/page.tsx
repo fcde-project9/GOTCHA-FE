@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Search, CircleX, RefreshCcw } from "lucide-react";
@@ -15,6 +15,15 @@ export default function FavoritesPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedShopId, setSelectedShopId] = useState<number | null>(null);
+
+  // 오버레이 열릴 때 history entry 추가 → 뒤로가기로 닫힘 처리
+  useEffect(() => {
+    if (selectedShopId === null) return;
+    history.pushState({ shopDetail: true }, "");
+    const handlePopState = () => setSelectedShopId(null);
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [selectedShopId]);
 
   // 전역 로그인 상태
   const { isLoggedIn, isLoading: isAuthLoading } = useAuth();
@@ -146,7 +155,7 @@ export default function FavoritesPage() {
         )}
       </main>
       {selectedShopId !== null && (
-        <ShopDetailClient shopId={selectedShopId} onClose={() => setSelectedShopId(null)} />
+        <ShopDetailClient shopId={selectedShopId} onClose={() => history.back()} />
       )}
       <Footer />
     </>
