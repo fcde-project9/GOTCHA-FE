@@ -52,9 +52,8 @@ export function NicknameModal({ isOpen, currentNickname, onClose, onSave }: Nick
   const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setNickname(value);
-
-    const validationError = validateNickname(value);
-    setError(validationError || "");
+    // 입력 중에는 에러 초기화 (버튼 클릭 시 검증)
+    setError("");
   };
 
   const handleSave = async () => {
@@ -85,7 +84,8 @@ export function NicknameModal({ isOpen, currentNickname, onClose, onSave }: Nick
     }
   };
 
-  const isButtonDisabled = !nickname || nickname.trim() === "" || !!error;
+  // 2자 이상 입력 시 버튼 활성화 (유효성 검사는 버튼 클릭 시 수행)
+  const isButtonDisabled = nickname.trim().length < 2;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
