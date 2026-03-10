@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import {
   Heart,
   Share,
@@ -270,7 +269,6 @@ export default function ShopPreviewBottomSheet({
   onClose,
   isLeaving = false,
 }: ShopPreviewBottomSheetProps) {
-  const router = useRouter();
   const { showToast } = useToast();
 
   const [sortBy, setSortBy] = useState<ReviewSortOption>("LATEST");
@@ -546,7 +544,7 @@ export default function ShopPreviewBottomSheet({
   };
 
   const handleShare = async () => {
-    const url = `${window.location.origin}/shop/${shop.id}`;
+    const url = `${process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin}/shop/${shop.id}`;
     if (navigator.share) {
       try {
         await navigator.share({ title: shop.name, url });
