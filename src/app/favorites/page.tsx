@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Search, CircleX, RefreshCcw } from "lucide-react";
 import { useFavorites } from "@/api/queries/useFavorites";
+import ShopDetailClient from "@/app/shop/[id]/ShopDetailClient";
 import { Footer, Button, SimpleHeader } from "@/components/common";
 import { FavoriteShopItem } from "@/components/features/favorites";
 import { DEFAULT_IMAGES } from "@/constants";
@@ -13,6 +14,16 @@ import { useAuth } from "@/hooks";
 export default function FavoritesPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedShopId, setSelectedShopId] = useState<number | null>(null);
+
+  // 오버레이 열릴 때 history entry 추가 → 뒤로가기로 닫힘 처리
+  useEffect(() => {
+    if (selectedShopId === null) return;
+    history.pushState({ shopDetail: true }, "");
+    const handlePopState = () => setSelectedShopId(null);
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [selectedShopId]);
 
   // 전역 로그인 상태
   const { isLoggedIn, isLoading: isAuthLoading } = useAuth();
@@ -137,12 +148,15 @@ export default function FavoritesPage() {
             {/* 찜한 업체 리스트 */}
             <div className="flex flex-col">
               {filteredFavorites.map((shop) => (
-                <FavoriteShopItem key={shop.id} shop={shop} />
+                <FavoriteShopItem key={shop.id} shop={shop} onShopClick={setSelectedShopId} />
               ))}
             </div>
           </div>
         )}
       </main>
+      {selectedShopId !== null && (
+        <ShopDetailClient shopId={selectedShopId} onClose={() => history.back()} />
+      )}
       <Footer />
     </>
   );
