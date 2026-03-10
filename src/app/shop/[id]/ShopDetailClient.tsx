@@ -1062,6 +1062,7 @@ export default function ShopDetailClient({
                         onReport={handleReportReview}
                         onReportUser={handleReportUser}
                         onBlock={handleBlockUser}
+                        isAdmin={isAdmin}
                         isLoggedIn={isLoggedIn}
                         onImageClick={(images, index) =>
                           setGalleryState({ images, initialIndex: index })
