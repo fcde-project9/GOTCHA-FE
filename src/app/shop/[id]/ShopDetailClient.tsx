@@ -446,7 +446,7 @@ export default function ShopDetailClient({
               variant="primary"
               size="medium"
               className="px-6 text-[17px]"
-              onClick={() => router.push("/home")}
+              onClick={() => (onClose ? onClose() : router.push("/home"))}
             >
               홈으로 돌아가기
             </Button>
@@ -482,7 +482,7 @@ export default function ShopDetailClient({
               variant="tertiary"
               size="medium"
               className="px-6 text-[17px]"
-              onClick={() => router.back()}
+              onClick={() => (onClose ? onClose() : router.back())}
             >
               이전 페이지
             </Button>
@@ -490,7 +490,7 @@ export default function ShopDetailClient({
               variant="primary"
               size="medium"
               className="px-6 text-[17px]"
-              onClick={() => router.push("/home")}
+              onClick={() => (onClose ? onClose() : router.push("/home"))}
             >
               홈으로
             </Button>
