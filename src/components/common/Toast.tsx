@@ -57,7 +57,7 @@ export function Toast({
 
   return (
     <div
-      className={`fixed top-[48px] left-1/2 z-50 -translate-x-1/2 transition-all duration-700 ease-out ${
+      className={`fixed top-[calc(60px+env(safe-area-inset-top))] left-1/2 z-50 -translate-x-1/2 transition-all duration-700 ease-out ${
         show ? "translate-y-0 opacity-100" : "-translate-y-[200%] opacity-0"
       }`}
     >
