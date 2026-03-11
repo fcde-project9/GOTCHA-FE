@@ -505,7 +505,7 @@ export default function ShopDetailClient({
     ...shop.recentReviewImages,
   ];
   const totalImageCount = shop.totalReviewImageCount + (shop.mainImageUrl ? 1 : 0);
-  const remainingCount = totalImageCount > 5 ? totalImageCount - 4 : 0;
+  const remainingCount = totalImageCount > 5 ? totalImageCount - 5 : 0;
 
   const content = (
     <div className="h-dvh bg-default flex flex-col overflow-hidden">
@@ -873,7 +873,7 @@ export default function ShopDetailClient({
                         <Images size={24} className="text-white" strokeWidth={1.5} />
                         <div className="flex items-center justify-center">
                           <span className="text-[12px] text-white leading-[1.5] tracking-[-0.12px]">
-                            {remainingCount}
+                            +{remainingCount}
                           </span>
                           <ChevronRight size={10} className="text-white" />
                         </div>

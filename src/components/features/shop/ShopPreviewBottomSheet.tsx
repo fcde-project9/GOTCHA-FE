@@ -529,7 +529,7 @@ export default function ShopPreviewBottomSheet({
     ...shop.recentReviewImages,
   ];
   const totalImageCount = shop.totalReviewImageCount + (shop.mainImageUrl ? 1 : 0);
-  const remainingCount = totalImageCount > 5 ? totalImageCount - 4 : 0;
+  const remainingCount = totalImageCount > 5 ? totalImageCount - 5 : 0;
 
   const handleViewAllImages = () => setAllImagesOpen(true);
   const handleViewAllReviews = () => setShowAllReviews(true);
@@ -1234,7 +1234,7 @@ export default function ShopPreviewBottomSheet({
                               <Images size={24} className="text-white" strokeWidth={1.5} />
                               <div className="flex items-center justify-center">
                                 <span className="text-[12px] text-white leading-[1.5] tracking-[-0.12px]">
-                                  {remainingCount}
+                                  +{remainingCount}
                                 </span>
                                 <ChevronRight size={10} className="text-white" />
                               </div>
