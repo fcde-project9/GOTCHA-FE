@@ -529,7 +529,7 @@ export default function ShopPreviewBottomSheet({
     ...shop.recentReviewImages,
   ];
   const totalImageCount = shop.totalReviewImageCount + (shop.mainImageUrl ? 1 : 0);
-  const remainingCount = totalImageCount > 5 ? totalImageCount - 4 : 0;
+  const remainingCount = totalImageCount > 5 ? totalImageCount - 5 : 0;
 
   const handleViewAllImages = () => setAllImagesOpen(true);
   const handleViewAllReviews = () => setShowAllReviews(true);
@@ -1000,30 +1000,21 @@ export default function ShopPreviewBottomSheet({
               </div>
             )}
 
-            {/* 구분선 + 업체 사진 (확장 시에만 표시) */}
+            {/* 구분선 + 매장 사진 (확장 시에만 표시) */}
             {isExpanded && (
               <>
                 <div className="h-2 -mx-5 bg-grey-50" />
 
                 <div className="py-4">
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center mb-3">
                     <div className="flex items-center gap-2">
                       <h3 className="text-[19px] font-medium text-grey-900 leading-[1.5] tracking-[-0.19px]">
-                        업체 사진
+                        매장 사진
                       </h3>
                       {totalImageCount > 0 && (
                         <span className="text-[14px] text-main font-medium">{totalImageCount}</span>
                       )}
                     </div>
-                    {shopImages.length > 0 && (
-                      <button
-                        onClick={handleViewAllImages}
-                        className="flex items-center text-[14px] text-grey-500"
-                      >
-                        전체보기
-                        <ChevronRight size={16} />
-                      </button>
-                    )}
                   </div>
 
                   {shopImages.length === 0 ? (
@@ -1037,125 +1028,219 @@ export default function ShopPreviewBottomSheet({
                     >
                       <Image
                         src={shopImages[0]}
-                        alt="업체 사진"
+                        alt="매장 사진"
                         width={335}
                         height={167}
                         className="w-full h-full object-cover"
                       />
                     </button>
                   ) : shopImages.length === 2 ? (
-                    /* 사진 2개: 좌우 동일 크기 */
-                    <div className="flex gap-px">
-                      <button
-                        onClick={() => setGalleryState({ images: shopImages, initialIndex: 0 })}
-                        className="flex-1 aspect-square rounded-l-lg overflow-hidden bg-grey-100"
-                      >
-                        <Image
-                          src={shopImages[0]}
-                          alt="업체 사진 1"
-                          width={167}
-                          height={167}
-                          className="w-full h-full object-cover"
-                        />
-                      </button>
-                      <button
-                        onClick={() => setGalleryState({ images: shopImages, initialIndex: 1 })}
-                        className="flex-1 aspect-square rounded-r-lg overflow-hidden bg-grey-100"
-                      >
-                        <Image
-                          src={shopImages[1]}
-                          alt="업체 사진 2"
-                          width={167}
-                          height={167}
-                          className="w-full h-full object-cover"
-                        />
-                      </button>
+                    <div className="relative aspect-[335/167]">
+                      <div className="absolute inset-0 flex gap-px">
+                        <button
+                          onClick={() => setGalleryState({ images: shopImages, initialIndex: 0 })}
+                          className="flex-1 rounded-l-lg overflow-hidden bg-grey-100"
+                        >
+                          <Image
+                            src={shopImages[0]}
+                            alt="매장 사진 1"
+                            width={167}
+                            height={167}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                        <button
+                          onClick={() => setGalleryState({ images: shopImages, initialIndex: 1 })}
+                          className="flex-1 rounded-r-lg overflow-hidden bg-grey-100"
+                        >
+                          <Image
+                            src={shopImages[1]}
+                            alt="매장 사진 2"
+                            width={167}
+                            height={167}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                      </div>
                     </div>
-                  ) : (
-                    /* 확장: 그리드 레이아웃 */
-                    <div className="flex gap-px">
-                      <button
-                        onClick={() => setGalleryState({ images: shopImages, initialIndex: 0 })}
-                        className="flex-1 aspect-square rounded-l-lg overflow-hidden bg-grey-100"
-                      >
-                        <Image
-                          src={shopImages[0]}
-                          alt="업체 사진 1"
-                          width={167}
-                          height={167}
-                          className="w-full h-full object-cover"
-                        />
-                      </button>
-                      <div className="flex-1 flex flex-wrap gap-px content-end">
-                        {shopImages[1] && (
+                  ) : shopImages.length === 3 ? (
+                    <div className="relative aspect-[335/167]">
+                      <div className="absolute inset-0 flex gap-px">
+                        <button
+                          onClick={() => setGalleryState({ images: shopImages, initialIndex: 0 })}
+                          className="flex-1 rounded-l-lg overflow-hidden bg-grey-100"
+                        >
+                          <Image
+                            src={shopImages[0]}
+                            alt="매장 사진 1"
+                            width={167}
+                            height={167}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                        <div className="flex-1 flex flex-col gap-px">
                           <button
                             onClick={() => setGalleryState({ images: shopImages, initialIndex: 1 })}
-                            className="w-[calc(50%-0.5px)] aspect-square overflow-hidden bg-grey-100"
+                            className="flex-1 rounded-tr-lg overflow-hidden bg-grey-100"
                           >
                             <Image
                               src={shopImages[1]}
-                              alt="업체 사진 2"
-                              width={83}
+                              alt="매장 사진 2"
+                              width={112}
                               height={83}
                               className="w-full h-full object-cover"
                             />
                           </button>
-                        )}
-                        {shopImages[2] && (
                           <button
                             onClick={() => setGalleryState({ images: shopImages, initialIndex: 2 })}
-                            className="w-[calc(50%-0.5px)] aspect-square rounded-tr-lg overflow-hidden bg-grey-100"
+                            className="flex-1 rounded-br-lg overflow-hidden bg-grey-100"
                           >
                             <Image
                               src={shopImages[2]}
-                              alt="업체 사진 3"
-                              width={83}
+                              alt="매장 사진 3"
+                              width={112}
                               height={83}
                               className="w-full h-full object-cover"
                             />
                           </button>
-                        )}
-                        {shopImages[3] && (
+                        </div>
+                      </div>
+                    </div>
+                  ) : shopImages.length === 4 ? (
+                    <div className="relative aspect-[335/167]">
+                      <div className="absolute inset-0 flex gap-px">
+                        <button
+                          onClick={() => setGalleryState({ images: shopImages, initialIndex: 0 })}
+                          className="flex-1 rounded-l-lg overflow-hidden bg-grey-100"
+                        >
+                          <Image
+                            src={shopImages[0]}
+                            alt="매장 사진 1"
+                            width={167}
+                            height={167}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                        <div className="flex-1 flex flex-col gap-px">
                           <button
-                            onClick={() => setGalleryState({ images: shopImages, initialIndex: 3 })}
-                            className="w-[calc(50%-0.5px)] aspect-square overflow-hidden bg-grey-100"
+                            onClick={() => setGalleryState({ images: shopImages, initialIndex: 1 })}
+                            className="flex-1 rounded-tr-lg overflow-hidden bg-grey-100"
                           >
                             <Image
-                              src={shopImages[3]}
-                              alt="업체 사진 4"
-                              width={83}
+                              src={shopImages[1]}
+                              alt="매장 사진 2"
+                              width={167}
                               height={83}
                               className="w-full h-full object-cover"
                             />
                           </button>
-                        )}
-                        {shopImages[4] ? (
-                          <button
-                            onClick={handleViewAllImages}
-                            className="relative w-[calc(50%-0.5px)] aspect-square rounded-br-lg overflow-hidden bg-grey-100"
-                          >
-                            <Image
-                              src={shopImages[4]}
-                              alt="업체 사진 5"
-                              width={83}
-                              height={83}
-                              className="w-full h-full object-cover"
-                            />
-                            {remainingCount > 0 && (
-                              <div className="absolute inset-0 bg-black/55 flex flex-col items-center justify-center rounded-br-lg">
-                                <Images size={24} className="text-white" strokeWidth={1.5} />
-                                <div className="flex items-center justify-center">
-                                  <span className="text-[12px] text-white leading-[1.5] tracking-[-0.12px]">
-                                    {remainingCount}
-                                  </span>
-                                  <ChevronRight size={10} className="text-white" />
-                                </div>
+                          <div className="flex gap-px">
+                            <button
+                              onClick={() =>
+                                setGalleryState({ images: shopImages, initialIndex: 2 })
+                              }
+                              className="flex-1 aspect-square overflow-hidden bg-grey-100"
+                            >
+                              <Image
+                                src={shopImages[2]}
+                                alt="매장 사진 3"
+                                width={83}
+                                height={83}
+                                className="w-full h-full object-cover"
+                              />
+                            </button>
+                            <button
+                              onClick={() =>
+                                setGalleryState({ images: shopImages, initialIndex: 3 })
+                              }
+                              className="flex-1 aspect-square rounded-br-lg overflow-hidden bg-grey-100"
+                            >
+                              <Image
+                                src={shopImages[3]}
+                                alt="매장 사진 4"
+                                width={83}
+                                height={83}
+                                className="w-full h-full object-cover"
+                              />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex gap-px">
+                      <button
+                        onClick={() => setGalleryState({ images: shopImages, initialIndex: 0 })}
+                        className="flex-1 aspect-square rounded-l-lg overflow-hidden bg-grey-100"
+                      >
+                        <Image
+                          src={shopImages[0]}
+                          alt="매장 사진 1"
+                          width={167}
+                          height={167}
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                      <div className="flex-1 flex flex-wrap gap-px">
+                        <button
+                          onClick={() => setGalleryState({ images: shopImages, initialIndex: 1 })}
+                          className="w-[calc(50%-0.5px)] aspect-square overflow-hidden bg-grey-100"
+                        >
+                          <Image
+                            src={shopImages[1]}
+                            alt="매장 사진 2"
+                            width={83}
+                            height={83}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                        <button
+                          onClick={() => setGalleryState({ images: shopImages, initialIndex: 2 })}
+                          className="w-[calc(50%-0.5px)] aspect-square rounded-tr-lg overflow-hidden bg-grey-100"
+                        >
+                          <Image
+                            src={shopImages[2]}
+                            alt="매장 사진 3"
+                            width={83}
+                            height={83}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                        <button
+                          onClick={() => setGalleryState({ images: shopImages, initialIndex: 3 })}
+                          className="w-[calc(50%-0.5px)] aspect-square overflow-hidden bg-grey-100"
+                        >
+                          <Image
+                            src={shopImages[3]}
+                            alt="매장 사진 4"
+                            width={83}
+                            height={83}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                        <button
+                          onClick={handleViewAllImages}
+                          className="relative w-[calc(50%-0.5px)] aspect-square rounded-br-lg overflow-hidden bg-grey-100"
+                        >
+                          <Image
+                            src={shopImages[4]}
+                            alt="매장 사진 5"
+                            width={83}
+                            height={83}
+                            className="w-full h-full object-cover"
+                          />
+                          {remainingCount > 0 && (
+                            <div className="absolute inset-0 bg-black/55 flex flex-col items-center justify-center rounded-br-lg">
+                              <Images size={24} className="text-white" strokeWidth={1.5} />
+                              <div className="flex items-center justify-center">
+                                <span className="text-[12px] text-white leading-[1.5] tracking-[-0.12px]">
+                                  +{remainingCount}
+                                </span>
+                                <ChevronRight size={10} className="text-white" />
                               </div>
-                            )}
-                          </button>
-                        ) : (
-                          <div className="w-[calc(50%-0.5px)] aspect-square rounded-br-lg bg-grey-100" />
-                        )}
+                            </div>
+                          )}
+                        </button>
                       </div>
                     </div>
                   )}
@@ -1285,13 +1370,7 @@ export default function ShopPreviewBottomSheet({
       )}
 
       {allImagesOpen && (
-        <ImagesGalleryOverlay
-          images={[
-            ...(shop.mainImageUrl ? [shop.mainImageUrl] : []),
-            ...shop.reviews.flatMap((review) => review.imageUrls),
-          ]}
-          onClose={() => setAllImagesOpen(false)}
-        />
+        <ImagesGalleryOverlay images={shopImages} onClose={() => setAllImagesOpen(false)} />
       )}
 
       {/* 리뷰 작성 모달 */}
