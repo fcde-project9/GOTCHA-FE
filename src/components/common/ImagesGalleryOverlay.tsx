@@ -66,7 +66,7 @@ export function ImagesGalleryOverlay({ images, onClose }: ImagesGalleryOverlayPr
               >
                 <Image
                   src={imageUrl}
-                  alt={`업체 사진 ${index + 1}`}
+                  alt={`매장 사진 ${index + 1}`}
                   width={150}
                   height={150}
                   className="w-full h-full object-cover"
@@ -99,7 +99,7 @@ export function ImagesGalleryOverlay({ images, onClose }: ImagesGalleryOverlayPr
             >
               <Image
                 src={images[selectedIndex]}
-                alt={`업체 사진 ${selectedIndex + 1}`}
+                alt={`매장 사진 ${selectedIndex + 1}`}
                 fill
                 sizes="100vw"
                 className="object-contain"
