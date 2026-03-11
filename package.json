@@ -9,6 +9,7 @@
     "start": "next start",
     "build:capacitor": "NEXT_PUBLIC_BUILD_TARGET=capacitor next build",
     "build:ios": "bash scripts/build-ios.sh",
+    "sync:ios": "npx cap sync ios",
     "dev:ios": "([ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\" || [ -s \"$HOME/.nvm/nvm.sh\" ] && . \"$HOME/.nvm/nvm.sh\" || true) && (command -v nvm >/dev/null 2>&1 && nvm use 24 || true) && CAP_DEV_SERVER=true npx cap sync ios && CAP_DEV_SERVER=true npx cap open ios",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",

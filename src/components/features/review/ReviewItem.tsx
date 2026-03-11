@@ -71,7 +71,7 @@ export function ReviewItem({
             )}
             {/* 드롭다운 메뉴 */}
             {isMenuOpen && (isOwnerOrAdmin || isLoggedIn) && (
-              <div className="absolute right-0 top-6 z-10 bg-white rounded-lg shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden">
+              <div className="absolute right-0 top-6 z-10 bg-white rounded-lg shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] overflow-hidden">
                 {isOwnerOrAdmin ? (
                   <>
                     {canEdit && (

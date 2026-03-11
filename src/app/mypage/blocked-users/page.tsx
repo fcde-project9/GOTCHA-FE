@@ -73,7 +73,7 @@ export default function BlockedUsersPage() {
   };
 
   return (
-    <div className="bg-default h-dvh flex flex-col">
+    <div className="bg-default h-[calc(100dvh-env(safe-area-inset-top))] flex flex-col overflow-hidden">
       <BackHeader title="차단한 사용자 목록" />
 
       {isLoading ? (
@@ -88,7 +88,7 @@ export default function BlockedUsersPage() {
           </p>
         </div>
       ) : (
-        <div className="flex flex-col px-5 mt-4">
+        <div className="flex-1 overflow-y-auto flex flex-col px-5 mt-4">
           <p className="text-[16px] font-normal text-grey-900 tracking-[-0.16px] leading-[1.5] mb-2">
             총 {totalCount}명
           </p>

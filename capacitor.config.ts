@@ -10,9 +10,6 @@ const config: CapacitorConfig = {
     ...(isDev && { url: "https://dev.gotcha.it.com" }),
     androidScheme: "https",
   },
-  ios: {
-    scrollEnabled: false,
-  },
   plugins: {
     SplashScreen: {
       launchAutoHide: false,

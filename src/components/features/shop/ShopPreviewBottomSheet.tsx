@@ -149,7 +149,7 @@ function ReviewItem({
               </button>
             )}
             {isMenuOpen && (review.isOwner || isLoggedIn) && (
-              <div className="absolute right-[calc(50%_+_2px)] top-[20px] z-10 bg-white rounded-lg rounded-tr-none shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden">
+              <div className="absolute right-[calc(50%_+_2px)] top-[20px] z-10 bg-white rounded-lg rounded-tr-none shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] overflow-hidden">
                 {review.isOwner ? (
                   <>
                     <button
@@ -408,7 +408,7 @@ export default function ShopPreviewBottomSheet({
   }, [showAllReviews, isAllReviewsLoading, isFetchingNextPage, hasNextPage, fetchNextPage]);
 
   // 드래그 상태
-  const DEFAULT_HEIGHT = 348;
+  const DEFAULT_HEIGHT = 410;
   const [sheetHeight, setSheetHeight] = useState(DEFAULT_HEIGHT);
   const [isDragging, setIsDragging] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -418,6 +418,9 @@ export default function ShopPreviewBottomSheet({
   const dragStartHeight = useRef(DEFAULT_HEIGHT);
   const lastDragY = useRef(0);
   const sheetHeightRef = useRef(DEFAULT_HEIGHT);
+  const contentScrollRef = useRef<HTMLDivElement>(null);
+  const dragDecidedRef = useRef<"drag" | "scroll" | null>(null);
+  const isDraggingRef = useRef(false);
 
   // shopId 변경 시 미리보기 상태로 리셋 (렌더 중 상태 조정 패턴)
   const [prevShopId, setPrevShopId] = useState(shopId);
@@ -444,30 +447,53 @@ export default function ShopPreviewBottomSheet({
 
   const handleDragStart = useCallback(
     (clientY: number) => {
-      setIsDragging(true);
       dragStartY.current = clientY;
       lastDragY.current = clientY;
       dragStartHeight.current = sheetHeight;
+      dragDecidedRef.current = null;
     },
     [sheetHeight]
   );
 
   const handleDragMove = useCallback(
-    (clientY: number) => {
-      if (!isDragging) return;
+    (clientY: number, e?: React.TouchEvent) => {
       lastDragY.current = clientY;
+      const delta = clientY - dragStartY.current;
+
+      if (dragDecidedRef.current === null) {
+        if (Math.abs(delta) < 5) return;
+        const contentEl = contentScrollRef.current;
+        const isAtTop = !contentEl || contentEl.scrollTop <= 0;
+        const isMovingDown = delta > 0;
+
+        if (isMovingDown && isAtTop) {
+          dragDecidedRef.current = "drag";
+        } else if (!isMovingDown) {
+          dragDecidedRef.current = "drag";
+        } else {
+          dragDecidedRef.current = "scroll";
+        }
+      }
+
+      if (dragDecidedRef.current === "scroll") return;
+
+      e?.preventDefault();
+      isDraggingRef.current = true;
+      setIsDragging(true);
       if (!isExpanded) {
-        const delta = dragStartY.current - clientY;
-        const newHeight = Math.max(0, dragStartHeight.current + delta);
+        const heightDelta = dragStartY.current - clientY;
+        const newHeight = Math.max(0, dragStartHeight.current + heightDelta);
         sheetHeightRef.current = newHeight;
         setSheetHeight(newHeight);
       }
     },
-    [isDragging, isExpanded]
+    [isExpanded]
   );
 
   const handleDragEnd = useCallback(() => {
-    if (!isDragging) return;
+    dragDecidedRef.current = null;
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
     setIsDragging(false);
 
     if (isExpanded) {
@@ -481,8 +507,8 @@ export default function ShopPreviewBottomSheet({
       const threshold = 50;
 
       if (delta > threshold) {
-        setSheetHeight(0);
-        setTimeout(() => onClose(), 550);
+        // 아래로 드래그 → 원래 높이로 복귀 (footer 뒤로 숨기지 않음)
+        setSheetHeight(DEFAULT_HEIGHT);
       } else if (delta < -threshold) {
         {
           setHasExpandedOnce(true);
@@ -492,7 +518,7 @@ export default function ShopPreviewBottomSheet({
         setSheetHeight(DEFAULT_HEIGHT);
       }
     }
-  }, [isDragging, isExpanded, onClose, collapseToPreview]);
+  }, [isExpanded, collapseToPreview]);
 
   useEffect(() => {
     if (!isDragging) return;
@@ -510,7 +536,7 @@ export default function ShopPreviewBottomSheet({
 
   if (isShopLoading || !shop) {
     return (
-      <div className="absolute bottom-0 left-0 right-0 z-20 bg-white rounded-t-[24px] shadow-[0_0_10px_rgba(0,0,0,0.2)] animate-slide-up">
+      <div className="absolute bottom-0 left-0 right-0 z-20 bg-white rounded-t-[24px] shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] animate-slide-up">
         <div className="flex items-center justify-center py-[10px]">
           <div className="w-[44px] h-[4px] bg-[#cfcfcf] rounded-[2px]" />
         </div>
@@ -733,21 +759,19 @@ export default function ShopPreviewBottomSheet({
     <>
       {/* 바텀시트 */}
       <div
-        className={`absolute bottom-0 left-0 right-0 z-40 bg-white overflow-hidden shadow-[0_-4px_10px_rgba(0,0,0,0.2)] ${isExpanded && !isCollapsing ? "flex flex-col" : "rounded-t-[24px]"} ${isLeaving ? "animate-slide-down" : !hasExpandedOnce ? "animate-slide-up" : ""}`}
+        className={`absolute bottom-0 left-0 right-0 ${isExpanded ? "z-40" : "z-10"} bg-white overflow-hidden shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] ${isExpanded && !isCollapsing ? "flex flex-col" : "rounded-t-[24px]"} ${isLeaving ? "animate-slide-down" : !hasExpandedOnce ? "animate-slide-up" : ""}`}
         style={{
           height: isCollapsing ? `${sheetHeight}px` : isExpanded ? "100%" : `${sheetHeight}px`,
           transition: isDragging ? "none" : "height 0.55s cubic-bezier(0.32, 0.72, 0, 1)",
         }}
+        onTouchStart={(e) => handleDragStart(e.touches[0].clientY)}
+        onTouchMove={(e) => handleDragMove(e.touches[0].clientY, e)}
+        onTouchEnd={handleDragEnd}
+        onMouseDown={(e) => handleDragStart(e.clientY)}
       >
         {/* Grabber (미리보기에서만 표시) */}
         {!isExpanded && !isCollapsing && (
-          <div
-            className="flex justify-center pt-3 h-[36px] cursor-grab active:cursor-grabbing"
-            onTouchStart={(e) => handleDragStart(e.touches[0].clientY)}
-            onTouchMove={(e) => handleDragMove(e.touches[0].clientY)}
-            onTouchEnd={handleDragEnd}
-            onMouseDown={(e) => handleDragStart(e.clientY)}
-          >
+          <div className="flex justify-center pt-3 h-[36px] cursor-grab active:cursor-grabbing">
             <div className="w-[44px] h-[4px] bg-[#cfcfcf] rounded-[2px]" />
           </div>
         )}
@@ -756,10 +780,7 @@ export default function ShopPreviewBottomSheet({
         {(isExpanded || isCollapsing) && (
           <div
             className="flex items-center justify-between pr-4 animate-slide-down-header cursor-grab active:cursor-grabbing"
-            onTouchStart={(e) => handleDragStart(e.touches[0].clientY)}
-            onTouchMove={(e) => handleDragMove(e.touches[0].clientY)}
-            onTouchEnd={handleDragEnd}
-            onMouseDown={(e) => handleDragStart(e.clientY)}
+            style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
           >
             <BackHeader onBack={collapseToPreview} />
             <div
@@ -796,7 +817,7 @@ export default function ShopPreviewBottomSheet({
                     <MoreVertical size={24} className="stroke-icon-default" strokeWidth={1.5} />
                   </button>
                   {isAdminMenuOpen && (
-                    <div className="absolute right-0 top-10 z-10 bg-white rounded-lg shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden">
+                    <div className="absolute right-0 top-10 z-10 bg-white rounded-lg shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] overflow-hidden">
                       <button
                         onClick={() => {
                           setIsAdminMenuOpen(false);
@@ -837,6 +858,7 @@ export default function ShopPreviewBottomSheet({
         )}
 
         <div
+          ref={contentScrollRef}
           className={`${isExpanded ? "flex-1 overflow-y-auto pb-safe" : "overflow-hidden h-[calc(100%-34px)]"}`}
         >
           <div className="flex flex-col px-5">
@@ -849,7 +871,7 @@ export default function ShopPreviewBottomSheet({
                 }}
                 className="flex-1 min-w-0 text-left"
               >
-                <h2 className="text-[20px] font-semibold text-grey-900 leading-[150%] tracking-[-0.2px] font-pretendard overflow-hidden text-ellipsis whitespace-nowrap">
+                <h2 className="text-[20px] font-semibold text-grey-900 leading-[150%] tracking-[-0.2px] overflow-hidden text-ellipsis whitespace-nowrap">
                   {shop.name}
                 </h2>
               </button>
@@ -886,7 +908,7 @@ export default function ShopPreviewBottomSheet({
                     <img
                       src="/images/icons/shop-location.png"
                       alt=""
-                      className="shrink-0 w-5 h-5"
+                      className="shrink-0 w-5 h-5 pointer-events-none select-none"
                     />
                     <div className="flex items-center gap-0.5">
                       <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
@@ -902,7 +924,11 @@ export default function ShopPreviewBottomSheet({
                   </div>
                   {shop.locationHint && (
                     <div className="flex items-center gap-2">
-                      <img src="/images/icons/shop-star.png" alt="" className="shrink-0 w-5 h-5" />
+                      <img
+                        src="/images/icons/shop-star.png"
+                        alt=""
+                        className="shrink-0 w-5 h-5 pointer-events-none select-none"
+                      />
                       <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
                         {shop.locationHint}
                       </p>
@@ -914,7 +940,7 @@ export default function ShopPreviewBottomSheet({
                     <img
                       src="/images/icons/shop-calendar.png"
                       alt=""
-                      className="shrink-0 w-5 h-5"
+                      className="shrink-0 w-5 h-5 pointer-events-none select-none"
                     />
                     <div className="flex gap-1.5">
                       {ALL_DAYS.map((day) => (
@@ -927,7 +953,11 @@ export default function ShopPreviewBottomSheet({
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <img src="/images/icons/shop-time.png" alt="" className="shrink-0 w-5 h-5" />
+                    <img
+                      src="/images/icons/shop-time.png"
+                      alt=""
+                      className="shrink-0 w-5 h-5 pointer-events-none select-none"
+                    />
                     {shop.todayOpenTime && (
                       <span className="text-[16px] text-grey-900">{shop.todayOpenTime}</span>
                     )}
@@ -939,7 +969,11 @@ export default function ShopPreviewBottomSheet({
               /* 미리보기: 간격 좁게 한 블록 */
               <div className="flex flex-col gap-3 mt-3">
                 <div className="flex items-center gap-2">
-                  <img src="/images/icons/shop-location.png" alt="" className="shrink-0 w-5 h-5" />
+                  <img
+                    src="/images/icons/shop-location.png"
+                    alt=""
+                    className="shrink-0 w-5 h-5 pointer-events-none select-none"
+                  />
                   <div className="flex items-center gap-0.5">
                     <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
                       {shop.addressName}
@@ -954,14 +988,22 @@ export default function ShopPreviewBottomSheet({
                 </div>
                 {shop.locationHint && (
                   <div className="flex items-center gap-2">
-                    <img src="/images/icons/shop-star.png" alt="" className="shrink-0 w-5 h-5" />
+                    <img
+                      src="/images/icons/shop-star.png"
+                      alt=""
+                      className="shrink-0 w-5 h-5 pointer-events-none select-none"
+                    />
                     <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
                       {shop.locationHint}
                     </p>
                   </div>
                 )}
                 <div className="flex items-center gap-2">
-                  <img src="/images/icons/shop-calendar.png" alt="" className="shrink-0 w-5 h-5" />
+                  <img
+                    src="/images/icons/shop-calendar.png"
+                    alt=""
+                    className="shrink-0 w-5 h-5 pointer-events-none select-none"
+                  />
                   <div className="flex gap-1.5">
                     {ALL_DAYS.map((day) => (
                       <DayBadge
@@ -973,7 +1015,11 @@ export default function ShopPreviewBottomSheet({
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <img src="/images/icons/shop-time.png" alt="" className="shrink-0 w-5 h-5" />
+                  <img
+                    src="/images/icons/shop-time.png"
+                    alt=""
+                    className="shrink-0 w-5 h-5 pointer-events-none select-none"
+                  />
                   {shop.todayOpenTime && (
                     <span className="text-[16px] text-grey-900">{shop.todayOpenTime}</span>
                   )}
@@ -1207,7 +1253,7 @@ export default function ShopPreviewBottomSheet({
                             />
                           </button>
                           {isSortDropdownOpen && (
-                            <div className="absolute right-0 top-6 z-10 bg-white rounded-lg rounded-tr-none shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden w-[112px]">
+                            <div className="absolute right-0 top-6 z-10 bg-white rounded-lg rounded-tr-none shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] overflow-hidden w-[112px]">
                               <button
                                 onClick={() => handleSortChange("LATEST")}
                                 className={`flex items-center px-3 py-2 w-full text-[14px] ${sortBy === "LATEST" ? "text-main" : "text-grey-700"} hover:bg-grey-50`}
@@ -1410,7 +1456,7 @@ export default function ShopPreviewBottomSheet({
                         />
                       </button>
                       {isAllReviewsSortOpen && (
-                        <div className="absolute right-0 top-6 z-10 bg-white rounded-lg rounded-tr-none shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden w-[112px]">
+                        <div className="absolute right-0 top-6 z-10 bg-white rounded-lg rounded-tr-none shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] overflow-hidden w-[112px]">
                           <button
                             onClick={() => handleAllReviewsSortChange("LATEST")}
                             className={`flex items-center px-3 py-2 w-full text-[14px] ${allReviewsSortBy === "LATEST" ? "text-main" : "text-grey-700"} hover:bg-grey-50`}

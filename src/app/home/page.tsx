@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { Search, LocateFixed, RefreshCcw, ChevronLeft, CircleX, Loader2 } from "lucide-react";
+import { LocateFixed, RefreshCcw, CircleX, Loader2 } from "lucide-react";
 import { Footer, LocationPermissionModal, SplashScreen } from "@/components/common";
 import { SearchResultItem } from "@/components/features/search";
 import { ShopListBottomSheet, ShopPreviewBottomSheet } from "@/components/features/shop";
@@ -58,6 +58,14 @@ export default function Home() {
     document.body.style.overscrollBehaviorY = "contain";
     return () => {
       document.body.style.overscrollBehaviorY = "";
+    };
+  }, []);
+
+  // 홈(지도) 페이지에서 body 상단 패딩 제거 → 지도가 상태바/노치 뒤까지 확장
+  useEffect(() => {
+    document.body.style.paddingTop = "0px";
+    return () => {
+      document.body.style.paddingTop = "";
     };
   }, []);
 
@@ -119,7 +127,9 @@ export default function Home() {
         onPermissionGranted={locationTracking.handlePermissionGranted}
       />
 
-      <main className="h-[calc(100dvh-var(--footer-height))] overflow-hidden relative touch-none">
+      <main
+        className={`${bottomSheet.showPreviewSheet ? "h-[100dvh]" : "h-[calc(100dvh-var(--footer-height))]"} overflow-hidden relative touch-none`}
+      >
         <div className="flex h-full flex-col items-center relative touch-auto">
           {/* 카카오맵 */}
           <div className="w-full h-full relative">
@@ -207,7 +217,7 @@ export default function Home() {
           )}
         </div>
       </main>
-      {!search.isSearching && <Footer />}
+      {!search.isSearching && !bottomSheet.showPreviewSheet && <Footer />}
     </>
   );
 }
@@ -232,43 +242,59 @@ function SearchBar({
   onClearSearch,
 }: SearchBarProps) {
   return (
-    <div className="absolute left-0 right-0 top-5 z-30 mx-auto w-full max-w-[480px] px-5">
+    <div className="absolute left-0 right-0 top-[calc(env(safe-area-inset-top)+20px)] z-30 mx-auto w-full max-w-[480px] px-5">
       {!isSearching ? (
         <button
           onClick={onSearchClick}
-          className="flex h-11 w-full items-center gap-2 rounded-lg bg-white px-2.5 py-2.5 shadow-[0px_0px_5px_0px_rgba(0,0,0,0.2)]"
+          className="flex h-11 w-full items-center justify-between rounded-lg bg-white p-[10px] shadow-[0px_0px_5px_0px_rgba(0,0,0,0.2)]"
         >
-          <Search size={20} className="stroke-grey-800" strokeWidth={2} />
           <span
             className={`text-[17px] font-normal leading-[1.5] tracking-[-0.17px] ${
-              searchQuery ? "text-grey-800" : "text-grey-600"
+              searchQuery ? "text-grey-800" : "text-grey-400"
             }`}
           >
-            {searchQuery || "지역 또는 지하철역 검색"}
+            {searchQuery || "위치로 업체 검색"}
           </span>
+          <img
+            src="/images/icons/search.svg"
+            alt=""
+            className="w-[26px] h-[26px] pointer-events-none select-none"
+          />
         </button>
       ) : (
-        <div className="flex h-11 items-center gap-2 rounded-lg bg-grey-100 pl-1.5 pr-2 py-2.5">
+        <div className="flex items-center">
           <button
             onClick={onSearchCancel}
-            className="flex size-6 items-center justify-center"
+            className="flex shrink-0 size-[26px] items-center justify-center"
             aria-label="취소"
           >
-            <ChevronLeft size={24} className="stroke-grey-800" strokeWidth={1.5} />
+            <img
+              src="/images/icons/arrow-left.svg"
+              alt=""
+              className="w-[26px] h-[26px] pointer-events-none select-none"
+            />
           </button>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="지역 또는 지하철역 검색"
-            autoFocus
-            className="flex-1 bg-transparent text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-900 placeholder:text-grey-600 focus:outline-none"
-          />
-          {searchQuery && (
-            <button onClick={onClearSearch} aria-label="검색어 지우기">
-              <CircleX size={24} className="fill-grey-500 stroke-grey-100" strokeWidth={2} />
-            </button>
-          )}
+          <div className="flex flex-1 h-11 items-center rounded-lg bg-grey-100 px-[10px]">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="상품 키워드, 매장명 검색"
+              autoFocus
+              className="flex-1 bg-transparent text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-900 placeholder:text-grey-400 focus:outline-none"
+            />
+            {searchQuery ? (
+              <button onClick={onClearSearch} className="shrink-0" aria-label="검색어 지우기">
+                <CircleX size={26} className="fill-grey-500 stroke-grey-100" strokeWidth={2} />
+              </button>
+            ) : (
+              <img
+                src="/images/icons/search.svg"
+                alt=""
+                className="shrink-0 w-[26px] h-[26px] pointer-events-none select-none"
+              />
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -281,7 +307,7 @@ interface ReloadButtonProps {
 
 function ReloadButton({ onClick }: ReloadButtonProps) {
   return (
-    <div className="absolute left-0 right-0 top-[88px] z-10 mx-auto flex w-full max-w-[480px] justify-center px-5">
+    <div className="absolute left-0 right-0 top-[calc(env(safe-area-inset-top)+88px)] z-10 mx-auto flex w-full max-w-[480px] justify-center px-5">
       <button
         onClick={onClick}
         className="flex items-center gap-1 rounded-full bg-white px-3 py-2 shadow-[0px_0px_5px_0px_rgba(0,0,0,0.2)]"
@@ -352,7 +378,7 @@ interface SearchOverlayProps {
 function SearchOverlay({ searchQuery, results, onResultClick }: SearchOverlayProps) {
   return (
     <div className="absolute left-0 right-0 top-0 bottom-0 z-20 bg-default flex flex-col">
-      <div className="flex-1 overflow-hidden px-[22px] pt-24">
+      <div className="flex-1 overflow-hidden px-[22px] pt-[calc(env(safe-area-inset-top)+96px)]">
         {searchQuery.trim() === "" ? (
           <SearchEmptyState />
         ) : results.length > 0 ? (

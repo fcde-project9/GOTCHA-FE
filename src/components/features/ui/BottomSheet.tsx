@@ -78,18 +78,42 @@ export default function BottomSheet({
         )
       : computedSnapPoints[currentSnapIndex];
 
+  const dragDecidedRef = useRef<"drag" | "scroll" | null>(null);
+
   const handleTouchStart = (e: React.TouchEvent) => {
-    setIsDragging(true);
     setStartY(e.touches[0].clientY);
     setCurrentY(e.touches[0].clientY);
+    dragDecidedRef.current = null;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging) return;
-    setCurrentY(e.touches[0].clientY);
+    const touchY = e.touches[0].clientY;
+    const delta = touchY - startY;
+
+    if (dragDecidedRef.current === null) {
+      if (Math.abs(delta) < 5) return;
+      const contentEl = contentRef.current;
+      const isAtTop = !contentEl || contentEl.scrollTop <= 0;
+      const isMovingDown = delta > 0;
+
+      if (isMovingDown && isAtTop) {
+        dragDecidedRef.current = "drag";
+      } else if (!isMovingDown && currentSnapIndex < computedSnapPoints.length - 1) {
+        dragDecidedRef.current = "drag";
+      } else {
+        dragDecidedRef.current = "scroll";
+      }
+    }
+
+    if (dragDecidedRef.current === "scroll") return;
+
+    e.preventDefault();
+    setIsDragging(true);
+    setCurrentY(touchY);
   };
 
   const handleTouchEnd = () => {
+    dragDecidedRef.current = null;
     if (!isDragging) return;
     setIsDragging(false);
 
@@ -100,17 +124,14 @@ export default function BottomSheet({
 
     if (deltaY > threshold) {
       // 아래로 드래그
-      if (onCollapseAttempt && currentSnapIndex <= 1) {
-        // 최소 또는 그 근처에서 아래로 드래그 → 즉시 닫기
-        onCollapseAttempt();
-        return;
-      } else if (currentSnapIndex === computedSnapPoints.length - 1) {
+      if (currentSnapIndex === computedSnapPoints.length - 1) {
         // 맨 위에서 내리면 → 가운데로 (default)
         newIndex = 1;
-      } else {
-        // 그 외에는 → 최소 상태로 (collapsed)
+      } else if (currentSnapIndex > 0) {
+        // 최소가 아니면 → 최소 상태로 (collapsed)
         newIndex = 0;
       }
+      // 최소 상태(index 0)에서는 더 이상 내려가지 않음
     } else if (deltaY < -threshold) {
       // 위로 드래그
       if (currentSnapIndex === 0) {
@@ -156,17 +177,14 @@ export default function BottomSheet({
 
     if (deltaY > threshold) {
       // 아래로 드래그
-      if (onCollapseAttempt && currentSnapIndex <= 1) {
-        // 최소 또는 그 근처에서 아래로 드래그 → 즉시 닫기
-        onCollapseAttempt();
-        return;
-      } else if (currentSnapIndex === computedSnapPoints.length - 1) {
+      if (currentSnapIndex === computedSnapPoints.length - 1) {
         // 맨 위에서 내리면 → 가운데로 (default)
         newIndex = 1;
-      } else {
-        // 그 외에는 → 최소 상태로 (collapsed)
+      } else if (currentSnapIndex > 0) {
+        // 최소가 아니면 → 최소 상태로 (collapsed)
         newIndex = 0;
       }
+      // 최소 상태(index 0)에서는 더 이상 내려가지 않음
     } else if (deltaY < -threshold) {
       // 위로 드래그
       if (currentSnapIndex === 0) {
@@ -219,20 +237,19 @@ export default function BottomSheet({
   return (
     <div
       ref={sheetRef}
-      className={`absolute bottom-0 left-0 right-0 bg-white overflow-hidden z-10 shadow-[0_-4px_10px_rgba(0,0,0,0.2)] ${isExpanding ? "" : "rounded-t-[24px]"} ${animateOut ? "animate-slide-down" : animateIn ? "animate-slide-up" : ""}`}
+      className={`absolute bottom-0 left-0 right-0 bg-white overflow-hidden z-10 shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] ${isExpanding ? "" : "rounded-t-[24px]"} ${animateOut ? "animate-slide-down" : animateIn ? "animate-slide-up" : ""}`}
       style={{
         height: isExpanding ? "100%" : `${currentHeight - 72}px`,
+        maxHeight: isExpanding ? undefined : `calc(100% - env(safe-area-inset-top, 0px) - 76px)`,
         transition: isDragging ? "none" : "height 0.3s ease-out",
       }}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onMouseDown={handleMouseDown}
     >
       {/* Grabber */}
-      <div
-        className="flex justify-center pt-3 h-[36px] cursor-grab active:cursor-grabbing"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onMouseDown={handleMouseDown}
-      >
+      <div className="flex justify-center pt-3 h-[36px] cursor-grab active:cursor-grabbing">
         <div className="w-[44px] h-[4px] bg-[#cfcfcf] rounded-[2px]" />
       </div>
 
