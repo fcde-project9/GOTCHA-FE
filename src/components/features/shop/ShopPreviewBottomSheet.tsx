@@ -1370,13 +1370,7 @@ export default function ShopPreviewBottomSheet({
       )}
 
       {allImagesOpen && (
-        <ImagesGalleryOverlay
-          images={[
-            ...(shop.mainImageUrl ? [shop.mainImageUrl] : []),
-            ...shop.reviews.flatMap((review) => review.imageUrls),
-          ]}
-          onClose={() => setAllImagesOpen(false)}
-        />
+        <ImagesGalleryOverlay images={shopImages} onClose={() => setAllImagesOpen(false)} />
       )}
 
       {/* 리뷰 작성 모달 */}
