@@ -7,13 +7,12 @@ interface BottomSheetProps {
   snapPoints?: number[]; // 스냅 포인트 (픽셀 단위)
   defaultSnapPoint?: number; // 기본 스냅 포인트 인덱스
   onHeightChange?: (height: number, isDragging: boolean) => void; // 높이 변경 콜백 (isDragging 추가)
-  scrollToTop?: number; // 스크롤을 맨 위로 이동시키기
+  scrollToTop?: number | string; // 스크롤을 맨 위로 이동시키기
   scrollable?: boolean; // 내부 스크롤 여부 (기본값: true)
   animateIn?: boolean; // 마운트 시 슬라이드 업 애니메이션 (기본값: false)
   animateOut?: boolean; // 슬라이드 다운 퇴장 애니메이션 (기본값: false)
   onSnapChange?: (snapIndex: number) => void; // 스냅 포인트 변경 콜백
   onExpandAttempt?: () => void; // 최대 스냅에서 위로 드래그 시 콜백 (확장 애니메이션 후 호출)
-  onCollapseAttempt?: () => void; // 최소 스냅에서 아래로 드래그 시 즉시 호출
 }
 
 /** 확장 시 상단에서 유지할 여백 (검색창 + 재검색 버튼 영역) */
@@ -30,7 +29,6 @@ export default function BottomSheet({
   animateOut = false,
   onSnapChange,
   onExpandAttempt,
-  onCollapseAttempt,
 }: BottomSheetProps) {
   const [containerHeight, setContainerHeight] = useState<number | null>(null);
   const sheetRef = useRef<HTMLDivElement>(null);

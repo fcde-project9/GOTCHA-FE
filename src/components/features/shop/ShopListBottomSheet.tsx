@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useMemo } from "react";
+import Image from "next/image";
 import { DEFAULT_IMAGES } from "@/constants";
 import { ShopListView } from "@/utils/shop";
 import { BottomSheet } from "../ui";
@@ -24,17 +25,11 @@ export default function ShopListBottomSheet({
   onShopSelect,
 }: ShopListBottomSheetProps) {
   const hasShops = shops.length > 0;
-  const [scrollTrigger, setScrollTrigger] = useState(0);
 
   // shops의 ID 목록을 문자열로 변환하여 변경 감지
   const shopsKey = useMemo(() => {
     return shops.map((shop) => shop.id).join(",");
   }, [shops]);
-
-  // shops 데이터가 변경될 때마다 스크롤 트리거 증가
-  useEffect(() => {
-    setScrollTrigger((prev) => prev + 1);
-  }, [shopsKey]);
 
   return (
     <BottomSheet
@@ -44,7 +39,7 @@ export default function ShopListBottomSheet({
       onHeightChange={onHeightChange}
       animateIn={animateIn}
       animateOut={animateOut}
-      scrollToTop={scrollTrigger}
+      scrollToTop={shopsKey}
     >
       <div className="flex flex-col items-center gap-2 px-5 h-full">
         {isLoading ? (
@@ -90,7 +85,12 @@ export default function ShopListBottomSheet({
           /* 빈 상태 UI */
           <div className="flex w-full flex-col items-center justify-center h-full">
             <div className="mb-4 flex items-center justify-center flex-shrink-0 w-20">
-              <img src={DEFAULT_IMAGES.SHOP_LIST_EMPTY} alt="shop-list-empty" />
+              <Image
+                src={DEFAULT_IMAGES.SHOP_LIST_EMPTY}
+                alt="shop-list-empty"
+                width={80}
+                height={80}
+              />
             </div>
             <p className="mb-1 text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900">
               이 지역에 등록된 매장이 없어요
