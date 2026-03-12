@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useShopDetail } from "@/api/queries/useShopDetail";
 import { ImagesGalleryOverlay } from "@/components/common";
-import { DEFAULT_IMAGES } from "@/constants/images";
+import { NO_IMAGE } from "@/constants/images";
 
 function parseShopId(id: string | string[] | undefined): number | null {
   if (typeof id !== "string") return null;
@@ -45,9 +45,7 @@ export default function ImagesGalleryClient() {
   }
 
   const images = [
-    ...(shop.mainImageUrl && shop.mainImageUrl !== DEFAULT_IMAGES.NO_IMAGE
-      ? [shop.mainImageUrl]
-      : []),
+    ...(shop.mainImageUrl && shop.mainImageUrl !== NO_IMAGE ? [shop.mainImageUrl] : []),
     ...shop.reviews.flatMap((review) => review.imageUrls),
   ];
 

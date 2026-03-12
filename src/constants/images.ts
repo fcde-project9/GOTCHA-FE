@@ -3,9 +3,13 @@
  * 하드코딩 방지 및 중앙 관리를 위한 상수 파일
  */
 
+/** 가게 기본 이미지 URL (API에서 내려오는 S3 디폴트 이미지, 비교용) */
+export const NO_IMAGE =
+  "https://gotcha-storage.s3.ap-northeast-2.amazonaws.com/prod/defaults/shop-default-v3.png";
+
 // 기본 이미지
 export const DEFAULT_IMAGES = {
-  /** 가게 기본 이미지 (이미지 없을 때) */
+  /** 가게 기본 이미지 (이미지 없을 때, 화면 표시용) */
   NO_IMAGE: "/images/no-image.png",
   /** 기본 프로필 이미지 */
   PROFILE:
