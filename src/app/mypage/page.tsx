@@ -20,7 +20,7 @@ import { ProfileSection } from "@/components/mypage/ProfileSection";
 import { WithdrawConfirmModal } from "@/components/mypage/WithdrawConfirmModal";
 import { WithdrawModal } from "@/components/mypage/WithdrawModal";
 import { useToast, useAuth } from "@/hooks";
-import { openContactSupport } from "@/utils";
+import { openContactSupport, compressShopImage } from "@/utils";
 
 export default function MyPage() {
   const router = useRouter();
@@ -42,7 +42,8 @@ export default function MyPage() {
 
   const handleEditProfile = async (file: File) => {
     try {
-      await updateProfileImageWithUploadMutation.mutateAsync(file);
+      const compressed = await compressShopImage(file);
+      await updateProfileImageWithUploadMutation.mutateAsync(compressed);
       showToast("프로필 이미지가 변경되었어요");
     } catch {
       showToast("프로필 이미지 변경에 실패했어요", { variant: "warning" });
