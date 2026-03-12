@@ -557,7 +557,10 @@ export default function ShopPreviewBottomSheet({
   ];
   const galleryImages = shopImages.filter((img) => img !== DEFAULT_IMAGES.NO_IMAGE);
   const totalImageCount = shop.totalReviewImageCount + (shop.mainImageUrl ? 1 : 0);
-  const remainingCount = galleryImages.length > 5 ? galleryImages.length - 5 : 0;
+  const visibleGalleryCount = shopImages
+    .slice(0, 5)
+    .filter((img) => img !== DEFAULT_IMAGES.NO_IMAGE).length;
+  const remainingCount = Math.max(galleryImages.length - visibleGalleryCount, 0);
 
   const handleImageClick = (images: string[], index: number) => {
     if (images[index] === DEFAULT_IMAGES.NO_IMAGE) {
