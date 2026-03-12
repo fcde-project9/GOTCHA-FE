@@ -6,6 +6,7 @@ import { X, Camera } from "lucide-react";
 import { useUpdateShopMainImageWithUpload } from "@/api/mutations/useUpdateShopMainImageWithUpload";
 import { useToast } from "@/hooks";
 import type { OpenTime } from "@/types/api";
+import { compressShopImage } from "@/utils";
 
 const DAY_LABELS: Record<keyof OpenTime, string> = {
   Mon: "월",
@@ -147,7 +148,7 @@ export function ShopEditModal({
   const handleImageChange = () => {
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = "image/jpeg,image/jpg,image/png,image/webp";
+    input.accept = "image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif";
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
@@ -156,9 +157,10 @@ export function ShopEditModal({
       const objectUrl = URL.createObjectURL(file);
       setPreviewImageUrl(objectUrl);
 
-      // 이미지 업로드
+      // 이미지 압축 후 업로드
       try {
-        await updateMainImageMutation.mutateAsync({ shopId, file });
+        const compressed = await compressShopImage(file);
+        await updateMainImageMutation.mutateAsync({ shopId, file: compressed });
         showToast("대표 이미지가 변경되었어요.");
       } catch {
         // 실패 시 원래 이미지로 복원
