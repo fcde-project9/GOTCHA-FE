@@ -353,12 +353,12 @@ function ReportRegisterContent() {
   };
 
   return (
-    <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative">
+    <div className="bg-default h-[calc(100dvh-env(safe-area-inset-top))] w-full max-w-[480px] mx-auto flex flex-col overflow-hidden">
       {/* Header */}
-      <BackHeader title="매장 정보 등록" onBack={handleBackClick} sticky />
+      <BackHeader title="매장 정보 등록" onBack={handleBackClick} />
 
       {/* Main Content */}
-      <main className="flex flex-col gap-7 pt-3 px-5">
+      <main className="flex-1 overflow-y-auto flex flex-col gap-7 pt-3 px-5 pb-5">
         {/* 주소 */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-[2px]">
@@ -666,7 +666,7 @@ function ReportRegisterContent() {
       </main>
 
       {/* Submit Button */}
-      <div className="sticky bottom-0 pt-3 pb-[52px] w-full max-w-[480px] px-5 bg-white">
+      <div className="shrink-0 pt-3 pb-[52px] w-full max-w-[480px] px-5 bg-white shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)]">
         <Button
           variant="primary"
           size="medium"

@@ -542,7 +542,7 @@ export default function ShopDetailClient({
                 <MoreVertical size={24} className="stroke-icon-default" strokeWidth={1.5} />
               </button>
               {isAdminMenuOpen && (
-                <div className="absolute right-0 top-10 z-10 bg-white rounded-lg shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden">
+                <div className="absolute right-0 top-10 z-10 bg-white rounded-lg shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] overflow-hidden">
                   <button
                     onClick={() => {
                       setIsAdminMenuOpen(false);
@@ -592,7 +592,11 @@ export default function ShopDetailClient({
         <div className="px-5">
           <div className="flex flex-col gap-3 py-2">
             <div className="flex items-center gap-2">
-              <img src="/images/icons/shop-location.png" alt="" className="shrink-0 w-5 h-5" />
+              <img
+                src="/images/icons/shop-location.png"
+                alt=""
+                className="shrink-0 w-5 h-5 pointer-events-none select-none"
+              />
               <div className="flex items-center gap-0.5">
                 <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
                   {shop.addressName}
@@ -607,7 +611,11 @@ export default function ShopDetailClient({
             </div>
             {shop.locationHint && (
               <div className="flex items-center gap-2">
-                <img src="/images/icons/shop-star.png" alt="" className="shrink-0 w-5 h-5" />
+                <img
+                  src="/images/icons/shop-star.png"
+                  alt=""
+                  className="shrink-0 w-5 h-5 pointer-events-none select-none"
+                />
                 <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
                   {shop.locationHint}
                 </p>
@@ -616,7 +624,11 @@ export default function ShopDetailClient({
           </div>
           <div className="flex flex-col gap-3 pb-4 mt-1">
             <div className="flex items-center gap-2">
-              <img src="/images/icons/shop-calendar.png" alt="" className="shrink-0 w-5 h-5" />
+              <img
+                src="/images/icons/shop-calendar.png"
+                alt=""
+                className="shrink-0 w-5 h-5 pointer-events-none select-none"
+              />
               <div className="flex gap-1.5">
                 {ALL_DAYS.map((day) => (
                   <DayBadge key={day} day={DAY_MAP[day]} isActive={businessDays.includes(day)} />
@@ -624,7 +636,11 @@ export default function ShopDetailClient({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <img src="/images/icons/shop-time.png" alt="" className="shrink-0 w-5 h-5" />
+              <img
+                src="/images/icons/shop-time.png"
+                alt=""
+                className="shrink-0 w-5 h-5 pointer-events-none select-none"
+              />
               {shop.todayOpenTime && (
                 <span className="text-[16px] text-grey-900">{shop.todayOpenTime}</span>
               )}
@@ -932,7 +948,7 @@ export default function ShopDetailClient({
                     />
                   </button>
                   {isSortDropdownOpen && (
-                    <div className="absolute right-0 top-6 z-10 bg-white rounded-lg rounded-tr-none shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden w-[112px]">
+                    <div className="absolute right-0 top-6 z-10 bg-white rounded-lg rounded-tr-none shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] overflow-hidden w-[112px]">
                       <button
                         onClick={() => handleSortChange("LATEST")}
                         className={`flex items-center px-3 py-2 w-full text-[14px] ${sortBy === "LATEST" ? "text-main" : "text-grey-700"} hover:bg-grey-50`}
@@ -1114,7 +1130,7 @@ export default function ShopDetailClient({
                         />
                       </button>
                       {isAllReviewsSortOpen && (
-                        <div className="absolute right-0 top-6 z-10 bg-white rounded-lg rounded-tr-none shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden w-[112px]">
+                        <div className="absolute right-0 top-6 z-10 bg-white rounded-lg rounded-tr-none shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] overflow-hidden w-[112px]">
                           <button
                             onClick={() => handleAllReviewsSortChange("LATEST")}
                             className={`flex items-center px-3 py-2 w-full text-[14px] ${allReviewsSortBy === "LATEST" ? "text-main" : "text-grey-700"} hover:bg-grey-50`}

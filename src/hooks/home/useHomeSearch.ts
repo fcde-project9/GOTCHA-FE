@@ -35,7 +35,7 @@ interface UseHomeSearchReturn {
  * - 카카오 장소 검색 연동
  */
 export function useHomeSearch(): UseHomeSearchReturn {
-  const { results, searchPlaces, clearResults } = useKakaoPlaces();
+  const { results, loaded, searchPlaces, clearResults } = useKakaoPlaces();
   const { searchQuery: storedSearchQuery, setSearchQuery: setStoredSearchQuery } = useMapStore();
 
   const [isSearching, setIsSearching] = useState(false);
@@ -59,9 +59,9 @@ export function useHomeSearch(): UseHomeSearchReturn {
     [setStoredSearchQuery]
   );
 
-  // 검색어 변경 시 자동 검색 (자동 검색 활성화된 경우만)
+  // 검색어 변경 시 자동 검색 (자동 검색 활성화 + API 로드 완료된 경우만)
   useEffect(() => {
-    if (!isAutoSearchEnabled) return;
+    if (!isAutoSearchEnabled || !loaded) return;
 
     if (searchQuery.trim()) {
       const debounce = setTimeout(() => {
@@ -72,11 +72,12 @@ export function useHomeSearch(): UseHomeSearchReturn {
     } else {
       clearResults();
     }
-  }, [searchQuery, searchPlaces, clearResults, isAutoSearchEnabled]);
+  }, [searchQuery, searchPlaces, clearResults, isAutoSearchEnabled, loaded]);
 
   // 검색 모드 시작
   const handleSearchClick = useCallback(() => {
     setIsSearching(true);
+    setIsAutoSearchEnabled(true);
   }, []);
 
   // 검색 취소 (검색 모드 종료)
@@ -107,7 +108,6 @@ export function useHomeSearch(): UseHomeSearchReturn {
 
       // 검색 모드 종료
       setIsSearching(false);
-      clearResults();
 
       // 선택한 위치 좌표 반환
       return {
@@ -116,7 +116,7 @@ export function useHomeSearch(): UseHomeSearchReturn {
         placeName: result.place_name,
       };
     },
-    [results.length, setStoredSearchQuery, clearResults]
+    [results.length, setStoredSearchQuery]
   );
 
   return {

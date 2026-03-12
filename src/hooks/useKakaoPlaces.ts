@@ -20,6 +20,7 @@ interface UseKakaoPlacesReturn {
   results: PlaceSearchResult[];
   isLoading: boolean;
   error: string | null;
+  loaded: boolean;
   searchPlaces: (keyword: string) => void;
   clearResults: () => void;
 }
@@ -437,6 +438,7 @@ export function useKakaoPlaces(): UseKakaoPlacesReturn {
     results,
     isLoading,
     error,
+    loaded,
     searchPlaces,
     clearResults,
   };

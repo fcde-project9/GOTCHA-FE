@@ -72,7 +72,7 @@ export default function FavoritesPage() {
               />
               {searchQuery ? (
                 <button type="button" onClick={handleClearSearch} aria-label="검색어 지우기">
-                  <CircleX size={24} className="fill-grey-500 stroke-grey-50" strokeWidth={2} />
+                  <CircleX size={26} className="fill-grey-500 stroke-grey-50" strokeWidth={2} />
                 </button>
               ) : (
                 <Search size={24} className="stroke-grey-500" strokeWidth={2} />

@@ -57,21 +57,21 @@ export default function ShopListBottomSheet({
             {/* 헤더 섹션 */}
             <div className="flex w-full items-center justify-between">
               <div className="flex items-center gap-0">
-                <span className="text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-900">
-                  총{" "}
+                <span className="text-[15px] font-normal leading-[1.5] tracking-[-0.15px] text-grey-900">
+                  총&nbsp;
                 </span>
-                <span className="text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-900">
+                <span className="text-[15px] font-normal leading-[1.5] tracking-[-0.15px] text-grey-900">
                   {shops.length}개
                 </span>
               </div>
-              <button className="text-right text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-700">
+              <button className="text-right text-[15px] font-normal leading-[1.5] tracking-[-0.15px] text-grey-900">
                 거리순
               </button>
             </div>
 
             {/* 가게 목록 */}
             <div className="flex w-full flex-col">
-              {shops.map((shop) => (
+              {shops.map((shop, index) => (
                 <ShopListItem
                   key={shop.id}
                   shopId={shop.id}
@@ -81,6 +81,7 @@ export default function ShopListBottomSheet({
                   imageUrl={shop.imageUrl}
                   isFavorite={shop.isFavorite}
                   onSelect={onShopSelect}
+                  isLast={index === shops.length - 1}
                 />
               ))}
             </div>

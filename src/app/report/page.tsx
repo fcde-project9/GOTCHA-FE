@@ -258,14 +258,14 @@ export default function ReportLocationPage() {
 
   if (isLoading) {
     return (
-      <div className="bg-default h-[100dvh] w-full max-w-[480px] mx-auto flex items-center justify-center overflow-hidden">
+      <div className="bg-default h-[calc(100dvh-env(safe-area-inset-top))] w-full max-w-[480px] mx-auto flex items-center justify-center overflow-hidden">
         <p className="text-grey-600">위치 정보를 불러오는 중...</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-default h-[100dvh] w-full max-w-[480px] mx-auto relative overflow-hidden">
+    <div className="bg-default h-[calc(100dvh-env(safe-area-inset-top))] w-full max-w-[480px] mx-auto flex flex-col overflow-hidden">
       {/* Header */}
       <BackHeader
         title="제보하기"
@@ -273,11 +273,10 @@ export default function ReportLocationPage() {
           trackShopReportExit("location");
           router.push("/home");
         }}
-        absolute
       />
 
-      {/* Map - 헤더(56px)와 바텀시트를 고려한 높이, 바텀시트가 살짝 걸치도록 */}
-      <div className="relative h-[100dvh] pt-14 pb-[150px]">
+      {/* Map */}
+      <div className="flex-1 relative min-h-0">
         <KakaoMap
           width="100%"
           height="100%"
@@ -306,45 +305,44 @@ export default function ReportLocationPage() {
         >
           <img src={MARKER_IMAGES.REPORT} alt="위치 핀" width={42} height={56} />
         </div>
-      </div>
 
-      {/* Bottom Sheet */}
-      <div className="absolute bottom-0 left-0 right-0 z-30">
-        {/* 현재 위치 버튼 - 바텀시트 상단 위 16px */}
-        <div className="flex justify-end px-5 mb-4 pointer-events-none">
+        {/* 현재 위치 버튼 */}
+        <div className="absolute bottom-4 right-5 z-20">
           <button
             onClick={handleCurrentLocation}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-[0px_0px_5px_0px_rgba(0,0,0,0.2)] pointer-events-auto"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-[0px_0px_5px_0px_rgba(0,0,0,0.2)]"
             aria-label="현재 위치"
           >
             <LocateFixed size={20} className="stroke-grey-800" strokeWidth={1.5} />
           </button>
         </div>
-        <div className="bg-white rounded-t-3xl px-5 pt-5 pb-[68px] shadow-[0_-4px_10px_rgba(0,0,0,0.2)]">
-          <div className="flex flex-col gap-[22px]">
-            {/* Address */}
-            <div className="flex flex-col gap-2">
-              <label className="text-[15px] font-normal leading-[1.5] tracking-[-0.15px] text-grey-600 text-center">
-                제보할 위치
-              </label>
-              <div className="bg-grey-100 min-h-11 flex items-center justify-center px-5 py-2 rounded-lg">
-                <p className="text-[16px] font-semibold leading-[1.5] tracking-[-0.16px] text-grey-700 text-center break-words">
-                  {address}
-                </p>
-              </div>
-            </div>
+      </div>
 
-            {/* Submit Button */}
-            <Button
-              variant="primary"
-              size="medium"
-              fullWidth
-              loading={checkingNearby}
-              onClick={handleSubmit}
-            >
-              이 주소로 등록할래요!
-            </Button>
+      {/* Bottom Sheet */}
+      <div className="shrink-0 bg-white rounded-t-3xl px-5 pt-5 pb-[68px] shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)]">
+        <div className="flex flex-col gap-[22px]">
+          {/* Address */}
+          <div className="flex flex-col gap-2">
+            <label className="text-[15px] font-normal leading-[1.5] tracking-[-0.15px] text-grey-600 text-center">
+              제보할 위치
+            </label>
+            <div className="bg-grey-100 min-h-11 flex items-center justify-center px-5 py-2 rounded-lg">
+              <p className="text-[16px] font-semibold leading-[1.5] tracking-[-0.16px] text-grey-700 text-center break-words">
+                {address}
+              </p>
+            </div>
           </div>
+
+          {/* Submit Button */}
+          <Button
+            variant="primary"
+            size="medium"
+            fullWidth
+            loading={checkingNearby}
+            onClick={handleSubmit}
+          >
+            이 주소로 등록할래요!
+          </Button>
         </div>
       </div>
 
