@@ -952,7 +952,7 @@ export default function ShopPreviewBottomSheet({
                       ))}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 min-h-6">
                     <img
                       src="/images/icons/shop-time.png"
                       alt=""
@@ -1014,7 +1014,7 @@ export default function ShopPreviewBottomSheet({
                     ))}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 min-h-6">
                   <img
                     src="/images/icons/shop-time.png"
                     alt=""
