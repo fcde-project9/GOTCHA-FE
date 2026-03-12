@@ -505,16 +505,17 @@ export default function ShopDetailClient({
     ...(shop.mainImageUrl ? [shop.mainImageUrl] : []),
     ...shop.recentReviewImages,
   ];
+  const galleryImages = shopImages.filter((img) => img !== DEFAULT_IMAGES.NO_IMAGE);
   const totalImageCount = shop.totalReviewImageCount + (shop.mainImageUrl ? 1 : 0);
-  const remainingCount = totalImageCount > 5 ? totalImageCount - 5 : 0;
+  const remainingCount = galleryImages.length > 5 ? galleryImages.length - 5 : 0;
 
   const handleImageClick = (images: string[], index: number) => {
     if (images[index] === DEFAULT_IMAGES.NO_IMAGE) {
       showToast("아직 등록된 매장사진이 없어요", { variant: "warning" });
     } else {
-      const filtered = images.filter((img) => img !== DEFAULT_IMAGES.NO_IMAGE);
-      const filteredIndex = filtered.indexOf(images[index]);
-      setGalleryState({ images: filtered, initialIndex: filteredIndex });
+      const filteredIndex =
+        images.slice(0, index + 1).filter((img) => img !== DEFAULT_IMAGES.NO_IMAGE).length - 1;
+      setGalleryState({ images: galleryImages, initialIndex: filteredIndex });
     }
   };
 
@@ -1037,7 +1038,7 @@ export default function ShopDetailClient({
       )}
 
       {allImagesOpen && (
-        <ImagesGalleryOverlay images={shopImages} onClose={() => setAllImagesOpen(false)} />
+        <ImagesGalleryOverlay images={galleryImages} onClose={() => setAllImagesOpen(false)} />
       )}
 
       {/* 리뷰 작성 모달 */}

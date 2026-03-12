@@ -555,16 +555,17 @@ export default function ShopPreviewBottomSheet({
     ...(shop.mainImageUrl ? [shop.mainImageUrl] : []),
     ...shop.recentReviewImages,
   ];
+  const galleryImages = shopImages.filter((img) => img !== DEFAULT_IMAGES.NO_IMAGE);
   const totalImageCount = shop.totalReviewImageCount + (shop.mainImageUrl ? 1 : 0);
-  const remainingCount = totalImageCount > 5 ? totalImageCount - 5 : 0;
+  const remainingCount = galleryImages.length > 5 ? galleryImages.length - 5 : 0;
 
   const handleImageClick = (images: string[], index: number) => {
     if (images[index] === DEFAULT_IMAGES.NO_IMAGE) {
       showToast("아직 등록된 매장사진이 없어요", { variant: "warning" });
     } else {
-      const filtered = images.filter((img) => img !== DEFAULT_IMAGES.NO_IMAGE);
-      const filteredIndex = filtered.indexOf(images[index]);
-      setGalleryState({ images: filtered, initialIndex: filteredIndex });
+      const filteredIndex =
+        images.slice(0, index + 1).filter((img) => img !== DEFAULT_IMAGES.NO_IMAGE).length - 1;
+      setGalleryState({ images: galleryImages, initialIndex: filteredIndex });
     }
   };
 
@@ -1198,9 +1199,7 @@ export default function ShopPreviewBottomSheet({
                           </button>
                           <div className="flex gap-px">
                             <button
-                              onClick={() =>
-                                setGalleryState({ images: shopImages, initialIndex: 2 })
-                              }
+                              onClick={() => handleImageClick(shopImages, 2)}
                               className="flex-1 aspect-square overflow-hidden bg-grey-100"
                             >
                               <Image
@@ -1212,9 +1211,7 @@ export default function ShopPreviewBottomSheet({
                               />
                             </button>
                             <button
-                              onClick={() =>
-                                setGalleryState({ images: shopImages, initialIndex: 3 })
-                              }
+                              onClick={() => handleImageClick(shopImages, 3)}
                               className="flex-1 aspect-square rounded-br-lg overflow-hidden bg-grey-100"
                             >
                               <Image
@@ -1432,7 +1429,7 @@ export default function ShopPreviewBottomSheet({
       )}
 
       {allImagesOpen && (
-        <ImagesGalleryOverlay images={shopImages} onClose={() => setAllImagesOpen(false)} />
+        <ImagesGalleryOverlay images={galleryImages} onClose={() => setAllImagesOpen(false)} />
       )}
 
       {/* 리뷰 작성 모달 */}
