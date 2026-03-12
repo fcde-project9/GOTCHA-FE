@@ -4,3 +4,4 @@ export * from "./geolocation";
 export * from "./date";
 export * from "./token";
 export * from "./platform";
+export * from "./image";
