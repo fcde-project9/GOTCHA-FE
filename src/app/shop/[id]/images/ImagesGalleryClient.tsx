@@ -45,7 +45,7 @@ export default function ImagesGalleryClient() {
   }
 
   const images = [
-    ...(shop.mainImageUrl && shop.mainImageUrl !== DEFAULT_IMAGES.SHOP_DEFAULT
+    ...(shop.mainImageUrl && shop.mainImageUrl !== DEFAULT_IMAGES.NO_IMAGE
       ? [shop.mainImageUrl]
       : []),
     ...shop.reviews.flatMap((review) => review.imageUrls),

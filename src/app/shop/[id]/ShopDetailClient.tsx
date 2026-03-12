@@ -509,10 +509,10 @@ export default function ShopDetailClient({
   const remainingCount = totalImageCount > 5 ? totalImageCount - 5 : 0;
 
   const handleImageClick = (images: string[], index: number) => {
-    if (images[index] === DEFAULT_IMAGES.SHOP_DEFAULT) {
+    if (images[index] === DEFAULT_IMAGES.NO_IMAGE) {
       showToast("아직 등록된 매장사진이 없어요", { variant: "warning" });
     } else {
-      const filtered = images.filter((img) => img !== DEFAULT_IMAGES.SHOP_DEFAULT);
+      const filtered = images.filter((img) => img !== DEFAULT_IMAGES.NO_IMAGE);
       const filteredIndex = filtered.indexOf(images[index]);
       setGalleryState({ images: filtered, initialIndex: filteredIndex });
     }

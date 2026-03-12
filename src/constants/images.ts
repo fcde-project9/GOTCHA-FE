@@ -7,9 +7,6 @@
 export const DEFAULT_IMAGES = {
   /** 가게 기본 이미지 (이미지 없을 때) */
   NO_IMAGE: "/images/no-image.png",
-  /** 가게 디폴트 이미지 (서버에서 내려오는 기본 이미지, 실제 사진 없음을 의미) */
-  SHOP_DEFAULT:
-    "https://gotcha-storage.s3.ap-northeast-2.amazonaws.com/prod/defaults/shop-default-v3.png",
   /** 기본 프로필 이미지 */
   PROFILE:
     "https://gotcha-storage.s3.ap-northeast-2.amazonaws.com/prod/defaults/profile-default-join.png",
