@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Heart, Navigation } from "lucide-react";
-import { DEFAULT_IMAGES, NO_IMAGE } from "@/constants";
+import { DEFAULT_IMAGES } from "@/constants";
 import { useFavorite, useToast } from "@/hooks";
 import StatusBadge from "./StatusBadge";
 
@@ -51,7 +51,7 @@ export default function ShopListItem({
     <div className="relative w-full">
       <div className="flex gap-[10px] items-center w-full py-4">
         {/* 이미지 */}
-        {imageUrl && imageUrl !== NO_IMAGE ? (
+        {imageUrl && imageUrl !== DEFAULT_IMAGES.NO_IMAGE ? (
           <button
             onClick={handleItemClick}
             className="relative rounded-[5px] shrink-0 size-[85px] overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-main"

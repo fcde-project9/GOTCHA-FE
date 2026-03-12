@@ -47,7 +47,7 @@ import { ShopDeleteConfirmModal } from "@/components/features/shop/ShopDeleteCon
 import { ShopEditModal } from "@/components/features/shop/ShopEditModal";
 import { ShopSuggestModal } from "@/components/features/shop/ShopSuggestModal";
 // BottomSheet 미사용 - 직접 드래그 처리
-import { NO_IMAGE } from "@/constants/images";
+import { DEFAULT_IMAGES } from "@/constants/images";
 import { useAuth, useFavorite, useToast } from "@/hooks";
 import type { OpenTime, ReviewResponse, ReviewSortOption } from "@/types/api";
 import { formatDate } from "@/utils";
@@ -555,15 +555,16 @@ export default function ShopPreviewBottomSheet({
     ...(shop.mainImageUrl ? [shop.mainImageUrl] : []),
     ...shop.recentReviewImages,
   ];
-  const galleryImages = shopImages.filter((img) => img !== NO_IMAGE);
+  const galleryImages = shopImages.filter((img) => img !== DEFAULT_IMAGES.NO_IMAGE);
   const totalImageCount = shop.totalReviewImageCount + (shop.mainImageUrl ? 1 : 0);
   const remainingCount = galleryImages.length > 5 ? galleryImages.length - 5 : 0;
 
   const handleImageClick = (images: string[], index: number) => {
-    if (images[index] === NO_IMAGE) {
+    if (images[index] === DEFAULT_IMAGES.NO_IMAGE) {
       showToast("아직 등록된 매장사진이 없어요", { variant: "warning" });
     } else {
-      const filteredIndex = images.slice(0, index + 1).filter((img) => img !== NO_IMAGE).length - 1;
+      const filteredIndex =
+        images.slice(0, index + 1).filter((img) => img !== DEFAULT_IMAGES.NO_IMAGE).length - 1;
       setGalleryState({ images: galleryImages, initialIndex: filteredIndex });
     }
   };
