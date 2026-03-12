@@ -46,6 +46,7 @@ import { StatusBadge } from "@/components/features/shop";
 import { ShopDeleteConfirmModal } from "@/components/features/shop/ShopDeleteConfirmModal";
 import { ShopEditModal } from "@/components/features/shop/ShopEditModal";
 import { ShopSuggestModal } from "@/components/features/shop/ShopSuggestModal";
+import { DEFAULT_IMAGES } from "@/constants/images";
 import { useAuth, useFavorite, useToast } from "@/hooks";
 import type { ReviewResponse, OpenTime, ReviewSortOption } from "@/types/api";
 import { trackShopView, trackShareClick } from "@/utils/analytics";
@@ -504,8 +505,22 @@ export default function ShopDetailClient({
     ...(shop.mainImageUrl ? [shop.mainImageUrl] : []),
     ...shop.recentReviewImages,
   ];
+  const galleryImages = shopImages.filter((img) => img !== DEFAULT_IMAGES.NO_IMAGE);
   const totalImageCount = shop.totalReviewImageCount + (shop.mainImageUrl ? 1 : 0);
-  const remainingCount = totalImageCount > 5 ? totalImageCount - 5 : 0;
+  const visibleGalleryCount = shopImages
+    .slice(0, 5)
+    .filter((img) => img !== DEFAULT_IMAGES.NO_IMAGE).length;
+  const remainingCount = Math.max(galleryImages.length - visibleGalleryCount, 0);
+
+  const handleImageClick = (images: string[], index: number) => {
+    if (images[index] === DEFAULT_IMAGES.NO_IMAGE) {
+      showToast("아직 등록된 매장사진이 없어요", { variant: "warning" });
+    } else {
+      const filteredIndex =
+        images.slice(0, index + 1).filter((img) => img !== DEFAULT_IMAGES.NO_IMAGE).length - 1;
+      setGalleryState({ images: galleryImages, initialIndex: filteredIndex });
+    }
+  };
 
   const content = (
     <div className="h-dvh bg-default flex flex-col overflow-hidden">
@@ -667,14 +682,17 @@ export default function ShopDetailClient({
 
           {shopImages.length === 0 ? (
             <div className="px-5">
-              <div className="flex items-center justify-center h-32 rounded-xl bg-grey-50">
+              <button
+                className="w-full flex items-center justify-center h-32 rounded-xl bg-grey-50"
+                onClick={() => showToast("아직 등록된 매장사진이 없어요", { variant: "warning" })}
+              >
                 <p className="text-[14px] text-grey-400">등록된 사진이 없어요</p>
-              </div>
+              </button>
             </div>
           ) : shopImages.length === 1 ? (
             <div className="px-5">
               <button
-                onClick={() => setGalleryState({ images: shopImages, initialIndex: 0 })}
+                onClick={() => handleImageClick(shopImages, 0)}
                 className="w-full aspect-[335/167] rounded-lg overflow-hidden bg-grey-100"
               >
                 <Image
@@ -691,7 +709,7 @@ export default function ShopDetailClient({
               <div className="relative aspect-[335/167]">
                 <div className="absolute inset-0 flex gap-px">
                   <button
-                    onClick={() => setGalleryState({ images: shopImages, initialIndex: 0 })}
+                    onClick={() => handleImageClick(shopImages, 0)}
                     className="flex-1 rounded-l-lg overflow-hidden bg-grey-100"
                   >
                     <Image
@@ -703,7 +721,7 @@ export default function ShopDetailClient({
                     />
                   </button>
                   <button
-                    onClick={() => setGalleryState({ images: shopImages, initialIndex: 1 })}
+                    onClick={() => handleImageClick(shopImages, 1)}
                     className="flex-1 rounded-r-lg overflow-hidden bg-grey-100"
                   >
                     <Image
@@ -722,7 +740,7 @@ export default function ShopDetailClient({
               <div className="relative aspect-[335/167]">
                 <div className="absolute inset-0 flex gap-px">
                   <button
-                    onClick={() => setGalleryState({ images: shopImages, initialIndex: 0 })}
+                    onClick={() => handleImageClick(shopImages, 0)}
                     className="flex-1 rounded-l-lg overflow-hidden bg-grey-100"
                   >
                     <Image
@@ -735,7 +753,7 @@ export default function ShopDetailClient({
                   </button>
                   <div className="flex-1 flex flex-col gap-px">
                     <button
-                      onClick={() => setGalleryState({ images: shopImages, initialIndex: 1 })}
+                      onClick={() => handleImageClick(shopImages, 1)}
                       className="flex-1 rounded-tr-lg overflow-hidden bg-grey-100"
                     >
                       <Image
@@ -747,7 +765,7 @@ export default function ShopDetailClient({
                       />
                     </button>
                     <button
-                      onClick={() => setGalleryState({ images: shopImages, initialIndex: 2 })}
+                      onClick={() => handleImageClick(shopImages, 2)}
                       className="flex-1 rounded-br-lg overflow-hidden bg-grey-100"
                     >
                       <Image
@@ -767,7 +785,7 @@ export default function ShopDetailClient({
               <div className="relative aspect-[335/167]">
                 <div className="absolute inset-0 flex gap-px">
                   <button
-                    onClick={() => setGalleryState({ images: shopImages, initialIndex: 0 })}
+                    onClick={() => handleImageClick(shopImages, 0)}
                     className="flex-1 rounded-l-lg overflow-hidden bg-grey-100"
                   >
                     <Image
@@ -780,7 +798,7 @@ export default function ShopDetailClient({
                   </button>
                   <div className="flex-1 flex flex-col gap-px">
                     <button
-                      onClick={() => setGalleryState({ images: shopImages, initialIndex: 1 })}
+                      onClick={() => handleImageClick(shopImages, 1)}
                       className="flex-1 rounded-tr-lg overflow-hidden bg-grey-100"
                     >
                       <Image
@@ -793,7 +811,7 @@ export default function ShopDetailClient({
                     </button>
                     <div className="flex gap-px">
                       <button
-                        onClick={() => setGalleryState({ images: shopImages, initialIndex: 2 })}
+                        onClick={() => handleImageClick(shopImages, 2)}
                         className="flex-1 aspect-square overflow-hidden bg-grey-100"
                       >
                         <Image
@@ -805,7 +823,7 @@ export default function ShopDetailClient({
                         />
                       </button>
                       <button
-                        onClick={() => setGalleryState({ images: shopImages, initialIndex: 3 })}
+                        onClick={() => handleImageClick(shopImages, 3)}
                         className="flex-1 aspect-square rounded-br-lg overflow-hidden bg-grey-100"
                       >
                         <Image
@@ -825,7 +843,7 @@ export default function ShopDetailClient({
             <div className="px-5">
               <div className="flex gap-px">
                 <button
-                  onClick={() => setGalleryState({ images: shopImages, initialIndex: 0 })}
+                  onClick={() => handleImageClick(shopImages, 0)}
                   className="flex-1 aspect-square rounded-l-lg overflow-hidden bg-grey-100"
                 >
                   <Image
@@ -838,7 +856,7 @@ export default function ShopDetailClient({
                 </button>
                 <div className="flex-1 flex flex-wrap gap-px">
                   <button
-                    onClick={() => setGalleryState({ images: shopImages, initialIndex: 1 })}
+                    onClick={() => handleImageClick(shopImages, 1)}
                     className="w-[calc(50%-0.5px)] aspect-square overflow-hidden bg-grey-100"
                   >
                     <Image
@@ -850,7 +868,7 @@ export default function ShopDetailClient({
                     />
                   </button>
                   <button
-                    onClick={() => setGalleryState({ images: shopImages, initialIndex: 2 })}
+                    onClick={() => handleImageClick(shopImages, 2)}
                     className="w-[calc(50%-0.5px)] aspect-square rounded-tr-lg overflow-hidden bg-grey-100"
                   >
                     <Image
@@ -862,7 +880,7 @@ export default function ShopDetailClient({
                     />
                   </button>
                   <button
-                    onClick={() => setGalleryState({ images: shopImages, initialIndex: 3 })}
+                    onClick={() => handleImageClick(shopImages, 3)}
                     className="w-[calc(50%-0.5px)] aspect-square overflow-hidden bg-grey-100"
                   >
                     <Image
@@ -1023,7 +1041,7 @@ export default function ShopDetailClient({
       )}
 
       {allImagesOpen && (
-        <ImagesGalleryOverlay images={shopImages} onClose={() => setAllImagesOpen(false)} />
+        <ImagesGalleryOverlay images={galleryImages} onClose={() => setAllImagesOpen(false)} />
       )}
 
       {/* 리뷰 작성 모달 */}

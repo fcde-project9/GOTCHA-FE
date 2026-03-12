@@ -51,17 +51,18 @@ export default function ShopListItem({
     <div className="relative w-full">
       <div className="flex gap-[10px] items-center w-full py-4">
         {/* 이미지 */}
-        <button
-          onClick={handleItemClick}
-          className="relative rounded-[5px] shrink-0 size-[85px] overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-main"
-        >
-          <Image
-            src={imageUrl || DEFAULT_IMAGES.NO_IMAGE}
-            alt={name}
-            fill
-            className="object-cover"
-          />
-        </button>
+        {imageUrl && imageUrl !== DEFAULT_IMAGES.NO_IMAGE ? (
+          <button
+            onClick={handleItemClick}
+            className="relative rounded-[5px] shrink-0 size-[85px] overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-main"
+          >
+            <Image src={imageUrl} alt={name} fill className="object-cover" />
+          </button>
+        ) : (
+          <div className="relative rounded-[5px] shrink-0 size-[85px] overflow-hidden">
+            <Image src={DEFAULT_IMAGES.NO_IMAGE} alt={name} fill className="object-cover" />
+          </div>
+        )}
 
         {/* 정보 */}
         <div className="flex flex-col gap-[4px] h-[85px] flex-1 min-w-0">
