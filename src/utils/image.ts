@@ -8,7 +8,11 @@ export async function compressShopImage(file: File): Promise<File> {
       useWebWorker: true,
     });
   } catch {
-    // HEIC/HEIF 등 브라우저가 처리 못하는 포맷은 원본 그대로 사용
-    return file;
+    // 미지원 포맷(HEIC/HEIF)만 원본 허용
+    if (file.type === "image/heic" || file.type === "image/heif") {
+      return file;
+    }
+    // 기타 압축 오류는 전파
+    throw new Error(`이미지 압축 실패: ${file.name}`);
   }
 }
