@@ -70,7 +70,7 @@ export default function ShopListBottomSheet({
             </div>
 
             {/* 가게 목록 */}
-            <div className="flex w-full flex-col">
+            <div className="flex w-full flex-col pb-safe">
               {shops.map((shop, index) => (
                 <ShopListItem
                   key={shop.id}
