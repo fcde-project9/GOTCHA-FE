@@ -152,8 +152,6 @@ export default function Home() {
       <LocationPermissionModal
         isOpen={locationTracking.showLocationModal}
         onClose={locationTracking.closeLocationModal}
-        initialDenied={locationTracking.locationDenied}
-        onPermissionGranted={locationTracking.handlePermissionGranted}
       />
 
       <main
