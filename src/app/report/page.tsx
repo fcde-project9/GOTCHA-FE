@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { LocateFixed, Loader2 } from "lucide-react";
 import apiClient from "@/api/client";
@@ -26,7 +26,7 @@ export default function ReportLocationPage() {
   const [checkingNearby, setCheckingNearby] = useState(false);
   const [map, setMap] = useState<KakaoMap | null>(null);
   const [nearbyShops, setNearbyShops] = useState<NearbyShopsResponse | null>(null);
-  const [mapLevel, setMapLevel] = useState(3); // 줌 레벨 상태 관리
+  const mapLevelRef = useRef(3);
   const [pendingLocation, setPendingLocation] = useState<{
     latitude: number;
     longitude: number;
@@ -131,10 +131,10 @@ export default function ReportLocationPage() {
     setNearbyShops(result);
   }, [map, getAddressFromCoords, checkNearbyShops]);
 
-  // 줌 레벨 변경 이벤트 핸들러
+  // 줌 레벨 변경 시 ref에 저장 (리렌더 없이 추적)
   const handleZoomChanged = useCallback(() => {
     if (map) {
-      setMapLevel(map.getLevel());
+      mapLevelRef.current = map.getLevel();
     }
   }, [map]);
 
@@ -237,7 +237,7 @@ export default function ReportLocationPage() {
           height="100%"
           latitude={center.latitude}
           longitude={center.longitude}
-          level={mapLevel}
+          level={mapLevelRef.current}
           currentLocation={
             myLocation
               ? {
