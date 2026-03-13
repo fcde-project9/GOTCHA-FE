@@ -127,7 +127,6 @@ export default function MyPage() {
   const handleWithdrawSubmit = (reasons: string[], otherReason?: string) => {
     setWithdrawReasons(reasons);
     setWithdrawOtherReason(otherReason);
-    setIsWithdrawModalOpen(false);
     setIsWithdrawConfirmModalOpen(true);
   };
 
@@ -162,6 +161,7 @@ export default function MyPage() {
       setWithdrawOtherReason(undefined);
 
       // 모달 닫기 및 홈으로 이동
+      setIsWithdrawModalOpen(false);
       setIsWithdrawConfirmModalOpen(false);
       showToast("회원탈퇴가 완료되었어요");
       router.push("/");

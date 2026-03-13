@@ -48,9 +48,6 @@ export function WithdrawModal({ isOpen, onClose, onConfirm }: WithdrawModalProps
 
   const handleConfirm = () => {
     onConfirm(selectedReasons, otherReason);
-    // 확인 후 상태 초기화
-    setSelectedReasons([]);
-    setOtherReason("");
   };
 
   const isOtherSelected = selectedReasons.includes("OTHER");
