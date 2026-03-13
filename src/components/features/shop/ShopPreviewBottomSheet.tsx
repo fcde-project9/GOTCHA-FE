@@ -526,17 +526,17 @@ export default function ShopPreviewBottomSheet({
 
       if (delta > threshold) {
         // 아래로 드래그 → 원래 높이로 복귀 (footer 뒤로 숨기지 않음)
-        setSheetHeight(DEFAULT_HEIGHT);
+        setSheetHeight(previewHeight);
       } else if (delta < -threshold) {
         {
           setHasExpandedOnce(true);
           setIsExpanded(true);
         }
       } else {
-        setSheetHeight(DEFAULT_HEIGHT);
+        setSheetHeight(previewHeight);
       }
     }
-  }, [isExpanded, collapseToPreview]);
+  }, [isExpanded, collapseToPreview, previewHeight]);
 
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
