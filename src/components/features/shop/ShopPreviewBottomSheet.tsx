@@ -411,6 +411,7 @@ export default function ShopPreviewBottomSheet({
 
   // 드래그 상태
   const DEFAULT_HEIGHT = 410;
+  const LOCATION_HINT_HEIGHT = 36;
   const [sheetHeight, setSheetHeight] = useState(DEFAULT_HEIGHT);
   const [isDragging, setIsDragging] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -436,6 +437,16 @@ export default function ShopPreviewBottomSheet({
     setShowAllReviews(false);
   }
 
+  // locationHint 유무에 따라 미리보기 기본 높이 계산
+  const previewHeight = shop?.locationHint ? DEFAULT_HEIGHT + LOCATION_HINT_HEIGHT : DEFAULT_HEIGHT;
+
+  // shop 데이터 로드 후 locationHint 여부에 따라 높이 업데이트
+  useEffect(() => {
+    if (!shop || isExpanded) return;
+    setSheetHeight(previewHeight);
+    sheetHeightRef.current = previewHeight;
+  }, [shop?.locationHint, isExpanded, previewHeight]);
+
   // 확장 → 미리보기 축소 (숨겼다가 미리보기로 다시 올라옴)
   const collapseToPreview = useCallback(() => {
     setIsCollapsing(true);
@@ -444,9 +455,9 @@ export default function ShopPreviewBottomSheet({
       setIsExpanded(false);
       setIsCollapsing(false);
       setHasExpandedOnce(false); // animate-slide-up 다시 적용
-      setSheetHeight(DEFAULT_HEIGHT);
+      setSheetHeight(previewHeight);
     }, 550);
-  }, []);
+  }, [previewHeight]);
 
   const handleDragStart = useCallback(
     (clientY: number) => {
@@ -891,7 +902,7 @@ export default function ShopPreviewBottomSheet({
 
         <div
           ref={contentScrollRef}
-          className={`${isExpanded ? "flex-1 overflow-y-auto pb-safe" : "overflow-hidden h-[calc(100%-34px)]"}`}
+          className={`${isExpanded ? "flex-1 overflow-y-auto pb-safe" : "overflow-hidden"}`}
         >
           <div className="flex flex-col px-5">
             {/* 업체명 + 찜/공유 (확장 시 찜/공유는 헤더에만 표시) */}
@@ -1078,7 +1089,7 @@ export default function ShopPreviewBottomSheet({
 
             {/* 대표 이미지 (미리보기) */}
             {!isExpanded && shopImages.length > 0 && (
-              <div className="mt-3">
+              <div className="mt-3 mb-3">
                 <button
                   onClick={() => handleImageClick(shopImages, 0)}
                   className="w-full h-[173px] rounded-lg overflow-hidden bg-grey-100"
