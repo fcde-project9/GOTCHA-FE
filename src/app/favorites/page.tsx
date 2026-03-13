@@ -55,7 +55,7 @@ export default function FavoritesPage() {
 
   return (
     <>
-      <main className="h-[calc(100dvh-var(--footer-height))] overflow-hidden relative bg-default flex flex-col">
+      <main className="h-[calc(100dvh-env(safe-area-inset-top,0px)-var(--footer-height))] overflow-hidden relative bg-default flex flex-col">
         {/* 헤더 */}
         <SimpleHeader title="찜한업체" />
 
@@ -136,7 +136,7 @@ export default function FavoritesPage() {
             )}
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto px-5 pb-safe">
+          <div className="flex-1 overflow-y-auto px-5 pb-3">
             {/* 총 개수 */}
             <div className="mt-2 mb-2 flex items-center justify-between">
               <div className="flex items-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-900">

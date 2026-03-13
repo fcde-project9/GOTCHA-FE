@@ -4,8 +4,6 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import {
-  Heart,
-  Share,
   Copy,
   ChevronRight,
   ChevronDown,
@@ -47,7 +45,7 @@ import { StatusBadge } from "@/components/features/shop";
 import { ShopDeleteConfirmModal } from "@/components/features/shop/ShopDeleteConfirmModal";
 import { ShopEditModal } from "@/components/features/shop/ShopEditModal";
 import { ShopSuggestModal } from "@/components/features/shop/ShopSuggestModal";
-import { DEFAULT_IMAGES } from "@/constants/images";
+import { DEFAULT_IMAGES, ICON_IMAGES } from "@/constants/images";
 import { useAuth, useFavorite, useToast } from "@/hooks";
 import type { ReviewResponse, OpenTime, ReviewSortOption } from "@/types/api";
 import { trackShopView, trackShareClick } from "@/utils/analytics";
@@ -535,10 +533,11 @@ export default function ShopDetailClient({
             className="flex items-center justify-center w-10 h-10 rounded-full disabled:opacity-50"
             aria-label={isFavorite ? "찜 취소" : "찜하기"}
           >
-            <Heart
-              size={24}
-              className={isFavorite ? "fill-main stroke-main" : "stroke-icon-default fill-none"}
-              strokeWidth={1.5}
+            <Image
+              src={isFavorite ? ICON_IMAGES.FAVORITE_FILL : ICON_IMAGES.FAVORITE_LINE}
+              alt="찜"
+              width={24}
+              height={24}
             />
           </button>
           <button
@@ -546,7 +545,7 @@ export default function ShopDetailClient({
             className="flex items-center justify-center w-10 h-10 rounded-full"
             aria-label="공유하기"
           >
-            <Share size={24} className="stroke-icon-default" strokeWidth={1.5} />
+            <Image src={ICON_IMAGES.SHARE} alt="공유" width={24} height={24} />
           </button>
           {isAdmin ? (
             <div className="relative" ref={adminMenuRef}>
@@ -596,7 +595,7 @@ export default function ShopDetailClient({
       </div>
 
       {/* 스크롤 컨텐츠 */}
-      <div className="flex-1 overflow-y-auto pb-safe">
+      <div className="flex-1 overflow-y-auto pb-3">
         {/* 업체명 */}
         <div className="px-5 pt-2 pb-0">
           <h2 className="text-[20px] font-semibold text-grey-900 leading-[150%] tracking-[-0.2px] overflow-hidden text-ellipsis whitespace-nowrap">
@@ -1207,7 +1206,7 @@ export default function ShopDetailClient({
           onClick={() => setIsUserMenuOpen(false)}
         >
           <div
-            className="w-full max-w-[480px] mx-auto bg-white rounded-t-2xl pb-safe h-[188px] animate-slide-up"
+            className="w-full max-w-[480px] mx-auto bg-white rounded-t-2xl pb-3 h-[188px] animate-slide-up"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-end px-5 pt-4 pb-2">

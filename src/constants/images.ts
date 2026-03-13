@@ -59,6 +59,16 @@ export const ERROR_IMAGES = {
   MAINTENANCE: "/images/error-maintenance.png",
 } as const;
 
+// 아이콘 이미지
+export const ICON_IMAGES = {
+  /** 찜 아이콘 (채움) */
+  FAVORITE_FILL: "/images/icons/favorite-fill.svg",
+  /** 찜 아이콘 (라인) */
+  FAVORITE_LINE: "/images/icons/favorite-line.svg",
+  /** 공유 아이콘 */
+  SHARE: "/images/icons/share.svg",
+} as const;
+
 // 로고 이미지
 export const LOGO_IMAGES = {
   /** 메인 로고 */
