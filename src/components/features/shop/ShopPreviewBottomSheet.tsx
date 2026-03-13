@@ -423,6 +423,9 @@ export default function ShopPreviewBottomSheet({
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const dragDecidedRef = useRef<"drag" | "scroll" | null>(null);
   const isDraggingRef = useRef(false);
+  const isExpandedRef = useRef(false);
+
+  isExpandedRef.current = isExpanded;
 
   // shopId 변경 시 미리보기 상태로 리셋 (렌더 중 상태 조정 패턴)
   const [prevShopId, setPrevShopId] = useState(shopId);
@@ -457,40 +460,37 @@ export default function ShopPreviewBottomSheet({
     [sheetHeight]
   );
 
-  const handleDragMove = useCallback(
-    (clientY: number, e?: React.TouchEvent) => {
-      lastDragY.current = clientY;
-      const delta = clientY - dragStartY.current;
+  const handleDragMove = useCallback((clientY: number, e?: React.TouchEvent) => {
+    lastDragY.current = clientY;
+    const delta = clientY - dragStartY.current;
 
-      if (dragDecidedRef.current === null) {
-        if (Math.abs(delta) < 5) return;
-        const contentEl = contentScrollRef.current;
-        const isAtTop = !contentEl || contentEl.scrollTop <= 0;
-        const isMovingDown = delta > 0;
+    if (dragDecidedRef.current === null) {
+      if (Math.abs(delta) < 5) return;
+      const contentEl = contentScrollRef.current;
+      const isAtTop = !contentEl || contentEl.scrollTop <= 0;
+      const isMovingDown = delta > 0;
 
-        if (isMovingDown && isAtTop) {
-          dragDecidedRef.current = "drag";
-        } else if (!isMovingDown) {
-          dragDecidedRef.current = "drag";
-        } else {
-          dragDecidedRef.current = "scroll";
-        }
+      if (isMovingDown && isAtTop) {
+        dragDecidedRef.current = "drag";
+      } else if (!isMovingDown) {
+        dragDecidedRef.current = "drag";
+      } else {
+        dragDecidedRef.current = "scroll";
       }
+    }
 
-      if (dragDecidedRef.current === "scroll") return;
+    if (dragDecidedRef.current === "scroll") return;
 
-      e?.preventDefault();
-      isDraggingRef.current = true;
-      setIsDragging(true);
-      if (!isExpanded) {
-        const heightDelta = dragStartY.current - clientY;
-        const newHeight = Math.max(0, dragStartHeight.current + heightDelta);
-        sheetHeightRef.current = newHeight;
-        setSheetHeight(newHeight);
-      }
-    },
-    [isExpanded]
-  );
+    e?.preventDefault();
+    isDraggingRef.current = true;
+    setIsDragging(true);
+    if (!isExpandedRef.current) {
+      const heightDelta = dragStartY.current - clientY;
+      const newHeight = Math.max(0, dragStartHeight.current + heightDelta);
+      sheetHeightRef.current = newHeight;
+      setSheetHeight(newHeight);
+    }
+  }, []);
 
   const handleDragEnd = useCallback(() => {
     dragDecidedRef.current = null;
@@ -775,7 +775,7 @@ export default function ShopPreviewBottomSheet({
     <>
       {/* 바텀시트 */}
       <div
-        className={`absolute bottom-0 left-0 right-0 ${isExpanded ? "z-40" : "z-10"} bg-white overflow-hidden shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] ${isExpanded && !isCollapsing ? "flex flex-col" : "rounded-t-[24px]"} ${isLeaving ? "animate-slide-down" : !hasExpandedOnce ? "animate-slide-up" : ""}`}
+        className={`absolute bottom-0 left-0 right-0 z-40 bg-white overflow-hidden shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] ${isExpanded && !isCollapsing ? "flex flex-col" : "rounded-t-[24px]"} ${isLeaving ? "animate-slide-down" : !hasExpandedOnce ? "animate-slide-up" : ""}`}
         style={{
           height: isCollapsing ? `${sheetHeight}px` : isExpanded ? "100%" : `${sheetHeight}px`,
           transition: isDragging ? "none" : "height 0.55s cubic-bezier(0.32, 0.72, 0, 1)",
