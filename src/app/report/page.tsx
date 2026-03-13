@@ -14,12 +14,6 @@ import { useKakaoLoader } from "@/hooks/useKakaoLoader";
 import { trackShopReportStart, trackShopReportExit } from "@/utils/analytics";
 import { getCurrentLocation } from "@/utils/geolocation";
 
-// 카카오맵 타입
-interface KakaoLatLng {
-  getLat(): number;
-  getLng(): number;
-}
-
 export default function ReportLocationPage() {
   const router = useRouter();
   const [address, setAddress] = useState("위치를 선택해주세요");
@@ -121,32 +115,6 @@ export default function ReportLocationPage() {
     });
   }, []);
 
-  // 지도 클릭 이벤트 핸들러
-  const handleMapClick = useCallback(
-    async (...args: unknown[]) => {
-      const mouseEvent = args[0] as { latLng: KakaoLatLng };
-      const latlng = mouseEvent.latLng;
-      const latitude = latlng.getLat();
-      const longitude = latlng.getLng();
-
-      setCenter({ latitude, longitude });
-      setIsAtCurrentLocation(false);
-
-      // 클릭한 위치로 지도 중심 이동
-      if (map && window.kakao?.maps) {
-        const moveLatLng = new window.kakao.maps.LatLng(latitude, longitude);
-        map.setCenter(moveLatLng);
-      }
-
-      await getAddressFromCoords(latitude, longitude);
-
-      // 자동으로 근처 가게 확인 (새 좌표로)
-      const result = await checkNearbyShops(latitude, longitude);
-      setNearbyShops(result);
-    },
-    [map, getAddressFromCoords, checkNearbyShops]
-  );
-
   // 지도 드래그 종료 이벤트 핸들러
   const handleDragEnd = useCallback(async () => {
     if (!map) return;
@@ -174,16 +142,14 @@ export default function ReportLocationPage() {
   useEffect(() => {
     if (!map || !window.kakao?.maps?.event) return;
 
-    window.kakao.maps.event.addListener(map, "click", handleMapClick);
     window.kakao.maps.event.addListener(map, "dragend", handleDragEnd);
     window.kakao.maps.event.addListener(map, "zoom_changed", handleZoomChanged);
 
     return () => {
-      window.kakao.maps.event.removeListener(map, "click", handleMapClick);
       window.kakao.maps.event.removeListener(map, "dragend", handleDragEnd);
       window.kakao.maps.event.removeListener(map, "zoom_changed", handleZoomChanged);
     };
-  }, [map, handleMapClick, handleDragEnd, handleZoomChanged]);
+  }, [map, handleDragEnd, handleZoomChanged]);
 
   const navigateToRegister = () => {
     router.push(
@@ -272,7 +238,6 @@ export default function ReportLocationPage() {
           latitude={center.latitude}
           longitude={center.longitude}
           level={mapLevel}
-          disableDoubleClickZoom
           currentLocation={
             myLocation
               ? {
