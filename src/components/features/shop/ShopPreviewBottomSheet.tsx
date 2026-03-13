@@ -1,11 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import {
-  Heart,
-  Share,
   Copy,
   ChevronRight,
   ChevronDown,
@@ -15,19 +12,31 @@ import {
   MoreVertical,
   Pencil,
   Trash2,
-  Flag,
   Ban,
+  Flag,
+  X,
+  SquarePen,
+  Siren,
 } from "lucide-react";
 import { useBlockUser } from "@/api/mutations/useBlockUser";
 import { useCreateReport } from "@/api/mutations/useCreateReport";
+import { useCreateSuggest } from "@/api/mutations/useCreateSuggest";
 import { useDeleteReview } from "@/api/mutations/useDeleteReview";
 import { useDeleteShop } from "@/api/mutations/useDeleteShop";
 import { useToggleReviewLike } from "@/api/mutations/useToggleReviewLike";
 import { useUpdateShop } from "@/api/mutations/useUpdateShop";
+import { useInfiniteReviews } from "@/api/queries/useInfiniteReviews";
 import { useShopDetail } from "@/api/queries/useShopDetail";
 import { useUser } from "@/api/queries/useUser";
-import type { ReportReason, ReportTargetType } from "@/api/types";
-import { BackHeader, Button, OutlineButton, ImageViewerModal } from "@/components/common";
+import type { ReportReason, ReportTargetType, ShopSuggestReason } from "@/api/types";
+import {
+  BackHeader,
+  Button,
+  OutlineButton,
+  ImageViewerModal,
+  ImagesGalleryOverlay,
+  Spinner,
+} from "@/components/common";
 import { BlockUserConfirmModal } from "@/components/features/review/BlockUserConfirmModal";
 import { ReportBottomSheet } from "@/components/features/review/ReportReviewBottomSheet";
 import { ReportSuccessModal } from "@/components/features/review/ReportSuccessModal";
@@ -35,7 +44,9 @@ import { ReviewDeleteConfirmModal } from "@/components/features/review/ReviewDel
 import { ReviewWriteModal } from "@/components/features/review/ReviewWriteModal";
 import { ShopDeleteConfirmModal } from "@/components/features/shop/ShopDeleteConfirmModal";
 import { ShopEditModal } from "@/components/features/shop/ShopEditModal";
+import { ShopSuggestModal } from "@/components/features/shop/ShopSuggestModal";
 // BottomSheet 미사용 - 직접 드래그 처리
+import { DEFAULT_IMAGES, ICON_IMAGES } from "@/constants/images";
 import { useAuth, useFavorite, useToast } from "@/hooks";
 import type { OpenTime, ReviewResponse, ReviewSortOption } from "@/types/api";
 import { formatDate } from "@/utils";
@@ -78,7 +89,7 @@ function DayBadge({ day, isActive }: { day: string; isActive: boolean }) {
   return (
     <div
       className={`flex items-center justify-center w-[22px] h-[22px] rounded-full text-[12px] font-normal tracking-[-0.12px] leading-[150%] ${
-        isActive ? "bg-grey-700 text-white" : "bg-grey-100 text-grey-400"
+        isActive ? "bg-grey-800 text-white" : "bg-grey-100 text-grey-400"
       }`}
     >
       {day}
@@ -138,7 +149,7 @@ function ReviewItem({
               </button>
             )}
             {isMenuOpen && (review.isOwner || isLoggedIn) && (
-              <div className="absolute right-[calc(50%_+_2px)] top-[20px] z-10 bg-white rounded-lg rounded-tr-none shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden">
+              <div className="absolute right-[calc(50%_+_2px)] top-[20px] z-10 bg-white rounded-lg rounded-tr-none shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] overflow-hidden">
                 {review.isOwner ? (
                   <>
                     <button
@@ -242,10 +253,8 @@ function ReviewItem({
           aria-label={review.isLiked ? "좋아요 취소" : "좋아요"}
         >
           <ThumbsUp
-            size={16}
-            className={
-              review.isLiked ? "fill-grey-800 stroke-grey-800" : "stroke-grey-500 fill-none"
-            }
+            size={14}
+            className={`relative -top-[1px] ${review.isLiked ? "fill-grey-800 stroke-grey-800" : "stroke-grey-500 fill-none"}`}
             strokeWidth={1.5}
           />
           <span className="text-[12px] text-grey-800 tracking-[-0.264px]">{review.likeCount}</span>
@@ -260,7 +269,6 @@ export default function ShopPreviewBottomSheet({
   onClose,
   isLeaving = false,
 }: ShopPreviewBottomSheetProps) {
-  const router = useRouter();
   const { showToast } = useToast();
 
   const [sortBy, setSortBy] = useState<ReviewSortOption>("LATEST");
@@ -285,6 +293,7 @@ export default function ShopPreviewBottomSheet({
     images: string[];
     initialIndex: number;
   } | null>(null);
+  const [allImagesOpen, setAllImagesOpen] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [editingReview, setEditingReview] = useState<ReviewResponse | null>(null);
   const [deletingReviewId, setDeletingReviewId] = useState<number | null>(null);
@@ -301,6 +310,7 @@ export default function ShopPreviewBottomSheet({
   const deleteReviewMutation = useDeleteReview(shopId ?? 0, deletingReviewId ?? 0);
   const toggleReviewLikeMutation = useToggleReviewLike();
   const createReportMutation = useCreateReport();
+  const createSuggestMutation = useCreateSuggest();
   const blockUserMutation = useBlockUser();
   const deleteShopMutation = useDeleteShop();
   const updateShopMutation = useUpdateShop();
@@ -312,7 +322,15 @@ export default function ShopPreviewBottomSheet({
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
   const adminMenuRef = useRef<HTMLDivElement>(null);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const userMenuRef = useRef<HTMLDivElement>(null);
+  const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
+
+  // 리뷰 전체보기 오버레이 상태
+  const [showAllReviews, setShowAllReviews] = useState(false);
+  const [isAllReviewsClosing, setIsAllReviewsClosing] = useState(false);
+  const [allReviewsSortBy, setAllReviewsSortBy] = useState<ReviewSortOption>("LATEST");
+  const [isAllReviewsSortOpen, setIsAllReviewsSortOpen] = useState(false);
+  const allReviewsSortRef = useRef<HTMLDivElement>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   // 정렬 드롭다운 외부 클릭 시 닫기
   useEffect(() => {
@@ -340,21 +358,58 @@ export default function ShopPreviewBottomSheet({
     }
   }, [isAdminMenuOpen]);
 
-  // 비관리자 메뉴 외부 클릭 시 닫기
+  // 리뷰 전체보기 정렬 드롭다운 외부 클릭 시 닫기
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
-        setIsUserMenuOpen(false);
+      if (allReviewsSortRef.current && !allReviewsSortRef.current.contains(event.target as Node)) {
+        setIsAllReviewsSortOpen(false);
       }
     };
-    if (isUserMenuOpen) {
+    if (isAllReviewsSortOpen) {
       document.addEventListener("mousedown", handleClickOutside);
       return () => document.removeEventListener("mousedown", handleClickOutside);
     }
-  }, [isUserMenuOpen]);
+  }, [isAllReviewsSortOpen]);
+
+  // 리뷰 전체보기 무한 스크롤 훅
+  const {
+    data: allReviewsData,
+    isLoading: isAllReviewsLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    refetch: refetchAllReviews,
+  } = useInfiniteReviews(shopId ?? 0, allReviewsSortBy);
+
+  const allReviews = useMemo(
+    () => allReviewsData?.pages.flatMap((page) => page.content) ?? [],
+    [allReviewsData]
+  );
+  const allReviewsTotalCount = allReviewsData?.pages[0]?.totalCount ?? 0;
+
+  // 무한 스크롤 Intersection Observer
+  useEffect(() => {
+    if (!showAllReviews || isAllReviewsLoading || isFetchingNextPage || !hasNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [showAllReviews, isAllReviewsLoading, isFetchingNextPage, hasNextPage, fetchNextPage]);
 
   // 드래그 상태
-  const DEFAULT_HEIGHT = 348;
+  const DEFAULT_HEIGHT = 410;
+  const LOCATION_HINT_HEIGHT = 36;
   const [sheetHeight, setSheetHeight] = useState(DEFAULT_HEIGHT);
   const [isDragging, setIsDragging] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -363,6 +418,11 @@ export default function ShopPreviewBottomSheet({
   const dragStartY = useRef(0);
   const dragStartHeight = useRef(DEFAULT_HEIGHT);
   const lastDragY = useRef(0);
+  const sheetHeightRef = useRef(DEFAULT_HEIGHT);
+  const contentScrollRef = useRef<HTMLDivElement>(null);
+  const dragDecidedRef = useRef<"drag" | "scroll" | null>(null);
+  const isDraggingRef = useRef(false);
+  const isMouseDownRef = useRef(false);
 
   // shopId 변경 시 미리보기 상태로 리셋 (렌더 중 상태 조정 패턴)
   const [prevShopId, setPrevShopId] = useState(shopId);
@@ -372,7 +432,18 @@ export default function ShopPreviewBottomSheet({
     setIsCollapsing(false);
     setSheetHeight(DEFAULT_HEIGHT);
     setHasExpandedOnce(false);
+    setShowAllReviews(false);
   }
+
+  // locationHint 유무에 따라 미리보기 기본 높이 계산
+  const previewHeight = shop?.locationHint ? DEFAULT_HEIGHT + LOCATION_HINT_HEIGHT : DEFAULT_HEIGHT;
+
+  // shop 데이터 로드 후 locationHint 여부에 따라 높이 업데이트
+  useEffect(() => {
+    if (!shop || isExpanded) return;
+    setSheetHeight(previewHeight);
+    sheetHeightRef.current = previewHeight;
+  }, [shop?.locationHint, isExpanded, previewHeight]);
 
   // 확장 → 미리보기 축소 (숨겼다가 미리보기로 다시 올라옴)
   const collapseToPreview = useCallback(() => {
@@ -382,36 +453,66 @@ export default function ShopPreviewBottomSheet({
       setIsExpanded(false);
       setIsCollapsing(false);
       setHasExpandedOnce(false); // animate-slide-up 다시 적용
-      setSheetHeight(DEFAULT_HEIGHT);
+      setSheetHeight(previewHeight);
     }, 550);
-  }, []);
+  }, [previewHeight]);
 
   const handleDragStart = useCallback(
     (clientY: number) => {
-      setIsDragging(true);
       dragStartY.current = clientY;
       lastDragY.current = clientY;
       dragStartHeight.current = sheetHeight;
+      dragDecidedRef.current = null;
     },
     [sheetHeight]
   );
 
   const handleDragMove = useCallback(
-    (clientY: number) => {
-      if (!isDragging) return;
+    (clientY: number, e?: React.TouchEvent) => {
       lastDragY.current = clientY;
+      const delta = clientY - dragStartY.current;
+
+      if (dragDecidedRef.current === null) {
+        if (Math.abs(delta) < 5) return;
+        const contentEl = contentScrollRef.current;
+        const isAtTop = !contentEl || contentEl.scrollTop <= 0;
+        const isMovingDown = delta > 0;
+
+        if (isMovingDown && isAtTop) {
+          dragDecidedRef.current = "drag";
+        } else if (!isMovingDown && !isExpanded) {
+          dragDecidedRef.current = "drag";
+        } else {
+          dragDecidedRef.current = "scroll";
+        }
+      }
+
+      if (dragDecidedRef.current === "scroll") return;
+
+      e?.preventDefault();
+      if (!isDraggingRef.current) {
+        isDraggingRef.current = true;
+        setIsDragging(true);
+      }
       if (!isExpanded) {
-        const delta = dragStartY.current - clientY;
-        const newHeight = Math.max(0, dragStartHeight.current + delta);
+        const heightDelta = dragStartY.current - clientY;
+        const newHeight =
+          heightDelta > 0
+            ? Math.max(DEFAULT_HEIGHT, dragStartHeight.current + heightDelta)
+            : Math.max(0, dragStartHeight.current + heightDelta);
+        sheetHeightRef.current = newHeight;
         setSheetHeight(newHeight);
       }
     },
-    [isDragging, isExpanded]
+    [isExpanded]
   );
 
   const handleDragEnd = useCallback(() => {
-    if (!isDragging) return;
+    isMouseDownRef.current = false;
+    dragDecidedRef.current = null;
     setIsDragging(false);
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
 
     if (isExpanded) {
       // 풀스크린에서 아래로 드래그 → 미리보기로 축소
@@ -420,40 +521,45 @@ export default function ShopPreviewBottomSheet({
         collapseToPreview();
       }
     } else {
-      const delta = dragStartHeight.current - sheetHeight;
-      const threshold = 50;
+      const delta = dragStartHeight.current - sheetHeightRef.current;
+      const threshold = 30;
 
       if (delta > threshold) {
-        setSheetHeight(0);
-        setTimeout(() => onClose(), 550);
+        // 아래로 드래그 → 원래 높이로 복귀 (footer 뒤로 숨기지 않음)
+        setSheetHeight(previewHeight);
       } else if (delta < -threshold) {
         {
           setHasExpandedOnce(true);
           setIsExpanded(true);
         }
       } else {
-        setSheetHeight(DEFAULT_HEIGHT);
+        setSheetHeight(previewHeight);
       }
     }
-  }, [isDragging, isExpanded, sheetHeight, onClose, collapseToPreview]);
+  }, [isExpanded, collapseToPreview, previewHeight]);
 
   useEffect(() => {
-    if (!isDragging) return;
-    const onMouseMove = (e: MouseEvent) => handleDragMove(e.clientY);
-    const onMouseUp = () => handleDragEnd();
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isMouseDownRef.current) return;
+      handleDragMove(e.clientY);
+    };
+    const onMouseUp = () => {
+      if (!isMouseDownRef.current) return;
+      handleDragEnd();
+    };
     window.addEventListener("mousemove", onMouseMove);
     window.addEventListener("mouseup", onMouseUp);
     return () => {
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("mouseup", onMouseUp);
     };
-  }, [isDragging, handleDragMove, handleDragEnd]);
+  }, [handleDragMove, handleDragEnd]);
 
   if (!shopId) return null;
 
   if (isShopLoading || !shop) {
     return (
-      <div className="absolute bottom-0 left-0 right-0 z-20 bg-white rounded-t-[24px] shadow-[0_0_10px_rgba(0,0,0,0.2)] animate-slide-up">
+      <div className="absolute bottom-0 left-0 right-0 z-20 bg-white rounded-t-[24px] shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] animate-slide-up">
         <div className="flex items-center justify-center py-[10px]">
           <div className="w-[44px] h-[4px] bg-[#cfcfcf] rounded-[2px]" />
         </div>
@@ -471,11 +577,25 @@ export default function ShopPreviewBottomSheet({
     ...(shop.mainImageUrl ? [shop.mainImageUrl] : []),
     ...shop.recentReviewImages,
   ];
+  const galleryImages = shopImages.filter((img) => img !== DEFAULT_IMAGES.NO_IMAGE);
   const totalImageCount = shop.totalReviewImageCount + (shop.mainImageUrl ? 1 : 0);
-  const remainingCount = totalImageCount > 5 ? totalImageCount - 4 : 0;
+  const visibleGalleryCount = shopImages
+    .slice(0, 5)
+    .filter((img) => img !== DEFAULT_IMAGES.NO_IMAGE).length;
+  const remainingCount = Math.max(galleryImages.length - visibleGalleryCount, 0);
 
-  const handleViewAllImages = () => router.push(`/shop/${shop.id}/images`);
-  const handleViewAllReviews = () => router.push(`/shop/${shop.id}/reviews`);
+  const handleImageClick = (images: string[], index: number) => {
+    if (images[index] === DEFAULT_IMAGES.NO_IMAGE) {
+      showToast("아직 등록된 매장사진이 없어요", { variant: "warning" });
+    } else {
+      const filteredIndex =
+        images.slice(0, index + 1).filter((img) => img !== DEFAULT_IMAGES.NO_IMAGE).length - 1;
+      setGalleryState({ images: galleryImages, initialIndex: filteredIndex });
+    }
+  };
+
+  const handleViewAllImages = () => setAllImagesOpen(true);
+  const handleViewAllReviews = () => setShowAllReviews(true);
 
   const handleCopyAddress = async () => {
     try {
@@ -487,7 +607,7 @@ export default function ShopPreviewBottomSheet({
   };
 
   const handleShare = async () => {
-    const url = `${window.location.origin}/shop/${shop.id}`;
+    const url = `${process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin}/shop/${shop.id}`;
     if (navigator.share) {
       try {
         await navigator.share({ title: shop.name, url });
@@ -533,6 +653,21 @@ export default function ShopPreviewBottomSheet({
     setReportTarget({ type: "SHOP", id: shopId });
   };
 
+  const handleSubmitSuggest = (reasons: ShopSuggestReason[]) => {
+    if (!shopId) return;
+    createSuggestMutation.mutate(
+      { shopId, data: { reasons } },
+      {
+        onSuccess: () => {
+          setIsSuggestModalOpen(false);
+          showToast("제안이 접수되었어요. 감사합니다!");
+        },
+        onError: (error) =>
+          showToast(error.message || "제안 접수에 실패했어요.", { variant: "warning" }),
+      }
+    );
+  };
+
   const handleSubmitReport = (reason: ReportReason, detail?: string) => {
     if (!reportTarget) return;
     createReportMutation.mutate(
@@ -558,6 +693,7 @@ export default function ShopPreviewBottomSheet({
       onSuccess: async () => {
         try {
           await refetch();
+          if (showAllReviews) await refetchAllReviews();
         } finally {
           setBlockTarget(null);
           showToast("사용자 차단이 완료되었어요!");
@@ -575,6 +711,7 @@ export default function ShopPreviewBottomSheet({
         showToast("리뷰가 삭제되었어요.");
         setDeletingReviewId(null);
         refetch();
+        if (showAllReviews) refetchAllReviews();
       },
       onError: (error) =>
         showToast(error.message || "리뷰 삭제에 실패했어요.", { variant: "warning" }),
@@ -585,6 +722,40 @@ export default function ShopPreviewBottomSheet({
     setSortBy(newSortBy);
     setIsSortDropdownOpen(false);
   };
+
+  // 리뷰 전체보기 닫기 (slide-down 후 unmount)
+  const handleCloseAllReviews = () => {
+    setIsAllReviewsClosing(true);
+    setTimeout(() => {
+      setShowAllReviews(false);
+      setIsAllReviewsClosing(false);
+    }, 450);
+  };
+
+  // 리뷰 전체보기 오버레이용 핸들러
+  const handleAllReviewsSortChange = (newSortBy: ReviewSortOption) => {
+    setAllReviewsSortBy(newSortBy);
+    setIsAllReviewsSortOpen(false);
+  };
+
+  const handleAllReviewsLikeToggle = (reviewId: number) => {
+    const review = allReviews.find((r) => r.id === reviewId);
+    if (!review || !shopId) return;
+    toggleReviewLikeMutation.mutate(
+      { reviewId, isLiked: review.isLiked, shopId },
+      {
+        onError: (error) =>
+          showToast(error.message || "좋아요 처리에 실패했어요.", { variant: "warning" }),
+      }
+    );
+  };
+
+  const handleAllReviewsEdit = (reviewId: number) => {
+    const reviewToEdit = allReviews.find((r) => r.id === reviewId);
+    if (reviewToEdit) setEditingReview(reviewToEdit);
+  };
+
+  const handleAllReviewsDelete = (reviewId: number) => setDeletingReviewId(reviewId);
 
   const handleConfirmShopDelete = () => {
     if (!shopId) return;
@@ -625,21 +796,23 @@ export default function ShopPreviewBottomSheet({
     <>
       {/* 바텀시트 */}
       <div
-        className={`absolute bottom-0 left-0 right-0 z-40 bg-white overflow-hidden shadow-[0_-4px_10px_rgba(0,0,0,0.2)] ${isExpanded && !isCollapsing ? "flex flex-col" : "rounded-t-[24px]"} ${isLeaving ? "animate-slide-down" : !hasExpandedOnce ? "animate-slide-up" : ""}`}
+        className={`absolute bottom-0 left-0 right-0 z-40 bg-white overflow-hidden shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] ${isExpanded && !isCollapsing ? "flex flex-col" : "rounded-t-[24px]"} ${isLeaving ? "animate-slide-down" : !hasExpandedOnce ? "animate-slide-up" : ""}`}
         style={{
           height: isCollapsing ? `${sheetHeight}px` : isExpanded ? "100%" : `${sheetHeight}px`,
           transition: isDragging ? "none" : "height 0.55s cubic-bezier(0.32, 0.72, 0, 1)",
         }}
+        onTouchStart={(e) => handleDragStart(e.touches[0].clientY)}
+        onTouchMove={(e) => handleDragMove(e.touches[0].clientY, e)}
+        onTouchEnd={handleDragEnd}
+        onTouchCancel={handleDragEnd}
+        onMouseDown={(e) => {
+          isMouseDownRef.current = true;
+          handleDragStart(e.clientY);
+        }}
       >
         {/* Grabber (미리보기에서만 표시) */}
         {!isExpanded && !isCollapsing && (
-          <div
-            className="flex justify-center pt-3 h-[36px] cursor-grab active:cursor-grabbing"
-            onTouchStart={(e) => handleDragStart(e.touches[0].clientY)}
-            onTouchMove={(e) => handleDragMove(e.touches[0].clientY)}
-            onTouchEnd={handleDragEnd}
-            onMouseDown={(e) => handleDragStart(e.clientY)}
-          >
+          <div className="flex justify-center pt-3 h-[36px] cursor-grab active:cursor-grabbing">
             <div className="w-[44px] h-[4px] bg-[#cfcfcf] rounded-[2px]" />
           </div>
         )}
@@ -648,14 +821,11 @@ export default function ShopPreviewBottomSheet({
         {(isExpanded || isCollapsing) && (
           <div
             className="flex items-center justify-between pr-4 animate-slide-down-header cursor-grab active:cursor-grabbing"
-            onTouchStart={(e) => handleDragStart(e.touches[0].clientY)}
-            onTouchMove={(e) => handleDragMove(e.touches[0].clientY)}
-            onTouchEnd={handleDragEnd}
-            onMouseDown={(e) => handleDragStart(e.clientY)}
+            style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
           >
             <BackHeader onBack={collapseToPreview} />
             <div
-              className="flex items-center gap-4 ml-3"
+              className="flex items-center ml-3"
               onMouseDown={(e) => e.stopPropagation()}
               onTouchStart={(e) => e.stopPropagation()}
             >
@@ -665,10 +835,11 @@ export default function ShopPreviewBottomSheet({
                 className="flex items-center justify-center w-10 h-10 rounded-full disabled:opacity-50"
                 aria-label={isFavorite ? "찜 취소" : "찜하기"}
               >
-                <Heart
-                  size={24}
-                  className={isFavorite ? "fill-main stroke-main" : "stroke-icon-default fill-none"}
-                  strokeWidth={1.5}
+                <Image
+                  src={isFavorite ? ICON_IMAGES.FAVORITE_FILL : ICON_IMAGES.FAVORITE_LINE}
+                  alt="찜"
+                  width={24}
+                  height={24}
                 />
               </button>
               <button
@@ -676,7 +847,7 @@ export default function ShopPreviewBottomSheet({
                 className="flex items-center justify-center w-10 h-10 rounded-full"
                 aria-label="공유하기"
               >
-                <Share size={24} className="stroke-icon-default" strokeWidth={1.5} />
+                <Image src={ICON_IMAGES.SHARE} alt="공유" width={24} height={24} />
               </button>
               {isAdmin ? (
                 <div className="relative" ref={adminMenuRef}>
@@ -688,7 +859,7 @@ export default function ShopPreviewBottomSheet({
                     <MoreVertical size={24} className="stroke-icon-default" strokeWidth={1.5} />
                   </button>
                   {isAdminMenuOpen && (
-                    <div className="absolute right-0 top-10 z-10 bg-white rounded-lg shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden">
+                    <div className="absolute right-0 top-10 z-10 bg-white rounded-lg shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] overflow-hidden">
                       <button
                         onClick={() => {
                           setIsAdminMenuOpen(false);
@@ -716,38 +887,21 @@ export default function ShopPreviewBottomSheet({
                   )}
                 </div>
               ) : isLoggedIn ? (
-                <div className="relative" ref={userMenuRef}>
-                  <button
-                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex items-center justify-center w-8 h-10 rounded-full"
-                    aria-label="메뉴"
-                  >
-                    <MoreVertical size={24} className="stroke-icon-default" strokeWidth={1.5} />
-                  </button>
-                  {isUserMenuOpen && (
-                    <div className="absolute right-0 top-10 z-10 bg-white rounded-lg shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden">
-                      <button
-                        onClick={() => {
-                          setIsUserMenuOpen(false);
-                          handleReportShop();
-                        }}
-                        className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
-                      >
-                        <Flag size={16} className="text-grey-900" />
-                        <span className="text-[14px] text-grey-900 whitespace-nowrap">
-                          가게 신고하기
-                        </span>
-                      </button>
-                    </div>
-                  )}
-                </div>
+                <button
+                  onClick={() => setIsUserMenuOpen(true)}
+                  className="flex items-center justify-center w-8 h-10 rounded-full"
+                  aria-label="메뉴"
+                >
+                  <MoreVertical size={24} className="stroke-icon-default" strokeWidth={1.5} />
+                </button>
               ) : null}
             </div>
           </div>
         )}
 
         <div
-          className={`${isExpanded ? "flex-1 overflow-y-auto pb-safe" : "overflow-hidden h-[calc(100%-34px)]"}`}
+          ref={contentScrollRef}
+          className={`${isExpanded ? "flex-1 overflow-y-auto pb-3" : "overflow-hidden"}`}
         >
           <div className="flex flex-col px-5">
             {/* 업체명 + 찜/공유 (확장 시 찜/공유는 헤더에만 표시) */}
@@ -759,30 +913,31 @@ export default function ShopPreviewBottomSheet({
                 }}
                 className="flex-1 min-w-0 text-left"
               >
-                <h2 className="text-[20px] font-semibold text-grey-900 leading-[150%] tracking-[-0.2px] font-pretendard overflow-hidden text-ellipsis whitespace-nowrap">
+                <h2 className="text-[20px] font-semibold text-grey-900 leading-[150%] tracking-[-0.2px] overflow-hidden text-ellipsis whitespace-nowrap">
                   {shop.name}
                 </h2>
               </button>
               {!isExpanded && (
-                <div className="flex items-center gap-3 shrink-0 ml-3">
+                <div className="flex items-center shrink-0 ml-3">
                   <button
                     onClick={toggleFavorite}
                     disabled={isFavoriteLoading}
-                    className="w-6 h-6 flex items-center justify-center disabled:opacity-50"
+                    className="w-10 h-10 flex items-center justify-center disabled:opacity-50"
                     aria-label={isFavorite ? "찜 취소" : "찜하기"}
                   >
-                    <Heart
-                      size={20}
-                      className={isFavorite ? "fill-main stroke-main" : "stroke-grey-700 fill-none"}
-                      strokeWidth={1.5}
+                    <Image
+                      src={isFavorite ? ICON_IMAGES.FAVORITE_FILL : ICON_IMAGES.FAVORITE_LINE}
+                      alt="찜"
+                      width={24}
+                      height={24}
                     />
                   </button>
                   <button
                     onClick={handleShare}
-                    className="w-6 h-6 flex items-center justify-center"
+                    className="w-10 h-10 flex items-center justify-center"
                     aria-label="공유하기"
                   >
-                    <Share size={20} className="stroke-grey-700" strokeWidth={1.5} />
+                    <Image src={ICON_IMAGES.SHARE} alt="공유" width={24} height={24} />
                   </button>
                 </div>
               )}
@@ -792,30 +947,50 @@ export default function ShopPreviewBottomSheet({
               /* 확장: 상세페이지와 동일한 레이아웃 */
               <>
                 <div className="flex flex-col gap-3 py-2">
-                  <div className="flex items-center gap-4">
-                    <span className="shrink-0 w-[52px] text-[13px] text-grey-500">주소</span>
-                    <p className="text-[13px] text-grey-900 leading-[1.5] tracking-[-0.13px]">
-                      {shop.addressName}
-                    </p>
-                    <button
-                      onClick={handleCopyAddress}
-                      className="shrink-0 flex items-center gap-1 py-1 rounded text-[12px] text-grey-600"
-                    >
-                      <Copy size={12} strokeWidth={1.5} />
-                    </button>
+                  <div className="flex items-center gap-2">
+                    <Image
+                      src="/images/icons/shop-location.png"
+                      alt=""
+                      width={20}
+                      height={20}
+                      className="shrink-0 pointer-events-none select-none"
+                    />
+                    <div className="flex items-center gap-0.5">
+                      <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
+                        {shop.addressName}
+                      </p>
+                      <button
+                        onClick={handleCopyAddress}
+                        className="shrink-0 flex items-center justify-center w-5 h-5 rounded text-[12px] text-grey-600"
+                      >
+                        <Copy size={14} strokeWidth={1.5} />
+                      </button>
+                    </div>
                   </div>
                   {shop.locationHint && (
-                    <div className="flex items-center gap-4">
-                      <span className="shrink-0 w-[52px] text-[13px] text-grey-500">위치 힌트</span>
+                    <div className="flex items-center gap-2">
+                      <Image
+                        src="/images/icons/shop-star.png"
+                        alt=""
+                        width={20}
+                        height={20}
+                        className="shrink-0 pointer-events-none select-none"
+                      />
                       <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
                         {shop.locationHint}
                       </p>
                     </div>
                   )}
                 </div>
-                <div className="flex flex-col gap-3 pb-4">
-                  <div className="flex items-center gap-4">
-                    <span className="shrink-0 w-[52px] text-[13px] text-grey-500">영업일</span>
+                <div className="flex flex-col gap-3 pb-4 mt-1">
+                  <div className="flex items-center gap-2">
+                    <Image
+                      src="/images/icons/shop-calendar.png"
+                      alt=""
+                      width={20}
+                      height={20}
+                      className="shrink-0 pointer-events-none select-none"
+                    />
                     <div className="flex gap-1.5">
                       {ALL_DAYS.map((day) => (
                         <DayBadge
@@ -826,10 +1001,16 @@ export default function ShopPreviewBottomSheet({
                       ))}
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <span className="shrink-0 w-[52px] text-[13px] text-grey-500">영업시간</span>
+                  <div className="flex items-center gap-2 min-h-6">
+                    <Image
+                      src="/images/icons/shop-time.png"
+                      alt=""
+                      width={20}
+                      height={20}
+                      className="shrink-0 pointer-events-none select-none"
+                    />
                     {shop.todayOpenTime && (
-                      <span className="text-[13px] text-grey-900">{shop.todayOpenTime}</span>
+                      <span className="text-[16px] text-grey-900">{shop.todayOpenTime}</span>
                     )}
                     <StatusBadge openStatus={shop.openStatus} />
                   </div>
@@ -837,29 +1018,49 @@ export default function ShopPreviewBottomSheet({
               </>
             ) : (
               /* 미리보기: 간격 좁게 한 블록 */
-              <div className="flex flex-col gap-1 mt-1">
-                <div className="flex items-center gap-4">
-                  <span className="shrink-0 w-[52px] text-[13px] text-grey-500">주소</span>
-                  <p className="text-[13px] text-grey-900 leading-[1.5] tracking-[-0.13px]">
-                    {shop.addressName}
-                  </p>
-                  <button
-                    onClick={handleCopyAddress}
-                    className="shrink-0 flex items-center gap-1 py-1 rounded text-[12px] text-grey-600"
-                  >
-                    <Copy size={12} strokeWidth={1.5} />
-                  </button>
+              <div className="flex flex-col gap-3 mt-3">
+                <div className="flex items-center gap-2">
+                  <Image
+                    src="/images/icons/shop-location.png"
+                    alt=""
+                    width={20}
+                    height={20}
+                    className="shrink-0 pointer-events-none select-none"
+                  />
+                  <div className="flex items-center gap-0.5">
+                    <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
+                      {shop.addressName}
+                    </p>
+                    <button
+                      onClick={handleCopyAddress}
+                      className="shrink-0 flex items-center justify-center w-5 h-5 rounded text-[12px] text-grey-600"
+                    >
+                      <Copy size={14} strokeWidth={1.5} />
+                    </button>
+                  </div>
                 </div>
                 {shop.locationHint && (
-                  <div className="flex items-center gap-4">
-                    <span className="shrink-0 w-[52px] text-[13px] text-grey-500">위치 힌트</span>
+                  <div className="flex items-center gap-2">
+                    <Image
+                      src="/images/icons/shop-star.png"
+                      alt=""
+                      width={20}
+                      height={20}
+                      className="shrink-0 pointer-events-none select-none"
+                    />
                     <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
                       {shop.locationHint}
                     </p>
                   </div>
                 )}
-                <div className="flex items-center gap-4">
-                  <span className="shrink-0 w-[52px] text-[13px] text-grey-500">영업일</span>
+                <div className="flex items-center gap-2">
+                  <Image
+                    src="/images/icons/shop-calendar.png"
+                    alt=""
+                    width={20}
+                    height={20}
+                    className="shrink-0 pointer-events-none select-none"
+                  />
                   <div className="flex gap-1.5">
                     {ALL_DAYS.map((day) => (
                       <DayBadge
@@ -870,10 +1071,16 @@ export default function ShopPreviewBottomSheet({
                     ))}
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <span className="shrink-0 w-[52px] text-[13px] text-grey-500">영업시간</span>
+                <div className="flex items-center gap-2 min-h-6">
+                  <Image
+                    src="/images/icons/shop-time.png"
+                    alt=""
+                    width={20}
+                    height={20}
+                    className="shrink-0 pointer-events-none select-none"
+                  />
                   {shop.todayOpenTime && (
-                    <span className="text-[13px] text-grey-900">{shop.todayOpenTime}</span>
+                    <span className="text-[16px] text-grey-900">{shop.todayOpenTime}</span>
                   )}
                   <StatusBadge openStatus={shop.openStatus} />
                 </div>
@@ -882,9 +1089,9 @@ export default function ShopPreviewBottomSheet({
 
             {/* 대표 이미지 (미리보기) */}
             {!isExpanded && shopImages.length > 0 && (
-              <div className="mt-2">
+              <div className="mt-3 mb-3">
                 <button
-                  onClick={() => setGalleryState({ images: shopImages, initialIndex: 0 })}
+                  onClick={() => handleImageClick(shopImages, 0)}
                   className="w-full h-[173px] rounded-lg overflow-hidden bg-grey-100"
                 >
                   <Image
@@ -898,134 +1105,248 @@ export default function ShopPreviewBottomSheet({
               </div>
             )}
 
-            {/* 구분선 + 업체 사진 (확장 시에만 표시) */}
+            {/* 구분선 + 매장 사진 (확장 시에만 표시) */}
             {isExpanded && (
               <>
                 <div className="h-2 -mx-5 bg-grey-50" />
 
                 <div className="py-4">
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center mb-3">
                     <div className="flex items-center gap-2">
                       <h3 className="text-[19px] font-medium text-grey-900 leading-[1.5] tracking-[-0.19px]">
-                        업체 사진
+                        매장 사진
                       </h3>
                       {totalImageCount > 0 && (
                         <span className="text-[14px] text-main font-medium">{totalImageCount}</span>
                       )}
                     </div>
-                    {shopImages.length > 0 && (
-                      <button
-                        onClick={handleViewAllImages}
-                        className="flex items-center text-[14px] text-grey-500"
-                      >
-                        전체보기
-                        <ChevronRight size={16} />
-                      </button>
-                    )}
                   </div>
 
                   {shopImages.length === 0 ? (
-                    <div className="flex items-center justify-center h-32 rounded-xl bg-grey-50">
+                    <button
+                      className="w-full flex items-center justify-center h-32 rounded-xl bg-grey-50"
+                      onClick={() =>
+                        showToast("아직 등록된 매장사진이 없어요", { variant: "warning" })
+                      }
+                    >
                       <p className="text-[14px] text-grey-400">등록된 사진이 없어요</p>
-                    </div>
+                    </button>
                   ) : shopImages.length === 1 ? (
                     <button
-                      onClick={() => setGalleryState({ images: shopImages, initialIndex: 0 })}
+                      onClick={() => handleImageClick(shopImages, 0)}
                       className="w-full aspect-[335/167] rounded-lg overflow-hidden bg-grey-100"
                     >
                       <Image
                         src={shopImages[0]}
-                        alt="업체 사진"
+                        alt="매장 사진"
                         width={335}
                         height={167}
                         className="w-full h-full object-cover"
                       />
                     </button>
+                  ) : shopImages.length === 2 ? (
+                    <div className="relative aspect-[335/167]">
+                      <div className="absolute inset-0 flex gap-px">
+                        <button
+                          onClick={() => handleImageClick(shopImages, 0)}
+                          className="flex-1 rounded-l-lg overflow-hidden bg-grey-100"
+                        >
+                          <Image
+                            src={shopImages[0]}
+                            alt="매장 사진 1"
+                            width={167}
+                            height={167}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                        <button
+                          onClick={() => handleImageClick(shopImages, 1)}
+                          className="flex-1 rounded-r-lg overflow-hidden bg-grey-100"
+                        >
+                          <Image
+                            src={shopImages[1]}
+                            alt="매장 사진 2"
+                            width={167}
+                            height={167}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                      </div>
+                    </div>
+                  ) : shopImages.length === 3 ? (
+                    <div className="relative aspect-[335/167]">
+                      <div className="absolute inset-0 flex gap-px">
+                        <button
+                          onClick={() => handleImageClick(shopImages, 0)}
+                          className="flex-1 rounded-l-lg overflow-hidden bg-grey-100"
+                        >
+                          <Image
+                            src={shopImages[0]}
+                            alt="매장 사진 1"
+                            width={167}
+                            height={167}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                        <div className="flex-1 flex flex-col gap-px">
+                          <button
+                            onClick={() => handleImageClick(shopImages, 1)}
+                            className="flex-1 rounded-tr-lg overflow-hidden bg-grey-100"
+                          >
+                            <Image
+                              src={shopImages[1]}
+                              alt="매장 사진 2"
+                              width={112}
+                              height={83}
+                              className="w-full h-full object-cover"
+                            />
+                          </button>
+                          <button
+                            onClick={() => handleImageClick(shopImages, 2)}
+                            className="flex-1 rounded-br-lg overflow-hidden bg-grey-100"
+                          >
+                            <Image
+                              src={shopImages[2]}
+                              alt="매장 사진 3"
+                              width={112}
+                              height={83}
+                              className="w-full h-full object-cover"
+                            />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : shopImages.length === 4 ? (
+                    <div className="relative aspect-[335/167]">
+                      <div className="absolute inset-0 flex gap-px">
+                        <button
+                          onClick={() => handleImageClick(shopImages, 0)}
+                          className="flex-1 rounded-l-lg overflow-hidden bg-grey-100"
+                        >
+                          <Image
+                            src={shopImages[0]}
+                            alt="매장 사진 1"
+                            width={167}
+                            height={167}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                        <div className="flex-1 flex flex-col gap-px">
+                          <button
+                            onClick={() => handleImageClick(shopImages, 1)}
+                            className="flex-1 rounded-tr-lg overflow-hidden bg-grey-100"
+                          >
+                            <Image
+                              src={shopImages[1]}
+                              alt="매장 사진 2"
+                              width={167}
+                              height={83}
+                              className="w-full h-full object-cover"
+                            />
+                          </button>
+                          <div className="flex gap-px">
+                            <button
+                              onClick={() => handleImageClick(shopImages, 2)}
+                              className="flex-1 aspect-square overflow-hidden bg-grey-100"
+                            >
+                              <Image
+                                src={shopImages[2]}
+                                alt="매장 사진 3"
+                                width={83}
+                                height={83}
+                                className="w-full h-full object-cover"
+                              />
+                            </button>
+                            <button
+                              onClick={() => handleImageClick(shopImages, 3)}
+                              className="flex-1 aspect-square rounded-br-lg overflow-hidden bg-grey-100"
+                            >
+                              <Image
+                                src={shopImages[3]}
+                                alt="매장 사진 4"
+                                width={83}
+                                height={83}
+                                className="w-full h-full object-cover"
+                              />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   ) : (
-                    /* 확장: 그리드 레이아웃 */
                     <div className="flex gap-px">
                       <button
-                        onClick={() => setGalleryState({ images: shopImages, initialIndex: 0 })}
+                        onClick={() => handleImageClick(shopImages, 0)}
                         className="flex-1 aspect-square rounded-l-lg overflow-hidden bg-grey-100"
                       >
                         <Image
                           src={shopImages[0]}
-                          alt="업체 사진 1"
+                          alt="매장 사진 1"
                           width={167}
                           height={167}
                           className="w-full h-full object-cover"
                         />
                       </button>
-                      <div className="flex-1 flex flex-wrap gap-px content-end">
-                        {shopImages[1] && (
-                          <button
-                            onClick={() => setGalleryState({ images: shopImages, initialIndex: 1 })}
-                            className="w-[calc(50%-0.5px)] aspect-square overflow-hidden bg-grey-100"
-                          >
-                            <Image
-                              src={shopImages[1]}
-                              alt="업체 사진 2"
-                              width={83}
-                              height={83}
-                              className="w-full h-full object-cover"
-                            />
-                          </button>
-                        )}
-                        {shopImages[2] && (
-                          <button
-                            onClick={() => setGalleryState({ images: shopImages, initialIndex: 2 })}
-                            className="w-[calc(50%-0.5px)] aspect-square rounded-tr-lg overflow-hidden bg-grey-100"
-                          >
-                            <Image
-                              src={shopImages[2]}
-                              alt="업체 사진 3"
-                              width={83}
-                              height={83}
-                              className="w-full h-full object-cover"
-                            />
-                          </button>
-                        )}
-                        {shopImages[3] && (
-                          <button
-                            onClick={() => setGalleryState({ images: shopImages, initialIndex: 3 })}
-                            className="w-[calc(50%-0.5px)] aspect-square overflow-hidden bg-grey-100"
-                          >
-                            <Image
-                              src={shopImages[3]}
-                              alt="업체 사진 4"
-                              width={83}
-                              height={83}
-                              className="w-full h-full object-cover"
-                            />
-                          </button>
-                        )}
-                        {shopImages[4] ? (
-                          <button
-                            onClick={handleViewAllImages}
-                            className="relative w-[calc(50%-0.5px)] aspect-square rounded-br-lg overflow-hidden bg-grey-100"
-                          >
-                            <Image
-                              src={shopImages[4]}
-                              alt="업체 사진 5"
-                              width={83}
-                              height={83}
-                              className="w-full h-full object-cover"
-                            />
-                            {remainingCount > 0 && (
-                              <div className="absolute inset-0 bg-black/55 flex flex-col items-center justify-center rounded-br-lg">
-                                <Images size={24} className="text-white" strokeWidth={1.5} />
-                                <div className="flex items-center justify-center">
-                                  <span className="text-[12px] text-white leading-[1.5] tracking-[-0.12px]">
-                                    {remainingCount}
-                                  </span>
-                                  <ChevronRight size={10} className="text-white" />
-                                </div>
+                      <div className="flex-1 flex flex-wrap gap-px">
+                        <button
+                          onClick={() => handleImageClick(shopImages, 1)}
+                          className="w-[calc(50%-0.5px)] aspect-square overflow-hidden bg-grey-100"
+                        >
+                          <Image
+                            src={shopImages[1]}
+                            alt="매장 사진 2"
+                            width={83}
+                            height={83}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                        <button
+                          onClick={() => handleImageClick(shopImages, 2)}
+                          className="w-[calc(50%-0.5px)] aspect-square rounded-tr-lg overflow-hidden bg-grey-100"
+                        >
+                          <Image
+                            src={shopImages[2]}
+                            alt="매장 사진 3"
+                            width={83}
+                            height={83}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                        <button
+                          onClick={() => handleImageClick(shopImages, 3)}
+                          className="w-[calc(50%-0.5px)] aspect-square overflow-hidden bg-grey-100"
+                        >
+                          <Image
+                            src={shopImages[3]}
+                            alt="매장 사진 4"
+                            width={83}
+                            height={83}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                        <button
+                          onClick={handleViewAllImages}
+                          className="relative w-[calc(50%-0.5px)] aspect-square rounded-br-lg overflow-hidden bg-grey-100"
+                        >
+                          <Image
+                            src={shopImages[4]}
+                            alt="매장 사진 5"
+                            width={83}
+                            height={83}
+                            className="w-full h-full object-cover"
+                          />
+                          {remainingCount > 0 && (
+                            <div className="absolute inset-0 bg-black/55 flex flex-col items-center justify-center rounded-br-lg">
+                              <Images size={24} className="text-white" strokeWidth={1.5} />
+                              <div className="flex items-center justify-center">
+                                <span className="text-[12px] text-white leading-[1.5] tracking-[-0.12px]">
+                                  +{remainingCount}
+                                </span>
+                                <ChevronRight size={10} className="text-white" />
                               </div>
-                            )}
-                          </button>
-                        ) : (
-                          <div className="w-[calc(50%-0.5px)] aspect-square rounded-br-lg bg-grey-100" />
-                        )}
+                            </div>
+                          )}
+                        </button>
                       </div>
                     </div>
                   )}
@@ -1077,17 +1398,17 @@ export default function ShopPreviewBottomSheet({
                             />
                           </button>
                           {isSortDropdownOpen && (
-                            <div className="absolute right-0 top-6 z-10 bg-white rounded-lg shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden min-w-[80px]">
+                            <div className="absolute right-0 top-6 z-10 bg-white rounded-lg rounded-tr-none shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] overflow-hidden w-[112px]">
                               <button
                                 onClick={() => handleSortChange("LATEST")}
-                                className={`flex items-center px-3 py-2 w-full text-[14px] ${sortBy === "LATEST" ? "text-main font-medium" : "text-grey-700"} hover:bg-grey-50`}
+                                className={`flex items-center px-3 py-2 w-full text-[14px] ${sortBy === "LATEST" ? "text-main" : "text-grey-700"} hover:bg-grey-50`}
                               >
                                 최신순
                               </button>
                               <div className="border-t border-grey-100" />
                               <button
                                 onClick={() => handleSortChange("LIKE_COUNT")}
-                                className={`flex items-center px-3 py-2 w-full text-[14px] ${sortBy === "LIKE_COUNT" ? "text-main font-medium" : "text-grey-700"} hover:bg-grey-50`}
+                                className={`flex items-center px-3 py-2 w-full text-[14px] ${sortBy === "LIKE_COUNT" ? "text-main" : "text-grey-700"} hover:bg-grey-50`}
                               >
                                 좋아요순
                               </button>
@@ -1097,34 +1418,38 @@ export default function ShopPreviewBottomSheet({
                       </div>
 
                       <div className="flex flex-col gap-3">
-                        {shop.reviews.slice(0, 3).map((review) => (
-                          <ReviewItem
-                            key={review.id}
-                            review={review}
-                            onLikeToggle={handleLikeToggle}
-                            onEdit={handleEditReview}
-                            onDelete={handleDeleteReview}
-                            onReport={handleReportReview}
-                            onReportUser={handleReportUser}
-                            onBlock={handleBlockUser}
-                            isLoggedIn={isLoggedIn}
-                            onImageClick={(images, index) =>
-                              setGalleryState({ images, initialIndex: index })
-                            }
-                          />
-                        ))}
+                        {shop.reviews
+                          .slice(0, shop.reviewCount >= 6 ? 5 : shop.reviewCount)
+                          .map((review) => (
+                            <ReviewItem
+                              key={review.id}
+                              review={review}
+                              onLikeToggle={handleLikeToggle}
+                              onEdit={handleEditReview}
+                              onDelete={handleDeleteReview}
+                              onReport={handleReportReview}
+                              onReportUser={handleReportUser}
+                              onBlock={handleBlockUser}
+                              isLoggedIn={isLoggedIn}
+                              onImageClick={(images, index) =>
+                                setGalleryState({ images, initialIndex: index })
+                              }
+                            />
+                          ))}
                       </div>
 
-                      <OutlineButton
-                        onClick={handleViewAllReviews}
-                        fullWidth
-                        rightIcon={
-                          <ChevronRight size={24} className="text-grey-700" strokeWidth={1.5} />
-                        }
-                        className="mt-4"
-                      >
-                        리뷰 전체보기
-                      </OutlineButton>
+                      {shop.reviewCount >= 6 && (
+                        <OutlineButton
+                          onClick={handleViewAllReviews}
+                          fullWidth
+                          rightIcon={
+                            <ChevronRight size={24} className="text-grey-700" strokeWidth={1.5} />
+                          }
+                          className="mt-4"
+                        >
+                          리뷰 전체보기
+                        </OutlineButton>
+                      )}
                     </>
                   )}
 
@@ -1148,6 +1473,10 @@ export default function ShopPreviewBottomSheet({
           onClose={() => setGalleryState(null)}
           alt="이미지"
         />
+      )}
+
+      {allImagesOpen && (
+        <ImagesGalleryOverlay images={galleryImages} onClose={() => setAllImagesOpen(false)} />
       )}
 
       {/* 리뷰 작성 모달 */}
@@ -1228,6 +1557,142 @@ export default function ShopPreviewBottomSheet({
         nickname={blockTarget?.nickname ?? ""}
         onClose={() => setBlockTarget(null)}
         onConfirm={handleConfirmBlock}
+      />
+
+      {/* 리뷰 전체보기 오버레이 */}
+      {showAllReviews && (
+        <div className="fixed inset-0 z-50 flex justify-center bg-black/0">
+          <div
+            className={`flex flex-col w-full max-w-[480px] bg-white ${isAllReviewsClosing ? "animate-slide-down" : "animate-slide-up"}`}
+          >
+            <BackHeader title="방문 리뷰 상세" onBack={handleCloseAllReviews} />
+            <div className="flex-1 overflow-y-auto">
+              {isAllReviewsLoading ? (
+                <div className="flex items-center justify-center h-64">
+                  <Spinner />
+                </div>
+              ) : allReviews.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-64 px-5">
+                  <p className="text-[15px] text-grey-500 mb-4">아직 작성된 리뷰가 없어요.</p>
+                </div>
+              ) : (
+                <div className="px-5 pt-3">
+                  {/* 정렬 & 총 개수 */}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center text-[16px] text-grey-900 tracking-[-0.16px]">
+                      <span>총&nbsp;</span>
+                      <span>{allReviewsTotalCount}개</span>
+                    </div>
+                    <div className="relative" ref={allReviewsSortRef}>
+                      <button
+                        onClick={() => setIsAllReviewsSortOpen(!isAllReviewsSortOpen)}
+                        className="flex items-center gap-1 text-[16px] text-grey-700"
+                      >
+                        <span>{allReviewsSortBy === "LATEST" ? "최신순" : "좋아요순"}</span>
+                        <ChevronDown
+                          size={16}
+                          className={`text-grey-700 transition-transform ${isAllReviewsSortOpen ? "rotate-180" : ""}`}
+                        />
+                      </button>
+                      {isAllReviewsSortOpen && (
+                        <div className="absolute right-0 top-6 z-10 bg-white rounded-lg rounded-tr-none shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] overflow-hidden w-[112px]">
+                          <button
+                            onClick={() => handleAllReviewsSortChange("LATEST")}
+                            className={`flex items-center px-3 py-2 w-full text-[14px] ${allReviewsSortBy === "LATEST" ? "text-main" : "text-grey-700"} hover:bg-grey-50`}
+                          >
+                            최신순
+                          </button>
+                          <div className="border-t border-grey-100" />
+                          <button
+                            onClick={() => handleAllReviewsSortChange("LIKE_COUNT")}
+                            className={`flex items-center px-3 py-2 w-full text-[14px] ${allReviewsSortBy === "LIKE_COUNT" ? "text-main" : "text-grey-700"} hover:bg-grey-50`}
+                          >
+                            좋아요순
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 리뷰 목록 */}
+                  <div className="flex flex-col gap-3">
+                    {allReviews.map((review) => (
+                      <ReviewItem
+                        key={review.id}
+                        review={review}
+                        onLikeToggle={handleAllReviewsLikeToggle}
+                        onEdit={handleAllReviewsEdit}
+                        onDelete={handleAllReviewsDelete}
+                        onReport={handleReportReview}
+                        onReportUser={handleReportUser}
+                        onBlock={handleBlockUser}
+                        isLoggedIn={isLoggedIn}
+                        onImageClick={(images, index) =>
+                          setGalleryState({ images, initialIndex: index })
+                        }
+                      />
+                    ))}
+                  </div>
+
+                  {/* 무한 스크롤 로딩 */}
+                  <div ref={loadMoreRef} className="py-4">
+                    {isFetchingNextPage && (
+                      <div className="flex items-center justify-center">
+                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-grey-200 border-t-main" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 유저 액션 바텀시트 */}
+      {isUserMenuOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-end bg-black/50"
+          onClick={() => setIsUserMenuOpen(false)}
+        >
+          <div
+            className="w-full max-w-[480px] mx-auto bg-white rounded-t-2xl pb-3 h-[188px] animate-slide-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-end px-5 pt-4 pb-2">
+              <button onClick={() => setIsUserMenuOpen(false)} aria-label="닫기">
+                <X size={20} className="text-grey-900" />
+              </button>
+            </div>
+            <button
+              onClick={() => {
+                setIsUserMenuOpen(false);
+                setIsSuggestModalOpen(true);
+              }}
+              className="flex items-center gap-[8px] px-5 w-full h-[46px] border-b border-[#F7F7F9]"
+            >
+              <SquarePen size={20} className="text-grey-900" />
+              <span className="text-[16px] text-grey-900">정보 수정 제안하기</span>
+            </button>
+            <button
+              onClick={() => {
+                setIsUserMenuOpen(false);
+                handleReportShop();
+              }}
+              className="flex items-center gap-[8px] px-5 w-full h-[46px]"
+            >
+              <Siren size={20} className="text-error" />
+              <span className="text-[16px] text-error">매장 신고하기</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      <ShopSuggestModal
+        isOpen={isSuggestModalOpen}
+        isLoading={createSuggestMutation.isPending}
+        onClose={() => setIsSuggestModalOpen(false)}
+        onSubmit={handleSubmitSuggest}
       />
     </>
   );

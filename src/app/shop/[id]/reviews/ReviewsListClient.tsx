@@ -10,7 +10,7 @@ import { useToggleReviewLike } from "@/api/mutations/useToggleReviewLike";
 import { useInfiniteReviews } from "@/api/queries/useInfiniteReviews";
 import { useUser } from "@/api/queries/useUser";
 import type { ReportReason, ReportTargetType } from "@/api/types";
-import { Button, BackHeader, ImageViewerModal } from "@/components/common";
+import { Button, BackHeader, ImageViewerModal, Spinner } from "@/components/common";
 import { BlockUserConfirmModal } from "@/components/features/review/BlockUserConfirmModal";
 import { ReportBottomSheet } from "@/components/features/review/ReportReviewBottomSheet";
 import { ReportSuccessModal } from "@/components/features/review/ReportSuccessModal";
@@ -222,7 +222,7 @@ export default function ReviewsListClient() {
   // 유효하지 않은 shopId 처리
   if (!isValidShopId) {
     return (
-      <div className="min-h-dvh bg-default flex flex-col">
+      <div className="min-h-dvh bg-default flex flex-col w-full max-w-[480px] mx-auto">
         <BackHeader title="방문 리뷰 상세" />
         <div className="flex-1 flex flex-col items-center justify-center px-5">
           <p className="text-[15px] text-grey-500 mb-4">잘못된 접근이에요</p>
@@ -235,15 +235,15 @@ export default function ReviewsListClient() {
   }
 
   return (
-    <div className="min-h-dvh bg-default flex flex-col">
+    <div className="h-dvh bg-default flex flex-col overflow-hidden max-w-[480px] mx-auto">
       {/* 헤더 */}
       <BackHeader title="방문 리뷰 상세" />
 
       {/* 컨텐츠 */}
-      <div className="flex-1">
+      <div className="flex-1 overflow-y-auto pb-3">
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
+            <Spinner />
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center h-64 px-5">
@@ -280,7 +280,7 @@ export default function ReviewsListClient() {
                 </button>
                 {/* 정렬 드롭다운 */}
                 {isSortDropdownOpen && (
-                  <div className="absolute right-0 top-6 z-10 bg-white rounded-lg shadow-[0px_0px_10px_0px_rgba(0,0,0,0.2)] overflow-hidden min-w-[80px]">
+                  <div className="absolute right-0 top-6 z-10 bg-white rounded-lg shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] overflow-hidden min-w-[80px]">
                     <button
                       onClick={() => handleSortChange("LATEST")}
                       className={`flex items-center px-3 py-2 w-full text-[14px] ${

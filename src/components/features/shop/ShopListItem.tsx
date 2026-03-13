@@ -15,6 +15,7 @@ interface ShopListItemProps {
   imageUrl?: string;
   isFavorite?: boolean;
   onSelect?: (shopId: number) => void;
+  isLast?: boolean;
 }
 
 export default function ShopListItem({
@@ -25,6 +26,7 @@ export default function ShopListItem({
   imageUrl,
   isFavorite: initialIsFavorite = false,
   onSelect,
+  isLast = false,
 }: ShopListItemProps) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -49,17 +51,24 @@ export default function ShopListItem({
     <div className="relative w-full">
       <div className="flex gap-[10px] items-center w-full py-4">
         {/* 이미지 */}
-        <button
-          onClick={handleItemClick}
-          className="relative rounded-[5px] shrink-0 size-[85px] overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-main"
-        >
-          <Image
-            src={imageUrl || DEFAULT_IMAGES.NO_IMAGE}
-            alt={name}
-            fill
-            className="object-cover"
-          />
-        </button>
+        {imageUrl && imageUrl !== DEFAULT_IMAGES.NO_IMAGE ? (
+          <button
+            onClick={handleItemClick}
+            className="relative rounded-[5px] shrink-0 size-[85px] overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-main"
+          >
+            <Image src={imageUrl} alt={name} fill sizes="85px" className="object-cover" />
+          </button>
+        ) : (
+          <div className="relative rounded-[5px] shrink-0 size-[85px] overflow-hidden">
+            <Image
+              src={DEFAULT_IMAGES.NO_IMAGE}
+              alt={name}
+              fill
+              sizes="85px"
+              className="object-cover"
+            />
+          </div>
+        )}
 
         {/* 정보 */}
         <div className="flex flex-col gap-[4px] h-[85px] flex-1 min-w-0">
@@ -90,7 +99,7 @@ export default function ShopListItem({
             onClick={handleItemClick}
             className="text-left focus:outline-none focus-visible:underline"
           >
-            <p className="text-[18px] font-semibold text-grey-900 tracking-[-0.18px] overflow-hidden text-ellipsis whitespace-nowrap font-pretendard leading-[150%]">
+            <p className="text-[18px] font-semibold text-grey-900 tracking-[-0.18px] overflow-hidden text-ellipsis whitespace-nowrap leading-[150%]">
               {name}
             </p>
           </button>
@@ -103,10 +112,10 @@ export default function ShopListItem({
                 className="fill-grey-700 stroke-grey-700 shrink-0"
                 strokeWidth={1.25}
               />
-              <span className="text-[14px] font-normal text-grey-700 tracking-[-0.14px] font-pretendard leading-[150%]">
+              <span className="text-[14px] font-normal text-grey-700 tracking-[-0.14px] leading-[150%]">
                 현재 위치에서
               </span>
-              <span className="text-[14px] font-medium text-grey-800 tracking-[-0.14px] font-pretendard leading-[150%]">
+              <span className="text-[14px] font-medium text-grey-800 tracking-[-0.14px] leading-[150%]">
                 {distance}
               </span>
             </div>
@@ -115,7 +124,7 @@ export default function ShopListItem({
       </div>
 
       {/* 하단 구분선 */}
-      <div className="absolute left-0 bottom-0 w-full h-[1px] bg-grey-100" />
+      {!isLast && <div className="absolute left-0 bottom-0 w-full h-[1px] bg-grey-100" />}
     </div>
   );
 }

@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useBlockUser } from "@/api/mutations/useBlockUser";
 import { useUnblockUser } from "@/api/mutations/useUnblockUser";
 import { useBlockedUsers } from "@/api/queries/useBlockedUsers";
-import { BackHeader } from "@/components/common";
+import { BackHeader, Spinner } from "@/components/common";
 import { UnblockConfirmModal } from "@/components/mypage/UnblockConfirmModal";
 import { useToast } from "@/hooks";
 
@@ -49,7 +49,12 @@ export default function BlockedUsersPage() {
     unblockMutation.mutate(userId, {
       onSuccess: () => {
         setUnblockTarget(null);
-        const displayName = nickname.includes("#") ? `${nickname.split("#")[0]}#...` : nickname;
+        const baseName = nickname.includes("#") ? nickname.split("#")[0] : nickname;
+        const isKorean = /[가-힣]/.test(baseName);
+        const maxLength = isKorean ? 4 : 8;
+        const truncatedName =
+          baseName.length > maxLength ? `${baseName.slice(0, maxLength)}...` : baseName;
+        const displayName = nickname.includes("#") ? `${truncatedName}#...` : truncatedName;
         showToast(`${displayName}님의 차단이 해제되었어요`, 3000, {
           label: "취소",
           onPress: () => {
@@ -68,22 +73,22 @@ export default function BlockedUsersPage() {
   };
 
   return (
-    <div className="bg-default min-h-dvh flex flex-col">
+    <div className="bg-default h-[calc(100dvh-env(safe-area-inset-top))] flex flex-col overflow-hidden">
       <BackHeader title="차단한 사용자 목록" />
 
       {isLoading ? (
         <div className="flex flex-1 items-center justify-center">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
+          <Spinner />
         </div>
       ) : blockedUsers.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-7">
+        <div className="flex flex-1 flex-col items-center justify-center gap-7 -mt-14">
           <Image src="/images/blocked-empty.png" alt="차단한 사용자 없음" width={96} height={87} />
           <p className="text-[20px] font-semibold text-grey-900 tracking-[-0.2px] leading-[1.4]">
             차단한 사용자가 없어요
           </p>
         </div>
       ) : (
-        <div className="flex flex-col px-5 mt-4">
+        <div className="flex-1 overflow-y-auto flex flex-col px-5 mt-4">
           <p className="text-[16px] font-normal text-grey-900 tracking-[-0.16px] leading-[1.5] mb-2">
             총 {totalCount}명
           </p>

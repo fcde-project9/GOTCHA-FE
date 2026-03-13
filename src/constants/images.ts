@@ -5,8 +5,9 @@
 
 // 기본 이미지
 export const DEFAULT_IMAGES = {
-  /** 가게 기본 이미지 (이미지 없을 때) */
-  NO_IMAGE: "/images/no-image.png",
+  /** 가게 기본 이미지 (API에서 내려오는 S3 디폴트 이미지) */
+  NO_IMAGE:
+    "https://gotcha-storage.s3.ap-northeast-2.amazonaws.com/prod/defaults/shop-default-v3.png",
   /** 기본 프로필 이미지 */
   PROFILE:
     "https://gotcha-storage.s3.ap-northeast-2.amazonaws.com/prod/defaults/profile-default-join.png",
@@ -56,6 +57,16 @@ export const ERROR_IMAGES = {
   SESSION_EXPIRED: "/images/error-session-expired.png",
   /** 시스템 점검 일러스트 */
   MAINTENANCE: "/images/error-maintenance.png",
+} as const;
+
+// 아이콘 이미지
+export const ICON_IMAGES = {
+  /** 찜 아이콘 (채움) */
+  FAVORITE_FILL: "/images/icons/favorite-fill.svg",
+  /** 찜 아이콘 (라인) */
+  FAVORITE_LINE: "/images/icons/favorite-line.svg",
+  /** 공유 아이콘 */
+  SHARE: "/images/icons/share.svg",
 } as const;
 
 // 로고 이미지

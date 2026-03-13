@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { Spinner } from "@/components/common";
 import { MARKER_IMAGES, DEFAULT_LOCATION } from "@/constants";
 import { useKakaoLoader } from "@/hooks/useKakaoLoader";
 import { MapBounds, ShopMapResponse } from "@/types/api";
@@ -511,8 +512,8 @@ export default function KakaoMap({
 
       {/* 로딩 오버레이 */}
       {isLoading && !error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 text-gray-500">
-          지도 로딩 중...
+        <div className="absolute inset-0 flex items-center justify-center bg-grey-100">
+          <Spinner />
         </div>
       )}
 

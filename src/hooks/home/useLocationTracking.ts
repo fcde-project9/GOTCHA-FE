@@ -67,9 +67,18 @@ export function useLocationTracking(
     }
   }, []);
 
-  // 최초 접속 시 현재 위치 권한 요청
+  // 최초 접속 시 현재 위치 요청 (권한이 이미 허용된 경우에만)
   useEffect(() => {
     getCurrentLocation();
+  }, [getCurrentLocation]);
+
+  // providers.tsx에서 순차 권한 요청 완료 시 위치 재조회
+  useEffect(() => {
+    const handlePermissionsReady = () => {
+      getCurrentLocation();
+    };
+    window.addEventListener("permissions-ready", handlePermissionsReady);
+    return () => window.removeEventListener("permissions-ready", handlePermissionsReady);
   }, [getCurrentLocation]);
 
   // iOS 13+ 디바이스 방향 권한 요청 여부 확인
@@ -217,15 +226,40 @@ export function useLocationTracking(
     if (isNativeApp()) {
       try {
         const { Geolocation } = await import("@capacitor/geolocation");
-        const position = await Geolocation.getCurrentPosition({
-          enableHighAccuracy: true,
-          timeout: 5000,
-        });
-        onSuccess({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          heading: position.coords.heading,
-        });
+
+        // 권한 확인 후 이미 허용된 경우에만 위치 요청 (시스템 다이얼로그 방지)
+        const permStatus = await Geolocation.checkPermissions();
+        if (permStatus.location !== "granted") {
+          onError();
+          return;
+        }
+
+        // 빠른 저정밀(WiFi/셀룰러) 먼저 시도, 실패 시 GPS 폴백
+        try {
+          const position = await Geolocation.getCurrentPosition({
+            enableHighAccuracy: false,
+            timeout: 3000,
+          });
+          onSuccess({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            heading: position.coords.heading,
+          });
+        } catch {
+          try {
+            const position = await Geolocation.getCurrentPosition({
+              enableHighAccuracy: true,
+              timeout: 15000,
+            });
+            onSuccess({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              heading: position.coords.heading,
+            });
+          } catch {
+            setIsLocating(false);
+          }
+        }
       } catch {
         onError();
       }
@@ -238,6 +272,7 @@ export function useLocationTracking(
       return;
     }
 
+    // 빠른 저정밀 먼저 시도, 실패 시 GPS 폴백
     navigator.geolocation.getCurrentPosition(
       (position) => {
         onSuccess({
@@ -246,14 +281,26 @@ export function useLocationTracking(
           heading: position.coords.heading,
         });
       },
-      (err) => {
-        console.error("위치 정보를 가져올 수 없어요:", err);
-        if (err.code === err.PERMISSION_DENIED) {
-          onError();
-        }
-        setIsLocating(false);
+      () => {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            onSuccess({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              heading: position.coords.heading,
+            });
+          },
+          (err) => {
+            console.error("위치 정보를 가져올 수 없어요:", err);
+            if (err.code === err.PERMISSION_DENIED) {
+              onError();
+            }
+            setIsLocating(false);
+          },
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        );
       },
-      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      { enableHighAccuracy: false, timeout: 3000, maximumAge: 0 }
     );
   }, [onLocationUpdate, requestOrientationPermission, startDeviceOrientationTracking]);
 

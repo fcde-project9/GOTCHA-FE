@@ -1,8 +1,8 @@
 "use client";
 
 import { ReactNode } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
 
 interface BackHeaderProps {
   /**
@@ -65,19 +65,19 @@ export function BackHeader({
 
   return (
     <header
-      className={`flex h-14 items-center justify-between bg-white px-4 ${
-        absolute ? "absolute top-0 left-0 right-0 z-10" : sticky ? "sticky top-0 z-10" : "shrink-0"
+      className={`flex h-[48px] items-center justify-between bg-default px-[20px] z-10 ${
+        absolute ? "absolute top-0 left-0 right-0" : sticky ? "sticky top-0" : "relative shrink-0"
       } ${showBorder ? "border-b border-grey-100" : ""}`}
     >
       {/* 뒤로가기 버튼 & 타이틀 */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center">
         <button
           type="button"
           onClick={handleBack}
           className="flex items-center justify-center"
           aria-label="뒤로가기"
         >
-          <ChevronLeft size={24} strokeWidth={1.75} className="text-grey-800" />
+          <Image src="/images/icons/arrow-left.svg" alt="뒤로가기" width={26} height={26} />
         </button>
         {title && (
           <span className="max-w-48 truncate text-[20px] font-semibold leading-[1.5] tracking-[-0.2px] text-grey-900">

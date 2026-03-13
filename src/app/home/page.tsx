@@ -3,8 +3,9 @@
 import { useEffect, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { Search, LocateFixed, RefreshCcw, ChevronLeft, CircleX, Loader2 } from "lucide-react";
-import { Footer, LocationPermissionModal, SplashScreen } from "@/components/common";
+import { useRouter } from "next/navigation";
+import { LocateFixed, RefreshCcw, CircleX, Loader2 } from "lucide-react";
+import { Footer, LocationPermissionModal, Spinner, SplashScreen } from "@/components/common";
 import { SearchResultItem } from "@/components/features/search";
 import { ShopListBottomSheet, ShopPreviewBottomSheet } from "@/components/features/shop";
 import { DEFAULT_IMAGES } from "@/constants";
@@ -20,12 +21,14 @@ const KakaoMap = dynamic(() => import("@/components/features/map/KakaoMap"), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full flex items-center justify-center bg-grey-100">
-      <span className="text-grey-500">지도 로딩 중...</span>
+      <Spinner />
     </div>
   ),
 });
 
 export default function Home() {
+  const router = useRouter();
+
   // 스플래시 상태 - sessionStorage로 세션 당 한 번만 표시
   // null = hydration 전(미결정), true = 표시, false = 스킵
   const [showSplash, setShowSplash] = useState<boolean | null>(null);
@@ -49,15 +52,36 @@ export default function Home() {
 
   // 스플래시 표시 여부 결정 (클라이언트에서만 실행)
   useEffect(() => {
+    const splashShown = sessionStorage.getItem("splashShown") === "true";
+
+    if (splashShown) {
+      // 스플래시가 이미 표시된 경우, 인증 여부 확인
+      const accessToken = localStorage.getItem("accessToken");
+      const userType = localStorage.getItem("user_type");
+
+      if (!accessToken && userType !== "guest") {
+        router.replace("/login");
+        return;
+      }
+    }
+
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 브라우저 전용 API(sessionStorage) 초기 읽기
-    setShowSplash(sessionStorage.getItem("splashShown") !== "true");
-  }, []);
+    setShowSplash(!splashShown);
+  }, [router]);
 
   // 홈페이지에서 pull-to-refresh 비활성화
   useEffect(() => {
     document.body.style.overscrollBehaviorY = "contain";
     return () => {
       document.body.style.overscrollBehaviorY = "";
+    };
+  }, []);
+
+  // 홈(지도) 페이지에서 body 상단 패딩 제거 → 지도가 상태바/노치 뒤까지 확장
+  useEffect(() => {
+    document.body.style.paddingTop = "0px";
+    return () => {
+      document.body.style.paddingTop = "";
     };
   }, []);
 
@@ -100,12 +124,25 @@ export default function Home() {
 
   // 스플래시 완료 핸들러
   const handleSplashComplete = useCallback(() => {
-    setShowSplash(false);
     sessionStorage.setItem("splashShown", "true");
-  }, []);
 
-  // hydration 전 또는 스플래시 표시 중
-  if (showSplash === null || showSplash) {
+    // 스플래시 후 인증 여부 확인 → 미인증 시 로그인 페이지로 이동
+    const accessToken = localStorage.getItem("accessToken");
+    const userType = localStorage.getItem("user_type");
+
+    if (!accessToken && userType !== "guest") {
+      router.replace("/login");
+      return;
+    }
+
+    setShowSplash(false);
+  }, [router]);
+
+  // hydration 전 (useEffect 실행 전) - 빈 화면 (GNB 이동 시 스플래시 재노출 방지)
+  if (showSplash === null) return null;
+
+  // 세션 최초 방문 시 스플래시 표시
+  if (showSplash) {
     return <SplashScreen duration={2500} onComplete={handleSplashComplete} />;
   }
 
@@ -115,11 +152,11 @@ export default function Home() {
       <LocationPermissionModal
         isOpen={locationTracking.showLocationModal}
         onClose={locationTracking.closeLocationModal}
-        initialDenied={locationTracking.locationDenied}
-        onPermissionGranted={locationTracking.handlePermissionGranted}
       />
 
-      <main className="h-[calc(100dvh-var(--footer-height))] overflow-hidden relative touch-none">
+      <main
+        className={`${bottomSheet.showPreviewSheet ? "h-[100dvh]" : "h-[calc(100dvh-env(safe-area-inset-top,0px)-var(--footer-height))]"} overflow-hidden relative touch-none`}
+      >
         <div className="flex h-full flex-col items-center relative touch-auto">
           {/* 카카오맵 */}
           <div className="w-full h-full relative">
@@ -207,7 +244,7 @@ export default function Home() {
           )}
         </div>
       </main>
-      {!search.isSearching && <Footer />}
+      {!search.isSearching && !bottomSheet.showPreviewSheet && <Footer />}
     </>
   );
 }
@@ -232,43 +269,63 @@ function SearchBar({
   onClearSearch,
 }: SearchBarProps) {
   return (
-    <div className="absolute left-0 right-0 top-8 z-30 mx-auto w-full max-w-[480px] px-5">
+    <div className="absolute left-0 right-0 top-[calc(env(safe-area-inset-top)+20px)] z-30 mx-auto w-full max-w-[480px] px-5">
       {!isSearching ? (
         <button
           onClick={onSearchClick}
-          className="flex h-11 w-full items-center gap-2 rounded-lg bg-white px-2.5 py-2.5 shadow-[0px_0px_5px_0px_rgba(0,0,0,0.2)]"
+          className="flex h-11 w-full items-center justify-between rounded-lg bg-white p-[10px] shadow-[0px_0px_5px_0px_rgba(0,0,0,0.2)]"
         >
-          <Search size={20} className="stroke-grey-800" strokeWidth={2} />
           <span
             className={`text-[17px] font-normal leading-[1.5] tracking-[-0.17px] ${
-              searchQuery ? "text-grey-800" : "text-grey-600"
+              searchQuery ? "text-grey-800" : "text-grey-400"
             }`}
           >
-            {searchQuery || "지역 또는 지하철역 검색"}
+            {searchQuery || "위치로 업체 검색"}
           </span>
+          <Image
+            src="/images/icons/search.svg"
+            alt=""
+            width={26}
+            height={26}
+            className="pointer-events-none select-none"
+          />
         </button>
       ) : (
-        <div className="flex h-11 items-center gap-2 rounded-lg bg-grey-100 px-1.5 py-2.5">
+        <div className="flex items-center">
           <button
             onClick={onSearchCancel}
-            className="flex size-6 items-center justify-center"
+            className="flex shrink-0 size-[26px] items-center justify-center"
             aria-label="취소"
           >
-            <ChevronLeft size={24} className="stroke-grey-800" strokeWidth={1.5} />
+            <Image
+              src="/images/icons/arrow-left.svg"
+              alt=""
+              width={26}
+              height={26}
+              className="pointer-events-none select-none"
+            />
           </button>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="지역 또는 지하철역 검색"
-            autoFocus
-            className="flex-1 bg-transparent text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-900 placeholder:text-grey-600 focus:outline-none"
-          />
-          {searchQuery && (
-            <button onClick={onClearSearch} aria-label="검색어 지우기">
-              <CircleX size={24} className="fill-grey-500 stroke-grey-50" strokeWidth={2} />
-            </button>
-          )}
+          <div className="flex flex-1 h-11 items-center rounded-lg bg-grey-100 px-[10px]">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="상품 키워드, 매장명 검색"
+              autoFocus
+              className="flex-1 bg-transparent text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-900 placeholder:text-grey-400 focus:outline-none"
+            />
+            {searchQuery ? (
+              <button onClick={onClearSearch} className="shrink-0" aria-label="검색어 지우기">
+                <CircleX size={26} className="fill-grey-500 stroke-grey-100" strokeWidth={2} />
+              </button>
+            ) : (
+              <img
+                src="/images/icons/search.svg"
+                alt=""
+                className="shrink-0 w-[26px] h-[26px] pointer-events-none select-none"
+              />
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -281,7 +338,7 @@ interface ReloadButtonProps {
 
 function ReloadButton({ onClick }: ReloadButtonProps) {
   return (
-    <div className="absolute left-0 right-0 top-[88px] z-10 mx-auto flex w-full max-w-[480px] justify-center px-5">
+    <div className="absolute left-0 right-0 top-[calc(env(safe-area-inset-top)+80px)] z-10 mx-auto flex w-full max-w-[480px] justify-center px-5">
       <button
         onClick={onClick}
         className="flex items-center gap-1 rounded-full bg-white px-3 py-2 shadow-[0px_0px_5px_0px_rgba(0,0,0,0.2)]"
@@ -352,7 +409,7 @@ interface SearchOverlayProps {
 function SearchOverlay({ searchQuery, results, onResultClick }: SearchOverlayProps) {
   return (
     <div className="absolute left-0 right-0 top-0 bottom-0 z-20 bg-default flex flex-col">
-      <div className="flex-1 overflow-hidden px-[22px] pt-24">
+      <div className="flex-1 overflow-hidden px-[22px] pt-[calc(env(safe-area-inset-top)+96px)]">
         {searchQuery.trim() === "" ? (
           <SearchEmptyState />
         ) : results.length > 0 ? (
@@ -367,10 +424,23 @@ function SearchOverlay({ searchQuery, results, onResultClick }: SearchOverlayPro
             ))}
           </div>
         ) : (
-          <div className="flex items-center justify-center pt-8">
-            <p className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-500">
-              검색 결과가 없어요.
-            </p>
+          <div className="flex flex-col items-center justify-center pt-[calc(50vh-260px)]">
+            <div className="mb-6 flex items-center justify-center">
+              <Image
+                src={DEFAULT_IMAGES.SHOP_LIST_EMPTY}
+                alt="검색 결과 없음"
+                width={79}
+                height={50}
+              />
+            </div>
+            <div className="flex flex-col gap-1 text-center">
+              <p className="text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900">
+                검색 결과가 없어요
+              </p>
+              <p className="text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-500">
+                오타가 있는지 확인해보세요
+              </p>
+            </div>
           </div>
         )}
       </div>

@@ -24,7 +24,6 @@ const REVIEW_REASONS: { value: ReviewReportReason; label: string }[] = [
 ];
 
 const SHOP_REASONS: { value: ShopReportReason; label: string }[] = [
-  { value: "SHOP_WRONG_ADDRESS", label: "잘못된 주소예요" },
   { value: "SHOP_CLOSED", label: "영업 종료/폐업된 업체예요" },
   { value: "SHOP_INAPPROPRIATE", label: "부적절한 업체(불법/유해 업소)예요" },
   { value: "SHOP_DUPLICATE", label: "중복 제보된 업체예요" },
@@ -105,25 +104,37 @@ export function ReportBottomSheet({
 
   const isSubmitDisabled = !selectedReason || (isOtherSelected && !detail.trim()) || isLoading;
 
+  const isShop = targetType === "SHOP";
+
   return (
     <div className="fixed inset-0 z-50 flex items-end bg-black/70" onClick={handleClose}>
       <div
-        className="w-full bg-white rounded-t-3xl px-5 pt-5 pb-[52px] animate-slide-up"
+        className="w-full max-w-[480px] mx-auto bg-white rounded-t-3xl px-5 pt-5 pb-[52px] animate-slide-up"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between pb-[5px] border-b border-grey-50">
           <div className="flex flex-col gap-2">
             <h2 className="text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
-              {TARGET_TITLE[targetType]} <span className="text-main">신고하기</span>
+              {isShop ? (
+                "매장 문제 신고"
+              ) : (
+                <>
+                  {TARGET_TITLE[targetType]} <span className="text-main">신고하기</span>
+                </>
+              )}
             </h2>
-            <p className="text-[13px] font-normal leading-[1.5] tracking-[-0.13px] text-grey-400">
-              * 신고는 익명으로 제보됩니다
-            </p>
+            {!isShop && (
+              <p className="text-[13px] font-normal leading-[1.5] tracking-[-0.13px] text-grey-400">
+                * 신고는 익명으로 제보됩니다
+              </p>
+            )}
           </div>
-          <button onClick={handleClose} className="p-1 self-start">
-            <X size={24} className="text-grey-700" />
-          </button>
+          {!isShop && (
+            <button onClick={handleClose} className="p-1 self-start">
+              <X size={24} className="text-grey-700" />
+            </button>
+          )}
         </div>
 
         {/* Reason List */}
@@ -138,14 +149,14 @@ export function ReportBottomSheet({
                 {label}
               </span>
               <div
-                className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
+                className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
                   selectedReason === value ? "bg-main" : "border-2 border-grey-300"
                 }`}
               >
                 {selectedReason === value && (
                   <svg
-                    width="10"
-                    height="10"
+                    width="12"
+                    height="12"
                     viewBox="0 0 14 10"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -168,21 +179,39 @@ export function ReportBottomSheet({
             <textarea
               value={detail}
               onChange={(e) => setDetail(e.target.value)}
-              placeholder="신고 사유를 입력해주세요"
+              placeholder={isShop ? "직접 입력하기" : "신고 사유를 입력해주세요"}
               maxLength={500}
               className="w-full min-h-32 shrink-0 p-3 border border-grey-200 rounded-lg text-[16px] leading-[1.5] tracking-[-0.16px] text-grey-600 placeholder:text-grey-400 resize-none focus:outline-none focus:border-main"
             />
           )}
         </div>
 
-        {/* Submit Button */}
-        <button
-          onClick={handleSubmit}
-          disabled={isSubmitDisabled}
-          className="w-full h-[46px] rounded-lg bg-main text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white disabled:bg-grey-200 disabled:text-grey-400"
-        >
-          {isLoading ? "신고 접수 중..." : "신고하기"}
-        </button>
+        {/* Buttons */}
+        {isShop ? (
+          <div className="flex gap-3">
+            <button
+              onClick={handleClose}
+              className="flex-1 h-[46px] rounded-lg bg-grey-100 text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-grey-700"
+            >
+              취소
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitDisabled}
+              className="flex-1 h-[46px] rounded-lg bg-main text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white disabled:bg-grey-200 disabled:text-grey-400"
+            >
+              {isLoading ? "신고 접수 중..." : "신고하기"}
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={handleSubmit}
+            disabled={isSubmitDisabled}
+            className="w-full h-[46px] rounded-lg bg-main text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white disabled:bg-grey-200 disabled:text-grey-400"
+          >
+            {isLoading ? "신고 접수 중..." : "신고하기"}
+          </button>
+        )}
       </div>
     </div>
   );

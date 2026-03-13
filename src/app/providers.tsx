@@ -1,24 +1,21 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { NotificationPermissionModal } from "@/components/common";
 import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
 import { ToastProvider, useDeepLink } from "@/hooks";
 import { checkSessionAndRedirect } from "@/utils";
 import { isNativeApp } from "@/utils/platform";
-import { registerPushNotifications, checkNativePushPermission } from "@/utils/pushNotifications";
+import { registerPushNotifications } from "@/utils/pushNotifications";
 
 // 세션 체크를 하지 않는 페이지 목록
 const PUBLIC_PATHS = ["/login", "/oauth/callback", "/login/nickname", "/terms"];
 
-const NOTIFICATION_DISMISSED_KEY = "notificationPermissionDismissed";
-
 export default function Providers({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const permissionsRequestedRef = useRef(false);
 
   // 딥링크(gotchaapp://) 이벤트 리스닝
   useDeepLink();
@@ -35,7 +32,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         // 상태바: 어두운 텍스트 (밝은 배경)
         await StatusBar.setStyle({ style: Style.Light });
 
-        // 키보드: 리사이즈 모드
+        // 키보드: 리사이즈 모드 (기본값인 Body로 복구하여 입력창 가림 방지)
         await Keyboard.setResizeMode({ mode: KeyboardResize.Body });
       } finally {
         // import/초기화 실패 시에도 스플래시는 반드시 숨기기
@@ -61,68 +58,68 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     }
   }, [pathname]);
 
-  // 알림 권한 모달 표시 조건 확인 (인증된 페이지에서만)
+  // 순차적 권한 요청: 위치 → 알림 (시스템 다이얼로그 사용, 1회만 실행)
   useEffect(() => {
+    if (permissionsRequestedRef.current) return;
+
     const isPublicPath = PUBLIC_PATHS.some(
       (path) => pathname === path || pathname?.startsWith(`${path}/`)
     );
     if (isPublicPath) return;
 
-    const checkPermission = async () => {
-      // Capacitor API로 권한 확인 (타임아웃 2초)
-      let permission: "granted" | "denied" | "prompt";
-      try {
-        permission = await Promise.race([
-          checkNativePushPermission(),
-          new Promise<"prompt">((resolve) => setTimeout(() => resolve("prompt"), 2000)),
-        ]);
-      } catch {
-        permission = "prompt";
+    // 인증 확인 (미인증 시 권한 요청 스킵)
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const userType = localStorage.getItem("user_type");
+      if (!accessToken && userType !== "guest") return;
+    } catch {
+      return;
+    }
+
+    permissionsRequestedRef.current = true;
+
+    const requestSequentialPermissions = async () => {
+      if (isNativeApp()) {
+        try {
+          // 1. 위치 권한 (시스템 다이얼로그)
+          const { Geolocation } = await import("@capacitor/geolocation");
+          const locPerm = await Geolocation.checkPermissions();
+          if (locPerm.location !== "granted" && locPerm.location !== "denied") {
+            await Geolocation.requestPermissions();
+          }
+
+          // 2. 알림 권한 (시스템 다이얼로그)
+          const { PushNotifications } = await import("@capacitor/push-notifications");
+          const notifPerm = await PushNotifications.checkPermissions();
+          if (notifPerm.receive !== "granted" && notifPerm.receive !== "denied") {
+            const result = await PushNotifications.requestPermissions();
+            if (result.receive === "granted") {
+              registerPushNotifications().catch(() => {});
+            }
+          }
+        } catch {
+          // 권한 요청 실패 시 무시
+        }
+      } else {
+        // 웹: 알림 권한만 시스템 팝업으로 요청
+        try {
+          if (typeof Notification !== "undefined" && Notification.permission === "default") {
+            const result = await Notification.requestPermission();
+            if (result === "granted") {
+              registerPushNotifications().catch(() => {});
+            }
+          }
+        } catch {
+          // ignore
+        }
       }
 
-      if (permission === "granted") return;
-      // 웹에서는 denied면 모달 표시하지 않음
-      if (!isNativeApp() && permission === "denied") return;
-
-      try {
-        if (localStorage.getItem(NOTIFICATION_DISMISSED_KEY) === "true") return;
-        if (localStorage.getItem("notificationPermissionGranted") === "true") return;
-      } catch {
-        return;
-      }
-
-      setShowNotificationModal(true);
+      // 권한 요청 완료 → useLocationTracking이 위치 재조회
+      window.dispatchEvent(new Event("permissions-ready"));
     };
 
-    checkPermission();
+    requestSequentialPermissions();
   }, [pathname]);
-
-  const handleNotificationClose = useCallback(() => {
-    // "나중에" 클릭 시 localStorage에 플래그 저장
-    try {
-      localStorage.setItem(NOTIFICATION_DISMISSED_KEY, "true");
-    } catch {
-      // localStorage 접근 불가 시 무시
-    }
-    setShowNotificationModal(false);
-  }, []);
-
-  const handleNotificationGranted = useCallback(() => {
-    setShowNotificationModal(false);
-    // 권한 허용 후 push 구독 등록 (웹/네이티브 자동 분기)
-    // 등록 성공 시에만 granted 플래그 저장 (실패 시 다음에 재시도 가능)
-    registerPushNotifications()
-      .then(() => {
-        try {
-          localStorage.setItem("notificationPermissionGranted", "true");
-        } catch {
-          /* noop */
-        }
-      })
-      .catch(() => {
-        // 구독 실패해도 앱 동작에 영향 없음
-      });
-  }, []);
 
   const [queryClient] = useState(
     () =>
@@ -141,11 +138,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <ToastProvider>{children}</ToastProvider>
       <ServiceWorkerRegistration />
-      <NotificationPermissionModal
-        isOpen={showNotificationModal}
-        onClose={handleNotificationClose}
-        onPermissionGranted={handleNotificationGranted}
-      />
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );

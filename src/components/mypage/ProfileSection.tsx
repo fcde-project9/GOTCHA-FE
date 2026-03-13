@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ChevronLeft, Plus, SquarePen } from "lucide-react";
+import { Plus, SquarePen } from "lucide-react";
 import { DEFAULT_IMAGES, getSocialProviderIcon } from "@/constants";
 
 const SOCIAL_PROVIDER_LABELS = {
@@ -37,7 +37,7 @@ export function ProfileSection({
   const handleProfileImageChange = () => {
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = "image/jpeg,image/jpg,image/png,image/webp";
+    input.accept = "image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif";
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
@@ -72,11 +72,21 @@ export function ProfileSection({
             로그인을 해주세요
           </h2>
           <div className="w-6 h-6 flex items-center justify-center">
-            <ChevronLeft
-              size={12}
-              className="stroke-grey-900 rotate-180 scale-y-[-1]"
-              strokeWidth={2}
-            />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="lucide lucide-chevron-left stroke-grey-900 rotate-180 scale-y-[-1]"
+              aria-hidden="true"
+            >
+              <path d="m15 18-6-6 6-6"></path>
+            </svg>
           </div>
         </button>
       </div>
@@ -87,7 +97,7 @@ export function ProfileSection({
   return (
     <div className="flex flex-col items-center gap-7 w-full px-5">
       {/* Profile Image */}
-      <div className="flex flex-col items-center gap-4 w-[168px]">
+      <div className="flex flex-col items-center gap-4">
         <div className="relative w-[100px] h-[100px]">
           <div className="relative w-full h-full rounded-full overflow-hidden">
             <Image
@@ -125,7 +135,7 @@ export function ProfileSection({
           </div>
 
           {/* Social Login Info */}
-          <div className="bg-grey-50 rounded-md px-2 py-0.5 inline-flex items-center gap-2 justify-center">
+          <div className="bg-grey-50 rounded-md px-4 py-0.5 inline-flex items-center gap-2 justify-center">
             <Image
               src={getSocialProviderIcon(socialProvider)}
               alt={socialProvider ? SOCIAL_PROVIDER_LABELS[socialProvider] : ""}

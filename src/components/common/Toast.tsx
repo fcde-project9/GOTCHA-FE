@@ -57,13 +57,17 @@ export function Toast({
 
   return (
     <div
-      className={`fixed top-[48px] left-1/2 z-50 -translate-x-1/2 transition-all duration-700 ease-out ${
+      className={`fixed top-[calc(env(safe-area-inset-top))] left-1/2 z-50 -translate-x-1/2 transition-all duration-700 ease-out ${
         show ? "translate-y-0 opacity-100" : "-translate-y-[200%] opacity-0"
       }`}
     >
-      <div className="w-[calc(100vw-30px)] max-w-[345px] min-h-[53px] bg-grey-900 rounded-[10px] px-[18px] shadow-lg flex items-center gap-3">
-        <Image src={ICON_MAP[variant]} alt="" width={20} height={20} className="shrink-0" />
-        <p className="text-[16px] font-medium leading-[1.5] text-white break-words">{message}</p>
+      <div className="w-[calc(100vw-30px)] max-w-[345px] min-h-[53px] bg-grey-900 rounded-[10px] px-[18px] py-[14px] shadow-lg flex items-center gap-3">
+        {!action && (
+          <Image src={ICON_MAP[variant]} alt="" width={20} height={20} className="shrink-0" />
+        )}
+        <p className="flex-1 text-[16px] font-medium leading-[1.5] text-white break-words">
+          {message}
+        </p>
         {action && (
           <button
             onClick={() => {

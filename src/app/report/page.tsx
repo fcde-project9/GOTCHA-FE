@@ -1,23 +1,18 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { LocateFixed } from "lucide-react";
+import { LocateFixed, Loader2 } from "lucide-react";
 import apiClient from "@/api/client";
 import { ENDPOINTS } from "@/api/endpoints";
 import type { NearbyShopResponse, ApiResponse, NearbyShopsResponse } from "@/api/types";
-import { Button, BackHeader } from "@/components/common";
+import { Button, BackHeader, Spinner } from "@/components/common";
 import { KakaoMap } from "@/components/features/map";
 import { ShopDuplicateCheckModal } from "@/components/report/ShopDuplicateCheckModal";
 import { MARKER_IMAGES, DEFAULT_LOCATION } from "@/constants";
 import { useKakaoLoader } from "@/hooks/useKakaoLoader";
 import { trackShopReportStart, trackShopReportExit } from "@/utils/analytics";
-
-// 카카오맵 타입
-interface KakaoLatLng {
-  getLat(): number;
-  getLng(): number;
-}
+import { getCurrentLocation } from "@/utils/geolocation";
 
 export default function ReportLocationPage() {
   const router = useRouter();
@@ -31,7 +26,7 @@ export default function ReportLocationPage() {
   const [checkingNearby, setCheckingNearby] = useState(false);
   const [map, setMap] = useState<KakaoMap | null>(null);
   const [nearbyShops, setNearbyShops] = useState<NearbyShopsResponse | null>(null);
-  const [mapLevel, setMapLevel] = useState(3); // 줌 레벨 상태 관리
+  const mapLevelRef = useRef(3);
   const [pendingLocation, setPendingLocation] = useState<{
     latitude: number;
     longitude: number;
@@ -61,26 +56,19 @@ export default function ReportLocationPage() {
     trackShopReportStart();
   }, []);
 
-  // 사용자의 현재 위치 가져오기
+  // 사용자의 현재 위치 가져오기 (Capacitor 네이티브 플러그인 사용)
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setCenter({ latitude, longitude });
-          setMyLocation({ latitude, longitude });
-          setPendingLocation({ latitude, longitude });
-        },
-        () => {
-          // 위치 정보 가져오기 실패 시 기본 위치 사용
-          setMyLocation({ ...DEFAULT_LOCATION });
-          setPendingLocation({ ...DEFAULT_LOCATION });
-        }
-      );
-    } else {
-      setMyLocation({ ...DEFAULT_LOCATION });
-      setPendingLocation({ ...DEFAULT_LOCATION });
-    }
+    (async () => {
+      const location = await getCurrentLocation();
+      if (location) {
+        setCenter(location);
+        setMyLocation(location);
+        setPendingLocation(location);
+      } else {
+        setMyLocation({ ...DEFAULT_LOCATION });
+        setPendingLocation({ ...DEFAULT_LOCATION });
+      }
+    })();
   }, []);
 
   // SDK 로드 완료 후 주소 변환
@@ -127,31 +115,6 @@ export default function ReportLocationPage() {
     });
   }, []);
 
-  // 지도 클릭 이벤트 핸들러
-  const handleMapClick = useCallback(
-    async (...args: unknown[]) => {
-      const mouseEvent = args[0] as { latLng: KakaoLatLng };
-      const latlng = mouseEvent.latLng;
-      const latitude = latlng.getLat();
-      const longitude = latlng.getLng();
-
-      setCenter({ latitude, longitude });
-
-      // 클릭한 위치로 지도 중심 이동
-      if (map && window.kakao?.maps) {
-        const moveLatLng = new window.kakao.maps.LatLng(latitude, longitude);
-        map.setCenter(moveLatLng);
-      }
-
-      await getAddressFromCoords(latitude, longitude);
-
-      // 자동으로 근처 가게 확인 (새 좌표로)
-      const result = await checkNearbyShops(latitude, longitude);
-      setNearbyShops(result);
-    },
-    [map, getAddressFromCoords, checkNearbyShops]
-  );
-
   // 지도 드래그 종료 이벤트 핸들러
   const handleDragEnd = useCallback(async () => {
     if (!map) return;
@@ -160,6 +123,7 @@ export default function ReportLocationPage() {
     const latitude = mapCenter.getLat();
     const longitude = mapCenter.getLng();
     setCenter({ latitude, longitude });
+    setIsAtCurrentLocation(false);
     await getAddressFromCoords(latitude, longitude);
 
     // 자동으로 근처 가게 확인 (새 좌표로)
@@ -167,27 +131,25 @@ export default function ReportLocationPage() {
     setNearbyShops(result);
   }, [map, getAddressFromCoords, checkNearbyShops]);
 
-  // 줌 레벨 변경 이벤트 핸들러
+  // 줌 레벨 변경 시 ref에 저장 (리렌더 없이 추적)
   const handleZoomChanged = useCallback(() => {
     if (map) {
-      setMapLevel(map.getLevel());
+      mapLevelRef.current = map.getLevel();
     }
   }, [map]);
 
-  // 지도 클릭, 드래그, 줌 이벤트 리스너 등록/해제
+  // 지도 드래그, 줌 이벤트 리스너 등록/해제
   useEffect(() => {
     if (!map || !window.kakao?.maps?.event) return;
 
-    window.kakao.maps.event.addListener(map, "click", handleMapClick);
     window.kakao.maps.event.addListener(map, "dragend", handleDragEnd);
     window.kakao.maps.event.addListener(map, "zoom_changed", handleZoomChanged);
 
     return () => {
-      window.kakao.maps.event.removeListener(map, "click", handleMapClick);
       window.kakao.maps.event.removeListener(map, "dragend", handleDragEnd);
       window.kakao.maps.event.removeListener(map, "zoom_changed", handleZoomChanged);
     };
-  }, [map, handleMapClick, handleDragEnd, handleZoomChanged]);
+  }, [map, handleDragEnd, handleZoomChanged]);
 
   const navigateToRegister = () => {
     router.push(
@@ -222,50 +184,43 @@ export default function ReportLocationPage() {
     navigateToRegister();
   };
 
-  const handleCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      return;
-    }
+  const [isLocating, setIsLocating] = useState(false);
+  const [isAtCurrentLocation, setIsAtCurrentLocation] = useState(false);
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        setCenter({ latitude, longitude });
-        setMyLocation({ latitude, longitude });
+  const handleCurrentLocation = async () => {
+    setIsLocating(true);
+    const location = await getCurrentLocation({ enableHighAccuracy: true, timeout: 5000 });
 
-        // 지도 중심을 현재 위치로 이동
-        if (map && window.kakao?.maps) {
-          const moveLatLng = new window.kakao.maps.LatLng(latitude, longitude);
-          map.setCenter(moveLatLng);
-        }
+    if (location) {
+      setCenter(location);
+      setMyLocation(location);
+      setIsAtCurrentLocation(true);
 
-        await getAddressFromCoords(latitude, longitude);
-
-        // 근처 가게 확인
-        const result = await checkNearbyShops(latitude, longitude);
-        setNearbyShops(result);
-      },
-      (error) => {
-        console.error("위치 정보를 가져올 수 없습니다:", error);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0,
+      // 지도 중심을 현재 위치로 이동
+      if (map && window.kakao?.maps) {
+        const moveLatLng = new window.kakao.maps.LatLng(location.latitude, location.longitude);
+        map.setCenter(moveLatLng);
       }
-    );
+
+      await getAddressFromCoords(location.latitude, location.longitude);
+
+      // 근처 가게 확인
+      const result = await checkNearbyShops(location.latitude, location.longitude);
+      setNearbyShops(result);
+    }
+    setIsLocating(false);
   };
 
   if (isLoading) {
     return (
-      <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto flex items-center justify-center">
-        <p className="text-grey-600">위치 정보를 불러오는 중...</p>
+      <div className="bg-default h-[calc(100dvh-env(safe-area-inset-top))] w-full max-w-[480px] mx-auto flex items-center justify-center overflow-hidden">
+        <Spinner />
       </div>
     );
   }
 
   return (
-    <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative">
+    <div className="bg-default h-[calc(100dvh-env(safe-area-inset-top))] w-full max-w-[480px] mx-auto flex flex-col overflow-hidden">
       {/* Header */}
       <BackHeader
         title="제보하기"
@@ -273,18 +228,16 @@ export default function ReportLocationPage() {
           trackShopReportExit("location");
           router.push("/home");
         }}
-        absolute
       />
 
-      {/* Map - 헤더(56px)와 바텀시트를 고려한 높이, 바텀시트가 살짝 걸치도록 */}
-      <div className="relative h-[100dvh] pt-14 pb-[150px]">
+      {/* Map */}
+      <div className="flex-1 relative min-h-0">
         <KakaoMap
           width="100%"
           height="100%"
           latitude={center.latitude}
           longitude={center.longitude}
-          level={mapLevel}
-          disableDoubleClickZoom
+          level={mapLevelRef.current}
           currentLocation={
             myLocation
               ? {
@@ -302,55 +255,46 @@ export default function ReportLocationPage() {
         {/* Center Pin */}
         <div
           className="absolute left-1/2 z-20 flex h-14 w-14 -translate-x-1/2 items-center justify-center px-[7px] pointer-events-none"
-          style={{ top: "calc(50% - 40px)", transform: "translate(-50%, -100%)" }}
+          style={{ top: "calc(50% + 5px)", transform: "translate(-50%, -100%)" }}
         >
           <img src={MARKER_IMAGES.REPORT} alt="위치 핀" width={42} height={56} />
         </div>
 
         {/* 현재 위치 버튼 */}
-        <div
-          className={`absolute right-0 z-10 mx-auto w-full max-w-[480px] px-5 pointer-events-none ${
-            nearbyShops && nearbyShops.count > 0 ? "bottom-[270px]" : "bottom-[200px]"
-          }`}
-        >
-          <div className="flex justify-end">
-            <button
-              onClick={handleCurrentLocation}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-[0px_0px_5px_0px_rgba(0,0,0,0.2)] pointer-events-auto"
-              aria-label="현재 위치"
-            >
-              <LocateFixed size={20} className="stroke-grey-800" strokeWidth={1.5} />
-            </button>
-          </div>
+        <div className="absolute bottom-[59px] right-5 z-20">
+          <button
+            onClick={handleCurrentLocation}
+            disabled={isLocating}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-[0px_0px_5px_0px_rgba(0,0,0,0.2)] disabled:opacity-70"
+            aria-label="현재 위치"
+          >
+            {isLocating ? (
+              <Loader2 size={20} className="stroke-grey-800 animate-spin" strokeWidth={1.5} />
+            ) : (
+              <LocateFixed
+                size={20}
+                className={isAtCurrentLocation ? "stroke-main" : "stroke-grey-800"}
+                strokeWidth={1.5}
+              />
+            )}
+          </button>
         </div>
       </div>
 
       {/* Bottom Sheet */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl px-5 pt-5 pb-[68px] shadow-[0_-4px_10px_rgba(0,0,0,0.2)] z-30">
+      <div className="shrink-0 bg-white rounded-t-3xl px-5 pt-5 pb-[68px] shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] relative z-10 -mt-11">
         <div className="flex flex-col gap-[22px]">
           {/* Address */}
           <div className="flex flex-col gap-2">
             <label className="text-[15px] font-normal leading-[1.5] tracking-[-0.15px] text-grey-600 text-center">
               제보할 위치
             </label>
-            <div className="bg-grey-100 min-h-11 flex items-center justify-center px-3 py-2 rounded-lg">
-              <p className="text-[16px] font-semibold leading-[1.5] tracking-[-0.16px] text-grey-700 text-center">
+            <div className="bg-grey-100 min-h-11 flex items-center justify-center px-5 py-2 rounded-lg">
+              <p className="text-[16px] font-semibold leading-[1.5] tracking-[-0.16px] text-grey-700 text-center break-words">
                 {address}
               </p>
             </div>
           </div>
-
-          {/* Nearby Shop Count */}
-          {nearbyShops && nearbyShops.count > 0 && (
-            <div className="flex flex-col gap-1">
-              <p className="text-[18px] font-semibold leading-[1.4] tracking-[-0.18px] text-grey-900">
-                50m 이내에 이미 등록된 {nearbyShops.count}개의 가챠샵이 있어요
-              </p>
-              <p className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-400">
-                등록 전, 중복되는 가챠샵이 있는지 확인해주세요
-              </p>
-            </div>
-          )}
 
           {/* Submit Button */}
           <Button

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Search, CircleX, RefreshCcw } from "lucide-react";
 import { useFavorites } from "@/api/queries/useFavorites";
-import { Footer, Button, SimpleHeader } from "@/components/common";
+import ShopDetailClient from "@/app/shop/[id]/ShopDetailClient";
+import { Footer, Button, SimpleHeader, Spinner } from "@/components/common";
 import { FavoriteShopItem } from "@/components/features/favorites";
 import { DEFAULT_IMAGES } from "@/constants";
 import { useAuth } from "@/hooks";
@@ -13,6 +14,16 @@ import { useAuth } from "@/hooks";
 export default function FavoritesPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedShopId, setSelectedShopId] = useState<number | null>(null);
+
+  // 오버레이 열릴 때 history entry 추가 → 뒤로가기로 닫힘 처리
+  useEffect(() => {
+    if (selectedShopId === null) return;
+    history.pushState({ shopDetail: true }, "");
+    const handlePopState = () => setSelectedShopId(null);
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [selectedShopId]);
 
   // 전역 로그인 상태
   const { isLoggedIn, isLoading: isAuthLoading } = useAuth();
@@ -44,14 +55,14 @@ export default function FavoritesPage() {
 
   return (
     <>
-      <main className="h-[calc(100dvh-var(--footer-height))] overflow-hidden relative bg-default flex flex-col">
+      <main className="h-[calc(100dvh-env(safe-area-inset-top,0px)-var(--footer-height))] overflow-hidden relative bg-default flex flex-col">
         {/* 헤더 */}
         <SimpleHeader title="찜한업체" />
 
         {/* 검색창 - 찜한 업체가 있을 때만 표시 */}
         {favoritesData && favoritesData.length > 0 && (
-          <div className="flex-shrink-0 px-5 pt-3">
-            <div className="flex h-11 items-center justify-between rounded-lg bg-grey-50 px-3 py-2.5">
+          <div className="flex-shrink-0">
+            <div className="flex h-11 items-center justify-between rounded-lg bg-grey-50 px-3 py-2.5 mx-5 mb-3">
               <input
                 type="text"
                 value={searchQuery}
@@ -61,7 +72,7 @@ export default function FavoritesPage() {
               />
               {searchQuery ? (
                 <button type="button" onClick={handleClearSearch} aria-label="검색어 지우기">
-                  <CircleX size={24} className="fill-grey-500 stroke-grey-50" strokeWidth={2} />
+                  <CircleX size={26} className="fill-grey-500 stroke-grey-50" strokeWidth={2} />
                 </button>
               ) : (
                 <Search size={24} className="stroke-grey-500" strokeWidth={2} />
@@ -73,7 +84,7 @@ export default function FavoritesPage() {
         {/* 컨텐츠 영역 */}
         {showLoading ? (
           <div className="flex flex-1 items-center justify-center px-5">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-grey-200 border-t-main"></div>
+            <Spinner />
           </div>
         ) : showError ? (
           // Error State
@@ -94,7 +105,7 @@ export default function FavoritesPage() {
           </div>
         ) : filteredFavorites.length === 0 ? (
           // Empty State
-          <div className="flex flex-1 flex-col items-center justify-center gap-7 px-5">
+          <div className="flex flex-1 flex-col items-center justify-center gap-7 px-5 -mt-12">
             <div>
               <Image
                 src={DEFAULT_IMAGES.SHOP}
@@ -125,26 +136,27 @@ export default function FavoritesPage() {
             )}
           </div>
         ) : (
-          <>
-            {/* 총 개수 - 고정 */}
-            <div className="flex-shrink-0 mt-5 mb-2 flex items-center justify-between px-5">
+          <div className="flex-1 overflow-y-auto px-5 pb-3">
+            {/* 총 개수 */}
+            <div className="mt-2 mb-2 flex items-center justify-between">
               <div className="flex items-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-900">
                 <span>총&nbsp;</span>
                 <span>{filteredFavorites.length}개</span>
               </div>
             </div>
 
-            {/* 찜한 업체 리스트 - 스크롤 영역 */}
-            <div className="flex-1 overflow-y-auto px-5 pb-4">
-              <div className="flex flex-col">
-                {filteredFavorites.map((shop) => (
-                  <FavoriteShopItem key={shop.id} shop={shop} />
-                ))}
-              </div>
+            {/* 찜한 업체 리스트 */}
+            <div className="flex flex-col">
+              {filteredFavorites.map((shop) => (
+                <FavoriteShopItem key={shop.id} shop={shop} onShopClick={setSelectedShopId} />
+              ))}
             </div>
-          </>
+          </div>
         )}
       </main>
+      {selectedShopId !== null && (
+        <ShopDetailClient shopId={selectedShopId} onClose={() => history.back()} />
+      )}
       <Footer />
     </>
   );

@@ -1,7 +1,10 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
+import type { PluginListenerHandle } from "@capacitor/core";
+import { isNativeApp } from "@/utils/platform";
 
 type NavItem = {
   id: string;
@@ -45,6 +48,38 @@ const navItems: NavItem[] = [
 export default function Footer() {
   const pathname = usePathname();
   const router = useRouter();
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+  // 네이티브 앱 환경에서 키보드 가시성 감지
+  useEffect(() => {
+    if (!isNativeApp()) return;
+
+    let showListener: PluginListenerHandle;
+    let hideListener: PluginListenerHandle;
+
+    const setupListeners = async () => {
+      try {
+        const { Keyboard } = await import("@capacitor/keyboard");
+
+        showListener = await Keyboard.addListener("keyboardWillShow", () => {
+          setIsKeyboardVisible(true);
+        });
+
+        hideListener = await Keyboard.addListener("keyboardWillHide", () => {
+          setIsKeyboardVisible(false);
+        });
+      } catch (error) {
+        console.error("Keyboard listener setup failed:", error);
+      }
+    };
+
+    setupListeners();
+
+    return () => {
+      showListener?.remove();
+      hideListener?.remove();
+    };
+  }, []);
 
   const isActive = (path: string) => {
     if (path === "/") {
@@ -53,8 +88,11 @@ export default function Footer() {
     return pathname.startsWith(path);
   };
 
+  // 키보드가 보일 때는 푸터 숨김
+  if (isKeyboardVisible) return null;
+
   return (
-    <footer className="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-[480px] bg-white shadow-[0px_-3px_8px_rgba(163,163,163,0.15)] z-[20] pb-[calc(env(safe-area-inset-bottom)+24px)]">
+    <footer className="fixed bottom-0 left-0 right-0 top-auto mx-auto w-full max-w-[480px] bg-white shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] z-[20] pb-[env(safe-area-inset-bottom,0px)]">
       <nav className="flex h-[60px] px-12 items-center justify-between">
         {navItems.map((item) => {
           const active = isActive(item.path);

@@ -23,13 +23,15 @@ export function BlockUserConfirmModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-      <div className="bg-white rounded-[16px] w-[335px] px-4 py-5 flex flex-col gap-5">
+      <div className="bg-white rounded-[16px] w-[335px] px-4 py-5 flex flex-col gap-[22px]">
         <div className="flex flex-col gap-3">
           <h2 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900 text-center">
             이 사용자를 차단하시겠어요?
           </h2>
           <p className="text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-600 text-center">
-            {nickname}님의 모든 게시물을 보지 않게 돼요
+            {nickname}님의
+            <br />
+            모든 활동이 보이지 않게 돼요
           </p>
         </div>
 

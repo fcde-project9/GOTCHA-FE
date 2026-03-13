@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ChevronDown, Navigation } from "lucide-react";
 import { useMyReports } from "@/api/queries/useMyReports";
-import { Footer, BackHeader } from "@/components/common";
+import { BackHeader, Spinner } from "@/components/common";
 import StatusBadge from "@/components/features/shop/StatusBadge";
 import { DEFAULT_IMAGES } from "@/constants";
 
@@ -82,177 +82,165 @@ export default function MyReportsPage() {
   // 로딩 상태
   if (isLoading) {
     return (
-      <>
-        <main className="h-[calc(100dvh-var(--footer-height))] overflow-hidden relative bg-default flex flex-col">
-          <BackHeader title="내가 제보한 매장" />
-          <div className="flex flex-1 items-center justify-center">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-grey-200 border-t-main"></div>
-          </div>
-        </main>
-        <Footer />
-      </>
+      <main className="h-screen overflow-hidden relative bg-default flex flex-col">
+        <BackHeader title="내가 제보한 매장" />
+        <div className="flex flex-1 items-center justify-center">
+          <Spinner />
+        </div>
+      </main>
     );
   }
 
   // 에러 상태
   if (error) {
     return (
-      <>
-        <main className="h-[calc(100dvh-var(--footer-height))] overflow-hidden relative bg-default flex flex-col">
-          <BackHeader title="내가 제보한 매장" />
-          <div className="flex flex-1 flex-col items-center justify-center gap-4 px-5">
-            <p className="text-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-600">
-              제보한 매장 목록을 불러올 수 없어요.
-            </p>
-          </div>
-        </main>
-        <Footer />
-      </>
+      <main className="h-screen overflow-hidden relative bg-default flex flex-col">
+        <BackHeader title="내가 제보한 매장" />
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 px-5">
+          <p className="text-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-600">
+            제보한 매장 목록을 불러올 수 없어요.
+          </p>
+        </div>
+      </main>
     );
   }
 
   return (
-    <>
-      <main className="h-[calc(100dvh-var(--footer-height))] overflow-hidden relative bg-default flex flex-col">
-        {/* 헤더 */}
-        <BackHeader title="내가 제보한 매장" />
+    <main className="h-screen overflow-hidden relative bg-default flex flex-col">
+      {/* 헤더 */}
+      <BackHeader title="내가 제보한 매장" />
 
-        {/* 컨텐츠 영역 */}
-        {reports.length === 0 ? (
-          /* Empty State - 빈 상태 */
-          <div className="flex flex-1 flex-col items-center pt-[168px] gap-7 px-5">
-            <div className="flex flex-col items-center gap-7">
-              <Image
-                src={DEFAULT_IMAGES.MY_SHOP}
-                alt="제보한 업체 없음"
-                width={76}
-                height={110}
-                className="object-contain"
-              />
-              <p className="text-center text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
-                아직 발견되지 않은
-                <br />
-                새로운 업체를 등록해보세요!
-              </p>
-            </div>
+      {/* 컨텐츠 영역 */}
+      {reports.length === 0 ? (
+        /* Empty State - 빈 상태 */
+        <div className="flex flex-1 flex-col items-center justify-center gap-7 px-5 -mt-14">
+          <div className="flex flex-col items-center gap-7">
+            <Image
+              src={DEFAULT_IMAGES.MY_SHOP}
+              alt="제보한 업체 없음"
+              width={76}
+              height={110}
+              className="object-contain"
+            />
+            <p className="text-center text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
+              아직 발견되지 않은
+              <br />
+              새로운 업체를 등록해보세요!
+            </p>
           </div>
-        ) : (
-          /* List State - 목록 상태 */
-          <>
-            {/* 총 개수 & 정렬 */}
-            <div className="flex-shrink-0 mt-3 mb-2 flex items-center justify-between px-5">
-              <div className="flex items-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-900">
-                <span>총&nbsp;</span>
-                <span>{totalCount}개</span>
-              </div>
-
-              {/* 정렬 드롭다운 */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setShowSortDropdown(!showSortDropdown)}
-                  className="flex items-center gap-1 text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-700"
-                >
-                  <span>{sortOrder === "latest" ? "최신순" : "오래된순"}</span>
-                  <ChevronDown size={18} className="stroke-grey-700" />
-                </button>
-
-                {showSortDropdown && (
-                  <>
-                    {/* 드롭다운 닫기용 오버레이 */}
-                    <div
-                      className="fixed inset-0 z-10"
-                      onClick={() => setShowSortDropdown(false)}
-                    />
-                    {/* 드롭다운 메뉴 */}
-                    <div className="absolute right-0 top-6 z-20 bg-white rounded-lg shadow-lg border border-grey-100 py-1 min-w-[80px]">
-                      <button
-                        type="button"
-                        onClick={() => handleSortChange("latest")}
-                        className={`w-full px-3 py-2 text-left text-[16px] leading-[1.5] tracking-[-0.16px] ${
-                          sortOrder === "latest"
-                            ? "text-main font-medium"
-                            : "text-grey-700 font-normal"
-                        }`}
-                      >
-                        최신순
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleSortChange("oldest")}
-                        className={`w-full px-3 py-2 text-left text-[16px] leading-[1.5] tracking-[-0.16px] ${
-                          sortOrder === "oldest"
-                            ? "text-main font-medium"
-                            : "text-grey-700 font-normal"
-                        }`}
-                      >
-                        오래된순
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
+        </div>
+      ) : (
+        /* List State - 목록 상태 */
+        <>
+          {/* 총 개수 & 정렬 */}
+          <div className="flex-shrink-0 mt-3 mb-2 flex items-center justify-between px-5">
+            <div className="flex items-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-900">
+              <span>총&nbsp;</span>
+              <span>{totalCount}개</span>
             </div>
 
-            {/* 리스트 */}
-            <div className="flex-1 overflow-y-auto px-5 pb-4">
-              <div className="flex flex-col">
-                {sortedReports.map((shop) => (
-                  <div key={shop.id} className="relative w-full">
+            {/* 정렬 드롭다운 */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowSortDropdown(!showSortDropdown)}
+                className="flex items-center gap-1 text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-700"
+              >
+                <span>{sortOrder === "latest" ? "최신순" : "오래된순"}</span>
+                <ChevronDown size={18} className="stroke-grey-700" />
+              </button>
+
+              {showSortDropdown && (
+                <>
+                  {/* 드롭다운 닫기용 오버레이 */}
+                  <div className="fixed inset-0 z-10" onClick={() => setShowSortDropdown(false)} />
+                  {/* 드롭다운 메뉴 */}
+                  <div className="absolute right-0 top-6 z-20 bg-white rounded-lg shadow-lg border border-grey-100 py-1 min-w-[80px]">
                     <button
                       type="button"
-                      onClick={() => handleShopClick(shop.id)}
-                      className="flex gap-3 items-center w-full py-4 text-left"
+                      onClick={() => handleSortChange("latest")}
+                      className={`w-full px-3 py-2 text-left text-[16px] leading-[1.5] tracking-[-0.16px] ${
+                        sortOrder === "latest"
+                          ? "text-main font-medium"
+                          : "text-grey-700 font-normal"
+                      }`}
                     >
-                      {/* 이미지 */}
-                      <div className="relative rounded-[5px] shrink-0 size-[85px] overflow-hidden bg-grey-100">
-                        <Image
-                          src={shop.imageUrl || DEFAULT_IMAGES.NO_IMAGE}
-                          alt={shop.name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-
-                      {/* 정보 */}
-                      <div className="flex flex-col gap-1 h-[85px] flex-1 min-w-0">
-                        {/* 상단: 영업상태 & 날짜 */}
-                        <div className="flex items-center justify-between w-full">
-                          <StatusBadge openStatus={shop.openStatus} />
-                          <span className="text-[12px] font-normal leading-[1.5] tracking-[-0.12px] text-grey-400">
-                            {shop.reportedAt}
-                          </span>
-                        </div>
-
-                        {/* 가게 이름 */}
-                        <p className="text-[18px] font-semibold text-grey-900 tracking-[-0.18px] overflow-hidden text-ellipsis whitespace-nowrap leading-[150%]">
-                          {shop.name}
-                        </p>
-
-                        {/* 위치 정보 */}
-                        <div className="flex gap-1 items-center">
-                          <Navigation
-                            size={18}
-                            className="fill-grey-600 stroke-grey-600 shrink-0"
-                            strokeWidth={1.25}
-                          />
-                          <span className="text-[16px] font-normal text-grey-600 tracking-[-0.16px] leading-[150%]">
-                            {shop.address}
-                          </span>
-                        </div>
-                      </div>
+                      최신순
                     </button>
-
-                    {/* 하단 구분선 */}
-                    <div className="absolute left-0 bottom-0 w-full h-[1px] bg-grey-100" />
+                    <button
+                      type="button"
+                      onClick={() => handleSortChange("oldest")}
+                      className={`w-full px-3 py-2 text-left text-[16px] leading-[1.5] tracking-[-0.16px] ${
+                        sortOrder === "oldest"
+                          ? "text-main font-medium"
+                          : "text-grey-700 font-normal"
+                      }`}
+                    >
+                      오래된순
+                    </button>
                   </div>
-                ))}
-              </div>
+                </>
+              )}
             </div>
-          </>
-        )}
-      </main>
-      <Footer />
-    </>
+          </div>
+
+          {/* 리스트 */}
+          <div className="flex-1 overflow-y-auto px-5 pb-3">
+            <div className="flex flex-col">
+              {sortedReports.map((shop) => (
+                <div key={shop.id} className="relative w-full">
+                  <button
+                    type="button"
+                    onClick={() => handleShopClick(shop.id)}
+                    className="flex gap-3 items-center w-full py-4 text-left"
+                  >
+                    {/* 이미지 */}
+                    <div className="relative rounded-[5px] shrink-0 size-[85px] overflow-hidden bg-grey-100">
+                      <Image
+                        src={shop.imageUrl || DEFAULT_IMAGES.NO_IMAGE}
+                        alt={shop.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+
+                    {/* 정보 */}
+                    <div className="flex flex-col gap-1 h-[85px] flex-1 min-w-0">
+                      {/* 상단: 영업상태 & 날짜 */}
+                      <div className="flex items-center justify-between w-full">
+                        <StatusBadge openStatus={shop.openStatus} />
+                        <span className="text-[12px] font-normal leading-[1.5] tracking-[-0.12px] text-grey-400">
+                          {shop.reportedAt}
+                        </span>
+                      </div>
+
+                      {/* 가게 이름 */}
+                      <p className="text-[18px] font-semibold text-grey-900 tracking-[-0.18px] overflow-hidden text-ellipsis whitespace-nowrap leading-[150%]">
+                        {shop.name}
+                      </p>
+
+                      {/* 위치 정보 */}
+                      <div className="flex gap-1 items-center">
+                        <Navigation
+                          size={18}
+                          className="fill-grey-600 stroke-grey-600 shrink-0"
+                          strokeWidth={1.25}
+                        />
+                        <span className="text-[16px] font-normal text-grey-600 tracking-[-0.16px] leading-[150%]">
+                          {shop.address}
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* 하단 구분선 */}
+                  <div className="absolute left-0 bottom-0 w-full h-[1px] bg-grey-100" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </main>
   );
 }

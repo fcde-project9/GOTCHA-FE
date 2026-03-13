@@ -20,7 +20,7 @@ import { ProfileSection } from "@/components/mypage/ProfileSection";
 import { WithdrawConfirmModal } from "@/components/mypage/WithdrawConfirmModal";
 import { WithdrawModal } from "@/components/mypage/WithdrawModal";
 import { useToast, useAuth } from "@/hooks";
-import { openContactSupport } from "@/utils";
+import { openContactSupport, compressShopImage } from "@/utils";
 
 export default function MyPage() {
   const router = useRouter();
@@ -42,7 +42,8 @@ export default function MyPage() {
 
   const handleEditProfile = async (file: File) => {
     try {
-      await updateProfileImageWithUploadMutation.mutateAsync(file);
+      const compressed = await compressShopImage(file);
+      await updateProfileImageWithUploadMutation.mutateAsync(compressed);
       showToast("프로필 이미지가 변경되었어요");
     } catch {
       showToast("프로필 이미지 변경에 실패했어요", { variant: "warning" });
@@ -126,7 +127,6 @@ export default function MyPage() {
   const handleWithdrawSubmit = (reasons: string[], otherReason?: string) => {
     setWithdrawReasons(reasons);
     setWithdrawOtherReason(otherReason);
-    setIsWithdrawModalOpen(false);
     setIsWithdrawConfirmModalOpen(true);
   };
 
@@ -161,6 +161,7 @@ export default function MyPage() {
       setWithdrawOtherReason(undefined);
 
       // 모달 닫기 및 홈으로 이동
+      setIsWithdrawModalOpen(false);
       setIsWithdrawConfirmModalOpen(false);
       showToast("회원탈퇴가 완료되었어요");
       router.push("/");
@@ -174,7 +175,7 @@ export default function MyPage() {
   if (isLoading) {
     return (
       <>
-        <main className="h-[calc(100dvh-var(--footer-height))] w-full max-w-[480px] mx-auto bg-default flex flex-col">
+        <main className="h-[calc(100dvh-env(safe-area-inset-top,0px)-var(--footer-height))] w-full max-w-[480px] mx-auto bg-default flex flex-col">
           <SimpleHeader title="마이페이지" />
         </main>
         <Footer />
@@ -209,7 +210,7 @@ export default function MyPage() {
 
   return (
     <>
-      <main className="h-[calc(100dvh-var(--footer-height))] w-full max-w-[480px] mx-auto bg-default flex flex-col overflow-y-auto">
+      <main className="h-[calc(100dvh-env(safe-area-inset-top,0px)-var(--footer-height))] w-full max-w-[480px] mx-auto bg-default flex flex-col overflow-y-auto">
         {/* Header */}
         <SimpleHeader
           title="마이페이지"
@@ -240,7 +241,7 @@ export default function MyPage() {
           />
 
           {/* Menu List */}
-          <div className="w-full max-w-[335px] mx-auto">
+          <div className="w-full">
             <MenuList
               onMyReports={handleMyReports}
               onBlockedUsers={handleBlockedUsers}

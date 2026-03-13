@@ -7,13 +7,12 @@ interface BottomSheetProps {
   snapPoints?: number[]; // 스냅 포인트 (픽셀 단위)
   defaultSnapPoint?: number; // 기본 스냅 포인트 인덱스
   onHeightChange?: (height: number, isDragging: boolean) => void; // 높이 변경 콜백 (isDragging 추가)
-  scrollToTop?: number; // 스크롤을 맨 위로 이동시키기
+  scrollToTop?: number | string; // 스크롤을 맨 위로 이동시키기
   scrollable?: boolean; // 내부 스크롤 여부 (기본값: true)
   animateIn?: boolean; // 마운트 시 슬라이드 업 애니메이션 (기본값: false)
   animateOut?: boolean; // 슬라이드 다운 퇴장 애니메이션 (기본값: false)
   onSnapChange?: (snapIndex: number) => void; // 스냅 포인트 변경 콜백
   onExpandAttempt?: () => void; // 최대 스냅에서 위로 드래그 시 콜백 (확장 애니메이션 후 호출)
-  onCollapseAttempt?: () => void; // 최소 스냅에서 아래로 드래그 시 즉시 호출
 }
 
 /** 확장 시 상단에서 유지할 여백 (검색창 + 재검색 버튼 영역) */
@@ -30,7 +29,6 @@ export default function BottomSheet({
   animateOut = false,
   onSnapChange,
   onExpandAttempt,
-  onCollapseAttempt,
 }: BottomSheetProps) {
   const [containerHeight, setContainerHeight] = useState<number | null>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -78,18 +76,42 @@ export default function BottomSheet({
         )
       : computedSnapPoints[currentSnapIndex];
 
+  const dragDecidedRef = useRef<"drag" | "scroll" | null>(null);
+
   const handleTouchStart = (e: React.TouchEvent) => {
-    setIsDragging(true);
     setStartY(e.touches[0].clientY);
     setCurrentY(e.touches[0].clientY);
+    dragDecidedRef.current = null;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging) return;
-    setCurrentY(e.touches[0].clientY);
+    const touchY = e.touches[0].clientY;
+    const delta = touchY - startY;
+
+    if (dragDecidedRef.current === null) {
+      if (Math.abs(delta) < 5) return;
+      const contentEl = contentRef.current;
+      const isAtTop = !contentEl || contentEl.scrollTop <= 0;
+      const isMovingDown = delta > 0;
+
+      if (isMovingDown && isAtTop) {
+        dragDecidedRef.current = "drag";
+      } else if (!isMovingDown && currentSnapIndex < computedSnapPoints.length - 1) {
+        dragDecidedRef.current = "drag";
+      } else {
+        dragDecidedRef.current = "scroll";
+      }
+    }
+
+    if (dragDecidedRef.current === "scroll") return;
+
+    e.preventDefault();
+    setIsDragging(true);
+    setCurrentY(touchY);
   };
 
   const handleTouchEnd = () => {
+    dragDecidedRef.current = null;
     if (!isDragging) return;
     setIsDragging(false);
 
@@ -100,17 +122,14 @@ export default function BottomSheet({
 
     if (deltaY > threshold) {
       // 아래로 드래그
-      if (onCollapseAttempt && currentSnapIndex <= 1) {
-        // 최소 또는 그 근처에서 아래로 드래그 → 즉시 닫기
-        onCollapseAttempt();
-        return;
-      } else if (currentSnapIndex === computedSnapPoints.length - 1) {
+      if (currentSnapIndex === computedSnapPoints.length - 1) {
         // 맨 위에서 내리면 → 가운데로 (default)
         newIndex = 1;
-      } else {
-        // 그 외에는 → 최소 상태로 (collapsed)
+      } else if (currentSnapIndex > 0) {
+        // 최소가 아니면 → 최소 상태로 (collapsed)
         newIndex = 0;
       }
+      // 최소 상태(index 0)에서는 더 이상 내려가지 않음
     } else if (deltaY < -threshold) {
       // 위로 드래그
       if (currentSnapIndex === 0) {
@@ -156,17 +175,14 @@ export default function BottomSheet({
 
     if (deltaY > threshold) {
       // 아래로 드래그
-      if (onCollapseAttempt && currentSnapIndex <= 1) {
-        // 최소 또는 그 근처에서 아래로 드래그 → 즉시 닫기
-        onCollapseAttempt();
-        return;
-      } else if (currentSnapIndex === computedSnapPoints.length - 1) {
+      if (currentSnapIndex === computedSnapPoints.length - 1) {
         // 맨 위에서 내리면 → 가운데로 (default)
         newIndex = 1;
-      } else {
-        // 그 외에는 → 최소 상태로 (collapsed)
+      } else if (currentSnapIndex > 0) {
+        // 최소가 아니면 → 최소 상태로 (collapsed)
         newIndex = 0;
       }
+      // 최소 상태(index 0)에서는 더 이상 내려가지 않음
     } else if (deltaY < -threshold) {
       // 위로 드래그
       if (currentSnapIndex === 0) {
@@ -219,20 +235,19 @@ export default function BottomSheet({
   return (
     <div
       ref={sheetRef}
-      className={`absolute bottom-0 left-0 right-0 bg-white overflow-hidden z-10 shadow-[0_-4px_10px_rgba(0,0,0,0.2)] ${isExpanding ? "" : "rounded-t-[24px]"} ${animateOut ? "animate-slide-down" : animateIn ? "animate-slide-up" : ""}`}
+      className={`absolute bottom-0 left-0 right-0 bg-white overflow-hidden z-10 shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] ${isExpanding ? "" : "rounded-t-[24px]"} ${animateOut ? "animate-slide-down" : animateIn ? "animate-slide-up" : ""}`}
       style={{
         height: isExpanding ? "100%" : `${currentHeight - 72}px`,
+        maxHeight: isExpanding ? undefined : `calc(100% - env(safe-area-inset-top, 0px) - 76px)`,
         transition: isDragging ? "none" : "height 0.3s ease-out",
       }}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onMouseDown={handleMouseDown}
     >
       {/* Grabber */}
-      <div
-        className="flex justify-center pt-3 h-[36px] cursor-grab active:cursor-grabbing"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onMouseDown={handleMouseDown}
-      >
+      <div className="flex justify-center pt-3 h-[36px] cursor-grab active:cursor-grabbing">
         <div className="w-[44px] h-[4px] bg-[#cfcfcf] rounded-[2px]" />
       </div>
 

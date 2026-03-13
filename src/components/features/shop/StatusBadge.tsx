@@ -63,7 +63,7 @@ export default function StatusBadge({ isOpen, isDayOff = false, openStatus }: St
       className={`flex items-center justify-center px-[5.893px] py-[1.964px] rounded-[55px] ${config.bgColor} ${config.textColor}`}
     >
       <span
-        className="text-center font-pretendard font-normal"
+        className="text-center font-normal"
         style={{
           fontSize: "11.786px",
           lineHeight: "150%",
