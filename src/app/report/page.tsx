@@ -6,7 +6,7 @@ import { LocateFixed, Loader2 } from "lucide-react";
 import apiClient from "@/api/client";
 import { ENDPOINTS } from "@/api/endpoints";
 import type { NearbyShopResponse, ApiResponse, NearbyShopsResponse } from "@/api/types";
-import { Button, BackHeader } from "@/components/common";
+import { Button, BackHeader, Spinner } from "@/components/common";
 import { KakaoMap } from "@/components/features/map";
 import { ShopDuplicateCheckModal } from "@/components/report/ShopDuplicateCheckModal";
 import { MARKER_IMAGES, DEFAULT_LOCATION } from "@/constants";
@@ -214,7 +214,7 @@ export default function ReportLocationPage() {
   if (isLoading) {
     return (
       <div className="bg-default h-[calc(100dvh-env(safe-area-inset-top))] w-full max-w-[480px] mx-auto flex items-center justify-center overflow-hidden">
-        <p className="text-grey-600">위치 정보를 불러오는 중...</p>
+        <Spinner />
       </div>
     );
   }
