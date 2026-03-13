@@ -8,6 +8,7 @@ import { useUpdateReview } from "@/api/mutations/useUpdateReview";
 import { useUploadFile } from "@/api/mutations/useUploadFile";
 import { useToast } from "@/hooks";
 import type { ReviewResponse } from "@/types/api";
+import { compressShopImage } from "@/utils";
 import { ReviewExitConfirmModal } from "./ReviewExitConfirmModal";
 
 const isCapacitor = process.env.NEXT_PUBLIC_BUILD_TARGET === "capacitor";
@@ -167,10 +168,11 @@ export function ReviewWriteModal({
     const newPreviewUrls = validFiles.map((file) => URL.createObjectURL(file));
     setImagePreviewUrls((prev) => [...prev, ...newPreviewUrls]);
 
-    // 이미지 업로드
+    // 이미지 압축 후 업로드
     setIsUploading(true);
     try {
-      const uploadPromises = validFiles.map((file) => uploadFileMutation.mutateAsync(file));
+      const compressedFiles = await Promise.all(validFiles.map((file) => compressShopImage(file)));
+      const uploadPromises = compressedFiles.map((file) => uploadFileMutation.mutateAsync(file));
       const results = await Promise.all(uploadPromises);
       const uploadedUrls = results.map((result) => result.fileUrl);
       setImageUrls((prev) => [...prev, ...uploadedUrls]);
@@ -438,7 +440,7 @@ export function ReviewWriteModal({
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/jpeg,image/jpg,image/png,image/webp"
+            accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif"
             capture="environment"
             onChange={handleImageSelect}
             className="hidden"
@@ -448,7 +450,7 @@ export function ReviewWriteModal({
           <input
             ref={galleryInputRef}
             type="file"
-            accept="image/jpeg,image/jpg,image/png,image/webp"
+            accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif"
             multiple
             onChange={handleImageSelect}
             className="hidden"

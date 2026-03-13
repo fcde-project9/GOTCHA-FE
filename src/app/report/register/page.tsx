@@ -13,6 +13,7 @@ import { ExitConfirmModal } from "@/components/report/ExitConfirmModal";
 import { OperatingHoursItem } from "@/components/report/OperatingHoursItem";
 import { TimePickerModal } from "@/components/report/TimePickerModal";
 import { OperatingHoursEntry } from "@/types/report";
+import { compressShopImage } from "@/utils";
 import { trackShopReportExit } from "@/utils/analytics";
 
 const DAYS_OF_WEEK = ["월", "화", "수", "목", "금", "토", "일"] as const;
@@ -333,9 +334,10 @@ function ReportRegisterContent() {
         longitude: formData.longitude,
       };
 
-      // 통합 훅 사용 - 파일 업로드 + 가게 생성을 한번에
+      // 이미지 압축 후 업로드 + 가게 생성을 한번에
+      const compressed = await compressShopImage(formData.images[0]);
       await createShopWithUpload.mutateAsync({
-        file: formData.images[0],
+        file: compressed,
         shopData,
         coordinate,
       });
@@ -651,7 +653,7 @@ function ReportRegisterContent() {
               </p>
               <input
                 type="file"
-                accept="image/jpeg,image/jpg,image/png,image/webp"
+                accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif"
                 onChange={handleImageUpload}
                 className="hidden"
               />

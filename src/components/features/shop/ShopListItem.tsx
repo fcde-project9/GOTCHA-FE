@@ -56,11 +56,17 @@ export default function ShopListItem({
             onClick={handleItemClick}
             className="relative rounded-[5px] shrink-0 size-[85px] overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-main"
           >
-            <Image src={imageUrl} alt={name} fill className="object-cover" />
+            <Image src={imageUrl} alt={name} fill sizes="85px" className="object-cover" />
           </button>
         ) : (
           <div className="relative rounded-[5px] shrink-0 size-[85px] overflow-hidden">
-            <Image src={DEFAULT_IMAGES.NO_IMAGE} alt={name} fill className="object-cover" />
+            <Image
+              src={DEFAULT_IMAGES.NO_IMAGE}
+              alt={name}
+              fill
+              sizes="85px"
+              className="object-cover"
+            />
           </div>
         )}
 
