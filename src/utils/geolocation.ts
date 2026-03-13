@@ -43,6 +43,13 @@ export async function getCurrentLocation(
   if (isNativeApp()) {
     try {
       const { Geolocation } = await import("@capacitor/geolocation");
+
+      // 권한 확인 후 이미 허용된 경우에만 위치 요청 (시스템 다이얼로그 방지)
+      const permStatus = await Geolocation.checkPermissions();
+      if (permStatus.location !== "granted") {
+        return null;
+      }
+
       const mergedOptions = { ...DEFAULT_OPTIONS, ...options };
       const position = await Geolocation.getCurrentPosition(mergedOptions);
       return {
@@ -96,6 +103,19 @@ export async function getCurrentLocationWithError(
   if (isNativeApp()) {
     try {
       const { Geolocation } = await import("@capacitor/geolocation");
+
+      // 권한 확인 후 이미 허용된 경우에만 위치 요청 (시스템 다이얼로그 방지)
+      const permStatus = await Geolocation.checkPermissions();
+      if (permStatus.location !== "granted") {
+        return {
+          position: null,
+          error: {
+            code: GeolocationErrorCode.PERMISSION_DENIED,
+            message: "위치 정보 접근이 거부되었어요.",
+          },
+        };
+      }
+
       const mergedOptions = { ...DEFAULT_OPTIONS, ...options };
       const result = await Geolocation.getCurrentPosition(mergedOptions);
       const coords = result.coords;

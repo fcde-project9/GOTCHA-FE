@@ -37,6 +37,7 @@ import {
   OutlineButton,
   ImageViewerModal,
   ImagesGalleryOverlay,
+  Spinner,
 } from "@/components/common";
 import { BlockUserConfirmModal } from "@/components/features/review/BlockUserConfirmModal";
 import { ReportBottomSheet } from "@/components/features/review/ReportReviewBottomSheet";
@@ -786,7 +787,7 @@ export default function ShopPreviewBottomSheet({
     <>
       {/* 바텀시트 */}
       <div
-        className={`absolute bottom-0 left-0 right-0 ${isExpanded ? "z-40" : "z-10"} bg-white overflow-hidden shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] ${isExpanded && !isCollapsing ? "flex flex-col" : "rounded-t-[24px]"} ${isLeaving ? "animate-slide-down" : !hasExpandedOnce ? "animate-slide-up" : ""}`}
+        className={`absolute bottom-0 left-0 right-0 z-40 bg-white overflow-hidden shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] ${isExpanded && !isCollapsing ? "flex flex-col" : "rounded-t-[24px]"} ${isLeaving ? "animate-slide-down" : !hasExpandedOnce ? "animate-slide-up" : ""}`}
         style={{
           height: isCollapsing ? `${sheetHeight}px` : isExpanded ? "100%" : `${sheetHeight}px`,
           transition: isDragging ? "none" : "height 0.55s cubic-bezier(0.32, 0.72, 0, 1)",
@@ -1557,7 +1558,7 @@ export default function ShopPreviewBottomSheet({
             <div className="flex-1 overflow-y-auto">
               {isAllReviewsLoading ? (
                 <div className="flex items-center justify-center h-64">
-                  <div className="h-10 w-10 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
+                  <Spinner />
                 </div>
               ) : allReviews.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-64 px-5">
