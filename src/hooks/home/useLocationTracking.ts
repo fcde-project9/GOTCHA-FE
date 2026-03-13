@@ -67,9 +67,18 @@ export function useLocationTracking(
     }
   }, []);
 
-  // 최초 접속 시 현재 위치 권한 요청
+  // 최초 접속 시 현재 위치 요청 (권한이 이미 허용된 경우에만)
   useEffect(() => {
     getCurrentLocation();
+  }, [getCurrentLocation]);
+
+  // providers.tsx에서 순차 권한 요청 완료 시 위치 재조회
+  useEffect(() => {
+    const handlePermissionsReady = () => {
+      getCurrentLocation();
+    };
+    window.addEventListener("permissions-ready", handlePermissionsReady);
+    return () => window.removeEventListener("permissions-ready", handlePermissionsReady);
   }, [getCurrentLocation]);
 
   // iOS 13+ 디바이스 방향 권한 요청 여부 확인
@@ -217,6 +226,14 @@ export function useLocationTracking(
     if (isNativeApp()) {
       try {
         const { Geolocation } = await import("@capacitor/geolocation");
+
+        // 권한 확인 후 이미 허용된 경우에만 위치 요청 (시스템 다이얼로그 방지)
+        const permStatus = await Geolocation.checkPermissions();
+        if (permStatus.location !== "granted") {
+          onError();
+          return;
+        }
+
         const position = await Geolocation.getCurrentPosition({
           enableHighAccuracy: true,
           timeout: 5000,

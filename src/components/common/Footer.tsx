@@ -92,7 +92,7 @@ export default function Footer() {
   if (isKeyboardVisible) return null;
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 top-auto mx-auto w-full max-w-[480px] bg-white shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] z-[20] pb-[calc(env(safe-area-inset-bottom,0px)+24px)]">
+    <footer className="fixed bottom-0 left-0 right-0 top-auto mx-auto w-full max-w-[480px] bg-white shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] z-[20] pb-[env(safe-area-inset-bottom,0px)]">
       <nav className="flex h-[60px] px-12 items-center justify-between">
         {navItems.map((item) => {
           const active = isActive(item.path);

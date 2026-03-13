@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { LocateFixed, RefreshCcw, CircleX, Loader2 } from "lucide-react";
 import { Footer, LocationPermissionModal, SplashScreen } from "@/components/common";
 import { SearchResultItem } from "@/components/features/search";
@@ -26,6 +27,8 @@ const KakaoMap = dynamic(() => import("@/components/features/map/KakaoMap"), {
 });
 
 export default function Home() {
+  const router = useRouter();
+
   // 스플래시 상태 - sessionStorage로 세션 당 한 번만 표시
   // null = hydration 전(미결정), true = 표시, false = 스킵
   const [showSplash, setShowSplash] = useState<boolean | null>(null);
@@ -49,9 +52,22 @@ export default function Home() {
 
   // 스플래시 표시 여부 결정 (클라이언트에서만 실행)
   useEffect(() => {
+    const splashShown = sessionStorage.getItem("splashShown") === "true";
+
+    if (splashShown) {
+      // 스플래시가 이미 표시된 경우, 인증 여부 확인
+      const accessToken = localStorage.getItem("accessToken");
+      const userType = localStorage.getItem("user_type");
+
+      if (!accessToken && userType !== "guest") {
+        router.replace("/login");
+        return;
+      }
+    }
+
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 브라우저 전용 API(sessionStorage) 초기 읽기
-    setShowSplash(sessionStorage.getItem("splashShown") !== "true");
-  }, []);
+    setShowSplash(!splashShown);
+  }, [router]);
 
   // 홈페이지에서 pull-to-refresh 비활성화
   useEffect(() => {
@@ -108,12 +124,25 @@ export default function Home() {
 
   // 스플래시 완료 핸들러
   const handleSplashComplete = useCallback(() => {
-    setShowSplash(false);
     sessionStorage.setItem("splashShown", "true");
-  }, []);
 
-  // hydration 전 또는 스플래시 표시 중
-  if (showSplash === null || showSplash) {
+    // 스플래시 후 인증 여부 확인 → 미인증 시 로그인 페이지로 이동
+    const accessToken = localStorage.getItem("accessToken");
+    const userType = localStorage.getItem("user_type");
+
+    if (!accessToken && userType !== "guest") {
+      router.replace("/login");
+      return;
+    }
+
+    setShowSplash(false);
+  }, [router]);
+
+  // hydration 전 (useEffect 실행 전) - 빈 화면 (GNB 이동 시 스플래시 재노출 방지)
+  if (showSplash === null) return null;
+
+  // 세션 최초 방문 시 스플래시 표시
+  if (showSplash) {
     return <SplashScreen duration={2500} onComplete={handleSplashComplete} />;
   }
 
@@ -255,10 +284,12 @@ function SearchBar({
           >
             {searchQuery || "위치로 업체 검색"}
           </span>
-          <img
+          <Image
             src="/images/icons/search.svg"
             alt=""
-            className="w-[26px] h-[26px] pointer-events-none select-none"
+            width={26}
+            height={26}
+            className="pointer-events-none select-none"
           />
         </button>
       ) : (
@@ -268,10 +299,12 @@ function SearchBar({
             className="flex shrink-0 size-[26px] items-center justify-center"
             aria-label="취소"
           >
-            <img
+            <Image
               src="/images/icons/arrow-left.svg"
               alt=""
-              className="w-[26px] h-[26px] pointer-events-none select-none"
+              width={26}
+              height={26}
+              className="pointer-events-none select-none"
             />
           </button>
           <div className="flex flex-1 h-11 items-center rounded-lg bg-grey-100 px-[10px]">
