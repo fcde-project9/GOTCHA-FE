@@ -12,6 +12,7 @@ import { ShopDuplicateCheckModal } from "@/components/report/ShopDuplicateCheckM
 import { MARKER_IMAGES, DEFAULT_LOCATION } from "@/constants";
 import { useKakaoLoader } from "@/hooks/useKakaoLoader";
 import { trackShopReportStart, trackShopReportExit } from "@/utils/analytics";
+import { isNativeApp } from "@/utils/platform";
 
 // 카카오맵 타입
 interface KakaoLatLng {
@@ -63,24 +64,53 @@ export default function ReportLocationPage() {
 
   // 사용자의 현재 위치 가져오기
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
+    const fetchLocation = async () => {
+      // 네이티브: Capacitor Geolocation 사용 (WKWebView 영문 팝업 방지)
+      if (isNativeApp()) {
+        try {
+          const { Geolocation } = await import("@capacitor/geolocation");
+          const permStatus = await Geolocation.checkPermissions();
+          if (permStatus.location !== "granted") {
+            setMyLocation({ ...DEFAULT_LOCATION });
+            setPendingLocation({ ...DEFAULT_LOCATION });
+            return;
+          }
+          const position = await Geolocation.getCurrentPosition({
+            enableHighAccuracy: true,
+            timeout: 5000,
+          });
           const { latitude, longitude } = position.coords;
           setCenter({ latitude, longitude });
           setMyLocation({ latitude, longitude });
           setPendingLocation({ latitude, longitude });
-        },
-        () => {
-          // 위치 정보 가져오기 실패 시 기본 위치 사용
+        } catch {
           setMyLocation({ ...DEFAULT_LOCATION });
           setPendingLocation({ ...DEFAULT_LOCATION });
         }
-      );
-    } else {
-      setMyLocation({ ...DEFAULT_LOCATION });
-      setPendingLocation({ ...DEFAULT_LOCATION });
-    }
+        return;
+      }
+
+      // 웹: navigator.geolocation 사용
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            setCenter({ latitude, longitude });
+            setMyLocation({ latitude, longitude });
+            setPendingLocation({ latitude, longitude });
+          },
+          () => {
+            setMyLocation({ ...DEFAULT_LOCATION });
+            setPendingLocation({ ...DEFAULT_LOCATION });
+          }
+        );
+      } else {
+        setMyLocation({ ...DEFAULT_LOCATION });
+        setPendingLocation({ ...DEFAULT_LOCATION });
+      }
+    };
+
+    fetchLocation();
   }, []);
 
   // SDK 로드 완료 후 주소 변환
@@ -222,37 +252,51 @@ export default function ReportLocationPage() {
     navigateToRegister();
   };
 
-  const handleCurrentLocation = () => {
-    if (!navigator.geolocation) {
+  const handleCurrentLocation = async () => {
+    const onSuccess = async (latitude: number, longitude: number) => {
+      setCenter({ latitude, longitude });
+      setMyLocation({ latitude, longitude });
+
+      if (map && window.kakao?.maps) {
+        const moveLatLng = new window.kakao.maps.LatLng(latitude, longitude);
+        map.setCenter(moveLatLng);
+      }
+
+      await getAddressFromCoords(latitude, longitude);
+
+      const result = await checkNearbyShops(latitude, longitude);
+      setNearbyShops(result);
+    };
+
+    // 네이티브: Capacitor Geolocation 사용 (WKWebView 영문 팝업 방지)
+    if (isNativeApp()) {
+      try {
+        const { Geolocation } = await import("@capacitor/geolocation");
+        const permStatus = await Geolocation.checkPermissions();
+        if (permStatus.location !== "granted") return;
+        const position = await Geolocation.getCurrentPosition({
+          enableHighAccuracy: true,
+          timeout: 5000,
+        });
+        await onSuccess(position.coords.latitude, position.coords.longitude);
+      } catch (error) {
+        console.error("위치 정보를 가져올 수 없습니다:", error);
+      }
       return;
     }
+
+    // 웹: navigator.geolocation 사용
+    if (!navigator.geolocation) return;
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
-        setCenter({ latitude, longitude });
-        setMyLocation({ latitude, longitude });
-
-        // 지도 중심을 현재 위치로 이동
-        if (map && window.kakao?.maps) {
-          const moveLatLng = new window.kakao.maps.LatLng(latitude, longitude);
-          map.setCenter(moveLatLng);
-        }
-
-        await getAddressFromCoords(latitude, longitude);
-
-        // 근처 가게 확인
-        const result = await checkNearbyShops(latitude, longitude);
-        setNearbyShops(result);
+        await onSuccess(latitude, longitude);
       },
       (error) => {
         console.error("위치 정보를 가져올 수 없습니다:", error);
       },
-      {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0,
-      }
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
     );
   };
 
