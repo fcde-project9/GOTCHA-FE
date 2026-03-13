@@ -4,7 +4,9 @@ export async function compressShopImage(file: File): Promise<File> {
   try {
     return await imageCompression(file, {
       maxSizeMB: 1,
-      maxWidthOrHeight: 1024,
+      maxWidthOrHeight: 1920,
+      fileType: "image/jpeg",
+      initialQuality: 0.8,
       useWebWorker: true,
     });
   } catch {
