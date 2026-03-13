@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import Image from "next/image";
+import { Spinner } from "@/components/common";
 import { DEFAULT_IMAGES } from "@/constants";
 import { ShopListView } from "@/utils/shop";
 import { BottomSheet } from "../ui";
@@ -45,7 +46,7 @@ export default function ShopListBottomSheet({
         {isLoading ? (
           /* 로딩 상태 UI */
           <div className="flex w-full flex-col items-center justify-center h-full">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
+            <Spinner />
           </div>
         ) : hasShops ? (
           <>

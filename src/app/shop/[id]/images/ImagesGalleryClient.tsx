@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useShopDetail } from "@/api/queries/useShopDetail";
-import { ImagesGalleryOverlay } from "@/components/common";
+import { ImagesGalleryOverlay, Spinner } from "@/components/common";
 import { DEFAULT_IMAGES } from "@/constants/images";
 
 function parseShopId(id: string | string[] | undefined): number | null {
@@ -31,7 +31,7 @@ export default function ImagesGalleryClient() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
+        <Spinner />
       </div>
     );
   }

@@ -35,6 +35,7 @@ import {
   OutlineButton,
   ImageViewerModal,
   ImagesGalleryOverlay,
+  Spinner,
 } from "@/components/common";
 import { BlockUserConfirmModal } from "@/components/features/review/BlockUserConfirmModal";
 import { ReportBottomSheet } from "@/components/features/review/ReportReviewBottomSheet";
@@ -460,7 +461,7 @@ export default function ShopDetailClient({
   if (isLoading) {
     return (
       <div className="h-dvh flex items-center justify-center bg-default">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
+        <Spinner />
       </div>
     );
   }
@@ -1123,7 +1124,7 @@ export default function ShopDetailClient({
             <div className="flex-1 overflow-y-auto">
               {isAllReviewsLoading ? (
                 <div className="flex items-center justify-center h-64">
-                  <div className="h-10 w-10 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
+                  <Spinner />
                 </div>
               ) : allReviews.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-64 px-5">

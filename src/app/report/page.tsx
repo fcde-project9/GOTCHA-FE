@@ -138,7 +138,7 @@ export default function ReportLocationPage() {
     }
   }, [map]);
 
-  // 지도 클릭, 드래그, 줌 이벤트 리스너 등록/해제
+  // 지도 드래그, 줌 이벤트 리스너 등록/해제
   useEffect(() => {
     if (!map || !window.kakao?.maps?.event) return;
 
