@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Search, CircleX, RefreshCcw } from "lucide-react";
 import { useFavorites } from "@/api/queries/useFavorites";
 import ShopDetailClient from "@/app/shop/[id]/ShopDetailClient";
-import { Footer, Button, SimpleHeader } from "@/components/common";
+import { Footer, Button, SimpleHeader, Spinner } from "@/components/common";
 import { FavoriteShopItem } from "@/components/features/favorites";
 import { DEFAULT_IMAGES } from "@/constants";
 import { useAuth } from "@/hooks";
@@ -84,7 +84,7 @@ export default function FavoritesPage() {
         {/* 컨텐츠 영역 */}
         {showLoading ? (
           <div className="flex flex-1 items-center justify-center px-5">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-grey-200 border-t-main"></div>
+            <Spinner />
           </div>
         ) : showError ? (
           // Error State

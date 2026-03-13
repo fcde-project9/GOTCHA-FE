@@ -12,6 +12,7 @@ export { SimpleHeader } from "./SimpleHeader";
 export { ImageViewerModal } from "./ImageViewerModal";
 export { ImagesGalleryOverlay } from "./ImagesGalleryOverlay";
 export { SplashScreen } from "./SplashScreen";
+export { Spinner } from "./Spinner";
 export { ErrorBoundary, DefaultErrorFallback, InlineErrorFallback } from "./ErrorBoundary";
 export {
   QueryErrorBoundary,
