@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { LocateFixed } from "lucide-react";
+import { LocateFixed, Loader2 } from "lucide-react";
 import apiClient from "@/api/client";
 import { ENDPOINTS } from "@/api/endpoints";
 import type { NearbyShopResponse, ApiResponse, NearbyShopsResponse } from "@/api/types";
@@ -12,13 +12,7 @@ import { ShopDuplicateCheckModal } from "@/components/report/ShopDuplicateCheckM
 import { MARKER_IMAGES, DEFAULT_LOCATION } from "@/constants";
 import { useKakaoLoader } from "@/hooks/useKakaoLoader";
 import { trackShopReportStart, trackShopReportExit } from "@/utils/analytics";
-import { isNativeApp } from "@/utils/platform";
-
-// 카카오맵 타입
-interface KakaoLatLng {
-  getLat(): number;
-  getLng(): number;
-}
+import { getCurrentLocation } from "@/utils/geolocation";
 
 export default function ReportLocationPage() {
   const router = useRouter();
@@ -62,55 +56,19 @@ export default function ReportLocationPage() {
     trackShopReportStart();
   }, []);
 
-  // 사용자의 현재 위치 가져오기
+  // 사용자의 현재 위치 가져오기 (Capacitor 네이티브 플러그인 사용)
   useEffect(() => {
-    const fetchLocation = async () => {
-      // 네이티브: Capacitor Geolocation 사용 (WKWebView 영문 팝업 방지)
-      if (isNativeApp()) {
-        try {
-          const { Geolocation } = await import("@capacitor/geolocation");
-          const permStatus = await Geolocation.checkPermissions();
-          if (permStatus.location !== "granted") {
-            setMyLocation({ ...DEFAULT_LOCATION });
-            setPendingLocation({ ...DEFAULT_LOCATION });
-            return;
-          }
-          const position = await Geolocation.getCurrentPosition({
-            enableHighAccuracy: true,
-            timeout: 5000,
-          });
-          const { latitude, longitude } = position.coords;
-          setCenter({ latitude, longitude });
-          setMyLocation({ latitude, longitude });
-          setPendingLocation({ latitude, longitude });
-        } catch {
-          setMyLocation({ ...DEFAULT_LOCATION });
-          setPendingLocation({ ...DEFAULT_LOCATION });
-        }
-        return;
-      }
-
-      // 웹: navigator.geolocation 사용
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            setCenter({ latitude, longitude });
-            setMyLocation({ latitude, longitude });
-            setPendingLocation({ latitude, longitude });
-          },
-          () => {
-            setMyLocation({ ...DEFAULT_LOCATION });
-            setPendingLocation({ ...DEFAULT_LOCATION });
-          }
-        );
+    (async () => {
+      const location = await getCurrentLocation();
+      if (location) {
+        setCenter(location);
+        setMyLocation(location);
+        setPendingLocation(location);
       } else {
         setMyLocation({ ...DEFAULT_LOCATION });
         setPendingLocation({ ...DEFAULT_LOCATION });
       }
-    };
-
-    fetchLocation();
+    })();
   }, []);
 
   // SDK 로드 완료 후 주소 변환
@@ -157,31 +115,6 @@ export default function ReportLocationPage() {
     });
   }, []);
 
-  // 지도 클릭 이벤트 핸들러
-  const handleMapClick = useCallback(
-    async (...args: unknown[]) => {
-      const mouseEvent = args[0] as { latLng: KakaoLatLng };
-      const latlng = mouseEvent.latLng;
-      const latitude = latlng.getLat();
-      const longitude = latlng.getLng();
-
-      setCenter({ latitude, longitude });
-
-      // 클릭한 위치로 지도 중심 이동
-      if (map && window.kakao?.maps) {
-        const moveLatLng = new window.kakao.maps.LatLng(latitude, longitude);
-        map.setCenter(moveLatLng);
-      }
-
-      await getAddressFromCoords(latitude, longitude);
-
-      // 자동으로 근처 가게 확인 (새 좌표로)
-      const result = await checkNearbyShops(latitude, longitude);
-      setNearbyShops(result);
-    },
-    [map, getAddressFromCoords, checkNearbyShops]
-  );
-
   // 지도 드래그 종료 이벤트 핸들러
   const handleDragEnd = useCallback(async () => {
     if (!map) return;
@@ -190,6 +123,7 @@ export default function ReportLocationPage() {
     const latitude = mapCenter.getLat();
     const longitude = mapCenter.getLng();
     setCenter({ latitude, longitude });
+    setIsAtCurrentLocation(false);
     await getAddressFromCoords(latitude, longitude);
 
     // 자동으로 근처 가게 확인 (새 좌표로)
@@ -204,20 +138,18 @@ export default function ReportLocationPage() {
     }
   }, [map]);
 
-  // 지도 클릭, 드래그, 줌 이벤트 리스너 등록/해제
+  // 지도 드래그, 줌 이벤트 리스너 등록/해제
   useEffect(() => {
     if (!map || !window.kakao?.maps?.event) return;
 
-    window.kakao.maps.event.addListener(map, "click", handleMapClick);
     window.kakao.maps.event.addListener(map, "dragend", handleDragEnd);
     window.kakao.maps.event.addListener(map, "zoom_changed", handleZoomChanged);
 
     return () => {
-      window.kakao.maps.event.removeListener(map, "click", handleMapClick);
       window.kakao.maps.event.removeListener(map, "dragend", handleDragEnd);
       window.kakao.maps.event.removeListener(map, "zoom_changed", handleZoomChanged);
     };
-  }, [map, handleMapClick, handleDragEnd, handleZoomChanged]);
+  }, [map, handleDragEnd, handleZoomChanged]);
 
   const navigateToRegister = () => {
     router.push(
@@ -252,52 +184,31 @@ export default function ReportLocationPage() {
     navigateToRegister();
   };
 
-  const handleCurrentLocation = async () => {
-    const onSuccess = async (latitude: number, longitude: number) => {
-      setCenter({ latitude, longitude });
-      setMyLocation({ latitude, longitude });
+  const [isLocating, setIsLocating] = useState(false);
+  const [isAtCurrentLocation, setIsAtCurrentLocation] = useState(false);
 
+  const handleCurrentLocation = async () => {
+    setIsLocating(true);
+    const location = await getCurrentLocation({ enableHighAccuracy: true, timeout: 5000 });
+
+    if (location) {
+      setCenter(location);
+      setMyLocation(location);
+      setIsAtCurrentLocation(true);
+
+      // 지도 중심을 현재 위치로 이동
       if (map && window.kakao?.maps) {
-        const moveLatLng = new window.kakao.maps.LatLng(latitude, longitude);
+        const moveLatLng = new window.kakao.maps.LatLng(location.latitude, location.longitude);
         map.setCenter(moveLatLng);
       }
 
-      await getAddressFromCoords(latitude, longitude);
+      await getAddressFromCoords(location.latitude, location.longitude);
 
-      const result = await checkNearbyShops(latitude, longitude);
+      // 근처 가게 확인
+      const result = await checkNearbyShops(location.latitude, location.longitude);
       setNearbyShops(result);
-    };
-
-    // 네이티브: Capacitor Geolocation 사용 (WKWebView 영문 팝업 방지)
-    if (isNativeApp()) {
-      try {
-        const { Geolocation } = await import("@capacitor/geolocation");
-        const permStatus = await Geolocation.checkPermissions();
-        if (permStatus.location !== "granted") return;
-        const position = await Geolocation.getCurrentPosition({
-          enableHighAccuracy: true,
-          timeout: 5000,
-        });
-        await onSuccess(position.coords.latitude, position.coords.longitude);
-      } catch (error) {
-        console.error("위치 정보를 가져올 수 없습니다:", error);
-      }
-      return;
     }
-
-    // 웹: navigator.geolocation 사용
-    if (!navigator.geolocation) return;
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        await onSuccess(latitude, longitude);
-      },
-      (error) => {
-        console.error("위치 정보를 가져올 수 없습니다:", error);
-      },
-      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-    );
+    setIsLocating(false);
   };
 
   if (isLoading) {
@@ -327,7 +238,6 @@ export default function ReportLocationPage() {
           latitude={center.latitude}
           longitude={center.longitude}
           level={mapLevel}
-          disableDoubleClickZoom
           currentLocation={
             myLocation
               ? {
@@ -345,25 +255,34 @@ export default function ReportLocationPage() {
         {/* Center Pin */}
         <div
           className="absolute left-1/2 z-20 flex h-14 w-14 -translate-x-1/2 items-center justify-center px-[7px] pointer-events-none"
-          style={{ top: "calc(50% - 40px)", transform: "translate(-50%, -100%)" }}
+          style={{ top: "calc(50% + 5px)", transform: "translate(-50%, -100%)" }}
         >
           <img src={MARKER_IMAGES.REPORT} alt="위치 핀" width={42} height={56} />
         </div>
 
         {/* 현재 위치 버튼 */}
-        <div className="absolute bottom-4 right-5 z-20">
+        <div className="absolute bottom-[59px] right-5 z-20">
           <button
             onClick={handleCurrentLocation}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-[0px_0px_5px_0px_rgba(0,0,0,0.2)]"
+            disabled={isLocating}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-[0px_0px_5px_0px_rgba(0,0,0,0.2)] disabled:opacity-70"
             aria-label="현재 위치"
           >
-            <LocateFixed size={20} className="stroke-grey-800" strokeWidth={1.5} />
+            {isLocating ? (
+              <Loader2 size={20} className="stroke-grey-800 animate-spin" strokeWidth={1.5} />
+            ) : (
+              <LocateFixed
+                size={20}
+                className={isAtCurrentLocation ? "stroke-main" : "stroke-grey-800"}
+                strokeWidth={1.5}
+              />
+            )}
           </button>
         </div>
       </div>
 
       {/* Bottom Sheet */}
-      <div className="shrink-0 bg-white rounded-t-3xl px-5 pt-5 pb-[68px] shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)]">
+      <div className="shrink-0 bg-white rounded-t-3xl px-5 pt-5 pb-[68px] shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] relative z-10 -mt-11">
         <div className="flex flex-col gap-[22px]">
           {/* Address */}
           <div className="flex flex-col gap-2">
