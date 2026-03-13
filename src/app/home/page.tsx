@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { LocateFixed, RefreshCcw, CircleX, Loader2 } from "lucide-react";
-import { Footer, LocationPermissionModal, SplashScreen } from "@/components/common";
+import { Footer, LocationPermissionModal, Spinner, SplashScreen } from "@/components/common";
 import { SearchResultItem } from "@/components/features/search";
 import { ShopListBottomSheet, ShopPreviewBottomSheet } from "@/components/features/shop";
 import { DEFAULT_IMAGES } from "@/constants";
@@ -21,7 +21,7 @@ const KakaoMap = dynamic(() => import("@/components/features/map/KakaoMap"), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full flex items-center justify-center bg-grey-100">
-      <span className="text-grey-500">지도 로딩 중...</span>
+      <Spinner />
     </div>
   ),
 });
