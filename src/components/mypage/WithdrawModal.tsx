@@ -48,9 +48,6 @@ export function WithdrawModal({ isOpen, onClose, onConfirm }: WithdrawModalProps
 
   const handleConfirm = () => {
     onConfirm(selectedReasons, otherReason);
-    // 확인 후 상태 초기화
-    setSelectedReasons([]);
-    setOtherReason("");
   };
 
   const isOtherSelected = selectedReasons.includes("OTHER");
@@ -58,7 +55,7 @@ export function WithdrawModal({ isOpen, onClose, onConfirm }: WithdrawModalProps
 
   return (
     <div className="fixed inset-0 z-50 flex justify-center bg-white">
-      <div className="h-full w-full max-w-[480px] flex flex-col bg-white">
+      <div className="w-full max-w-[480px] flex flex-col bg-white mt-[env(safe-area-inset-top)] h-[calc(100%-env(safe-area-inset-top))]">
         {/* Header */}
         <header className="shrink-0 flex w-full h-[48px] items-center justify-between bg-default px-[20px] py-[8px]">
           <h1 className="flex-1 text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">

@@ -84,6 +84,12 @@ export function NicknameModal({ isOpen, currentNickname, onClose, onSave }: Nick
     }
   };
 
+  const handleClose = () => {
+    setNickname("");
+    setError("");
+    onClose();
+  };
+
   // 2자 이상 입력 시 버튼 활성화 (유효성 검사는 버튼 클릭 시 수행)
   const isButtonDisabled = nickname.trim().length < 2;
 
@@ -97,7 +103,7 @@ export function NicknameModal({ isOpen, currentNickname, onClose, onSave }: Nick
               닉네임 변경
             </h2>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="w-6 h-6 flex items-center justify-center"
               aria-label="닫기"
             >
@@ -155,7 +161,7 @@ export function NicknameModal({ isOpen, currentNickname, onClose, onSave }: Nick
         {/* Buttons */}
         <div className="flex gap-2">
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="flex-1 h-[46px] rounded-lg bg-grey-100 text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-grey-900"
           >
             취소
