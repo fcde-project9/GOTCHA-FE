@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useBlockUser } from "@/api/mutations/useBlockUser";
 import { useUnblockUser } from "@/api/mutations/useUnblockUser";
 import { useBlockedUsers } from "@/api/queries/useBlockedUsers";
-import { BackHeader } from "@/components/common";
+import { BackHeader, Spinner } from "@/components/common";
 import { UnblockConfirmModal } from "@/components/mypage/UnblockConfirmModal";
 import { useToast } from "@/hooks";
 
@@ -78,7 +78,7 @@ export default function BlockedUsersPage() {
 
       {isLoading ? (
         <div className="flex flex-1 items-center justify-center">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
+          <Spinner />
         </div>
       ) : blockedUsers.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-7 -mt-14">

@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ChevronDown, Navigation } from "lucide-react";
 import { useMyReports } from "@/api/queries/useMyReports";
-import { BackHeader } from "@/components/common";
+import { BackHeader, Spinner } from "@/components/common";
 import StatusBadge from "@/components/features/shop/StatusBadge";
 import { DEFAULT_IMAGES } from "@/constants";
 
@@ -85,7 +85,7 @@ export default function MyReportsPage() {
       <main className="h-screen overflow-hidden relative bg-default flex flex-col">
         <BackHeader title="내가 제보한 매장" />
         <div className="flex flex-1 items-center justify-center">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-grey-200 border-t-main"></div>
+          <Spinner />
         </div>
       </main>
     );
