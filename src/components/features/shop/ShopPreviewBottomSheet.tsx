@@ -3,8 +3,6 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import {
-  Heart,
-  Share,
   Copy,
   ChevronRight,
   ChevronDown,
@@ -48,7 +46,7 @@ import { ShopDeleteConfirmModal } from "@/components/features/shop/ShopDeleteCon
 import { ShopEditModal } from "@/components/features/shop/ShopEditModal";
 import { ShopSuggestModal } from "@/components/features/shop/ShopSuggestModal";
 // BottomSheet 미사용 - 직접 드래그 처리
-import { DEFAULT_IMAGES } from "@/constants/images";
+import { DEFAULT_IMAGES, ICON_IMAGES } from "@/constants/images";
 import { useAuth, useFavorite, useToast } from "@/hooks";
 import type { OpenTime, ReviewResponse, ReviewSortOption } from "@/types/api";
 import { formatDate } from "@/utils";
@@ -826,10 +824,11 @@ export default function ShopPreviewBottomSheet({
                 className="flex items-center justify-center w-10 h-10 rounded-full disabled:opacity-50"
                 aria-label={isFavorite ? "찜 취소" : "찜하기"}
               >
-                <Heart
-                  size={24}
-                  className={isFavorite ? "fill-main stroke-main" : "stroke-icon-default fill-none"}
-                  strokeWidth={1.5}
+                <Image
+                  src={isFavorite ? ICON_IMAGES.FAVORITE_FILL : ICON_IMAGES.FAVORITE_LINE}
+                  alt="찜"
+                  width={24}
+                  height={24}
                 />
               </button>
               <button
@@ -837,7 +836,7 @@ export default function ShopPreviewBottomSheet({
                 className="flex items-center justify-center w-10 h-10 rounded-full"
                 aria-label="공유하기"
               >
-                <Share size={24} className="stroke-icon-default" strokeWidth={1.5} />
+                <Image src={ICON_IMAGES.SHARE} alt="공유" width={24} height={24} />
               </button>
               {isAdmin ? (
                 <div className="relative" ref={adminMenuRef}>
@@ -891,7 +890,7 @@ export default function ShopPreviewBottomSheet({
 
         <div
           ref={contentScrollRef}
-          className={`${isExpanded ? "flex-1 overflow-y-auto pb-safe" : "overflow-hidden h-[calc(100%-34px)]"}`}
+          className={`${isExpanded ? "flex-1 overflow-y-auto pb-3" : "overflow-hidden h-[calc(100%-34px)]"}`}
         >
           <div className="flex flex-col px-5">
             {/* 업체명 + 찜/공유 (확장 시 찜/공유는 헤더에만 표시) */}
@@ -915,10 +914,11 @@ export default function ShopPreviewBottomSheet({
                     className="w-10 h-10 flex items-center justify-center disabled:opacity-50"
                     aria-label={isFavorite ? "찜 취소" : "찜하기"}
                   >
-                    <Heart
-                      size={24}
-                      className={isFavorite ? "fill-main stroke-main" : "stroke-grey-700 fill-none"}
-                      strokeWidth={1.5}
+                    <Image
+                      src={isFavorite ? ICON_IMAGES.FAVORITE_FILL : ICON_IMAGES.FAVORITE_LINE}
+                      alt="찜"
+                      width={24}
+                      height={24}
                     />
                   </button>
                   <button
@@ -926,7 +926,7 @@ export default function ShopPreviewBottomSheet({
                     className="w-10 h-10 flex items-center justify-center"
                     aria-label="공유하기"
                   >
-                    <Share size={24} className="stroke-grey-700" strokeWidth={1.5} />
+                    <Image src={ICON_IMAGES.SHARE} alt="공유" width={24} height={24} />
                   </button>
                 </div>
               )}
@@ -1645,7 +1645,7 @@ export default function ShopPreviewBottomSheet({
           onClick={() => setIsUserMenuOpen(false)}
         >
           <div
-            className="w-full max-w-[480px] mx-auto bg-white rounded-t-2xl pb-safe h-[188px] animate-slide-up"
+            className="w-full max-w-[480px] mx-auto bg-white rounded-t-2xl pb-3 h-[188px] animate-slide-up"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-end px-5 pt-4 pb-2">
