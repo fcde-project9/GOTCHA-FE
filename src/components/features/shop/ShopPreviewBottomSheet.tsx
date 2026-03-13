@@ -486,7 +486,10 @@ export default function ShopPreviewBottomSheet({
       }
       if (!isExpanded) {
         const heightDelta = dragStartY.current - clientY;
-        const newHeight = Math.max(0, dragStartHeight.current + heightDelta);
+        const newHeight =
+          heightDelta > 0
+            ? Math.max(DEFAULT_HEIGHT, dragStartHeight.current + heightDelta)
+            : Math.max(0, dragStartHeight.current + heightDelta);
         sheetHeightRef.current = newHeight;
         setSheetHeight(newHeight);
       }
