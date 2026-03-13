@@ -775,7 +775,7 @@ export default function ShopPreviewBottomSheet({
     <>
       {/* 바텀시트 */}
       <div
-        className={`absolute bottom-0 left-0 right-0 ${isExpanded ? "z-40" : "z-10"} bg-white overflow-hidden shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] ${isExpanded && !isCollapsing ? "flex flex-col" : "rounded-t-[24px]"} ${isLeaving ? "animate-slide-down" : !hasExpandedOnce ? "animate-slide-up" : ""}`}
+        className={`absolute bottom-0 left-0 right-0 z-40 bg-white overflow-hidden shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] ${isExpanded && !isCollapsing ? "flex flex-col" : "rounded-t-[24px]"} ${isLeaving ? "animate-slide-down" : !hasExpandedOnce ? "animate-slide-up" : ""}`}
         style={{
           height: isCollapsing ? `${sheetHeight}px` : isExpanded ? "100%" : `${sheetHeight}px`,
           transition: isDragging ? "none" : "height 0.55s cubic-bezier(0.32, 0.72, 0, 1)",
