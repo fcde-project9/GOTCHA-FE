@@ -82,22 +82,31 @@ export function ReviewWriteModal({
     if (isNativeApp()) {
       // Capacitor resize:"body" 모드에서는 visualViewport가 변하지 않으므로
       // @capacitor/keyboard 이벤트로 실제 키보드 높이를 직접 수신
-      let cleanupFn: (() => void) | undefined;
+      let cancelled = false;
+      let showListener: { remove: () => void | Promise<void> } | undefined;
+      let hideListener: { remove: () => void | Promise<void> } | undefined;
 
-      import("@capacitor/keyboard").then(({ Keyboard }) => {
-        const showPromise = Keyboard.addListener("keyboardWillShow", (info) => {
-          setKeyboardHeight(info.keyboardHeight);
-        });
-        const hidePromise = Keyboard.addListener("keyboardWillHide", () => {
+      (async () => {
+        try {
+          const { Keyboard } = await import("@capacitor/keyboard");
+          if (cancelled) return;
+
+          showListener = await Keyboard.addListener("keyboardWillShow", (info) => {
+            setKeyboardHeight(info.keyboardHeight);
+          });
+          hideListener = await Keyboard.addListener("keyboardWillHide", () => {
+            setKeyboardHeight(0);
+          });
+        } catch {
           setKeyboardHeight(0);
-        });
-        cleanupFn = () => {
-          showPromise.then((l) => l.remove());
-          hidePromise.then((l) => l.remove());
-        };
-      });
+        }
+      })();
 
-      return () => cleanupFn?.();
+      return () => {
+        cancelled = true;
+        showListener?.remove();
+        hideListener?.remove();
+      };
     }
 
     // 웹: visualViewport resize 이벤트로 감지
