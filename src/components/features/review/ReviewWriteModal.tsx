@@ -9,9 +9,8 @@ import { useUploadFile } from "@/api/mutations/useUploadFile";
 import { useToast } from "@/hooks";
 import type { ReviewResponse } from "@/types/api";
 import { compressShopImage } from "@/utils";
+import { isNativeApp } from "@/utils/platform";
 import { ReviewExitConfirmModal } from "./ReviewExitConfirmModal";
-
-const isCapacitor = process.env.NEXT_PUBLIC_BUILD_TARGET === "capacitor";
 
 const MAX_IMAGES = 10;
 const MAX_CONTENT_LENGTH = 150;
@@ -80,7 +79,7 @@ export function ReviewWriteModal({
       return;
     }
 
-    if (isCapacitor) {
+    if (isNativeApp()) {
       // Capacitor resize:"body" 모드에서는 visualViewport가 변하지 않으므로
       // @capacitor/keyboard 이벤트로 실제 키보드 높이를 직접 수신
       let cleanupFn: (() => void) | undefined;
@@ -449,7 +448,7 @@ export function ReviewWriteModal({
           <button
             type="button"
             onClick={
-              isCapacitor ? handleNativeGallerySelect : () => galleryInputRef.current?.click()
+              isNativeApp() ? handleNativeGallerySelect : () => galleryInputRef.current?.click()
             }
             disabled={isProcessing || imageUrls.length >= MAX_IMAGES}
             className="flex items-center justify-center disabled:opacity-50"
