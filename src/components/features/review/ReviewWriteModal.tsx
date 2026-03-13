@@ -80,6 +80,28 @@ export function ReviewWriteModal({
       return;
     }
 
+    if (isCapacitor) {
+      // Capacitor resize:"body" 모드에서는 visualViewport가 변하지 않으므로
+      // @capacitor/keyboard 이벤트로 실제 키보드 높이를 직접 수신
+      let cleanupFn: (() => void) | undefined;
+
+      import("@capacitor/keyboard").then(({ Keyboard }) => {
+        const showPromise = Keyboard.addListener("keyboardWillShow", (info) => {
+          setKeyboardHeight(info.keyboardHeight);
+        });
+        const hidePromise = Keyboard.addListener("keyboardWillHide", () => {
+          setKeyboardHeight(0);
+        });
+        cleanupFn = () => {
+          showPromise.then((l) => l.remove());
+          hidePromise.then((l) => l.remove());
+        };
+      });
+
+      return () => cleanupFn?.();
+    }
+
+    // 웹: visualViewport resize 이벤트로 감지
     const viewport = window.visualViewport;
     if (!viewport) return;
 
