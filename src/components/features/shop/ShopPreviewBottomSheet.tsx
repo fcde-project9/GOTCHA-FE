@@ -423,6 +423,9 @@ export default function ShopPreviewBottomSheet({
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const dragDecidedRef = useRef<"drag" | "scroll" | null>(null);
   const isDraggingRef = useRef(false);
+  const isExpandedRef = useRef(false);
+
+  isExpandedRef.current = isExpanded;
 
   // shopId 변경 시 미리보기 상태로 리셋 (렌더 중 상태 조정 패턴)
   const [prevShopId, setPrevShopId] = useState(shopId);
@@ -457,40 +460,37 @@ export default function ShopPreviewBottomSheet({
     [sheetHeight]
   );
 
-  const handleDragMove = useCallback(
-    (clientY: number, e?: React.TouchEvent) => {
-      lastDragY.current = clientY;
-      const delta = clientY - dragStartY.current;
+  const handleDragMove = useCallback((clientY: number, e?: React.TouchEvent) => {
+    lastDragY.current = clientY;
+    const delta = clientY - dragStartY.current;
 
-      if (dragDecidedRef.current === null) {
-        if (Math.abs(delta) < 5) return;
-        const contentEl = contentScrollRef.current;
-        const isAtTop = !contentEl || contentEl.scrollTop <= 0;
-        const isMovingDown = delta > 0;
+    if (dragDecidedRef.current === null) {
+      if (Math.abs(delta) < 5) return;
+      const contentEl = contentScrollRef.current;
+      const isAtTop = !contentEl || contentEl.scrollTop <= 0;
+      const isMovingDown = delta > 0;
 
-        if (isMovingDown && isAtTop) {
-          dragDecidedRef.current = "drag";
-        } else if (!isMovingDown) {
-          dragDecidedRef.current = "drag";
-        } else {
-          dragDecidedRef.current = "scroll";
-        }
+      if (isMovingDown && isAtTop) {
+        dragDecidedRef.current = "drag";
+      } else if (!isMovingDown) {
+        dragDecidedRef.current = "drag";
+      } else {
+        dragDecidedRef.current = "scroll";
       }
+    }
 
-      if (dragDecidedRef.current === "scroll") return;
+    if (dragDecidedRef.current === "scroll") return;
 
-      e?.preventDefault();
-      isDraggingRef.current = true;
-      setIsDragging(true);
-      if (!isExpanded) {
-        const heightDelta = dragStartY.current - clientY;
-        const newHeight = Math.max(0, dragStartHeight.current + heightDelta);
-        sheetHeightRef.current = newHeight;
-        setSheetHeight(newHeight);
-      }
-    },
-    [isExpanded]
-  );
+    e?.preventDefault();
+    isDraggingRef.current = true;
+    setIsDragging(true);
+    if (!isExpandedRef.current) {
+      const heightDelta = dragStartY.current - clientY;
+      const newHeight = Math.max(0, dragStartHeight.current + heightDelta);
+      sheetHeightRef.current = newHeight;
+      setSheetHeight(newHeight);
+    }
+  }, []);
 
   const handleDragEnd = useCallback(() => {
     dragDecidedRef.current = null;
