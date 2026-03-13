@@ -234,15 +234,20 @@ export function useLocationTracking(
           return;
         }
 
-        const position = await Geolocation.getCurrentPosition({
-          enableHighAccuracy: true,
-          timeout: 5000,
-        });
-        onSuccess({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          heading: position.coords.heading,
-        });
+        // 권한은 허용됐으나 위치 조회 실패 시 권한 모달이 아닌 로딩만 종료
+        try {
+          const position = await Geolocation.getCurrentPosition({
+            enableHighAccuracy: true,
+            timeout: 5000,
+          });
+          onSuccess({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            heading: position.coords.heading,
+          });
+        } catch {
+          setIsLocating(false);
+        }
       } catch {
         onError();
       }
