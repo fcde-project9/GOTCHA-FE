@@ -10,7 +10,7 @@ import { useToggleReviewLike } from "@/api/mutations/useToggleReviewLike";
 import { useInfiniteReviews } from "@/api/queries/useInfiniteReviews";
 import { useUser } from "@/api/queries/useUser";
 import type { ReportReason, ReportTargetType } from "@/api/types";
-import { Button, BackHeader, ImageViewerModal } from "@/components/common";
+import { Button, BackHeader, ImageViewerModal, Spinner } from "@/components/common";
 import { BlockUserConfirmModal } from "@/components/features/review/BlockUserConfirmModal";
 import { ReportBottomSheet } from "@/components/features/review/ReportReviewBottomSheet";
 import { ReportSuccessModal } from "@/components/features/review/ReportSuccessModal";
@@ -243,7 +243,7 @@ export default function ReviewsListClient() {
       <div className="flex-1 overflow-y-auto pb-safe">
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
+            <Spinner />
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center h-64 px-5">

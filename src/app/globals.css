@@ -123,3 +123,36 @@
 .animate-slide-up {
   animation: slide-up 0.45s ease-out;
 }
+
+/* 공통 스피너 (바운싱 볼) */
+.gotcha-loader {
+  width: 60px;
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.gotcha-ball {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #ffebee;
+}
+
+.gotcha-ball:nth-child(1) {
+  animation: gotcha-bounce 1s ease-in-out infinite;
+}
+
+.gotcha-ball:nth-child(2) {
+  animation: gotcha-bounce 1s ease-in-out 0.3s infinite;
+}
+
+.gotcha-ball:nth-child(3) {
+  animation: gotcha-bounce 1s ease-in-out 0.6s infinite;
+}
+
+@keyframes gotcha-bounce {
+  50% {
+    transform: translateY(-6px);
+    background-color: #ff4545;
+  }
+}

@@ -4,6 +4,7 @@ import { useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import apiClient from "@/api/client";
 import { ENDPOINTS } from "@/api/endpoints";
+import { Spinner } from "@/components/common";
 import { useDelayedRedirectWithToast, useAuth } from "@/hooks";
 import type { TokenExchangeApiResponse } from "@/types/api";
 import { trackUserLogin } from "@/utils/analytics";
@@ -112,7 +113,7 @@ function OAuthCallbackContent() {
   return (
     <div className="flex min-h-[100dvh] w-full items-center justify-center bg-default">
       <div className="flex flex-col items-center gap-4">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
+        <Spinner />
         <p className="text-[16px] font-medium text-grey-700">로그인 처리 중...</p>
       </div>
     </div>
@@ -124,7 +125,7 @@ export default function OAuthCallbackPage() {
     <Suspense
       fallback={
         <div className="flex min-h-[100dvh] w-full items-center justify-center bg-default">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-grey-200 border-t-main" />
+          <Spinner />
         </div>
       }
     >
