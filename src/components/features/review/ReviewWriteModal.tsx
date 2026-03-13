@@ -241,7 +241,10 @@ export function ReviewWriteModal({
 
       setIsUploading(true);
       try {
-        const uploadPromises = validFiles.map((file) => uploadFileMutation.mutateAsync(file));
+        const compressedFiles = await Promise.all(
+          validFiles.map((file) => compressShopImage(file))
+        );
+        const uploadPromises = compressedFiles.map((file) => uploadFileMutation.mutateAsync(file));
         const results = await Promise.all(uploadPromises);
         const uploadedUrls = results.map((result) => result.fileUrl);
         setImageUrls((prev) => [...prev, ...uploadedUrls]);
