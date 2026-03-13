@@ -218,7 +218,10 @@ export function useLocationTracking(
       } catch {
         /* noop */
       }
-      setShowLocationModal(true);
+      // 네이티브 앱에서는 시스템 설정에서 권한 변경해야 하므로 모달 미표시
+      if (!isNativeApp()) {
+        setShowLocationModal(true);
+      }
       setIsLocating(false);
     };
 

@@ -157,7 +157,7 @@ export default function Home() {
       />
 
       <main
-        className={`${bottomSheet.showPreviewSheet ? "h-[100dvh]" : "h-[calc(100dvh-var(--footer-height))]"} overflow-hidden relative touch-none`}
+        className={`${bottomSheet.showPreviewSheet ? "h-[100dvh]" : "h-[calc(100dvh-env(safe-area-inset-top,0px)-var(--footer-height))]"} overflow-hidden relative touch-none`}
       >
         <div className="flex h-full flex-col items-center relative touch-auto">
           {/* 카카오맵 */}
@@ -340,7 +340,7 @@ interface ReloadButtonProps {
 
 function ReloadButton({ onClick }: ReloadButtonProps) {
   return (
-    <div className="absolute left-0 right-0 top-[calc(env(safe-area-inset-top)+88px)] z-10 mx-auto flex w-full max-w-[480px] justify-center px-5">
+    <div className="absolute left-0 right-0 top-[calc(env(safe-area-inset-top)+80px)] z-10 mx-auto flex w-full max-w-[480px] justify-center px-5">
       <button
         onClick={onClick}
         className="flex items-center gap-1 rounded-full bg-white px-3 py-2 shadow-[0px_0px_5px_0px_rgba(0,0,0,0.2)]"

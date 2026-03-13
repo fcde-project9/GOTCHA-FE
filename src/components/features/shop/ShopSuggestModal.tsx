@@ -107,7 +107,7 @@ export function ShopSuggestModal({
           ))}
         </div>
       </div>
-      <div className="flex gap-3 px-5 pb-safe pt-4">
+      <div className="flex gap-3 px-5 pb-3 pt-4">
         <button
           onClick={handleClose}
           className="flex-1 h-[52px] rounded-lg bg-grey-100 text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-grey-600"

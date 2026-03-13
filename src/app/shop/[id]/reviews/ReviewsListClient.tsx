@@ -240,7 +240,7 @@ export default function ReviewsListClient() {
       <BackHeader title="방문 리뷰 상세" />
 
       {/* 컨텐츠 */}
-      <div className="flex-1 overflow-y-auto pb-safe">
+      <div className="flex-1 overflow-y-auto pb-3">
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
             <Spinner />
