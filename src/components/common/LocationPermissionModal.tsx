@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect } from "react";
 import { MapPin, X } from "lucide-react";
 import { isNativeApp } from "@/utils/platform";
 import { Button } from "./Button";
@@ -8,13 +8,10 @@ import { Button } from "./Button";
 interface LocationPermissionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onPermissionGranted?: (position: GeolocationPosition) => void;
-  /** 이미 권한이 거부된 상태로 모달을 열 때 true */
-  initialDenied?: boolean;
 }
 
 /**
- * 위치 권한 요청 모달
+ * 위치 권한 설정 안내 모달
  *
  * 표준 준수:
  * - .ai/modal_and_permission_standards.md 참조
@@ -23,20 +20,9 @@ interface LocationPermissionModalProps {
  * - Body 스크롤 방지
  * - 접근성 속성 (role, aria-*)
  * - 브라우저별 설정 안내
- * - Permissions API 미지원 환경 대응
  */
-export function LocationPermissionModal({
-  isOpen,
-  onClose,
-  onPermissionGranted,
-  initialDenied = false,
-}: LocationPermissionModalProps) {
+export function LocationPermissionModal({ isOpen, onClose }: LocationPermissionModalProps) {
   const [settingsGuide, setSettingsGuide] = useState<string>("");
-  const [permissionState, setPermissionState] = useState<PermissionState | null>(
-    initialDenied ? "denied" : null
-  );
-  const [isRequesting, setIsRequesting] = useState(false);
-  const requestLocationRef = useRef<() => void>(() => {});
 
   // ESC 키로 모달 닫기 (표준 준수)
   useEffect(() => {
@@ -91,157 +77,7 @@ export function LocationPermissionModal({
     setSettingsGuide(guide);
   }, []);
 
-  // 권한 상태 확인 (모달이 열릴 때만 리스너 등록)
-  useEffect(() => {
-    if (!isOpen) return;
-
-    let permissionStatus: PermissionStatus | null = null;
-    let isMounted = true;
-
-    // 네이티브: Capacitor Geolocation 플러그인으로 권한 확인
-    if (isNativeApp()) {
-      import("@capacitor/geolocation").then(({ Geolocation }) => {
-        if (!isMounted) return;
-        Geolocation.checkPermissions().then((result) => {
-          if (!isMounted) return;
-          const state =
-            result.location === "granted"
-              ? "granted"
-              : result.location === "denied"
-                ? "denied"
-                : "prompt";
-          setPermissionState(state);
-          if (state === "granted") {
-            requestLocationRef.current();
-          }
-        });
-      });
-
-      return () => {
-        isMounted = false;
-      };
-    }
-
-    // 웹: Permissions API로 권한 확인
-    if (navigator.permissions) {
-      navigator.permissions
-        .query({ name: "geolocation" })
-        .then((result) => {
-          if (!isMounted) return;
-
-          permissionStatus = result;
-          setPermissionState(result.state);
-
-          if (result.state === "granted") {
-            requestLocationRef.current();
-            return;
-          }
-
-          result.onchange = () => {
-            if (!isMounted) return;
-            setPermissionState(result.state);
-            if (result.state === "granted") {
-              requestLocationRef.current();
-            }
-          };
-        })
-        .catch((error) => {
-          console.warn("Permissions API error:", error);
-        });
-    }
-
-    return () => {
-      isMounted = false;
-      if (permissionStatus) {
-        permissionStatus.onchange = null;
-      }
-    };
-  }, [isOpen]);
-
-  // 위치 권한 다시 요청 (네이티브/웹 분기)
-  const requestLocation = useCallback(async () => {
-    setIsRequesting(true);
-
-    // 네이티브: Capacitor Geolocation 플러그인 사용
-    if (isNativeApp()) {
-      try {
-        const { Geolocation } = await import("@capacitor/geolocation");
-        const position = await Geolocation.getCurrentPosition({
-          enableHighAccuracy: true,
-          timeout: 10000,
-        });
-        setIsRequesting(false);
-        try {
-          localStorage.removeItem("locationPermissionDenied");
-        } catch {
-          /* noop */
-        }
-        onPermissionGranted?.(position as unknown as GeolocationPosition);
-        onClose();
-      } catch {
-        setIsRequesting(false);
-        setPermissionState("denied");
-        try {
-          localStorage.setItem("locationPermissionDenied", "true");
-        } catch {
-          /* noop */
-        }
-      }
-      return;
-    }
-
-    // 웹: navigator.geolocation 사용
-    if (!("geolocation" in navigator)) {
-      setIsRequesting(false);
-      setPermissionState("denied");
-      try {
-        localStorage.setItem("locationPermissionDenied", "true");
-      } catch {
-        /* noop */
-      }
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setIsRequesting(false);
-        try {
-          localStorage.removeItem("locationPermissionDenied");
-        } catch {
-          /* noop */
-        }
-        onPermissionGranted?.(position);
-        onClose();
-      },
-      (error) => {
-        setIsRequesting(false);
-        if (error.code === error.PERMISSION_DENIED) {
-          setPermissionState("denied");
-          try {
-            localStorage.setItem("locationPermissionDenied", "true");
-          } catch {
-            /* noop */
-          }
-        }
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
-  }, [onClose, onPermissionGranted]);
-
-  // ref를 최신 requestLocation으로 유지
-  useEffect(() => {
-    requestLocationRef.current = requestLocation;
-  }, [requestLocation]);
-
-  const handleRequestPermission = () => {
-    // 권한이 "prompt" 상태면 다시 요청 가능
-    // "denied" 상태면 브라우저 설정에서 변경해야 함
-    requestLocation();
-  };
-
   if (!isOpen) return null;
-
-  const isDenied = permissionState === "denied";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -289,40 +125,21 @@ export function LocationPermissionModal({
           위치 권한이 필요해요.
         </p>
 
-        {/* 권한이 완전히 차단된 경우 설정 안내 표시 */}
-        {isDenied && (
-          <div className="mb-6 rounded-lg bg-grey-50 p-4">
-            <p className="text-[13px] font-medium leading-[1.6] tracking-[-0.13px] text-grey-700">
-              📍 설정 방법
-            </p>
-            <p className="mt-2 text-[13px] font-normal leading-[1.6] tracking-[-0.13px] text-grey-600">
-              {settingsGuide}
-            </p>
-          </div>
-        )}
+        {/* 설정 안내 */}
+        <div className="mb-6 rounded-lg bg-grey-50 p-4">
+          <p className="text-[13px] font-medium leading-[1.6] tracking-[-0.13px] text-grey-700">
+            📍 설정 방법
+          </p>
+          <p className="mt-2 text-[13px] font-normal leading-[1.6] tracking-[-0.13px] text-grey-600">
+            {settingsGuide}
+          </p>
+        </div>
 
         {/* 버튼 */}
         <div className="flex flex-col gap-2">
-          {!isDenied ? (
-            <Button
-              variant="primary"
-              size="medium"
-              fullWidth
-              onClick={handleRequestPermission}
-              disabled={isRequesting}
-            >
-              {isRequesting ? "확인 중..." : "위치 권한 허용하기"}
-            </Button>
-          ) : (
-            <Button variant="secondary" size="medium" fullWidth onClick={onClose}>
-              확인
-            </Button>
-          )}
-          {!isDenied && (
-            <Button variant="ghost" size="medium" fullWidth onClick={onClose}>
-              나중에
-            </Button>
-          )}
+          <Button variant="secondary" size="medium" fullWidth onClick={onClose}>
+            확인
+          </Button>
         </div>
       </div>
     </div>
