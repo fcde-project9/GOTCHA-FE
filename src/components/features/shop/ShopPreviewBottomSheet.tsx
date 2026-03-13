@@ -422,6 +422,7 @@ export default function ShopPreviewBottomSheet({
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const dragDecidedRef = useRef<"drag" | "scroll" | null>(null);
   const isDraggingRef = useRef(false);
+  const isMouseDownRef = useRef(false);
 
   // shopId 변경 시 미리보기 상태로 리셋 (렌더 중 상태 조정 패턴)
   const [prevShopId, setPrevShopId] = useState(shopId);
@@ -469,7 +470,7 @@ export default function ShopPreviewBottomSheet({
 
         if (isMovingDown && isAtTop) {
           dragDecidedRef.current = "drag";
-        } else if (!isMovingDown) {
+        } else if (!isMovingDown && !isExpanded) {
           dragDecidedRef.current = "drag";
         } else {
           dragDecidedRef.current = "scroll";
@@ -479,8 +480,10 @@ export default function ShopPreviewBottomSheet({
       if (dragDecidedRef.current === "scroll") return;
 
       e?.preventDefault();
-      isDraggingRef.current = true;
-      setIsDragging(true);
+      if (!isDraggingRef.current) {
+        isDraggingRef.current = true;
+        setIsDragging(true);
+      }
       if (!isExpanded) {
         const heightDelta = dragStartY.current - clientY;
         const newHeight = Math.max(0, dragStartHeight.current + heightDelta);
@@ -492,10 +495,11 @@ export default function ShopPreviewBottomSheet({
   );
 
   const handleDragEnd = useCallback(() => {
+    isMouseDownRef.current = false;
     dragDecidedRef.current = null;
+    setIsDragging(false);
     if (!isDraggingRef.current) return;
     isDraggingRef.current = false;
-    setIsDragging(false);
 
     if (isExpanded) {
       // 풀스크린에서 아래로 드래그 → 미리보기로 축소
@@ -505,7 +509,7 @@ export default function ShopPreviewBottomSheet({
       }
     } else {
       const delta = dragStartHeight.current - sheetHeightRef.current;
-      const threshold = 50;
+      const threshold = 30;
 
       if (delta > threshold) {
         // 아래로 드래그 → 원래 높이로 복귀 (footer 뒤로 숨기지 않음)
@@ -522,16 +526,21 @@ export default function ShopPreviewBottomSheet({
   }, [isExpanded, collapseToPreview]);
 
   useEffect(() => {
-    if (!isDragging) return;
-    const onMouseMove = (e: MouseEvent) => handleDragMove(e.clientY);
-    const onMouseUp = () => handleDragEnd();
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isMouseDownRef.current) return;
+      handleDragMove(e.clientY);
+    };
+    const onMouseUp = () => {
+      if (!isMouseDownRef.current) return;
+      handleDragEnd();
+    };
     window.addEventListener("mousemove", onMouseMove);
     window.addEventListener("mouseup", onMouseUp);
     return () => {
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("mouseup", onMouseUp);
     };
-  }, [isDragging, handleDragMove, handleDragEnd]);
+  }, [handleDragMove, handleDragEnd]);
 
   if (!shopId) return null;
 
@@ -782,7 +791,11 @@ export default function ShopPreviewBottomSheet({
         onTouchStart={(e) => handleDragStart(e.touches[0].clientY)}
         onTouchMove={(e) => handleDragMove(e.touches[0].clientY, e)}
         onTouchEnd={handleDragEnd}
-        onMouseDown={(e) => handleDragStart(e.clientY)}
+        onTouchCancel={handleDragEnd}
+        onMouseDown={(e) => {
+          isMouseDownRef.current = true;
+          handleDragStart(e.clientY);
+        }}
       >
         {/* Grabber (미리보기에서만 표시) */}
         {!isExpanded && !isCollapsing && (
