@@ -234,11 +234,11 @@ export function useLocationTracking(
           return;
         }
 
-        // 권한은 허용됐으나 위치 조회 실패 시 권한 모달이 아닌 로딩만 종료
+        // 빠른 저정밀(WiFi/셀룰러) 먼저 시도, 실패 시 GPS 폴백
         try {
           const position = await Geolocation.getCurrentPosition({
-            enableHighAccuracy: true,
-            timeout: 5000,
+            enableHighAccuracy: false,
+            timeout: 3000,
           });
           onSuccess({
             latitude: position.coords.latitude,
@@ -246,7 +246,19 @@ export function useLocationTracking(
             heading: position.coords.heading,
           });
         } catch {
-          setIsLocating(false);
+          try {
+            const position = await Geolocation.getCurrentPosition({
+              enableHighAccuracy: true,
+              timeout: 15000,
+            });
+            onSuccess({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              heading: position.coords.heading,
+            });
+          } catch {
+            setIsLocating(false);
+          }
         }
       } catch {
         onError();
@@ -260,6 +272,7 @@ export function useLocationTracking(
       return;
     }
 
+    // 빠른 저정밀 먼저 시도, 실패 시 GPS 폴백
     navigator.geolocation.getCurrentPosition(
       (position) => {
         onSuccess({
@@ -268,14 +281,26 @@ export function useLocationTracking(
           heading: position.coords.heading,
         });
       },
-      (err) => {
-        console.error("위치 정보를 가져올 수 없어요:", err);
-        if (err.code === err.PERMISSION_DENIED) {
-          onError();
-        }
-        setIsLocating(false);
+      () => {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            onSuccess({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              heading: position.coords.heading,
+            });
+          },
+          (err) => {
+            console.error("위치 정보를 가져올 수 없어요:", err);
+            if (err.code === err.PERMISSION_DENIED) {
+              onError();
+            }
+            setIsLocating(false);
+          },
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        );
       },
-      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      { enableHighAccuracy: false, timeout: 3000, maximumAge: 0 }
     );
   }, [onLocationUpdate, requestOrientationPermission, startDeviceOrientationTracking]);
 
