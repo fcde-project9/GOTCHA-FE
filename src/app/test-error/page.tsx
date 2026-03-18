@@ -6,13 +6,12 @@ import {
   ErrorBoundary,
   DefaultErrorFallback,
   InlineErrorFallback,
-  QueryErrorBoundary,
   QueryPageErrorFallback,
   QuerySectionErrorFallback,
 } from "@/components/common";
 
 // 에러를 발생시키는 컴포넌트
-function BuggyComponent() {
+function _BuggyComponent() {
   throw new Error("테스트 에러가 발생했습니다!");
 }
 

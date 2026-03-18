@@ -443,6 +443,7 @@ export default function ShopPreviewBottomSheet({
     if (!shop || isExpanded) return;
     setSheetHeight(previewHeight);
     sheetHeightRef.current = previewHeight;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- shop?.locationHint로 충분; shop 전체를 넣으면 불필요한 재실행
   }, [shop?.locationHint, isExpanded, previewHeight]);
 
   // 확장 → 미리보기 축소 (숨겼다가 미리보기로 다시 올라옴)

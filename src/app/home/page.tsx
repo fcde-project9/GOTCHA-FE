@@ -319,10 +319,12 @@ function SearchBar({
                 <CircleX size={26} className="fill-grey-500 stroke-grey-100" strokeWidth={2} />
               </button>
             ) : (
-              <img
+              <Image
                 src="/images/icons/search.svg"
                 alt=""
-                className="shrink-0 w-[26px] h-[26px] pointer-events-none select-none"
+                width={26}
+                height={26}
+                className="shrink-0 pointer-events-none select-none"
               />
             )}
           </div>

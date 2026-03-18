@@ -51,6 +51,7 @@ export function LocationPermissionModal({ isOpen, onClose }: LocationPermissionM
   // 브라우저별 설정 안내 텍스트 생성 (한 번만 실행)
   useEffect(() => {
     if (isNativeApp()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 마운트 시 브라우저 환경 감지 후 초기값 설정
       setSettingsGuide("설정 앱 → GOTCHA! → 위치에서 '허용'으로 변경해주세요.");
       return;
     }
