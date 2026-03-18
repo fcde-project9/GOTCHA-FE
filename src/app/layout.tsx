@@ -159,9 +159,6 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="GOTCHA!" />
-        {/* 폰트 CSS preload - 렌더링 차단 방지 */}
-        <link rel="preload" href="/fonts/pretendard.css" as="style" />
-        <link rel="stylesheet" href="/fonts/pretendard.css" />
         {/* Preconnect - 외부 리소스 연결 시간 단축 */}
         <link rel="preconnect" href="https://gotcha-storage.s3.ap-northeast-2.amazonaws.com" />
         <link rel="preconnect" href="https://dapi.kakao.com" />

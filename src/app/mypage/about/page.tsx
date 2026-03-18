@@ -17,12 +17,12 @@ export default function AboutPage() {
   };
 
   return (
-    <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative flex flex-col">
+    <div className="bg-default h-safe-viewport w-full max-w-[480px] mx-auto flex flex-col overflow-hidden">
       {/* Header */}
       <BackHeader title="이 앱을 만든 녀석들" onBack={handleBack} />
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto flex flex-col gap-7 items-center px-5 pt-12 pb-[78px] relative">
+      <main className="flex-1 overflow-y-auto flex flex-col justify-center gap-7 items-center px-5">
         {/* Speech Bubble */}
         <div className="relative flex flex-col items-center">
           <div className="relative w-[207px] h-[110px]">

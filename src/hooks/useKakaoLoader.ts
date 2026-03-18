@@ -90,6 +90,7 @@ export function useKakaoLoader() {
     const apiKey = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY;
 
     if (!apiKey) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 외부 SDK 로드 상태를 컴포넌트에 동기화
       setState({
         loading: false,
         loaded: false,

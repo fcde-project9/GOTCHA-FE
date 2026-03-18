@@ -45,6 +45,7 @@ export function useHomeSearch(): UseHomeSearchReturn {
   // 스토어에서 검색어 복원
   useEffect(() => {
     if (storedSearchQuery) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 스토어 hydration 후 검색어 복원
       setSearchQueryState(storedSearchQuery);
     }
   }, [storedSearchQuery]);

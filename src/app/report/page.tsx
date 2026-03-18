@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { LocateFixed, Loader2 } from "lucide-react";
 import apiClient from "@/api/client";
@@ -257,7 +258,7 @@ export default function ReportLocationPage() {
           className="absolute left-1/2 z-20 flex h-14 w-14 -translate-x-1/2 items-center justify-center px-[7px] pointer-events-none"
           style={{ top: "calc(50% + 5px)", transform: "translate(-50%, -100%)" }}
         >
-          <img src={MARKER_IMAGES.REPORT} alt="위치 핀" width={42} height={56} />
+          <Image src={MARKER_IMAGES.REPORT} alt="위치 핀" width={42} height={56} />
         </div>
 
         {/* 현재 위치 버튼 */}

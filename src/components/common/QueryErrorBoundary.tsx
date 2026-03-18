@@ -94,7 +94,7 @@ export function QueryPageErrorFallback({
  */
 export function QuerySectionErrorFallback({
   title = "데이터를 불러올 수 없어요",
-  description = "잠시 후 다시 시도해주세요.",
+  description: _description = "잠시 후 다시 시도해주세요.",
 }: QueryErrorFallbackProps) {
   const { reset } = useQueryErrorResetBoundary();
 

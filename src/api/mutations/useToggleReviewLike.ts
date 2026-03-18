@@ -64,7 +64,7 @@ export const useToggleReviewLike = () => {
 
       return { previousData };
     },
-    onError: (_, { shopId }, context) => {
+    onError: (_, _variables, context) => {
       // 에러 시 이전 데이터로 롤백
       if (context?.previousData) {
         context.previousData.forEach(([queryKey, data]) => {

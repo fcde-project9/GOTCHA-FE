@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import ShopDetailClient from "./ShopDetailClient";
 
 // 정적 내보내기: 최소 1개의 경로를 생성해야 output: "export" 체크를 통과
@@ -7,5 +8,9 @@ export function generateStaticParams() {
 }
 
 export default function ShopDetailPage() {
-  return <ShopDetailClient />;
+  return (
+    <Suspense>
+      <ShopDetailClient />
+    </Suspense>
+  );
 }

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
   Copy,
   ChevronRight,
@@ -106,9 +106,10 @@ export default function ShopDetailClient({
   onClose,
 }: ShopDetailClientProps = {}) {
   const params = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const { showToast } = useToast();
-  const shopId = shopIdProp ?? parseShopId(params.id);
+  const shopId = shopIdProp ?? parseShopId(searchParams.get("shopId") ?? params.id);
   const isValidShopId = shopId !== null;
   const validShopId = shopId ?? 0;
 
@@ -132,6 +133,7 @@ export default function ShopDetailClient({
 
   useEffect(() => {
     if (shop) trackShopView(shop.id, shop.name);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- shop.id/name만 추적; shop 객체는 refetch마다 새 참조를 반환하여 중복 호출 유발
   }, [shop?.id, shop?.name]);
 
   const {
@@ -607,10 +609,12 @@ export default function ShopDetailClient({
         <div className="px-5">
           <div className="flex flex-col gap-3 py-2">
             <div className="flex items-center gap-2">
-              <img
+              <Image
                 src="/images/icons/shop-location.png"
                 alt=""
-                className="shrink-0 w-5 h-5 pointer-events-none select-none"
+                width={20}
+                height={20}
+                className="shrink-0 pointer-events-none select-none"
               />
               <div className="flex items-center gap-0.5">
                 <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
@@ -626,10 +630,12 @@ export default function ShopDetailClient({
             </div>
             {shop.locationHint && (
               <div className="flex items-center gap-2">
-                <img
+                <Image
                   src="/images/icons/shop-star.png"
                   alt=""
-                  className="shrink-0 w-5 h-5 pointer-events-none select-none"
+                  width={20}
+                  height={20}
+                  className="shrink-0 pointer-events-none select-none"
                 />
                 <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
                   {shop.locationHint}
@@ -639,10 +645,12 @@ export default function ShopDetailClient({
           </div>
           <div className="flex flex-col gap-3 pb-4 mt-1">
             <div className="flex items-center gap-2">
-              <img
+              <Image
                 src="/images/icons/shop-calendar.png"
                 alt=""
-                className="shrink-0 w-5 h-5 pointer-events-none select-none"
+                width={20}
+                height={20}
+                className="shrink-0 pointer-events-none select-none"
               />
               <div className="flex gap-1.5">
                 {ALL_DAYS.map((day) => (
@@ -651,10 +659,12 @@ export default function ShopDetailClient({
               </div>
             </div>
             <div className="flex items-center gap-2 min-h-6">
-              <img
+              <Image
                 src="/images/icons/shop-time.png"
                 alt=""
-                className="shrink-0 w-5 h-5 pointer-events-none select-none"
+                width={20}
+                height={20}
+                className="shrink-0 pointer-events-none select-none"
               />
               {shop.todayOpenTime && (
                 <span className="text-[16px] text-grey-900">{shop.todayOpenTime}</span>

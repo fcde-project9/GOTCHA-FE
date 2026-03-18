@@ -12,6 +12,7 @@
     "sync:ios": "npx cap sync ios",
     "dev:ios": "([ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\" || [ -s \"$HOME/.nvm/nvm.sh\" ] && . \"$HOME/.nvm/nvm.sh\" || true) && (command -v nvm >/dev/null 2>&1 && nvm use 24 || true) && CAP_DEV_SERVER=true npx cap sync ios && CAP_DEV_SERVER=true npx cap open ios",
     "lint": "eslint src",
+    "lint:strict": "eslint src --max-warnings=0",
     "lint:fix": "eslint src --fix",
     "lint:staged": "lint-staged",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
