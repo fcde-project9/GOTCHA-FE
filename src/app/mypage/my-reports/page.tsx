@@ -8,6 +8,7 @@ import { useMyReports } from "@/api/queries/useMyReports";
 import { BackHeader, Spinner } from "@/components/common";
 import StatusBadge from "@/components/features/shop/StatusBadge";
 import { DEFAULT_IMAGES } from "@/constants";
+import { isNativeApp } from "@/utils/platform";
 
 type SortOrder = "latest" | "oldest";
 
@@ -71,7 +72,11 @@ export default function MyReportsPage() {
   const totalCount = reportsData?.totalCount ?? reports.length;
 
   const handleShopClick = (shopId: number) => {
-    router.push(`/shop/${shopId}`);
+    if (isNativeApp()) {
+      router.push(`/shop/0?shopId=${shopId}`);
+    } else {
+      router.push(`/shop/${shopId}`);
+    }
   };
 
   const handleSortChange = (order: SortOrder) => {
@@ -82,7 +87,7 @@ export default function MyReportsPage() {
   // 로딩 상태
   if (isLoading) {
     return (
-      <main className="h-screen overflow-hidden relative bg-default flex flex-col">
+      <main className="h-safe-viewport overflow-hidden relative bg-default flex flex-col">
         <BackHeader title="내가 제보한 매장" />
         <div className="flex flex-1 items-center justify-center">
           <Spinner />
@@ -94,7 +99,7 @@ export default function MyReportsPage() {
   // 에러 상태
   if (error) {
     return (
-      <main className="h-screen overflow-hidden relative bg-default flex flex-col">
+      <main className="h-safe-viewport overflow-hidden relative bg-default flex flex-col">
         <BackHeader title="내가 제보한 매장" />
         <div className="flex flex-1 flex-col items-center justify-center gap-4 px-5">
           <p className="text-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-600">
@@ -106,7 +111,7 @@ export default function MyReportsPage() {
   }
 
   return (
-    <main className="h-screen overflow-hidden relative bg-default flex flex-col">
+    <main className="h-safe-viewport overflow-hidden relative bg-default flex flex-col">
       {/* 헤더 */}
       <BackHeader title="내가 제보한 매장" />
 

@@ -8,7 +8,7 @@ export default function LicensePage() {
   const router = useRouter();
 
   return (
-    <div className="bg-default h-[calc(100dvh-env(safe-area-inset-top))] w-full max-w-[480px] mx-auto flex flex-col overflow-hidden">
+    <div className="bg-default h-safe-viewport w-full max-w-[480px] mx-auto flex flex-col overflow-hidden">
       {/* Header */}
       <BackHeader title="라이선스" onBack={() => router.push("/mypage/terms")} />
 

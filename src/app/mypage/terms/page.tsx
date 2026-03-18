@@ -23,12 +23,12 @@ export default function TermsPage() {
   };
 
   return (
-    <div className="bg-default min-h-[100dvh] w-full max-w-[480px] mx-auto relative">
+    <div className="bg-default h-safe-viewport w-full max-w-[480px] mx-auto flex flex-col overflow-hidden">
       {/* Header */}
       <BackHeader title="약관/라이센스" onBack={handleBack} />
 
       {/* Main Content */}
-      <main className="flex flex-col px-5 pt-[7px]">
+      <main className="flex-1 overflow-y-auto flex flex-col px-5 pt-[7px]">
         <div className="flex flex-col w-full">
           {/* 커뮤니티 가이드 */}
           <button

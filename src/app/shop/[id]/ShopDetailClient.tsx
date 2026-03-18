@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
   Copy,
   ChevronRight,
@@ -106,9 +106,10 @@ export default function ShopDetailClient({
   onClose,
 }: ShopDetailClientProps = {}) {
   const params = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const { showToast } = useToast();
-  const shopId = shopIdProp ?? parseShopId(params.id);
+  const shopId = shopIdProp ?? parseShopId(searchParams.get("shopId") ?? params.id);
   const isValidShopId = shopId !== null;
   const validShopId = shopId ?? 0;
 
