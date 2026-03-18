@@ -11,8 +11,8 @@ export function ServiceWorkerRegistration() {
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       navigator.serviceWorker
         .register("/sw.js")
-        .then((registration) => {
-          console.warn("SW registered:", registration.scope);
+        .then(() => {
+          // SW 등록 성공 — 정상 동작이므로 별도 로깅 불필요
         })
         .catch((error) => {
           console.error("SW registration failed:", error);

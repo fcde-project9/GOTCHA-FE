@@ -133,7 +133,8 @@ export default function ShopDetailClient({
 
   useEffect(() => {
     if (shop) trackShopView(shop.id, shop.name);
-  }, [shop]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- shop.id/name만 추적; shop 객체는 refetch마다 새 참조를 반환하여 중복 호출 유발
+  }, [shop?.id, shop?.name]);
 
   const {
     isFavorite,
