@@ -233,6 +233,7 @@ export type ShopSuggestReason =
 
 export interface CreateShopSuggestRequest {
   reasons: ShopSuggestReason[];
+  detail?: string;
 }
 
 // ── 차단 ──

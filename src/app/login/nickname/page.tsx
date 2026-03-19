@@ -110,8 +110,8 @@ export default function NicknamePage() {
   }
 
   return (
-    <div className="relative flex min-h-[100dvh] w-full flex-col bg-default">
-      <div className="mx-auto flex min-h-[100dvh] w-full max-w-[480px] flex-col">
+    <div className="relative flex w-full flex-col bg-default overflow-hidden h-safe-viewport">
+      <div className="mx-auto flex h-full w-full max-w-[480px] flex-col">
         {/* 헤더 */}
         <BackHeader onBack={handleBack} />
 
