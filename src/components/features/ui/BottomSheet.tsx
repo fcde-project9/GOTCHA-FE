@@ -15,7 +15,8 @@ interface BottomSheetProps {
   onExpandAttempt?: () => void; // 최대 스냅에서 위로 드래그 시 콜백 (확장 애니메이션 후 호출)
 }
 
-/** 바텀시트 최대 높이 기준 상단 여백 - 검색창 + 재검색 버튼 영역 확보 (px) */
+/** 바텀시트 최대 높이 기준 상단 여백 - 검색창 + 재검색 버튼 영역 확보 (px)
+ *  @see home/page.tsx RELOAD_BUTTON_TOP 과 동일한 값 */
 const TOP_AREA_HEIGHT = 80;
 /** 스냅 포인트 값과 실제 렌더링 높이 간 보정값 (px) */
 const HEIGHT_RENDER_OFFSET = 68;
