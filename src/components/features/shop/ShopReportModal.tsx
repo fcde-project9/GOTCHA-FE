@@ -1,103 +1,94 @@
 "use client";
 
 import { useState } from "react";
-import type { ShopSuggestReason } from "@/api/types";
+import type { ShopReportReason } from "@/api/types";
 
-const SUGGEST_ITEMS: { value: ShopSuggestReason; label: string }[] = [
-  { value: "WRONG_ADDRESS", label: "잘못된 주소예요" },
-  { value: "WRONG_PHOTO", label: "매장 사진이 달라요" },
-  { value: "WRONG_LOCATION_HINT", label: "매장 위치힌트가 달라요" },
-  { value: "WRONG_BUSINESS_HOURS", label: "영업시간 정보가 달라요" },
-  { value: "WRONG_PAYMENT_INFO", label: "카드 결제/ATM 등 결제 정보가 달라요" },
-  { value: "OTHER", label: "기타" },
+const SHOP_REPORT_ITEMS: { value: ShopReportReason; label: string }[] = [
+  { value: "SHOP_INAPPROPRIATE", label: "부적절한 업체(불법/유해 업소)예요" },
+  { value: "SHOP_FALSE_INFO", label: "매장명/사진이 부적절해요" },
+  { value: "SHOP_WRONG_ADDRESS", label: "위치 힌트에 부적절한 단어가 있어요" },
+  { value: "SHOP_DUPLICATE", label: "중복 등록된 매장이에요" },
+  { value: "SHOP_OTHER", label: "기타" },
 ];
 
-interface ShopSuggestModalProps {
+interface ShopReportModalProps {
   isOpen: boolean;
   isLoading?: boolean;
   onClose: () => void;
-  onSubmit: (reasons: ShopSuggestReason[], detail?: string) => void;
+  onSubmit: (reason: ShopReportReason, detail?: string) => void;
 }
 
-export function ShopSuggestModal({
+export function ShopReportModal({
   isOpen,
   isLoading = false,
   onClose,
   onSubmit,
-}: ShopSuggestModalProps) {
-  const [selectedReasons, setSelectedReasons] = useState<Set<ShopSuggestReason>>(new Set());
+}: ShopReportModalProps) {
+  const [selectedReason, setSelectedReason] = useState<ShopReportReason | null>(null);
   const [detail, setDetail] = useState("");
 
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
   if (isOpen !== prevIsOpen) {
     setPrevIsOpen(isOpen);
     if (!isOpen) {
-      setSelectedReasons(new Set());
+      setSelectedReason(null);
       setDetail("");
     }
   }
 
   if (!isOpen) return null;
 
-  const isOtherSelected = selectedReasons.has("OTHER");
+  const isOtherSelected = selectedReason === "SHOP_OTHER";
 
-  const handleToggle = (reason: ShopSuggestReason) => {
-    setSelectedReasons((prev) => {
-      const next = new Set(prev);
-      if (next.has(reason)) {
-        next.delete(reason);
-      } else {
-        next.add(reason);
-      }
-      return next;
-    });
-    if (reason !== "OTHER") {
-      // keep detail as-is
+  const handleSelect = (reason: ShopReportReason) => {
+    setSelectedReason(reason === selectedReason ? null : reason);
+    if (reason !== "SHOP_OTHER") {
+      setDetail("");
     }
   };
 
   const handleSubmit = () => {
-    if (selectedReasons.size === 0) return;
-    onSubmit(Array.from(selectedReasons), isOtherSelected ? detail.trim() || undefined : undefined);
+    if (!selectedReason) return;
+    onSubmit(selectedReason, isOtherSelected ? detail.trim() || undefined : undefined);
   };
 
   const handleClose = () => {
-    setSelectedReasons(new Set());
+    setSelectedReason(null);
     setDetail("");
     onClose();
   };
 
-  const isSubmitDisabled =
-    selectedReasons.size === 0 || (isOtherSelected && !detail.trim()) || isLoading;
+  const isSubmitDisabled = !selectedReason || (isOtherSelected && !detail.trim()) || isLoading;
 
   return (
     <div className="fixed inset-0 z-50 bg-white flex flex-col max-w-[480px] mx-auto">
       <div className="flex-1 px-5 pt-8 overflow-y-auto">
         <h2 className="text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
-          매장 정보 수정 제안
+          매장 문제 신고
         </h2>
-        <p className="text-[13px] font-normal leading-[1.5] tracking-[-0.13px] text-error mt-[6px]">
-          *중복선택 가능
+        <p className="text-[13px] font-normal leading-[1.5] tracking-[-0.13px] text-grey-500 mt-[6px]">
+          <span className="font-semibold text-grey-900">3건 이상</span>의 요청이 들어오면 자동
+          삭제돼요
         </p>
         <div className="mt-4 flex flex-col gap-[24px]">
-          {SUGGEST_ITEMS.map(({ value, label }) => (
+          {SHOP_REPORT_ITEMS.map(({ value, label }) => (
             <button
               key={value}
-              onClick={() => handleToggle(value)}
+              onClick={() => handleSelect(value)}
               className="flex items-center justify-between"
             >
               <span className="text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-900 text-left">
                 {label}
               </span>
               <div
-                className={`w-5 h-5 rounded-[4px] border-2 flex items-center justify-center shrink-0 ${
-                  selectedReasons.has(value) ? "bg-main border-main" : "border-grey-300"
+                className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
+                  selectedReason === value ? "bg-main" : "border-2 border-grey-300"
                 }`}
               >
-                {selectedReasons.has(value) && (
+                {selectedReason === value && (
                   <svg
-                    width="10"
-                    height="10"
+                    width="12"
+                    height="12"
                     viewBox="0 0 14 10"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -139,7 +130,7 @@ export function ShopSuggestModal({
           disabled={isSubmitDisabled}
           className="flex-1 h-[44px] rounded-lg bg-main text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white disabled:bg-grey-200 disabled:text-grey-500"
         >
-          {isLoading ? "제출 중..." : "제안하기"}
+          {isLoading ? "신고 접수 중..." : "신고하기"}
         </button>
       </div>
     </div>

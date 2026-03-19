@@ -42,52 +42,16 @@ import { ReviewDeleteConfirmModal } from "@/components/features/review/ReviewDel
 import { ReviewItem } from "@/components/features/review/ReviewItem";
 import { ReviewWriteModal } from "@/components/features/review/ReviewWriteModal";
 import { StatusBadge } from "@/components/features/shop";
+import { DayBadge } from "@/components/features/shop/DayBadge";
 import { ShopDeleteConfirmModal } from "@/components/features/shop/ShopDeleteConfirmModal";
 import { ShopEditModal } from "@/components/features/shop/ShopEditModal";
+import { ShopReportModal } from "@/components/features/shop/ShopReportModal";
 import { ShopSuggestModal } from "@/components/features/shop/ShopSuggestModal";
 import { DEFAULT_IMAGES, ICON_IMAGES } from "@/constants/images";
 import { useAuth, useFavorite, useToast } from "@/hooks";
-import type { ReviewResponse, OpenTime, ReviewSortOption } from "@/types/api";
+import type { ReviewResponse, ReviewSortOption } from "@/types/api";
+import { ALL_DAYS, DAY_MAP, parseOpenTime, getBusinessDays } from "@/utils";
 import { trackShopView, trackShareClick } from "@/utils/analytics";
-
-const DAY_MAP: Record<keyof OpenTime, string> = {
-  Mon: "월",
-  Tue: "화",
-  Wed: "수",
-  Thu: "목",
-  Fri: "금",
-  Sat: "토",
-  Sun: "일",
-};
-
-const ALL_DAYS: (keyof OpenTime)[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-function parseOpenTime(openTimeStr: string): OpenTime | null {
-  try {
-    return JSON.parse(openTimeStr) as OpenTime;
-  } catch {
-    return null;
-  }
-}
-
-function getBusinessDays(openTime: OpenTime | null): (keyof OpenTime)[] {
-  if (!openTime) return [];
-  return ALL_DAYS.filter(
-    (day) => openTime[day] !== null && openTime[day] !== "" && openTime[day] !== "휴무"
-  );
-}
-
-function DayBadge({ day, isActive }: { day: string; isActive: boolean }) {
-  return (
-    <div
-      className={`flex items-center justify-center w-[22px] h-[22px] rounded-full text-[12px] font-normal tracking-[-0.12px] leading-[150%] ${
-        isActive ? "bg-grey-800 text-white" : "bg-grey-100 text-grey-400"
-      }`}
-    >
-      {day}
-    </div>
-  );
-}
 
 function parseShopId(id: string | string[] | undefined): number | null {
   if (typeof id !== "string") return null;
@@ -180,6 +144,7 @@ export default function ShopDetailClient({
   const adminMenuRef = useRef<HTMLDivElement>(null);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
+  const [isShopReportOpen, setIsShopReportOpen] = useState(false);
 
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [isAllReviewsClosing, setIsAllReviewsClosing] = useState(false);
@@ -333,7 +298,7 @@ export default function ShopDetailClient({
   const handleReportReview = (reviewId: number) =>
     setReportTarget({ type: "REVIEW", id: reviewId });
   const handleReportUser = (userId: number) => setReportTarget({ type: "USER", id: userId });
-  const handleReportShop = () => setReportTarget({ type: "SHOP", id: validShopId });
+  const handleReportShop = () => setIsShopReportOpen(true);
 
   const handleSubmitReport = (reason: ReportReason, detail?: string) => {
     if (!reportTarget) return;
@@ -421,16 +386,30 @@ export default function ShopDetailClient({
     );
   };
 
-  const handleSubmitSuggest = (reasons: ShopSuggestReason[]) => {
+  const handleSubmitSuggest = (reasons: ShopSuggestReason[], detail?: string) => {
     createSuggestMutation.mutate(
-      { shopId: validShopId, data: { reasons } },
+      { shopId: validShopId, data: { reasons, detail } },
       {
         onSuccess: () => {
           setIsSuggestModalOpen(false);
-          showToast("제안이 접수되었어요. 감사합니다!");
+          showToast("매장 정보 수정 제안이 완료되었어요!");
         },
         onError: (error) =>
           showToast(error.message || "제안 접수에 실패했어요.", { variant: "warning" }),
+      }
+    );
+  };
+
+  const handleSubmitShopReport = (reason: ReportReason, detail?: string) => {
+    createReportMutation.mutate(
+      { targetType: "SHOP", targetId: validShopId, reason, detail },
+      {
+        onSuccess: () => {
+          setIsShopReportOpen(false);
+          showToast("매장 문제 신고가 완료되었어요!");
+        },
+        onError: (error) =>
+          showToast(error.message || "신고 접수에 실패했어요.", { variant: "warning" }),
       }
     );
   };
@@ -1232,7 +1211,7 @@ export default function ShopDetailClient({
               className="flex items-center gap-[8px] px-5 w-full h-[46px] border-b border-[#F7F7F9]"
             >
               <SquarePen size={20} className="text-grey-900" />
-              <span className="text-[16px] text-grey-900">정보 수정 제안하기</span>
+              <span className="text-[16px] text-grey-900">매장 정보 수정 제안</span>
             </button>
             <button
               onClick={() => {
@@ -1242,7 +1221,7 @@ export default function ShopDetailClient({
               className="flex items-center gap-[8px] px-5 w-full h-[46px]"
             >
               <Siren size={20} className="text-error" />
-              <span className="text-[16px] text-error">매장 신고하기</span>
+              <span className="text-[16px] text-error">매장 문제 신고</span>
             </button>
           </div>
         </div>
@@ -1253,6 +1232,13 @@ export default function ShopDetailClient({
         isLoading={createSuggestMutation.isPending}
         onClose={() => setIsSuggestModalOpen(false)}
         onSubmit={handleSubmitSuggest}
+      />
+
+      <ShopReportModal
+        isOpen={isShopReportOpen}
+        isLoading={createReportMutation.isPending}
+        onClose={() => setIsShopReportOpen(false)}
+        onSubmit={handleSubmitShopReport}
       />
     </div>
   );
