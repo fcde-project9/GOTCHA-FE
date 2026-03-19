@@ -3,11 +3,11 @@
 import { useState } from "react";
 import type { ShopReportReason } from "@/api/types";
 
-const SHOP_REPORT_ITEMS: { value: ShopReportReason; label: string }[] = [
+const SHOP_REPORT_REASONS: { value: ShopReportReason; label: string }[] = [
+  { value: "SHOP_CLOSED", label: "영업 종료/폐업된 업체예요" },
   { value: "SHOP_INAPPROPRIATE", label: "부적절한 업체(불법/유해 업소)예요" },
-  { value: "SHOP_FALSE_INFO", label: "매장명/사진이 부적절해요" },
-  { value: "SHOP_WRONG_ADDRESS", label: "위치 힌트에 부적절한 단어가 있어요" },
-  { value: "SHOP_DUPLICATE", label: "중복 등록된 매장이에요" },
+  { value: "SHOP_DUPLICATE", label: "중복 제보된 업체예요" },
+  { value: "SHOP_FALSE_INFO", label: "허위/거짓 정보예요" },
   { value: "SHOP_OTHER", label: "기타" },
 ];
 
@@ -70,8 +70,8 @@ export function ShopReportModal({
           <span className="font-semibold text-grey-900">3건 이상</span>의 요청이 들어오면 자동
           삭제돼요
         </p>
-        <div className="mt-4 flex flex-col gap-[24px]">
-          {SHOP_REPORT_ITEMS.map(({ value, label }) => (
+        <div className="mt-6 flex flex-col gap-6">
+          {SHOP_REPORT_REASONS.map(({ value, label }) => (
             <button
               key={value}
               onClick={() => handleSelect(value)}

@@ -6,7 +6,6 @@ import type {
   ReportReason,
   ReportTargetType,
   ReviewReportReason,
-  ShopReportReason,
   UserReportReason,
 } from "@/api/types";
 
@@ -23,14 +22,6 @@ const REVIEW_REASONS: { value: ReviewReportReason; label: string }[] = [
   { value: "REVIEW_OTHER", label: "기타" },
 ];
 
-const SHOP_REASONS: { value: ShopReportReason; label: string }[] = [
-  { value: "SHOP_CLOSED", label: "영업 종료/폐업된 업체예요" },
-  { value: "SHOP_INAPPROPRIATE", label: "부적절한 업체(불법/유해 업소)예요" },
-  { value: "SHOP_DUPLICATE", label: "중복 제보된 업체예요" },
-  { value: "SHOP_FALSE_INFO", label: "허위/거짓 정보예요" },
-  { value: "SHOP_OTHER", label: "기타" },
-];
-
 const USER_REASONS: { value: UserReportReason; label: string }[] = [
   { value: "USER_INAPPROPRIATE_NICKNAME", label: "부적절한 닉네임이에요" },
   { value: "USER_INAPPROPRIATE_PROFILE", label: "부적절한 프로필 사진이에요" },
@@ -40,19 +31,19 @@ const USER_REASONS: { value: UserReportReason; label: string }[] = [
   { value: "USER_OTHER", label: "기타" },
 ];
 
-const REASONS_BY_TARGET: Record<ReportTargetType, { value: ReportReason; label: string }[]> = {
+const REASONS_BY_TARGET: Partial<
+  Record<ReportTargetType, { value: ReportReason; label: string }[]>
+> = {
   REVIEW: REVIEW_REASONS,
-  SHOP: SHOP_REASONS,
   USER: USER_REASONS,
 };
 
-const TARGET_TITLE: Record<ReportTargetType, string> = {
+const TARGET_TITLE: Record<string, string> = {
   REVIEW: "리뷰",
-  SHOP: "가게",
   USER: "사용자",
 };
 
-const OTHER_REASONS: Set<ReportReason> = new Set(["REVIEW_OTHER", "SHOP_OTHER", "USER_OTHER"]);
+const OTHER_REASONS: Set<ReportReason> = new Set(["REVIEW_OTHER", "USER_OTHER"]);
 
 interface ReportBottomSheetProps {
   isOpen: boolean;
@@ -83,7 +74,7 @@ export function ReportBottomSheet({
 
   if (!isOpen) return null;
 
-  const reasons = REASONS_BY_TARGET[targetType];
+  const reasons = REASONS_BY_TARGET[targetType] ?? [];
   const isOtherSelected = selectedReason !== null && OTHER_REASONS.has(selectedReason);
 
   const handleSelect = (reason: ReportReason) => {
@@ -104,8 +95,6 @@ export function ReportBottomSheet({
 
   const isSubmitDisabled = !selectedReason || (isOtherSelected && !detail.trim()) || isLoading;
 
-  const isShop = targetType === "SHOP";
-
   return (
     <div className="fixed inset-0 z-50 flex items-end bg-black/70" onClick={handleClose}>
       <div
@@ -116,25 +105,15 @@ export function ReportBottomSheet({
         <div className="flex items-center justify-between pb-[5px] border-b border-grey-50">
           <div className="flex flex-col gap-2">
             <h2 className="text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
-              {isShop ? (
-                "매장 문제 신고"
-              ) : (
-                <>
-                  {TARGET_TITLE[targetType]} <span className="text-main">신고하기</span>
-                </>
-              )}
+              {TARGET_TITLE[targetType]} <span className="text-main">신고하기</span>
             </h2>
-            {!isShop && (
-              <p className="text-[13px] font-normal leading-[1.5] tracking-[-0.13px] text-grey-400">
-                * 신고는 익명으로 제보됩니다
-              </p>
-            )}
+            <p className="text-[13px] font-normal leading-[1.5] tracking-[-0.13px] text-grey-400">
+              * 신고는 익명으로 제보됩니다
+            </p>
           </div>
-          {!isShop && (
-            <button onClick={handleClose} className="p-1 self-start">
-              <X size={24} className="text-grey-700" />
-            </button>
-          )}
+          <button onClick={handleClose} className="p-1 self-start">
+            <X size={24} className="text-grey-700" />
+          </button>
         </div>
 
         {/* Reason List */}
@@ -179,39 +158,21 @@ export function ReportBottomSheet({
             <textarea
               value={detail}
               onChange={(e) => setDetail(e.target.value)}
-              placeholder={isShop ? "직접 입력하기" : "신고 사유를 입력해주세요"}
+              placeholder="신고 사유를 입력해주세요"
               maxLength={500}
               className="w-full min-h-32 shrink-0 p-3 border border-grey-200 rounded-lg text-[16px] leading-[1.5] tracking-[-0.16px] text-grey-600 placeholder:text-grey-400 resize-none focus:outline-none focus:border-main"
             />
           )}
         </div>
 
-        {/* Buttons */}
-        {isShop ? (
-          <div className="flex gap-3">
-            <button
-              onClick={handleClose}
-              className="flex-1 h-[46px] rounded-lg bg-grey-100 text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-grey-700"
-            >
-              취소
-            </button>
-            <button
-              onClick={handleSubmit}
-              disabled={isSubmitDisabled}
-              className="flex-1 h-[46px] rounded-lg bg-main text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white disabled:bg-grey-200 disabled:text-grey-400"
-            >
-              {isLoading ? "신고 접수 중..." : "신고하기"}
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={handleSubmit}
-            disabled={isSubmitDisabled}
-            className="w-full h-[46px] rounded-lg bg-main text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white disabled:bg-grey-200 disabled:text-grey-400"
-          >
-            {isLoading ? "신고 접수 중..." : "신고하기"}
-          </button>
-        )}
+        {/* Button */}
+        <button
+          onClick={handleSubmit}
+          disabled={isSubmitDisabled}
+          className="w-full h-[46px] rounded-lg bg-main text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white disabled:bg-grey-200 disabled:text-grey-400"
+        >
+          {isLoading ? "신고 접수 중..." : "신고하기"}
+        </button>
       </div>
     </div>
   );

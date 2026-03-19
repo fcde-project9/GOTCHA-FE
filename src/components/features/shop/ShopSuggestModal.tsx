@@ -79,7 +79,7 @@ export function ShopSuggestModal({
         <p className="text-[13px] font-normal leading-[1.5] tracking-[-0.13px] text-error mt-[6px]">
           *중복선택 가능
         </p>
-        <div className="mt-4 flex flex-col gap-[24px]">
+        <div className="mt-6 flex flex-col gap-6">
           {SUGGEST_ITEMS.map(({ value, label }) => (
             <button
               key={value}
