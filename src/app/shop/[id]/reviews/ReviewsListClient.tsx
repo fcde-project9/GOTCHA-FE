@@ -9,10 +9,13 @@ import { useDeleteReview } from "@/api/mutations/useDeleteReview";
 import { useToggleReviewLike } from "@/api/mutations/useToggleReviewLike";
 import { useInfiniteReviews } from "@/api/queries/useInfiniteReviews";
 import { useUser } from "@/api/queries/useUser";
-import type { ReportReason, ReportTargetType } from "@/api/types";
+import type { ReportReason } from "@/api/types";
 import { Button, BackHeader, ImageViewerModal, Spinner } from "@/components/common";
 import { BlockUserConfirmModal } from "@/components/features/review/BlockUserConfirmModal";
-import { ReportBottomSheet } from "@/components/features/review/ReportReviewBottomSheet";
+import {
+  ReportBottomSheet,
+  type ReviewUserReportTargetType,
+} from "@/components/features/review/ReportReviewBottomSheet";
 import { ReportSuccessModal } from "@/components/features/review/ReportSuccessModal";
 import { ReviewDeleteConfirmModal } from "@/components/features/review/ReviewDeleteConfirmModal";
 import { ReviewItem } from "@/components/features/review/ReviewItem";
@@ -76,9 +79,10 @@ export default function ReviewsListClient() {
   const [deletingReviewId, setDeletingReviewId] = useState<number | null>(null);
 
   // 신고 상태
-  const [reportTarget, setReportTarget] = useState<{ type: ReportTargetType; id: number } | null>(
-    null
-  );
+  const [reportTarget, setReportTarget] = useState<{
+    type: ReviewUserReportTargetType;
+    id: number;
+  } | null>(null);
   const [isReportSuccessOpen, setIsReportSuccessOpen] = useState(false);
 
   // 차단 상태

@@ -28,7 +28,7 @@ import { useUpdateShop } from "@/api/mutations/useUpdateShop";
 import { useInfiniteReviews } from "@/api/queries/useInfiniteReviews";
 import { useShopDetail } from "@/api/queries/useShopDetail";
 import { useUser } from "@/api/queries/useUser";
-import type { ReportReason, ReportTargetType, ShopSuggestReason } from "@/api/types";
+import type { ReportReason, ShopSuggestReason } from "@/api/types";
 import {
   BackHeader,
   Button,
@@ -38,7 +38,10 @@ import {
   Spinner,
 } from "@/components/common";
 import { BlockUserConfirmModal } from "@/components/features/review/BlockUserConfirmModal";
-import { ReportBottomSheet } from "@/components/features/review/ReportReviewBottomSheet";
+import {
+  ReportBottomSheet,
+  type ReviewUserReportTargetType,
+} from "@/components/features/review/ReportReviewBottomSheet";
 import { ReportSuccessModal } from "@/components/features/review/ReportSuccessModal";
 import { ReviewDeleteConfirmModal } from "@/components/features/review/ReviewDeleteConfirmModal";
 import { ReviewWriteModal } from "@/components/features/review/ReviewWriteModal";
@@ -262,9 +265,10 @@ export default function ShopPreviewBottomSheet({
   const [deletingReviewId, setDeletingReviewId] = useState<number | null>(null);
 
   // 신고 상태
-  const [reportTarget, setReportTarget] = useState<{ type: ReportTargetType; id: number } | null>(
-    null
-  );
+  const [reportTarget, setReportTarget] = useState<{
+    type: ReviewUserReportTargetType;
+    id: number;
+  } | null>(null);
   const [isReportSuccessOpen, setIsReportSuccessOpen] = useState(false);
 
   // 차단 상태

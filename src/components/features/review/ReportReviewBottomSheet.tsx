@@ -2,12 +2,9 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
-import type {
-  ReportReason,
-  ReportTargetType,
-  ReviewReportReason,
-  UserReportReason,
-} from "@/api/types";
+import type { ReportReason, ReviewReportReason, UserReportReason } from "@/api/types";
+
+export type ReviewUserReportTargetType = "REVIEW" | "USER";
 
 const REVIEW_REASONS: { value: ReviewReportReason; label: string }[] = [
   { value: "REVIEW_SPAM", label: "글이 도배되어 있어요" },
@@ -31,14 +28,15 @@ const USER_REASONS: { value: UserReportReason; label: string }[] = [
   { value: "USER_OTHER", label: "기타" },
 ];
 
-const REASONS_BY_TARGET: Partial<
-  Record<ReportTargetType, { value: ReportReason; label: string }[]>
+const REASONS_BY_TARGET: Record<
+  ReviewUserReportTargetType,
+  { value: ReportReason; label: string }[]
 > = {
   REVIEW: REVIEW_REASONS,
   USER: USER_REASONS,
 };
 
-const TARGET_TITLE: Record<string, string> = {
+const TARGET_TITLE: Record<ReviewUserReportTargetType, string> = {
   REVIEW: "리뷰",
   USER: "사용자",
 };
@@ -48,7 +46,7 @@ const OTHER_REASONS: Set<ReportReason> = new Set(["REVIEW_OTHER", "USER_OTHER"])
 interface ReportBottomSheetProps {
   isOpen: boolean;
   isLoading?: boolean;
-  targetType: ReportTargetType;
+  targetType: ReviewUserReportTargetType;
   onClose: () => void;
   onSubmit: (reason: ReportReason, detail?: string) => void;
 }
@@ -74,7 +72,7 @@ export function ReportBottomSheet({
 
   if (!isOpen) return null;
 
-  const reasons = REASONS_BY_TARGET[targetType] ?? [];
+  const reasons = REASONS_BY_TARGET[targetType];
   const isOtherSelected = selectedReason !== null && OTHER_REASONS.has(selectedReason);
 
   const handleSelect = (reason: ReportReason) => {
@@ -111,8 +109,8 @@ export function ReportBottomSheet({
               * 신고는 익명으로 제보됩니다
             </p>
           </div>
-          <button onClick={handleClose} className="p-1 self-start">
-            <X size={24} className="text-grey-700" />
+          <button type="button" aria-label="닫기" onClick={handleClose} className="p-1 self-start">
+            <X aria-hidden="true" size={24} className="text-grey-700" />
           </button>
         </div>
 
