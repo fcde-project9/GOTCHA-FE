@@ -155,7 +155,7 @@ export default function Home() {
       />
 
       <main
-        className={`${bottomSheet.showPreviewSheet ? "h-[100dvh]" : "h-[calc(100dvh-env(safe-area-inset-top,0px)-var(--footer-height))]"} overflow-hidden relative touch-none`}
+        className={`${bottomSheet.showPreviewSheet ? "h-[100dvh]" : "h-[calc(100dvh-var(--footer-height))]"} overflow-hidden relative touch-none`}
       >
         <div className="flex h-full flex-col items-center relative touch-auto">
           {/* 카카오맵 */}
