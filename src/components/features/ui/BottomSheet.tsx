@@ -15,8 +15,12 @@ interface BottomSheetProps {
   onExpandAttempt?: () => void; // 최대 스냅에서 위로 드래그 시 콜백 (확장 애니메이션 후 호출)
 }
 
-/** 확장 시 상단에서 유지할 여백 (검색창 + 재검색 버튼 영역) */
-const EXPANDED_TOP_MARGIN = 14;
+/** 바텀시트 최대 높이 기준 상단 여백 - 검색창 + 재검색 버튼 영역 확보 (px) */
+const TOP_AREA_HEIGHT = 80;
+/** 스냅 포인트 값과 실제 렌더링 높이 간 보정값 (px) */
+const HEIGHT_RENDER_OFFSET = 68;
+/** 확장 스냅 포인트 추가 보정값 (TOP_AREA_HEIGHT에서 HEIGHT_RENDER_OFFSET을 뺀 나머지) */
+const EXPANDED_TOP_MARGIN = TOP_AREA_HEIGHT - HEIGHT_RENDER_OFFSET;
 
 export default function BottomSheet({
   children,
@@ -237,8 +241,10 @@ export default function BottomSheet({
       ref={sheetRef}
       className={`absolute bottom-0 left-0 right-0 bg-white overflow-hidden z-10 shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] ${isExpanding ? "" : "rounded-t-[24px]"} ${animateOut ? "animate-slide-down" : animateIn ? "animate-slide-up" : ""}`}
       style={{
-        height: isExpanding ? "100%" : `${currentHeight - 72}px`,
-        maxHeight: isExpanding ? undefined : `calc(100% - env(safe-area-inset-top, 0px) - 76px)`,
+        height: isExpanding ? "100%" : `${currentHeight - HEIGHT_RENDER_OFFSET}px`,
+        maxHeight: isExpanding
+          ? undefined
+          : `calc(100% - env(safe-area-inset-top, 0px) - ${TOP_AREA_HEIGHT}px)`,
         transition: isDragging ? "none" : "height 0.3s ease-out",
       }}
       onTouchStart={handleTouchStart}

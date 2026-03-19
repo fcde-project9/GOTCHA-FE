@@ -12,6 +12,8 @@ interface UseHomeSearchReturn {
   searchQuery: string;
   /** 검색 결과 목록 */
   results: PlaceSearchResult[];
+  /** 검색 대기 중 (디바운스 또는 API 로딩) */
+  isPending: boolean;
   /** 검색 모드 시작 */
   handleSearchClick: () => void;
   /** 검색 취소 (검색 모드 종료) */
@@ -35,12 +37,13 @@ interface UseHomeSearchReturn {
  * - 카카오 장소 검색 연동
  */
 export function useHomeSearch(): UseHomeSearchReturn {
-  const { results, loaded, searchPlaces, clearResults } = useKakaoPlaces();
+  const { results, isLoading, loaded, searchPlaces, clearResults } = useKakaoPlaces();
   const { searchQuery: storedSearchQuery, setSearchQuery: setStoredSearchQuery } = useMapStore();
 
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQueryState] = useState("");
   const [isAutoSearchEnabled, setIsAutoSearchEnabled] = useState(true);
+  const [isDebouncing, setIsDebouncing] = useState(false);
 
   // 스토어에서 검색어 복원
   useEffect(() => {
@@ -56,6 +59,10 @@ export function useHomeSearch(): UseHomeSearchReturn {
       setIsAutoSearchEnabled(true); // 사용자 입력 시 자동 검색 활성화
       setSearchQueryState(query);
       setStoredSearchQuery(query);
+      // 검색어가 있으면 디바운싱 상태를 동기적으로 설정 (렌더링 갭 방지)
+      if (query.trim()) {
+        setIsDebouncing(true);
+      }
     },
     [setStoredSearchQuery]
   );
@@ -65,12 +72,16 @@ export function useHomeSearch(): UseHomeSearchReturn {
     if (!isAutoSearchEnabled || !loaded) return;
 
     if (searchQuery.trim()) {
+      setIsDebouncing(true);
       const debounce = setTimeout(() => {
+        setIsDebouncing(false);
         searchPlaces(searchQuery);
       }, 300);
 
+      // cleanup에서는 타이머만 정리 (setIsDebouncing(false) 호출 시 앱 WebView에서 렌더 갭 발생)
       return () => clearTimeout(debounce);
     } else {
+      setIsDebouncing(false);
       clearResults();
     }
   }, [searchQuery, searchPlaces, clearResults, isAutoSearchEnabled, loaded]);
@@ -124,6 +135,7 @@ export function useHomeSearch(): UseHomeSearchReturn {
     isSearching,
     searchQuery,
     results,
+    isPending: isDebouncing || isLoading,
     handleSearchClick,
     handleSearchCancel,
     handleClearSearch,

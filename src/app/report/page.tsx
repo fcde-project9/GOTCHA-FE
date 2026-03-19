@@ -168,15 +168,14 @@ export default function ReportLocationPage() {
         // 근처 가게가 있으면 중복 체크 모달 표시
         setNearbyShops(result);
         setIsDuplicateModalOpen(true);
+        setCheckingNearby(false);
       } else {
-        // 근처 가게가 없으면 업체 정보 등록 페이지로 이동
+        // 근처 가게가 없으면 업체 정보 등록 페이지로 이동 (로딩 유지)
         navigateToRegister();
       }
     } catch {
-      // 에러 발생 시에도 등록 페이지로 이동
+      // 에러 발생 시에도 등록 페이지로 이동 (로딩 유지)
       navigateToRegister();
-    } finally {
-      setCheckingNearby(false);
     }
   };
 
