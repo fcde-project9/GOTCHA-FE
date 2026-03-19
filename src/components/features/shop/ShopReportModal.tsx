@@ -111,9 +111,12 @@ export function ShopReportModal({
               type="text"
               value={detail}
               onChange={(e) => setDetail(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") e.currentTarget.blur();
+              }}
               placeholder="직접 입력하기"
               maxLength={200}
-              className="w-full border-b border-grey-300 pb-2 text-[16px] leading-[1.5] tracking-[-0.16px] text-grey-900 placeholder:text-grey-400 focus:outline-none focus:border-main"
+              className="w-full rounded-none border-b border-grey-300 pb-2 text-[16px] leading-[1.5] tracking-[-0.16px] text-grey-900 placeholder:text-grey-400 focus:outline-none focus:border-main"
             />
           )}
         </div>
