@@ -72,7 +72,6 @@ export function useHomeSearch(): UseHomeSearchReturn {
     if (!isAutoSearchEnabled || !loaded) return;
 
     if (searchQuery.trim()) {
-      setIsDebouncing(true);
       const debounce = setTimeout(() => {
         setIsDebouncing(false);
         searchPlaces(searchQuery);
@@ -81,7 +80,6 @@ export function useHomeSearch(): UseHomeSearchReturn {
       // cleanup에서는 타이머만 정리 (setIsDebouncing(false) 호출 시 앱 WebView에서 렌더 갭 발생)
       return () => clearTimeout(debounce);
     } else {
-      setIsDebouncing(false);
       clearResults();
     }
   }, [searchQuery, searchPlaces, clearResults, isAutoSearchEnabled, loaded]);
