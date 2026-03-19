@@ -71,8 +71,8 @@ export function ShopSuggestModal({
     selectedReasons.size === 0 || (isOtherSelected && !detail.trim()) || isLoading;
 
   return (
-    <div className="fixed inset-0 z-50 bg-white flex flex-col max-w-[480px] mx-auto">
-      <div className="flex-1 px-5 pt-8 overflow-y-auto">
+    <div className="fixed inset-x-0 bottom-0 z-50 bg-white flex flex-col max-w-[480px] mx-auto h-safe-viewport">
+      <div className="flex-1 px-5 pt-5 overflow-y-auto">
         <h2 className="text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
           매장 정보 수정 제안
         </h2>
