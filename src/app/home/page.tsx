@@ -16,6 +16,17 @@ import {
   useLocationTracking,
 } from "@/hooks/home";
 
+/** 검색창 상단 여백 (safe-area-inset-top 기준, px) */
+const SEARCH_BAR_TOP = 20;
+/** 검색창 높이 */
+const SEARCH_BAR_HEIGHT = 44;
+/** 검색창과 재검색 버튼 사이 간격 (px) */
+const SEARCH_BAR_GAP = 16;
+/** 재검색 버튼 상단 여백 (SEARCH_BAR_TOP + SEARCH_BAR_HEIGHT + SEARCH_BAR_GAP) */
+const RELOAD_BUTTON_TOP = SEARCH_BAR_TOP + SEARCH_BAR_HEIGHT + SEARCH_BAR_GAP;
+/** 검색 오버레이 상단 패딩 (safe-area-inset-top 기준, px) */
+const SEARCH_OVERLAY_TOP = 96;
+
 // KakaoMap 동적 로드 - SSR 제외, 초기 번들에서 분리
 const KakaoMap = dynamic(() => import("@/components/features/map/KakaoMap"), {
   ssr: false,
@@ -217,6 +228,7 @@ export default function Home() {
             <SearchOverlay
               searchQuery={search.searchQuery}
               results={search.results}
+              isPending={search.isPending}
               onResultClick={handleResultClick}
             />
           )}
@@ -269,11 +281,15 @@ function SearchBar({
   onClearSearch,
 }: SearchBarProps) {
   return (
-    <div className="absolute left-0 right-0 top-[calc(env(safe-area-inset-top)+20px)] z-30 mx-auto w-full max-w-[480px] px-5">
+    <div
+      className="absolute left-0 right-0 z-30 mx-auto w-full max-w-[480px] px-5"
+      style={{ top: `calc(env(safe-area-inset-top) + ${SEARCH_BAR_TOP}px)` }}
+    >
       {!isSearching ? (
         <button
           onClick={onSearchClick}
-          className="flex h-11 w-full items-center justify-between rounded-lg bg-white p-[10px] shadow-[0px_0px_5px_0px_rgba(0,0,0,0.2)]"
+          className="flex w-full items-center justify-between rounded-lg bg-white p-[10px] shadow-[0px_0px_5px_0px_rgba(0,0,0,0.2)]"
+          style={{ height: SEARCH_BAR_HEIGHT }}
         >
           <span
             className={`text-[17px] font-normal leading-[1.5] tracking-[-0.17px] ${
@@ -305,7 +321,10 @@ function SearchBar({
               className="pointer-events-none select-none"
             />
           </button>
-          <div className="flex flex-1 h-11 items-center rounded-lg bg-grey-100 px-[10px]">
+          <div
+            className="flex flex-1 items-center rounded-lg bg-grey-100 px-[10px]"
+            style={{ height: SEARCH_BAR_HEIGHT }}
+          >
             <input
               type="text"
               value={searchQuery}
@@ -340,7 +359,10 @@ interface ReloadButtonProps {
 
 function ReloadButton({ onClick }: ReloadButtonProps) {
   return (
-    <div className="absolute left-0 right-0 top-[calc(env(safe-area-inset-top)+80px)] z-10 mx-auto flex w-full max-w-[480px] justify-center px-5">
+    <div
+      className="absolute left-0 right-0 z-10 mx-auto flex w-full max-w-[480px] justify-center px-5"
+      style={{ top: `calc(env(safe-area-inset-top) + ${RELOAD_BUTTON_TOP}px)` }}
+    >
       <button
         onClick={onClick}
         className="flex items-center gap-1 rounded-full bg-white px-3 py-2 shadow-[0px_0px_5px_0px_rgba(0,0,0,0.2)]"
@@ -405,13 +427,17 @@ function CurrentLocationButton({
 interface SearchOverlayProps {
   searchQuery: string;
   results: ReturnType<typeof useHomeSearch>["results"];
+  isPending: boolean;
   onResultClick: (result: ReturnType<typeof useHomeSearch>["results"][number]) => void;
 }
 
-function SearchOverlay({ searchQuery, results, onResultClick }: SearchOverlayProps) {
+function SearchOverlay({ searchQuery, results, isPending, onResultClick }: SearchOverlayProps) {
   return (
     <div className="absolute left-0 right-0 top-0 bottom-0 z-20 bg-default flex flex-col">
-      <div className="flex-1 overflow-hidden px-[22px] pt-[calc(env(safe-area-inset-top)+96px)]">
+      <div
+        className="flex-1 overflow-hidden px-[22px]"
+        style={{ paddingTop: `calc(env(safe-area-inset-top) + ${SEARCH_OVERLAY_TOP}px)` }}
+      >
         {searchQuery.trim() === "" ? (
           <SearchEmptyState />
         ) : results.length > 0 ? (
@@ -425,7 +451,7 @@ function SearchOverlay({ searchQuery, results, onResultClick }: SearchOverlayPro
               />
             ))}
           </div>
-        ) : (
+        ) : isPending ? null : (
           <div className="flex flex-col items-center justify-center pt-[calc(50vh-260px)]">
             <div className="mb-6 flex items-center justify-center">
               <Image
