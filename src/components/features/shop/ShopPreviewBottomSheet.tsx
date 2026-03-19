@@ -28,7 +28,7 @@ import { useUpdateShop } from "@/api/mutations/useUpdateShop";
 import { useInfiniteReviews } from "@/api/queries/useInfiniteReviews";
 import { useShopDetail } from "@/api/queries/useShopDetail";
 import { useUser } from "@/api/queries/useUser";
-import type { ReportReason, ReportTargetType, ShopSuggestReason } from "@/api/types";
+import type { ReportReason, ShopSuggestReason } from "@/api/types";
 import {
   BackHeader,
   Button,
@@ -38,63 +38,29 @@ import {
   Spinner,
 } from "@/components/common";
 import { BlockUserConfirmModal } from "@/components/features/review/BlockUserConfirmModal";
-import { ReportBottomSheet } from "@/components/features/review/ReportReviewBottomSheet";
+import {
+  ReportBottomSheet,
+  type ReviewUserReportTargetType,
+} from "@/components/features/review/ReportReviewBottomSheet";
 import { ReportSuccessModal } from "@/components/features/review/ReportSuccessModal";
 import { ReviewDeleteConfirmModal } from "@/components/features/review/ReviewDeleteConfirmModal";
 import { ReviewWriteModal } from "@/components/features/review/ReviewWriteModal";
 import { ShopDeleteConfirmModal } from "@/components/features/shop/ShopDeleteConfirmModal";
 import { ShopEditModal } from "@/components/features/shop/ShopEditModal";
+import { ShopReportModal } from "@/components/features/shop/ShopReportModal";
 import { ShopSuggestModal } from "@/components/features/shop/ShopSuggestModal";
 // BottomSheet 미사용 - 직접 드래그 처리
 import { DEFAULT_IMAGES, ICON_IMAGES } from "@/constants/images";
 import { useAuth, useFavorite, useToast } from "@/hooks";
-import type { OpenTime, ReviewResponse, ReviewSortOption } from "@/types/api";
-import { formatDate } from "@/utils";
+import type { ReviewResponse, ReviewSortOption } from "@/types/api";
+import { formatDate, ALL_DAYS, DAY_MAP, parseOpenTime, getBusinessDays } from "@/utils";
+import { DayBadge } from "./DayBadge";
 import StatusBadge from "./StatusBadge";
 
 interface ShopPreviewBottomSheetProps {
   shopId: number | null;
   onClose: () => void;
   isLeaving?: boolean;
-}
-
-// 요일 매핑
-const DAY_MAP: Record<keyof OpenTime, string> = {
-  Mon: "월",
-  Tue: "화",
-  Wed: "수",
-  Thu: "목",
-  Fri: "금",
-  Sat: "토",
-  Sun: "일",
-};
-const ALL_DAYS: (keyof OpenTime)[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-function parseOpenTime(openTimeStr: string): OpenTime | null {
-  try {
-    return JSON.parse(openTimeStr) as OpenTime;
-  } catch {
-    return null;
-  }
-}
-
-function getBusinessDays(openTime: OpenTime | null): (keyof OpenTime)[] {
-  if (!openTime) return [];
-  return ALL_DAYS.filter(
-    (day) => openTime[day] !== null && openTime[day] !== "" && openTime[day] !== "휴무"
-  );
-}
-
-function DayBadge({ day, isActive }: { day: string; isActive: boolean }) {
-  return (
-    <div
-      className={`flex items-center justify-center w-[22px] h-[22px] rounded-full text-[12px] font-normal tracking-[-0.12px] leading-[150%] ${
-        isActive ? "bg-grey-800 text-white" : "bg-grey-100 text-grey-400"
-      }`}
-    >
-      {day}
-    </div>
-  );
 }
 
 function ReviewItem({
@@ -299,9 +265,10 @@ export default function ShopPreviewBottomSheet({
   const [deletingReviewId, setDeletingReviewId] = useState<number | null>(null);
 
   // 신고 상태
-  const [reportTarget, setReportTarget] = useState<{ type: ReportTargetType; id: number } | null>(
-    null
-  );
+  const [reportTarget, setReportTarget] = useState<{
+    type: ReviewUserReportTargetType;
+    id: number;
+  } | null>(null);
   const [isReportSuccessOpen, setIsReportSuccessOpen] = useState(false);
 
   // 차단 상태
@@ -323,6 +290,7 @@ export default function ShopPreviewBottomSheet({
   const adminMenuRef = useRef<HTMLDivElement>(null);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
+  const [isShopReportOpen, setIsShopReportOpen] = useState(false);
 
   // 리뷰 전체보기 오버레이 상태
   const [showAllReviews, setShowAllReviews] = useState(false);
@@ -651,20 +619,35 @@ export default function ShopPreviewBottomSheet({
 
   const handleReportShop = () => {
     if (!shopId) return;
-    setReportTarget({ type: "SHOP", id: shopId });
+    setIsShopReportOpen(true);
   };
 
-  const handleSubmitSuggest = (reasons: ShopSuggestReason[]) => {
+  const handleSubmitSuggest = (reasons: ShopSuggestReason[], detail?: string) => {
     if (!shopId) return;
     createSuggestMutation.mutate(
-      { shopId, data: { reasons } },
+      { shopId, data: { reasons, detail } },
       {
         onSuccess: () => {
           setIsSuggestModalOpen(false);
-          showToast("제안이 접수되었어요. 감사합니다!");
+          showToast("매장 정보 수정 제안이 완료되었어요!");
         },
         onError: (error) =>
           showToast(error.message || "제안 접수에 실패했어요.", { variant: "warning" }),
+      }
+    );
+  };
+
+  const handleSubmitShopReport = (reason: ReportReason, detail?: string) => {
+    if (!shopId) return;
+    createReportMutation.mutate(
+      { targetType: "SHOP", targetId: shopId, reason, detail },
+      {
+        onSuccess: () => {
+          setIsShopReportOpen(false);
+          showToast("매장 문제 신고가 완료되었어요!");
+        },
+        onError: (error) =>
+          showToast(error.message || "신고 접수에 실패했어요.", { variant: "warning" }),
       }
     );
   };
@@ -1673,7 +1656,7 @@ export default function ShopPreviewBottomSheet({
               className="flex items-center gap-[8px] px-5 w-full h-[46px] border-b border-[#F7F7F9]"
             >
               <SquarePen size={20} className="text-grey-900" />
-              <span className="text-[16px] text-grey-900">정보 수정 제안하기</span>
+              <span className="text-[16px] text-grey-900">매장 정보 수정 제안</span>
             </button>
             <button
               onClick={() => {
@@ -1683,7 +1666,7 @@ export default function ShopPreviewBottomSheet({
               className="flex items-center gap-[8px] px-5 w-full h-[46px]"
             >
               <Siren size={20} className="text-error" />
-              <span className="text-[16px] text-error">매장 신고하기</span>
+              <span className="text-[16px] text-error">매장 문제 신고</span>
             </button>
           </div>
         </div>
@@ -1694,6 +1677,13 @@ export default function ShopPreviewBottomSheet({
         isLoading={createSuggestMutation.isPending}
         onClose={() => setIsSuggestModalOpen(false)}
         onSubmit={handleSubmitSuggest}
+      />
+
+      <ShopReportModal
+        isOpen={isShopReportOpen}
+        isLoading={createReportMutation.isPending}
+        onClose={() => setIsShopReportOpen(false)}
+        onSubmit={handleSubmitShopReport}
       />
     </>
   );

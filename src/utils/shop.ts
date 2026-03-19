@@ -1,5 +1,36 @@
-import { ShopMapResponse } from "@/types/api";
+import type { OpenTime, ShopMapResponse } from "@/types/api";
 import { Shop } from "@/types/shop";
+
+// ── 요일 관련 상수 ──
+
+export const DAY_MAP: Record<keyof OpenTime, string> = {
+  Mon: "월",
+  Tue: "화",
+  Wed: "수",
+  Thu: "목",
+  Fri: "금",
+  Sat: "토",
+  Sun: "일",
+};
+
+export const ALL_DAYS: (keyof OpenTime)[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+// ── 영업시간 유틸 ──
+
+export function parseOpenTime(openTimeStr: string): OpenTime | null {
+  try {
+    return JSON.parse(openTimeStr) as OpenTime;
+  } catch {
+    return null;
+  }
+}
+
+export function getBusinessDays(openTime: OpenTime | null): (keyof OpenTime)[] {
+  if (!openTime) return [];
+  return ALL_DAYS.filter(
+    (day) => openTime[day] !== null && openTime[day] !== "" && openTime[day] !== "휴무"
+  );
+}
 
 /**
  * ShopListView represents the subset of Shop data needed for list display
