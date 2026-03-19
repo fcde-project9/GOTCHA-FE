@@ -34,7 +34,7 @@ export default function FavoritesPage() {
   // 검색 필터링
   const filteredFavorites = useMemo(() => {
     if (!favoritesData) return [];
-    return favoritesData.filter((shop) =>
+    return favoritesData.content.filter((shop) =>
       shop.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [favoritesData, searchQuery]);
@@ -60,7 +60,7 @@ export default function FavoritesPage() {
         <SimpleHeader title="찜한업체" />
 
         {/* 검색창 - 찜한 업체가 있을 때만 표시 */}
-        {favoritesData && favoritesData.length > 0 && (
+        {favoritesData && favoritesData.content.length > 0 && (
           <div className="flex-shrink-0">
             <div className="flex h-11 items-center justify-between rounded-lg bg-grey-50 px-3 py-2.5 mx-5 mb-3">
               <input

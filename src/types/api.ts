@@ -87,9 +87,20 @@ export interface FavoriteShopResponse {
 }
 
 /**
+ * GET /api/users/me/favorites 페이지 응답
+ */
+export interface FavoritesPageResponse {
+  content: FavoriteShopResponse[];
+  totalCount: number;
+  page: number;
+  size: number;
+  hasNext: boolean;
+}
+
+/**
  * GET /api/users/me/favorites 전체 응답
  */
-export type FavoritesApiResponse = ApiResponse<FavoriteShopResponse[]>;
+export type FavoritesApiResponse = ApiResponse<FavoritesPageResponse>;
 
 /**
  * POST/DELETE /api/shops/{shopId}/favorite 응답
