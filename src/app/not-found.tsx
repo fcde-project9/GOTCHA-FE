@@ -10,7 +10,7 @@ export default function NotFound() {
   const router = useRouter();
 
   return (
-    <div className="relative flex min-h-[100dvh] w-full bg-default">
+    <div className="relative flex h-safe-viewport w-full overflow-hidden bg-default">
       <div className="relative mx-auto flex w-full max-w-[480px] flex-col">
         {/* 404 메시지 영역 */}
         <div className="flex flex-1 flex-col items-center justify-center pb-[96px]">
