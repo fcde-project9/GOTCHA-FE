@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, X } from "lucide-react";
 import { Checkbox } from "@/components/common";
 import { LOGO_IMAGES, SOCIAL_LOGO_IMAGES } from "@/constants";
 import { useToast } from "@/hooks";
@@ -15,13 +15,17 @@ export default function LoginPage() {
   const { showToast } = useToast();
   const [showTermsSheet, setShowTermsSheet] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [isGuestRedirect, setIsGuestRedirect] = useState(false);
 
-  // 이미 로그인된 경우 홈으로 리다이렉트
+  // 이미 로그인된 경우 홈으로 리다이렉트 + 게스트 리다이렉트 감지
   useEffect(() => {
     const accessToken = localStorage.getItem("accessToken");
     if (accessToken) {
       router.replace("/home");
+      return;
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage hydration
+    setIsGuestRedirect(localStorage.getItem("user_type") === "guest");
   }, [router]);
 
   // 세션 만료로 리다이렉트된 경우 토스트 표시
@@ -67,16 +71,33 @@ export default function LoginPage() {
         className={`fixed inset-0 flex flex-col bg-default ${showTermsSheet ? "overflow-hidden" : ""}`}
       >
         <div className="mx-auto flex h-full flex-col w-full max-w-[480px] overflow-y-auto">
+          {/* 닫기 버튼 - 게스트 리다이렉트 시만 표시 */}
+          {isGuestRedirect && (
+            <div className="flex h-14 items-center justify-end px-5 pt-[env(safe-area-inset-top)]">
+              <button onClick={() => router.back()} aria-label="닫기">
+                <X size={24} className="stroke-grey-900" strokeWidth={1.5} />
+              </button>
+            </div>
+          )}
+
           {/* 로고 - 남은 영역에서 가운데 */}
           <div className="flex flex-1 flex-col items-center justify-center gap-8">
-            <Image src={LOGO_IMAGES.MAIN} alt="GOTCHA 로고" width={130} height={90} priority />
-            <p className="text-center text-lg font-semibold leading-[1.5] tracking-[-0.18px] text-[#4F4F51] ">
-              가챠샵 정보를 한 곳에서 갓차!
+            <Image
+              src={LOGO_IMAGES.MAIN}
+              alt="GOTCHA 로고"
+              width={130}
+              height={90}
+              className="h-auto"
+            />
+            <p className="text-center text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-800">
+              {isGuestRedirect
+                ? "로그인하면 다양한 기능을 이용할 수 있어요!"
+                : "가챠샵 정보를 한 곳에서 갓차!"}
             </p>
           </div>
 
           {/* 소셜 로그인 버튼 영역 - 하단 32px 여백 */}
-          <div className="mb-8 flex flex-col gap-7 px-5">
+          <div className="mb-24 flex flex-col gap-7 px-5">
             {/* 소셜 로그인 버튼 그룹 */}
             <div className="flex flex-col gap-3">
               {/* 카카오 로그인 */}
@@ -128,16 +149,18 @@ export default function LoginPage() {
               </button>
             </div>
 
-            {/* 게스트로 둘러보기 */}
-            <button
-              onClick={handleGuestLogin}
-              disabled={showTermsSheet}
-              className="pb-0.5 disabled:opacity-50"
-            >
-              <span className="border-b-[0.75px] border-grey-800 text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-800">
-                게스트로 둘러보기
-              </span>
-            </button>
+            {/* 게스트로 둘러보기 - 초기 진입 시만 표시 */}
+            {!isGuestRedirect && (
+              <button
+                onClick={handleGuestLogin}
+                disabled={showTermsSheet}
+                className="pb-0.5 disabled:opacity-50"
+              >
+                <span className="border-b-[0.75px] border-grey-800 text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-800">
+                  게스트로 둘러보기
+                </span>
+              </button>
+            )}
           </div>
         </div>
 
