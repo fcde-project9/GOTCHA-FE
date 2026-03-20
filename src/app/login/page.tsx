@@ -74,7 +74,12 @@ export default function LoginPage() {
           {/* 닫기 버튼 - 게스트 리다이렉트 시만 표시 */}
           {isGuestRedirect && (
             <div className="flex h-14 items-center justify-end px-5 pt-[env(safe-area-inset-top)]">
-              <button onClick={() => router.back()} aria-label="닫기">
+              <button
+                onClick={() =>
+                  window.history.length > 1 ? router.back() : router.replace("/home")
+                }
+                aria-label="닫기"
+              >
                 <X size={24} className="stroke-grey-900" strokeWidth={1.5} />
               </button>
             </div>
