@@ -133,14 +133,14 @@ export function ShopSuggestModal({
       <div className="flex gap-3 px-5 pb-[52px] pt-4">
         <button
           onClick={handleClose}
-          className="flex-1 h-[44px] rounded-lg bg-grey-100 text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-grey-900"
+          className="flex-1 h-[44px] rounded-lg bg-grey-100 text-[16px] font-medium leading-[1.5] tracking-[-0.16px] text-grey-900"
         >
           취소
         </button>
         <button
           onClick={handleSubmit}
           disabled={isSubmitDisabled}
-          className="flex-1 h-[44px] rounded-lg bg-main text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white disabled:bg-grey-200 disabled:text-grey-500"
+          className="flex-1 h-[44px] rounded-lg bg-main text-[16px] font-medium leading-[1.5] tracking-[-0.16px] text-white disabled:bg-grey-200 disabled:text-grey-500"
         >
           {isLoading ? "제출 중..." : "제안하기"}
         </button>
