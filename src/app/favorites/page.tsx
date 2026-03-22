@@ -32,12 +32,14 @@ export default function FavoritesPage() {
   const { data: favoritesData, isLoading, error, refetch } = useFavorites();
 
   // 검색 필터링
+  const trimmedSearch = searchQuery.trim();
   const filteredFavorites = useMemo(() => {
     if (!favoritesData) return [];
+    if (!trimmedSearch) return favoritesData.content;
     return favoritesData.content.filter((shop) =>
-      shop.name.toLowerCase().includes(searchQuery.toLowerCase())
+      shop.name.toLowerCase().includes(trimmedSearch.toLowerCase())
     );
-  }, [favoritesData, searchQuery]);
+  }, [favoritesData, trimmedSearch]);
 
   // 새로고침
   const handleRefresh = () => {
@@ -109,7 +111,7 @@ export default function FavoritesPage() {
               <RefreshCcw size={16} className="stroke-white" strokeWidth={2} />
             </button>
           </div>
-        ) : searchQuery && filteredFavorites.length === 0 ? (
+        ) : trimmedSearch && filteredFavorites.length === 0 ? (
           // 검색 결과 없음
           <div className="flex flex-1 flex-col items-center justify-center px-5">
             <p className="text-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-600">
