@@ -420,7 +420,7 @@ export default function ShopDetailClient({
 
   if (!isValidShopId) {
     return (
-      <div className="h-dvh bg-default flex flex-col">
+      <div className="h-safe-viewport bg-default flex flex-col">
         <BackHeader onBack={handleBack} />
         <div className="flex-1 flex flex-col items-center justify-center px-5">
           <p className="text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900">
@@ -443,7 +443,7 @@ export default function ShopDetailClient({
 
   if (isLoading) {
     return (
-      <div className="h-dvh flex items-center justify-center bg-default">
+      <div className="h-safe-viewport flex items-center justify-center bg-default">
         <Spinner />
       </div>
     );
@@ -451,7 +451,7 @@ export default function ShopDetailClient({
 
   if (error || !shop) {
     return (
-      <div className="h-dvh bg-default flex flex-col">
+      <div className="h-safe-viewport bg-default flex flex-col">
         <BackHeader onBack={handleBack} />
         <div className="flex-1 flex flex-col items-center justify-center px-5">
           <div className="flex flex-col items-center gap-2 text-center">
@@ -507,7 +507,7 @@ export default function ShopDetailClient({
   };
 
   const content = (
-    <div className="h-dvh bg-default flex flex-col overflow-hidden">
+    <div className="h-safe-viewport bg-default flex flex-col overflow-hidden">
       {/* 헤더 */}
       <div className="flex items-center justify-between pr-4">
         <BackHeader onBack={handleBack} />
@@ -1249,7 +1249,7 @@ export default function ShopDetailClient({
 
   if (onClose) {
     return (
-      <div className="fixed inset-0 z-50 flex justify-center bg-default">
+      <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center bg-default h-safe-viewport">
         <div className="w-full max-w-[480px]">{content}</div>
       </div>
     );

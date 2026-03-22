@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Search, CircleX, RefreshCcw } from "lucide-react";
+import { CircleX, RefreshCcw } from "lucide-react";
 import { useFavorites } from "@/api/queries/useFavorites";
 import ShopDetailClient from "@/app/shop/[id]/ShopDetailClient";
 import { Footer, Button, SimpleHeader, Spinner } from "@/components/common";
@@ -32,12 +32,14 @@ export default function FavoritesPage() {
   const { data: favoritesData, isLoading, error, refetch } = useFavorites();
 
   // 검색 필터링
+  const trimmedSearch = searchQuery.trim();
   const filteredFavorites = useMemo(() => {
     if (!favoritesData) return [];
+    if (!trimmedSearch) return favoritesData.content;
     return favoritesData.content.filter((shop) =>
-      shop.name.toLowerCase().includes(searchQuery.toLowerCase())
+      shop.name.toLowerCase().includes(trimmedSearch.toLowerCase())
     );
-  }, [favoritesData, searchQuery]);
+  }, [favoritesData, trimmedSearch]);
 
   // 새로고침
   const handleRefresh = () => {
@@ -75,7 +77,13 @@ export default function FavoritesPage() {
                   <CircleX size={26} className="fill-grey-500 stroke-grey-50" strokeWidth={2} />
                 </button>
               ) : (
-                <Search size={24} className="stroke-grey-500" strokeWidth={2} />
+                <Image
+                  src="/images/icons/search.svg"
+                  alt=""
+                  width={26}
+                  height={26}
+                  className="shrink-0 pointer-events-none select-none"
+                />
               )}
             </div>
           </div>
@@ -102,6 +110,13 @@ export default function FavoritesPage() {
               </span>
               <RefreshCcw size={16} className="stroke-white" strokeWidth={2} />
             </button>
+          </div>
+        ) : trimmedSearch && filteredFavorites.length === 0 ? (
+          // 검색 결과 없음
+          <div className="flex flex-1 flex-col items-center justify-center px-5">
+            <p className="text-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-600">
+              검색 결과가 없어요
+            </p>
           </div>
         ) : filteredFavorites.length === 0 ? (
           // Empty State
