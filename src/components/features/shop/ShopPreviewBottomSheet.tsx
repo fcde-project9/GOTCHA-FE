@@ -7,13 +7,9 @@ import {
   ChevronRight,
   ChevronDown,
   PencilLine,
-  Images,
-  ThumbsUp,
   MoreVertical,
   Pencil,
   Trash2,
-  Ban,
-  Flag,
   X,
   SquarePen,
   Siren,
@@ -27,6 +23,7 @@ import { useToggleReviewLike } from "@/api/mutations/useToggleReviewLike";
 import { useUpdateShop } from "@/api/mutations/useUpdateShop";
 import { useInfiniteReviews } from "@/api/queries/useInfiniteReviews";
 import { useShopDetail } from "@/api/queries/useShopDetail";
+import { useShopReviewImages } from "@/api/queries/useShopReviewImages";
 import { useUser } from "@/api/queries/useUser";
 import type { ReportReason, ShopSuggestReason } from "@/api/types";
 import {
@@ -44,16 +41,19 @@ import {
 } from "@/components/features/review/ReportReviewBottomSheet";
 import { ReportSuccessModal } from "@/components/features/review/ReportSuccessModal";
 import { ReviewDeleteConfirmModal } from "@/components/features/review/ReviewDeleteConfirmModal";
+import { ReviewItem } from "@/components/features/review/ReviewItem";
 import { ReviewWriteModal } from "@/components/features/review/ReviewWriteModal";
 import { ShopDeleteConfirmModal } from "@/components/features/shop/ShopDeleteConfirmModal";
 import { ShopEditModal } from "@/components/features/shop/ShopEditModal";
+import { ShopImageGrid } from "@/components/features/shop/ShopImageGrid";
+import { ShopInfoSection } from "@/components/features/shop/ShopInfoSection";
 import { ShopReportModal } from "@/components/features/shop/ShopReportModal";
 import { ShopSuggestModal } from "@/components/features/shop/ShopSuggestModal";
 // BottomSheet 미사용 - 직접 드래그 처리
 import { DEFAULT_IMAGES, ICON_IMAGES } from "@/constants/images";
 import { useAuth, useFavorite, useToast } from "@/hooks";
 import type { ReviewResponse, ReviewSortOption } from "@/types/api";
-import { formatDate, ALL_DAYS, DAY_MAP, parseOpenTime, getBusinessDays } from "@/utils";
+import { ALL_DAYS, DAY_MAP, parseOpenTime, getBusinessDays } from "@/utils";
 import { DayBadge } from "./DayBadge";
 import StatusBadge from "./StatusBadge";
 
@@ -61,173 +61,6 @@ interface ShopPreviewBottomSheetProps {
   shopId: number | null;
   onClose: () => void;
   isLeaving?: boolean;
-}
-
-function ReviewItem({
-  review,
-  onLikeToggle,
-  onEdit,
-  onDelete,
-  onReport,
-  onReportUser,
-  onBlock,
-  onImageClick,
-  isLoggedIn = false,
-}: {
-  review: ReviewResponse;
-  onLikeToggle: (reviewId: number) => void;
-  onEdit: (reviewId: number) => void;
-  onDelete: (reviewId: number) => void;
-  onReport: (reviewId: number) => void;
-  onReportUser: (userId: number) => void;
-  onBlock: (userId: number, nickname: string) => void;
-  onImageClick?: (images: string[], index: number) => void;
-  isLoggedIn?: boolean;
-}) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
-      }
-    };
-    if (isMenuOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [isMenuOpen]);
-
-  return (
-    <div className="bg-grey-50 rounded-[10px] p-[14px] flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <span className="text-[13px] text-grey-600 leading-[1.5]">{review.author.nickname}</span>
-          <div className="relative" ref={menuRef}>
-            {(review.isOwner || isLoggedIn) && (
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="flex items-center justify-center h-6"
-                aria-label="메뉴"
-              >
-                <MoreVertical size={16} className="text-grey-500" />
-              </button>
-            )}
-            {isMenuOpen && (review.isOwner || isLoggedIn) && (
-              <div className="absolute right-[calc(50%_+_2px)] top-[20px] z-10 bg-white rounded-lg rounded-tr-none shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] overflow-hidden">
-                {review.isOwner ? (
-                  <>
-                    <button
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        onEdit(review.id);
-                      }}
-                      className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
-                    >
-                      <Pencil size={16} className="text-grey-900" />
-                      <span className="text-[14px] text-grey-900 whitespace-nowrap">수정하기</span>
-                    </button>
-                    <div className="border-t border-grey-100" />
-                    <button
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        onDelete(review.id);
-                      }}
-                      className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
-                    >
-                      <Trash2 size={16} className="text-error" />
-                      <span className="text-[14px] text-error whitespace-nowrap">삭제하기</span>
-                    </button>
-                  </>
-                ) : isLoggedIn ? (
-                  <>
-                    <button
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        onReport(review.id);
-                      }}
-                      className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
-                    >
-                      <Flag size={16} className="text-grey-900" />
-                      <span className="text-[14px] text-grey-900 whitespace-nowrap">
-                        리뷰 신고하기
-                      </span>
-                    </button>
-                    <div className="border-t border-grey-100" />
-                    <button
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        onReportUser(review.author.id);
-                      }}
-                      className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
-                    >
-                      <Flag size={16} className="text-grey-900" />
-                      <span className="text-[14px] text-grey-900 whitespace-nowrap">
-                        사용자 신고하기
-                      </span>
-                    </button>
-                    <div className="border-t border-grey-100" />
-                    <button
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        onBlock(review.author.id, review.author.nickname);
-                      }}
-                      className="flex items-center gap-2 px-3 py-2 w-full hover:bg-grey-50"
-                    >
-                      <Ban size={16} className="text-error" />
-                      <span className="text-[14px] text-error whitespace-nowrap">
-                        사용자 차단하기
-                      </span>
-                    </button>
-                  </>
-                ) : null}
-              </div>
-            )}
-          </div>
-        </div>
-        <p className="text-[17px] text-grey-900 leading-[1.5] tracking-[-0.17px]">
-          {review.content}
-        </p>
-        {review.imageUrls && review.imageUrls.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-            {review.imageUrls.map((imageUrl, index) => (
-              <button
-                key={index}
-                onClick={() => onImageClick?.(review.imageUrls, index)}
-                className="shrink-0 w-[105px] h-[105px] rounded-lg overflow-hidden bg-grey-100"
-              >
-                <Image
-                  src={imageUrl}
-                  alt={`리뷰 이미지 ${index + 1}`}
-                  width={105}
-                  height={105}
-                  className="w-full h-full object-cover"
-                />
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-      <div className="flex items-center gap-[14px]">
-        <span className="text-[13px] text-grey-400 leading-[1.5]">
-          {formatDate(review.createdAt)}
-        </span>
-        <button
-          onClick={() => onLikeToggle(review.id)}
-          className="flex items-center gap-[3px]"
-          aria-label={review.isLiked ? "좋아요 취소" : "좋아요"}
-        >
-          <ThumbsUp
-            size={14}
-            className={`relative -top-[1px] ${review.isLiked ? "fill-grey-800 stroke-grey-800" : "stroke-grey-500 fill-none"}`}
-            strokeWidth={1.5}
-          />
-          <span className="text-[12px] text-grey-800 tracking-[-0.264px]">{review.likeCount}</span>
-        </button>
-      </div>
-    </div>
-  );
 }
 
 export default function ShopPreviewBottomSheet({
@@ -260,6 +93,10 @@ export default function ShopPreviewBottomSheet({
     initialIndex: number;
   } | null>(null);
   const [allImagesOpen, setAllImagesOpen] = useState(false);
+  const { data: reviewImages, isLoading: isReviewImagesLoading } = useShopReviewImages(
+    shopId ?? 0,
+    allImagesOpen
+  );
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [editingReview, setEditingReview] = useState<ReviewResponse | null>(null);
   const [deletingReviewId, setDeletingReviewId] = useState<number | null>(null);
@@ -377,6 +214,7 @@ export default function ShopPreviewBottomSheet({
 
   // 드래그 상태
   const DEFAULT_HEIGHT = 410;
+  const MINIMIZED_HEIGHT = 92; // grabber(36) + 업체명 행(40) + 하단 여백(16)
   const LOCATION_HINT_HEIGHT = 36;
   const [sheetHeight, setSheetHeight] = useState(DEFAULT_HEIGHT);
   const [isDragging, setIsDragging] = useState(false);
@@ -407,24 +245,34 @@ export default function ShopPreviewBottomSheet({
   const previewHeight = shop?.locationHint ? DEFAULT_HEIGHT + LOCATION_HINT_HEIGHT : DEFAULT_HEIGHT;
 
   // shop 데이터 로드 후 locationHint 여부에 따라 높이 업데이트
+  // 최소화 상태(MINIMIZED_HEIGHT 이하)에서는 스킵 — 확장 해제 시 effect가 미리보기 높이로 덮어쓰는 것을 방지
   useEffect(() => {
     if (!shop || isExpanded) return;
+    if (sheetHeightRef.current <= MINIMIZED_HEIGHT) return;
     setSheetHeight(previewHeight);
     sheetHeightRef.current = previewHeight;
     // eslint-disable-next-line react-hooks/exhaustive-deps -- shop?.locationHint로 충분; shop 전체를 넣으면 불필요한 재실행
   }, [shop?.locationHint, isExpanded, previewHeight]);
 
-  // 확장 → 미리보기 축소 (숨겼다가 미리보기로 다시 올라옴)
-  const collapseToPreview = useCallback(() => {
+  // 확장 → 최소화 (100% → MINIMIZED_HEIGHT로 직접 축소)
+  const collapseToMinimized = useCallback(() => {
+    // 1) isExpanded 해제 + isCollapsing으로 픽셀 높이 모드 전환, 현재 화면 높이 유지
     setIsCollapsing(true);
-    setSheetHeight(0);
+    setIsExpanded(false);
+    setSheetHeight(window.innerHeight);
+    sheetHeightRef.current = MINIMIZED_HEIGHT;
+
+    // 2) 다음 프레임에서 MINIMIZED_HEIGHT로 transition 시작
+    requestAnimationFrame(() => {
+      setSheetHeight(MINIMIZED_HEIGHT);
+    });
+
+    // 3) transition 완료 후 collapsing 플래그 해제
     setTimeout(() => {
-      setIsExpanded(false);
       setIsCollapsing(false);
-      setHasExpandedOnce(false); // animate-slide-up 다시 적용
-      setSheetHeight(previewHeight);
-    }, 550);
-  }, [previewHeight]);
+      setHasExpandedOnce(true);
+    }, 560);
+  }, []);
 
   const handleDragStart = useCallback(
     (clientY: number) => {
@@ -468,7 +316,7 @@ export default function ShopPreviewBottomSheet({
         const newHeight =
           heightDelta > 0
             ? Math.max(DEFAULT_HEIGHT, dragStartHeight.current + heightDelta)
-            : Math.max(0, dragStartHeight.current + heightDelta);
+            : Math.max(MINIMIZED_HEIGHT, dragStartHeight.current + heightDelta);
         sheetHeightRef.current = newHeight;
         setSheetHeight(newHeight);
       }
@@ -484,28 +332,39 @@ export default function ShopPreviewBottomSheet({
     isDraggingRef.current = false;
 
     if (isExpanded) {
-      // 풀스크린에서 아래로 드래그 → 미리보기로 축소
+      // 풀스크린에서 아래로 드래그 → 최소화
       const draggedDown = lastDragY.current - dragStartY.current;
       if (draggedDown > 50) {
-        collapseToPreview();
+        collapseToMinimized();
       }
     } else {
       const delta = dragStartHeight.current - sheetHeightRef.current;
       const threshold = 30;
 
-      if (delta > threshold) {
-        // 아래로 드래그 → 원래 높이로 복귀 (footer 뒤로 숨기지 않음)
-        setSheetHeight(previewHeight);
-      } else if (delta < -threshold) {
-        {
-          setHasExpandedOnce(true);
-          setIsExpanded(true);
+      const startedMinimized = dragStartHeight.current <= MINIMIZED_HEIGHT;
+
+      if (startedMinimized) {
+        // 최소화 상태에서 위로 드래그 → 미리보기 복원
+        if (delta < -threshold) {
+          sheetHeightRef.current = previewHeight;
+          setSheetHeight(previewHeight);
+        } else {
+          setSheetHeight(MINIMIZED_HEIGHT);
         }
+      } else if (delta < -threshold) {
+        // 미리보기에서 위로 드래그 → 확장
+        setHasExpandedOnce(true);
+        setIsExpanded(true);
+      } else if (delta > threshold) {
+        // 미리보기에서 아래로 드래그 → 최소화
+        sheetHeightRef.current = MINIMIZED_HEIGHT;
+        setSheetHeight(MINIMIZED_HEIGHT);
       } else {
+        // 미세 드래그 → 미리보기 유지
         setSheetHeight(previewHeight);
       }
     }
-  }, [isExpanded, collapseToPreview, previewHeight]);
+  }, [isExpanded, collapseToMinimized, previewHeight]);
 
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
@@ -548,10 +407,6 @@ export default function ShopPreviewBottomSheet({
   ];
   const galleryImages = shopImages.filter((img) => img !== DEFAULT_IMAGES.NO_IMAGE);
   const totalImageCount = shop.totalReviewImageCount + (shop.mainImageUrl ? 1 : 0);
-  const visibleGalleryCount = shopImages
-    .slice(0, 5)
-    .filter((img) => img !== DEFAULT_IMAGES.NO_IMAGE).length;
-  const remainingCount = Math.max(galleryImages.length - visibleGalleryCount, 0);
 
   const handleImageClick = (images: string[], index: number) => {
     if (images[index] === DEFAULT_IMAGES.NO_IMAGE) {
@@ -795,19 +650,19 @@ export default function ShopPreviewBottomSheet({
         }}
       >
         {/* Grabber (미리보기에서만 표시) */}
-        {!isExpanded && !isCollapsing && (
+        {!isExpanded && (
           <div className="flex justify-center pt-3 h-[36px] cursor-grab active:cursor-grabbing">
             <div className="w-[44px] h-[4px] bg-[#cfcfcf] rounded-[2px]" />
           </div>
         )}
 
         {/* 확장 시 헤더 (위에서 아래로 슬라이드) */}
-        {(isExpanded || isCollapsing) && (
+        {isExpanded && (
           <div
             className="flex items-center justify-between pr-4 animate-slide-down-header cursor-grab active:cursor-grabbing"
             style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
           >
-            <BackHeader onBack={collapseToPreview} />
+            <BackHeader onBack={collapseToMinimized} />
             <div
               className="flex items-center ml-3"
               onMouseDown={(e) => e.stopPropagation()}
@@ -929,77 +784,14 @@ export default function ShopPreviewBottomSheet({
 
             {isExpanded ? (
               /* 확장: 상세페이지와 동일한 레이아웃 */
-              <>
-                <div className="flex flex-col gap-3 py-2">
-                  <div className="flex items-center gap-2">
-                    <Image
-                      src="/images/icons/shop-location.png"
-                      alt=""
-                      width={20}
-                      height={20}
-                      className="shrink-0 pointer-events-none select-none"
-                    />
-                    <div className="flex items-center gap-0.5">
-                      <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
-                        {shop.addressName}
-                      </p>
-                      <button
-                        onClick={handleCopyAddress}
-                        className="shrink-0 flex items-center justify-center w-5 h-5 rounded text-[12px] text-grey-600"
-                      >
-                        <Copy size={14} strokeWidth={1.5} />
-                      </button>
-                    </div>
-                  </div>
-                  {shop.locationHint && (
-                    <div className="flex items-center gap-2">
-                      <Image
-                        src="/images/icons/shop-star.png"
-                        alt=""
-                        width={20}
-                        height={20}
-                        className="shrink-0 pointer-events-none select-none"
-                      />
-                      <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
-                        {shop.locationHint}
-                      </p>
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-col gap-3 pb-4 mt-1">
-                  <div className="flex items-center gap-2">
-                    <Image
-                      src="/images/icons/shop-calendar.png"
-                      alt=""
-                      width={20}
-                      height={20}
-                      className="shrink-0 pointer-events-none select-none"
-                    />
-                    <div className="flex gap-1.5">
-                      {ALL_DAYS.map((day) => (
-                        <DayBadge
-                          key={day}
-                          day={DAY_MAP[day]}
-                          isActive={businessDays.includes(day)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 min-h-6">
-                    <Image
-                      src="/images/icons/shop-time.png"
-                      alt=""
-                      width={20}
-                      height={20}
-                      className="shrink-0 pointer-events-none select-none"
-                    />
-                    {shop.todayOpenTime && (
-                      <span className="text-[16px] text-grey-900">{shop.todayOpenTime}</span>
-                    )}
-                    <StatusBadge openStatus={shop.openStatus} />
-                  </div>
-                </div>
-              </>
+              <ShopInfoSection
+                addressName={shop.addressName}
+                locationHint={shop.locationHint}
+                openTime={shop.openTime}
+                todayOpenTime={shop.todayOpenTime}
+                openStatus={shop.openStatus}
+                onCopyAddress={handleCopyAddress}
+              />
             ) : (
               /* 미리보기: 간격 좁게 한 블록 */
               <div className="flex flex-col gap-3 mt-3">
@@ -1094,247 +886,17 @@ export default function ShopPreviewBottomSheet({
               <>
                 <div className="h-2 -mx-5 bg-grey-50" />
 
-                <div className="py-4">
-                  <div className="flex items-center mb-3">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-[19px] font-medium text-grey-900 leading-[1.5] tracking-[-0.19px]">
-                        매장 사진
-                      </h3>
-                      {totalImageCount > 0 && (
-                        <span className="text-[14px] text-main font-medium">{totalImageCount}</span>
-                      )}
-                    </div>
-                  </div>
-
-                  {shopImages.length === 0 ? (
-                    <button
-                      className="w-full flex items-center justify-center h-32 rounded-xl bg-grey-50"
-                      onClick={() =>
-                        showToast("아직 등록된 매장사진이 없어요", { variant: "warning" })
-                      }
-                    >
-                      <p className="text-[14px] text-grey-400">등록된 사진이 없어요</p>
-                    </button>
-                  ) : shopImages.length === 1 ? (
-                    <button
-                      onClick={() => handleImageClick(shopImages, 0)}
-                      className="w-full aspect-[335/167] rounded-lg overflow-hidden bg-grey-100"
-                    >
-                      <Image
-                        src={shopImages[0]}
-                        alt="매장 사진"
-                        width={335}
-                        height={167}
-                        className="w-full h-full object-cover"
-                      />
-                    </button>
-                  ) : shopImages.length === 2 ? (
-                    <div className="relative aspect-[335/167]">
-                      <div className="absolute inset-0 flex gap-px">
-                        <button
-                          onClick={() => handleImageClick(shopImages, 0)}
-                          className="flex-1 rounded-l-lg overflow-hidden bg-grey-100"
-                        >
-                          <Image
-                            src={shopImages[0]}
-                            alt="매장 사진 1"
-                            width={167}
-                            height={167}
-                            className="w-full h-full object-cover"
-                          />
-                        </button>
-                        <button
-                          onClick={() => handleImageClick(shopImages, 1)}
-                          className="flex-1 rounded-r-lg overflow-hidden bg-grey-100"
-                        >
-                          <Image
-                            src={shopImages[1]}
-                            alt="매장 사진 2"
-                            width={167}
-                            height={167}
-                            className="w-full h-full object-cover"
-                          />
-                        </button>
-                      </div>
-                    </div>
-                  ) : shopImages.length === 3 ? (
-                    <div className="relative aspect-[335/167]">
-                      <div className="absolute inset-0 flex gap-px">
-                        <button
-                          onClick={() => handleImageClick(shopImages, 0)}
-                          className="flex-1 rounded-l-lg overflow-hidden bg-grey-100"
-                        >
-                          <Image
-                            src={shopImages[0]}
-                            alt="매장 사진 1"
-                            width={167}
-                            height={167}
-                            className="w-full h-full object-cover"
-                          />
-                        </button>
-                        <div className="flex-1 flex flex-col gap-px">
-                          <button
-                            onClick={() => handleImageClick(shopImages, 1)}
-                            className="flex-1 rounded-tr-lg overflow-hidden bg-grey-100"
-                          >
-                            <Image
-                              src={shopImages[1]}
-                              alt="매장 사진 2"
-                              width={112}
-                              height={83}
-                              className="w-full h-full object-cover"
-                            />
-                          </button>
-                          <button
-                            onClick={() => handleImageClick(shopImages, 2)}
-                            className="flex-1 rounded-br-lg overflow-hidden bg-grey-100"
-                          >
-                            <Image
-                              src={shopImages[2]}
-                              alt="매장 사진 3"
-                              width={112}
-                              height={83}
-                              className="w-full h-full object-cover"
-                            />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ) : shopImages.length === 4 ? (
-                    <div className="relative aspect-[335/167]">
-                      <div className="absolute inset-0 flex gap-px">
-                        <button
-                          onClick={() => handleImageClick(shopImages, 0)}
-                          className="flex-1 rounded-l-lg overflow-hidden bg-grey-100"
-                        >
-                          <Image
-                            src={shopImages[0]}
-                            alt="매장 사진 1"
-                            width={167}
-                            height={167}
-                            className="w-full h-full object-cover"
-                          />
-                        </button>
-                        <div className="flex-1 flex flex-col gap-px">
-                          <button
-                            onClick={() => handleImageClick(shopImages, 1)}
-                            className="flex-1 rounded-tr-lg overflow-hidden bg-grey-100"
-                          >
-                            <Image
-                              src={shopImages[1]}
-                              alt="매장 사진 2"
-                              width={167}
-                              height={83}
-                              className="w-full h-full object-cover"
-                            />
-                          </button>
-                          <div className="flex gap-px">
-                            <button
-                              onClick={() => handleImageClick(shopImages, 2)}
-                              className="flex-1 aspect-square overflow-hidden bg-grey-100"
-                            >
-                              <Image
-                                src={shopImages[2]}
-                                alt="매장 사진 3"
-                                width={83}
-                                height={83}
-                                className="w-full h-full object-cover"
-                              />
-                            </button>
-                            <button
-                              onClick={() => handleImageClick(shopImages, 3)}
-                              className="flex-1 aspect-square rounded-br-lg overflow-hidden bg-grey-100"
-                            >
-                              <Image
-                                src={shopImages[3]}
-                                alt="매장 사진 4"
-                                width={83}
-                                height={83}
-                                className="w-full h-full object-cover"
-                              />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex gap-px">
-                      <button
-                        onClick={() => handleImageClick(shopImages, 0)}
-                        className="flex-1 aspect-square rounded-l-lg overflow-hidden bg-grey-100"
-                      >
-                        <Image
-                          src={shopImages[0]}
-                          alt="매장 사진 1"
-                          width={167}
-                          height={167}
-                          className="w-full h-full object-cover"
-                        />
-                      </button>
-                      <div className="flex-1 flex flex-wrap gap-px">
-                        <button
-                          onClick={() => handleImageClick(shopImages, 1)}
-                          className="w-[calc(50%-0.5px)] aspect-square overflow-hidden bg-grey-100"
-                        >
-                          <Image
-                            src={shopImages[1]}
-                            alt="매장 사진 2"
-                            width={83}
-                            height={83}
-                            className="w-full h-full object-cover"
-                          />
-                        </button>
-                        <button
-                          onClick={() => handleImageClick(shopImages, 2)}
-                          className="w-[calc(50%-0.5px)] aspect-square rounded-tr-lg overflow-hidden bg-grey-100"
-                        >
-                          <Image
-                            src={shopImages[2]}
-                            alt="매장 사진 3"
-                            width={83}
-                            height={83}
-                            className="w-full h-full object-cover"
-                          />
-                        </button>
-                        <button
-                          onClick={() => handleImageClick(shopImages, 3)}
-                          className="w-[calc(50%-0.5px)] aspect-square overflow-hidden bg-grey-100"
-                        >
-                          <Image
-                            src={shopImages[3]}
-                            alt="매장 사진 4"
-                            width={83}
-                            height={83}
-                            className="w-full h-full object-cover"
-                          />
-                        </button>
-                        <button
-                          onClick={handleViewAllImages}
-                          className="relative w-[calc(50%-0.5px)] aspect-square rounded-br-lg overflow-hidden bg-grey-100"
-                        >
-                          <Image
-                            src={shopImages[4]}
-                            alt="매장 사진 5"
-                            width={83}
-                            height={83}
-                            className="w-full h-full object-cover"
-                          />
-                          {remainingCount > 0 && (
-                            <div className="absolute inset-0 bg-black/55 flex flex-col items-center justify-center rounded-br-lg">
-                              <Images size={24} className="text-white" strokeWidth={1.5} />
-                              <div className="flex items-center justify-center">
-                                <span className="text-[12px] text-white leading-[1.5] tracking-[-0.12px]">
-                                  +{remainingCount}
-                                </span>
-                                <ChevronRight size={10} className="text-white" />
-                              </div>
-                            </div>
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <ShopImageGrid
+                  images={shopImages}
+                  totalImageCount={totalImageCount}
+                  onImageClick={(filteredImages, index) =>
+                    setGalleryState({ images: filteredImages, initialIndex: index })
+                  }
+                  onViewAll={handleViewAllImages}
+                  onEmptyClick={() =>
+                    showToast("아직 등록된 매장사진이 없어요", { variant: "warning" })
+                  }
+                />
 
                 {/* 구분선 */}
                 <div className="h-2 -mx-5 bg-grey-50" />
@@ -1414,6 +976,7 @@ export default function ShopPreviewBottomSheet({
                               onReport={handleReportReview}
                               onReportUser={handleReportUser}
                               onBlock={handleBlockUser}
+                              isAdmin={isAdmin}
                               isLoggedIn={isLoggedIn}
                               onImageClick={(images, index) =>
                                 setGalleryState({ images, initialIndex: index })
@@ -1459,9 +1022,22 @@ export default function ShopPreviewBottomSheet({
         />
       )}
 
-      {allImagesOpen && (
-        <ImagesGalleryOverlay images={galleryImages} onClose={() => setAllImagesOpen(false)} />
-      )}
+      {allImagesOpen &&
+        (isReviewImagesLoading ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
+            <Spinner />
+          </div>
+        ) : (
+          <ImagesGalleryOverlay
+            images={[
+              ...(shop.mainImageUrl && shop.mainImageUrl !== DEFAULT_IMAGES.NO_IMAGE
+                ? [shop.mainImageUrl]
+                : []),
+              ...(reviewImages?.imageUrls ?? []),
+            ]}
+            onClose={() => setAllImagesOpen(false)}
+          />
+        ))}
 
       {/* 리뷰 작성 모달 */}
       <ReviewWriteModal
@@ -1610,6 +1186,7 @@ export default function ShopPreviewBottomSheet({
                         onReport={handleReportReview}
                         onReportUser={handleReportUser}
                         onBlock={handleBlockUser}
+                        isAdmin={isAdmin}
                         isLoggedIn={isLoggedIn}
                         onImageClick={(images, index) =>
                           setGalleryState({ images, initialIndex: index })

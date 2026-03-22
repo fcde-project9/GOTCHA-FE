@@ -35,6 +35,7 @@ export const ENDPOINTS = {
     UPDATE: (shopId: number, reviewId: number) => `/api/shops/${shopId}/reviews/${reviewId}`,
     DELETE: (shopId: number, reviewId: number) => `/api/shops/${shopId}/reviews/${reviewId}`,
     LIKE: (reviewId: number) => `/api/shops/reviews/${reviewId}/like`,
+    IMAGES: (shopId: number) => `/api/shops/${shopId}/reviews/images`,
   },
   // 신고
   REPORTS: {

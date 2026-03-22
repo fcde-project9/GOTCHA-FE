@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useShopDetail } from "@/api/queries/useShopDetail";
+import { useShopReviewImages } from "@/api/queries/useShopReviewImages";
 import { ImagesGalleryOverlay, Spinner } from "@/components/common";
 import { DEFAULT_IMAGES } from "@/constants/images";
 
@@ -18,7 +19,12 @@ export default function ImagesGalleryClient() {
   const shopId = parseShopId(params.id);
   const validShopId = shopId ?? 0;
 
-  const { data: shop, isLoading, isError } = useShopDetail(validShopId);
+  const { data: shop, isLoading: isShopLoading, isError: isShopError } = useShopDetail(validShopId);
+  const {
+    data: reviewImages,
+    isLoading: isImagesLoading,
+    isError: isImagesError,
+  } = useShopReviewImages(validShopId, !!shopId);
 
   if (!shopId) {
     return (
@@ -28,7 +34,7 @@ export default function ImagesGalleryClient() {
     );
   }
 
-  if (isLoading) {
+  if (isShopLoading || isImagesLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <Spinner />
@@ -36,7 +42,7 @@ export default function ImagesGalleryClient() {
     );
   }
 
-  if (isError || !shop) {
+  if (isShopError || !shop || isImagesError) {
     return (
       <div className="flex flex-col items-center justify-center h-64 px-5">
         <p className="text-[15px] text-grey-500">업체 정보를 불러오는데 실패했어요.</p>
@@ -48,7 +54,7 @@ export default function ImagesGalleryClient() {
     ...(shop.mainImageUrl && shop.mainImageUrl !== DEFAULT_IMAGES.NO_IMAGE
       ? [shop.mainImageUrl]
       : []),
-    ...shop.reviews.flatMap((review) => review.imageUrls),
+    ...(reviewImages?.imageUrls ?? []),
   ];
 
   if (images.length === 0) {

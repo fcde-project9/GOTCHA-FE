@@ -4,5 +4,7 @@ export { default as ShopPreviewBottomSheet } from "./ShopPreviewBottomSheet";
 export { default as StatusBadge } from "./StatusBadge";
 export { ShopDeleteConfirmModal } from "./ShopDeleteConfirmModal";
 export { ShopEditModal } from "./ShopEditModal";
+export { ShopImageGrid } from "./ShopImageGrid";
+export { ShopInfoSection } from "./ShopInfoSection";
 export { ShopReportModal } from "./ShopReportModal";
 export { ShopSuggestModal } from "./ShopSuggestModal";
