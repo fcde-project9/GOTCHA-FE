@@ -1249,7 +1249,7 @@ export default function ShopDetailClient({
 
   if (onClose) {
     return (
-      <div className="fixed inset-0 z-50 flex justify-center bg-default">
+      <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center bg-default h-safe-viewport">
         <div className="w-full max-w-[480px]">{content}</div>
       </div>
     );
