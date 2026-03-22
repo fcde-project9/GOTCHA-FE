@@ -230,17 +230,12 @@ export interface ReviewLikeResponse {
 export type ReviewLikeApiResponse = ApiResponse<ReviewLikeResponse>;
 
 /**
- * GET /api/shops/{shopId}/images 응답
+ * GET /api/shops/{shopId}/reviews/images 응답
  */
 export interface ShopImagesResponse {
-  images: string[];
+  imageUrls: string[];
   totalCount: number;
 }
-
-/**
- * GET /api/shops/{shopId}/images 전체 응답
- */
-export type ShopImagesApiResponse = ApiResponse<ShopImagesResponse>;
 
 /**
  * 이미지 업로드 폴더 타입

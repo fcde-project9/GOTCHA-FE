@@ -4,14 +4,12 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
-  Copy,
   ChevronRight,
   ChevronDown,
   PencilLine,
   MoreVertical,
   Pencil,
   Trash2,
-  Images,
   SquarePen,
   Siren,
   X,
@@ -25,6 +23,7 @@ import { useToggleReviewLike } from "@/api/mutations/useToggleReviewLike";
 import { useUpdateShop } from "@/api/mutations/useUpdateShop";
 import { useInfiniteReviews } from "@/api/queries/useInfiniteReviews";
 import { useShopDetail } from "@/api/queries/useShopDetail";
+import { useShopReviewImages } from "@/api/queries/useShopReviewImages";
 import { useUser } from "@/api/queries/useUser";
 import type { ReportReason, ShopSuggestReason } from "@/api/types";
 import {
@@ -44,16 +43,15 @@ import { ReportSuccessModal } from "@/components/features/review/ReportSuccessMo
 import { ReviewDeleteConfirmModal } from "@/components/features/review/ReviewDeleteConfirmModal";
 import { ReviewItem } from "@/components/features/review/ReviewItem";
 import { ReviewWriteModal } from "@/components/features/review/ReviewWriteModal";
-import { StatusBadge } from "@/components/features/shop";
-import { DayBadge } from "@/components/features/shop/DayBadge";
 import { ShopDeleteConfirmModal } from "@/components/features/shop/ShopDeleteConfirmModal";
 import { ShopEditModal } from "@/components/features/shop/ShopEditModal";
+import { ShopImageGrid } from "@/components/features/shop/ShopImageGrid";
+import { ShopInfoSection } from "@/components/features/shop/ShopInfoSection";
 import { ShopReportModal } from "@/components/features/shop/ShopReportModal";
 import { ShopSuggestModal } from "@/components/features/shop/ShopSuggestModal";
 import { DEFAULT_IMAGES, ICON_IMAGES } from "@/constants/images";
 import { useAuth, useFavorite, useToast } from "@/hooks";
 import type { ReviewResponse, ReviewSortOption } from "@/types/api";
-import { ALL_DAYS, DAY_MAP, parseOpenTime, getBusinessDays } from "@/utils";
 import { trackShopView, trackShareClick } from "@/utils/analytics";
 
 function parseShopId(id: string | string[] | undefined): number | null {
@@ -113,14 +111,15 @@ export default function ShopDetailClient({
     onUnauthorized: () => showToast("찜하기는 로그인 후 이용 가능해요.", { variant: "warning" }),
   });
 
-  const openTime = shop ? parseOpenTime(shop.openTime) : null;
-  const businessDays = getBusinessDays(openTime);
-
   const [galleryState, setGalleryState] = useState<{
     images: string[];
     initialIndex: number;
   } | null>(null);
   const [allImagesOpen, setAllImagesOpen] = useState(false);
+  const { data: reviewImages, isLoading: isReviewImagesLoading } = useShopReviewImages(
+    validShopId,
+    allImagesOpen
+  );
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [editingReview, setEditingReview] = useState<ReviewResponse | null>(null);
   const [deletingReviewId, setDeletingReviewId] = useState<number | null>(null);
@@ -489,22 +488,7 @@ export default function ShopDetailClient({
     ...(shop.mainImageUrl ? [shop.mainImageUrl] : []),
     ...shop.recentReviewImages,
   ];
-  const galleryImages = shopImages.filter((img) => img !== DEFAULT_IMAGES.NO_IMAGE);
   const totalImageCount = shop.totalReviewImageCount + (shop.mainImageUrl ? 1 : 0);
-  const visibleGalleryCount = shopImages
-    .slice(0, 5)
-    .filter((img) => img !== DEFAULT_IMAGES.NO_IMAGE).length;
-  const remainingCount = Math.max(galleryImages.length - visibleGalleryCount, 0);
-
-  const handleImageClick = (images: string[], index: number) => {
-    if (images[index] === DEFAULT_IMAGES.NO_IMAGE) {
-      showToast("아직 등록된 매장사진이 없어요", { variant: "warning" });
-    } else {
-      const filteredIndex =
-        images.slice(0, index + 1).filter((img) => img !== DEFAULT_IMAGES.NO_IMAGE).length - 1;
-      setGalleryState({ images: galleryImages, initialIndex: filteredIndex });
-    }
-  };
 
   const content = (
     <div className="h-safe-viewport bg-default flex flex-col overflow-hidden">
@@ -590,327 +574,30 @@ export default function ShopDetailClient({
 
         {/* 주소/위치힌트/영업일/영업시간 */}
         <div className="px-5">
-          <div className="flex flex-col gap-3 py-2">
-            <div className="flex items-center gap-2">
-              <Image
-                src="/images/icons/shop-location.png"
-                alt=""
-                width={20}
-                height={20}
-                className="shrink-0 pointer-events-none select-none"
-              />
-              <div className="flex items-center gap-0.5">
-                <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
-                  {shop.addressName}
-                </p>
-                <button
-                  onClick={handleCopyAddress}
-                  className="shrink-0 flex items-center justify-center w-5 h-5 rounded text-[12px] text-grey-600"
-                >
-                  <Copy size={14} strokeWidth={1.5} />
-                </button>
-              </div>
-            </div>
-            {shop.locationHint && (
-              <div className="flex items-center gap-2">
-                <Image
-                  src="/images/icons/shop-star.png"
-                  alt=""
-                  width={20}
-                  height={20}
-                  className="shrink-0 pointer-events-none select-none"
-                />
-                <p className="text-[16px] text-grey-900 leading-[1.5] tracking-[-0.16px]">
-                  {shop.locationHint}
-                </p>
-              </div>
-            )}
-          </div>
-          <div className="flex flex-col gap-3 pb-4 mt-1">
-            <div className="flex items-center gap-2">
-              <Image
-                src="/images/icons/shop-calendar.png"
-                alt=""
-                width={20}
-                height={20}
-                className="shrink-0 pointer-events-none select-none"
-              />
-              <div className="flex gap-1.5">
-                {ALL_DAYS.map((day) => (
-                  <DayBadge key={day} day={DAY_MAP[day]} isActive={businessDays.includes(day)} />
-                ))}
-              </div>
-            </div>
-            <div className="flex items-center gap-2 min-h-6">
-              <Image
-                src="/images/icons/shop-time.png"
-                alt=""
-                width={20}
-                height={20}
-                className="shrink-0 pointer-events-none select-none"
-              />
-              {shop.todayOpenTime && (
-                <span className="text-[16px] text-grey-900">{shop.todayOpenTime}</span>
-              )}
-              <StatusBadge openStatus={shop.openStatus} />
-            </div>
-          </div>
+          <ShopInfoSection
+            addressName={shop.addressName}
+            locationHint={shop.locationHint}
+            openTime={shop.openTime}
+            todayOpenTime={shop.todayOpenTime}
+            openStatus={shop.openStatus}
+            onCopyAddress={handleCopyAddress}
+          />
         </div>
 
         {/* 구분선 */}
         <div className="h-2 bg-grey-50" />
 
         {/* 매장 사진 */}
-        <section className="py-4">
-          <div className="flex items-center px-5 mb-3">
-            <div className="flex items-center gap-2">
-              <h3 className="text-[19px] font-medium text-grey-900 leading-[1.5] tracking-[-0.19px]">
-                매장 사진
-              </h3>
-              {totalImageCount > 0 && (
-                <span className="text-[14px] text-main font-medium">{totalImageCount}</span>
-              )}
-            </div>
-          </div>
-
-          {shopImages.length === 0 ? (
-            <div className="px-5">
-              <button
-                className="w-full flex items-center justify-center h-32 rounded-xl bg-grey-50"
-                onClick={() => showToast("아직 등록된 매장사진이 없어요", { variant: "warning" })}
-              >
-                <p className="text-[14px] text-grey-400">등록된 사진이 없어요</p>
-              </button>
-            </div>
-          ) : shopImages.length === 1 ? (
-            <div className="px-5">
-              <button
-                onClick={() => handleImageClick(shopImages, 0)}
-                className="w-full aspect-[335/167] rounded-lg overflow-hidden bg-grey-100"
-              >
-                <Image
-                  src={shopImages[0]}
-                  alt="매장 사진"
-                  width={335}
-                  height={167}
-                  className="w-full h-full object-cover"
-                />
-              </button>
-            </div>
-          ) : shopImages.length === 2 ? (
-            <div className="px-5">
-              <div className="relative aspect-[335/167]">
-                <div className="absolute inset-0 flex gap-px">
-                  <button
-                    onClick={() => handleImageClick(shopImages, 0)}
-                    className="flex-1 rounded-l-lg overflow-hidden bg-grey-100"
-                  >
-                    <Image
-                      src={shopImages[0]}
-                      alt="매장 사진 1"
-                      width={167}
-                      height={167}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                  <button
-                    onClick={() => handleImageClick(shopImages, 1)}
-                    className="flex-1 rounded-r-lg overflow-hidden bg-grey-100"
-                  >
-                    <Image
-                      src={shopImages[1]}
-                      alt="매장 사진 2"
-                      width={167}
-                      height={167}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : shopImages.length === 3 ? (
-            <div className="px-5">
-              <div className="relative aspect-[335/167]">
-                <div className="absolute inset-0 flex gap-px">
-                  <button
-                    onClick={() => handleImageClick(shopImages, 0)}
-                    className="flex-1 rounded-l-lg overflow-hidden bg-grey-100"
-                  >
-                    <Image
-                      src={shopImages[0]}
-                      alt="매장 사진 1"
-                      width={167}
-                      height={167}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                  <div className="flex-1 flex flex-col gap-px">
-                    <button
-                      onClick={() => handleImageClick(shopImages, 1)}
-                      className="flex-1 rounded-tr-lg overflow-hidden bg-grey-100"
-                    >
-                      <Image
-                        src={shopImages[1]}
-                        alt="매장 사진 2"
-                        width={112}
-                        height={83}
-                        className="w-full h-full object-cover"
-                      />
-                    </button>
-                    <button
-                      onClick={() => handleImageClick(shopImages, 2)}
-                      className="flex-1 rounded-br-lg overflow-hidden bg-grey-100"
-                    >
-                      <Image
-                        src={shopImages[2]}
-                        alt="매장 사진 3"
-                        width={112}
-                        height={83}
-                        className="w-full h-full object-cover"
-                      />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : shopImages.length === 4 ? (
-            <div className="px-5">
-              <div className="relative aspect-[335/167]">
-                <div className="absolute inset-0 flex gap-px">
-                  <button
-                    onClick={() => handleImageClick(shopImages, 0)}
-                    className="flex-1 rounded-l-lg overflow-hidden bg-grey-100"
-                  >
-                    <Image
-                      src={shopImages[0]}
-                      alt="매장 사진 1"
-                      width={167}
-                      height={167}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                  <div className="flex-1 flex flex-col gap-px">
-                    <button
-                      onClick={() => handleImageClick(shopImages, 1)}
-                      className="flex-1 rounded-tr-lg overflow-hidden bg-grey-100"
-                    >
-                      <Image
-                        src={shopImages[1]}
-                        alt="매장 사진 2"
-                        width={167}
-                        height={83}
-                        className="w-full h-full object-cover"
-                      />
-                    </button>
-                    <div className="flex gap-px">
-                      <button
-                        onClick={() => handleImageClick(shopImages, 2)}
-                        className="flex-1 aspect-square overflow-hidden bg-grey-100"
-                      >
-                        <Image
-                          src={shopImages[2]}
-                          alt="매장 사진 3"
-                          width={83}
-                          height={83}
-                          className="w-full h-full object-cover"
-                        />
-                      </button>
-                      <button
-                        onClick={() => handleImageClick(shopImages, 3)}
-                        className="flex-1 aspect-square rounded-br-lg overflow-hidden bg-grey-100"
-                      >
-                        <Image
-                          src={shopImages[3]}
-                          alt="매장 사진 4"
-                          width={83}
-                          height={83}
-                          className="w-full h-full object-cover"
-                        />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="px-5">
-              <div className="flex gap-px">
-                <button
-                  onClick={() => handleImageClick(shopImages, 0)}
-                  className="flex-1 aspect-square rounded-l-lg overflow-hidden bg-grey-100"
-                >
-                  <Image
-                    src={shopImages[0]}
-                    alt="매장 사진 1"
-                    width={167}
-                    height={167}
-                    className="w-full h-full object-cover"
-                  />
-                </button>
-                <div className="flex-1 flex flex-wrap gap-px">
-                  <button
-                    onClick={() => handleImageClick(shopImages, 1)}
-                    className="w-[calc(50%-0.5px)] aspect-square overflow-hidden bg-grey-100"
-                  >
-                    <Image
-                      src={shopImages[1]}
-                      alt="매장 사진 2"
-                      width={83}
-                      height={83}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                  <button
-                    onClick={() => handleImageClick(shopImages, 2)}
-                    className="w-[calc(50%-0.5px)] aspect-square rounded-tr-lg overflow-hidden bg-grey-100"
-                  >
-                    <Image
-                      src={shopImages[2]}
-                      alt="매장 사진 3"
-                      width={83}
-                      height={83}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                  <button
-                    onClick={() => handleImageClick(shopImages, 3)}
-                    className="w-[calc(50%-0.5px)] aspect-square overflow-hidden bg-grey-100"
-                  >
-                    <Image
-                      src={shopImages[3]}
-                      alt="매장 사진 4"
-                      width={83}
-                      height={83}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                  <button
-                    onClick={() => setAllImagesOpen(true)}
-                    className="relative w-[calc(50%-0.5px)] aspect-square rounded-br-lg overflow-hidden bg-grey-100"
-                  >
-                    <Image
-                      src={shopImages[4]}
-                      alt="매장 사진 5"
-                      width={83}
-                      height={83}
-                      className="w-full h-full object-cover"
-                    />
-                    {remainingCount > 0 && (
-                      <div className="absolute inset-0 bg-black/55 flex flex-col items-center justify-center rounded-br-lg">
-                        <Images size={24} className="text-white" strokeWidth={1.5} />
-                        <div className="flex items-center justify-center">
-                          <span className="text-[12px] text-white leading-[1.5] tracking-[-0.12px]">
-                            +{remainingCount}
-                          </span>
-                          <ChevronRight size={10} className="text-white" />
-                        </div>
-                      </div>
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+        <section className="px-5">
+          <ShopImageGrid
+            images={shopImages}
+            totalImageCount={totalImageCount}
+            onImageClick={(filteredImages, index) =>
+              setGalleryState({ images: filteredImages, initialIndex: index })
+            }
+            onViewAll={() => setAllImagesOpen(true)}
+            onEmptyClick={() => showToast("아직 등록된 매장사진이 없어요", { variant: "warning" })}
+          />
         </section>
 
         {/* 구분선 */}
@@ -1033,9 +720,22 @@ export default function ShopDetailClient({
         />
       )}
 
-      {allImagesOpen && (
-        <ImagesGalleryOverlay images={galleryImages} onClose={() => setAllImagesOpen(false)} />
-      )}
+      {allImagesOpen &&
+        (isReviewImagesLoading ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
+            <Spinner />
+          </div>
+        ) : (
+          <ImagesGalleryOverlay
+            images={[
+              ...(shop.mainImageUrl && shop.mainImageUrl !== DEFAULT_IMAGES.NO_IMAGE
+                ? [shop.mainImageUrl]
+                : []),
+              ...(reviewImages?.imageUrls ?? []),
+            ]}
+            onClose={() => setAllImagesOpen(false)}
+          />
+        ))}
 
       {/* 리뷰 작성 모달 */}
       <ReviewWriteModal

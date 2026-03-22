@@ -63,6 +63,9 @@ export const queryKeys = {
     /** 리뷰 목록 (무한 스크롤) */
     infinite: (shopId: number, sortBy: ReviewSortOption, size: number) =>
       [...queryKeys.reviews.byShop(shopId), "infinite", sortBy, size] as const,
+
+    /** 리뷰 이미지 전체 조회 */
+    images: (shopId: number) => [...queryKeys.reviews.byShop(shopId), "images"] as const,
   },
 
   /**

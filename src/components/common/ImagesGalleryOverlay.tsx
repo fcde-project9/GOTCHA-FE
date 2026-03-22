@@ -52,7 +52,7 @@ export function ImagesGalleryOverlay({ images, onClose }: ImagesGalleryOverlayPr
     <div className="fixed inset-0 z-50 flex justify-center bg-default">
       <div className="w-full max-w-[480px] flex flex-col">
         {/* 헤더 */}
-        <BackHeader onBack={onClose} showBorder />
+        <BackHeader onBack={onClose} />
 
         {/* 그리드 */}
         <div className="flex-1 overflow-y-auto p-4">
