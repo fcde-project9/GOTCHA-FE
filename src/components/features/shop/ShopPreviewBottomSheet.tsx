@@ -640,7 +640,10 @@ export default function ShopPreviewBottomSheet({
           height: isCollapsing ? `${sheetHeight}px` : isExpanded ? "100%" : `${sheetHeight}px`,
           transition: isDragging ? "none" : "height 0.55s cubic-bezier(0.32, 0.72, 0, 1)",
         }}
-        onTouchStart={(e) => handleDragStart(e.touches[0].clientY)}
+        onTouchStart={(e) => {
+          e.stopPropagation();
+          handleDragStart(e.touches[0].clientY);
+        }}
         onTouchMove={(e) => handleDragMove(e.touches[0].clientY, e)}
         onTouchEnd={handleDragEnd}
         onTouchCancel={handleDragEnd}
