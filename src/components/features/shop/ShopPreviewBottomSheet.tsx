@@ -216,6 +216,7 @@ export default function ShopPreviewBottomSheet({
   const DEFAULT_HEIGHT = 410;
   const MINIMIZED_HEIGHT = 92; // grabber(36) + 업체명 행(40) + 하단 여백(16)
   const LOCATION_HINT_HEIGHT = 36;
+  const TRANSITION_MS = 550;
   const [sheetHeight, setSheetHeight] = useState(DEFAULT_HEIGHT);
   const [isDragging, setIsDragging] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -271,7 +272,7 @@ export default function ShopPreviewBottomSheet({
     setTimeout(() => {
       setIsCollapsing(false);
       setHasExpandedOnce(true);
-    }, 560);
+    }, TRANSITION_MS);
   }, []);
 
   const handleDragStart = useCallback(
@@ -638,7 +639,9 @@ export default function ShopPreviewBottomSheet({
         className={`absolute bottom-0 left-0 right-0 z-40 bg-white overflow-hidden shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] ${isExpanded && !isCollapsing ? "flex flex-col" : "rounded-t-[24px]"} ${isLeaving ? "animate-slide-down" : !hasExpandedOnce ? "animate-slide-up" : ""}`}
         style={{
           height: isCollapsing ? `${sheetHeight}px` : isExpanded ? "100%" : `${sheetHeight}px`,
-          transition: isDragging ? "none" : "height 0.55s cubic-bezier(0.32, 0.72, 0, 1)",
+          transition: isDragging
+            ? "none"
+            : `height ${TRANSITION_MS}ms cubic-bezier(0.32, 0.72, 0, 1)`,
         }}
         onTouchStart={(e) => {
           e.stopPropagation();
