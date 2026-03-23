@@ -116,10 +116,13 @@ export default function ShopDetailClient({
     initialIndex: number;
   } | null>(null);
   const [allImagesOpen, setAllImagesOpen] = useState(false);
-  const { data: reviewImages, isLoading: isReviewImagesLoading } = useShopReviewImages(
-    validShopId,
-    allImagesOpen
-  );
+  const {
+    data: reviewImages,
+    isLoading: isReviewImagesLoading,
+    hasNextPage: reviewImagesHasNextPage,
+    fetchNextPage: reviewImagesFetchNextPage,
+    isFetchingNextPage: isReviewImagesFetchingNextPage,
+  } = useShopReviewImages(validShopId, allImagesOpen);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [editingReview, setEditingReview] = useState<ReviewResponse | null>(null);
   const [deletingReviewId, setDeletingReviewId] = useState<number | null>(null);
@@ -731,9 +734,12 @@ export default function ShopDetailClient({
               ...(shop.mainImageUrl && shop.mainImageUrl !== DEFAULT_IMAGES.NO_IMAGE
                 ? [shop.mainImageUrl]
                 : []),
-              ...(reviewImages?.imageUrls ?? []),
+              ...(reviewImages?.pages.flatMap((page) => page.content) ?? []),
             ]}
             onClose={() => setAllImagesOpen(false)}
+            hasNextPage={reviewImagesHasNextPage}
+            fetchNextPage={reviewImagesFetchNextPage}
+            isFetchingNextPage={isReviewImagesFetchingNextPage}
           />
         ))}
 

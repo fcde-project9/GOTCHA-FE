@@ -233,8 +233,11 @@ export type ReviewLikeApiResponse = ApiResponse<ReviewLikeResponse>;
  * GET /api/shops/{shopId}/reviews/images 응답
  */
 export interface ShopImagesResponse {
-  imageUrls: string[];
+  content: string[];
   totalCount: number;
+  page: number;
+  size: number;
+  hasNext: boolean;
 }
 
 /**
