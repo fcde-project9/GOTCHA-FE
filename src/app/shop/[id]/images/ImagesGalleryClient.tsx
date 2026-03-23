@@ -24,6 +24,9 @@ export default function ImagesGalleryClient() {
     data: reviewImages,
     isLoading: isImagesLoading,
     isError: isImagesError,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
   } = useShopReviewImages(validShopId, !!shopId);
 
   if (!shopId) {
@@ -50,11 +53,16 @@ export default function ImagesGalleryClient() {
     );
   }
 
+  const reviewImageUrls = reviewImages?.pages.flatMap((page) => page.content) ?? [];
+  const totalCount =
+    (reviewImages?.pages[0]?.totalCount ?? 0) +
+    (shop.mainImageUrl && shop.mainImageUrl !== DEFAULT_IMAGES.NO_IMAGE ? 1 : 0);
+
   const images = [
     ...(shop.mainImageUrl && shop.mainImageUrl !== DEFAULT_IMAGES.NO_IMAGE
       ? [shop.mainImageUrl]
       : []),
-    ...(reviewImages?.imageUrls ?? []),
+    ...reviewImageUrls,
   ];
 
   if (images.length === 0) {
@@ -65,5 +73,14 @@ export default function ImagesGalleryClient() {
     );
   }
 
-  return <ImagesGalleryOverlay images={images} onClose={() => router.back()} />;
+  return (
+    <ImagesGalleryOverlay
+      images={images}
+      onClose={() => router.back()}
+      totalCount={totalCount}
+      hasNextPage={hasNextPage}
+      fetchNextPage={fetchNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+    />
+  );
 }

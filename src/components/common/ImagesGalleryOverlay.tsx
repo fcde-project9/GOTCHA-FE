@@ -3,17 +3,29 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import { ChevronLeft, X } from "lucide-react";
-import { BackHeader } from "@/components/common";
+import { BackHeader, Spinner } from "@/components/common";
 
 interface ImagesGalleryOverlayProps {
   images: string[];
   onClose: () => void;
+  totalCount?: number;
+  hasNextPage?: boolean;
+  fetchNextPage?: () => void;
+  isFetchingNextPage?: boolean;
 }
 
-export function ImagesGalleryOverlay({ images, onClose }: ImagesGalleryOverlayProps) {
+export function ImagesGalleryOverlay({
+  images,
+  onClose,
+  totalCount,
+  hasNextPage,
+  fetchNextPage,
+  isFetchingNextPage,
+}: ImagesGalleryOverlayProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusRef = useRef<Element | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const handleImageClick = (index: number) => {
     previousFocusRef.current = document.activeElement;
@@ -38,6 +50,26 @@ export function ImagesGalleryOverlay({ images, onClose }: ImagesGalleryOverlayPr
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [selectedIndex, handleCloseModal]);
 
+  // 무한 스크롤 Intersection Observer
+  useEffect(() => {
+    if (!hasNextPage || isFetchingNextPage || !fetchNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
   const handlePrevImage = () => {
     if (selectedIndex === null) return;
     setSelectedIndex(selectedIndex > 0 ? selectedIndex - 1 : images.length - 1);
@@ -56,7 +88,7 @@ export function ImagesGalleryOverlay({ images, onClose }: ImagesGalleryOverlayPr
 
         {/* 그리드 */}
         <div className="flex-1 overflow-y-auto p-4">
-          <p className="text-[14px] text-grey-500 mb-3">총 {images.length}장</p>
+          <p className="text-[14px] text-grey-500 mb-3">총 {totalCount ?? images.length}장</p>
           <div className="grid grid-cols-3 gap-1">
             {images.map((imageUrl, index) => (
               <button
@@ -74,6 +106,11 @@ export function ImagesGalleryOverlay({ images, onClose }: ImagesGalleryOverlayPr
               </button>
             ))}
           </div>
+          {hasNextPage && (
+            <div ref={loadMoreRef} className="flex justify-center py-4">
+              {isFetchingNextPage && <Spinner />}
+            </div>
+          )}
         </div>
 
         {/* 이미지 뷰어 */}
