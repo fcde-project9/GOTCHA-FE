@@ -66,7 +66,7 @@ export default function FavoritesPage() {
     }
 
     return () => observer.disconnect();
-  }, [isLoading, isFetchingNextPage, hasNextPage, fetchNextPage]);
+  }, [isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, trimmedSearch]);
 
   // 새로고침
   const handleRefresh = () => {
