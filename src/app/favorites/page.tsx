@@ -138,8 +138,15 @@ export default function FavoritesPage() {
               <RefreshCcw size={16} className="stroke-white" strokeWidth={2} />
             </button>
           </div>
+        ) : trimmedSearch && filteredFavorites.length === 0 && hasNextPage ? (
+          // 검색 중 + 아직 더 가져올 페이지 있음 → sentinel 유지하며 계속 로드
+          <div className="flex-1 overflow-y-auto px-5 pb-3">
+            <div ref={loadMoreRef} className="flex justify-center py-4">
+              {isFetchingNextPage && <Spinner />}
+            </div>
+          </div>
         ) : trimmedSearch && filteredFavorites.length === 0 ? (
-          // 검색 결과 없음
+          // 모든 페이지 로드 완료 후에도 검색 결과 없음
           <div className="flex flex-1 flex-col items-center justify-center px-5">
             <p className="text-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-600">
               검색 결과가 없어요
