@@ -122,12 +122,17 @@ export function ReviewWriteModal({
     return () => viewport.removeEventListener("resize", handleResize);
   }, [isOpen]);
 
-  // 수정 모드일 때 초기 데이터 설정
+  // 수정 모드일 때 초기 데이터 설정 (모달이 열릴 때 1회만 실행)
+  const hasInitializedRef = useRef(false);
   useEffect(() => {
-    if (isOpen && isEditMode && initialData) {
+    if (isOpen && isEditMode && initialData && !hasInitializedRef.current) {
       setContent(initialData.content);
       setImageUrls(initialData.imageUrls);
-      setImagePreviewUrls(initialData.imageUrls); // 서버 URL을 미리보기로도 사용
+      setImagePreviewUrls(initialData.imageUrls);
+      hasInitializedRef.current = true;
+    }
+    if (!isOpen) {
+      hasInitializedRef.current = false;
     }
   }, [isOpen, isEditMode, initialData]);
 
