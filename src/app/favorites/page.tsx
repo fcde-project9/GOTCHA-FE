@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { CircleX, RefreshCcw } from "lucide-react";
@@ -15,6 +15,7 @@ export default function FavoritesPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedShopId, setSelectedShopId] = useState<number | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   // 오버레이 열릴 때 history entry 추가 → 뒤로가기로 닫힘 처리
   useEffect(() => {
@@ -28,18 +29,44 @@ export default function FavoritesPage() {
   // 전역 로그인 상태
   const { isLoggedIn, isLoading: isAuthLoading } = useAuth();
 
-  // React Query로 찜 목록 조회
-  const { data: favoritesData, isLoading, error, refetch } = useFavorites();
+  // React Query로 찜 목록 조회 (무한 스크롤)
+  const { data, isLoading, error, refetch, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useFavorites();
+
+  // 전체 찜 목록 (모든 페이지 평탄화)
+  const allFavorites = useMemo(
+    () => data?.pages.flatMap((page) => page?.content ?? []) ?? [],
+    [data]
+  );
 
   // 검색 필터링
   const trimmedSearch = searchQuery.trim();
   const filteredFavorites = useMemo(() => {
-    if (!favoritesData) return [];
-    if (!trimmedSearch) return favoritesData.content;
-    return favoritesData.content.filter((shop) =>
+    if (!trimmedSearch) return allFavorites;
+    return allFavorites.filter((shop) =>
       shop.name.toLowerCase().includes(trimmedSearch.toLowerCase())
     );
-  }, [favoritesData, trimmedSearch]);
+  }, [allFavorites, trimmedSearch]);
+
+  // 무한 스크롤 Intersection Observer
+  useEffect(() => {
+    if (isLoading || isFetchingNextPage || !hasNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [isLoading, isFetchingNextPage, hasNextPage, fetchNextPage]);
 
   // 새로고침
   const handleRefresh = () => {
@@ -62,7 +89,7 @@ export default function FavoritesPage() {
         <SimpleHeader title="찜한업체" />
 
         {/* 검색창 - 찜한 업체가 있을 때만 표시 */}
-        {favoritesData && favoritesData.content.length > 0 && (
+        {allFavorites.length > 0 && (
           <div className="flex-shrink-0">
             <div className="flex h-11 items-center justify-between rounded-lg bg-grey-50 px-3 py-2.5 mx-5 mb-3">
               <input
@@ -166,6 +193,13 @@ export default function FavoritesPage() {
                 <FavoriteShopItem key={shop.id} shop={shop} onShopClick={setSelectedShopId} />
               ))}
             </div>
+
+            {/* 무한 스크롤 트리거 */}
+            {hasNextPage && (
+              <div ref={loadMoreRef} className="flex justify-center py-4">
+                {isFetchingNextPage && <Spinner />}
+              </div>
+            )}
           </div>
         )}
       </main>
