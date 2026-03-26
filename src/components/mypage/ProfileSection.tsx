@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { Plus, SquarePen } from "lucide-react";
 import { ImageViewerModal } from "@/components/common";
-import { DEFAULT_IMAGES, getSocialProviderIcon } from "@/constants";
+import { DEFAULT_IMAGES, ICON_IMAGES, getSocialProviderIcon } from "@/constants";
 
 const SOCIAL_PROVIDER_LABELS = {
   google: "Google",
@@ -75,23 +75,7 @@ export function ProfileSection({
           <h2 className="text-[24px] font-semibold leading-[1.4] tracking-[-0.24px] text-grey-900">
             로그인을 해주세요
           </h2>
-          <div className="w-6 h-6 flex items-center justify-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="lucide lucide-chevron-left stroke-grey-900 rotate-180 scale-y-[-1]"
-              aria-hidden="true"
-            >
-              <path d="m15 18-6-6 6-6"></path>
-            </svg>
-          </div>
+          <Image src={ICON_IMAGES.ARROW_RIGHT} alt="" width={24} height={24} />
         </button>
       </div>
     );
