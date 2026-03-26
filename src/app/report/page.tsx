@@ -301,7 +301,7 @@ export default function ReportLocationPage() {
             variant="primary"
             size="medium"
             fullWidth
-            loading={checkingNearby}
+            disabled={checkingNearby}
             onClick={handleSubmit}
           >
             이 주소로 등록할래요!
