@@ -52,6 +52,18 @@ export default function FavoritesPage() {
   // input이 렌더링되지 않으면 포커스 상태 무효화
   const isSearchActive = isSearchFocused && allFavorites.length > 0;
 
+  // iOS Safari 키보드 올라올 때 body 스크롤 방지
+  useEffect(() => {
+    if (isSearchActive) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isSearchActive]);
+
   // 무한 스크롤 Intersection Observer
   useEffect(() => {
     if (isLoading || isFetchingNextPage || !hasNextPage) return;
