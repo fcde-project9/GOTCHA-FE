@@ -104,7 +104,9 @@ export default function FavoritesPage() {
 
   return (
     <>
-      <main className="h-[calc(100dvh-env(safe-area-inset-top,0px)-var(--footer-height))] overflow-hidden relative bg-default flex flex-col">
+      <main
+        className={`${isSearchActive ? "h-[calc(100dvh-env(safe-area-inset-top,0px))]" : "h-[calc(100dvh-env(safe-area-inset-top,0px)-var(--footer-height))]"} overflow-hidden relative bg-default flex flex-col`}
+      >
         {/* 헤더 */}
         <SimpleHeader title="찜한업체" />
 
