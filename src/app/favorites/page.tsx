@@ -242,7 +242,7 @@ export default function FavoritesPage() {
       {selectedShopId !== null && (
         <ShopDetailClient shopId={selectedShopId} onClose={() => history.back()} />
       )}
-      <Footer />
+      {!isSearchActive && <Footer />}
     </>
   );
 }
