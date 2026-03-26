@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks";
 export default function FavoritesPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [selectedShopId, setSelectedShopId] = useState<number | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
@@ -47,6 +48,13 @@ export default function FavoritesPage() {
       shop.name.toLowerCase().includes(trimmedSearch.toLowerCase())
     );
   }, [allFavorites, trimmedSearch]);
+
+  // 검색 input이 조건부 렌더링으로 사라지면 focus 상태 리셋
+  useEffect(() => {
+    if (allFavorites.length === 0) {
+      setIsSearchFocused(false);
+    }
+  }, [allFavorites.length]);
 
   // 무한 스크롤 Intersection Observer
   useEffect(() => {
@@ -96,6 +104,8 @@ export default function FavoritesPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => setIsSearchFocused(false)}
                 placeholder="찜한업체 검색"
                 className="flex-1 bg-transparent text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-900 placeholder:text-grey-500 focus:outline-none"
               />
@@ -140,7 +150,9 @@ export default function FavoritesPage() {
           </div>
         ) : trimmedSearch && filteredFavorites.length === 0 && hasNextPage ? (
           // 검색 중 + 아직 더 가져올 페이지 있음 → sentinel 유지하며 계속 로드
-          <div className="flex-1 overflow-y-auto px-5 pb-3">
+          <div
+            className={`flex-1 px-5 pb-3 ${isSearchFocused ? "overflow-hidden" : "overflow-y-auto"}`}
+          >
             <div ref={loadMoreRef} className="flex justify-center py-4">
               {isFetchingNextPage && <Spinner />}
             </div>
@@ -185,7 +197,9 @@ export default function FavoritesPage() {
             )}
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto px-5 pb-3">
+          <div
+            className={`flex-1 px-5 pb-3 ${isSearchFocused ? "overflow-hidden" : "overflow-y-auto"}`}
+          >
             {/* 총 개수 */}
             <div className="mt-2 mb-2 flex items-center justify-between">
               <div className="flex items-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-900">
