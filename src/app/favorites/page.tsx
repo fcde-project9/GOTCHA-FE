@@ -49,12 +49,8 @@ export default function FavoritesPage() {
     );
   }, [allFavorites, trimmedSearch]);
 
-  // 검색 input이 조건부 렌더링으로 사라지면 focus 상태 리셋
-  useEffect(() => {
-    if (allFavorites.length === 0) {
-      setIsSearchFocused(false);
-    }
-  }, [allFavorites.length]);
+  // input이 렌더링되지 않으면 포커스 상태 무효화
+  const isSearchActive = isSearchFocused && allFavorites.length > 0;
 
   // 무한 스크롤 Intersection Observer
   useEffect(() => {
@@ -151,7 +147,7 @@ export default function FavoritesPage() {
         ) : trimmedSearch && filteredFavorites.length === 0 && hasNextPage ? (
           // 검색 중 + 아직 더 가져올 페이지 있음 → sentinel 유지하며 계속 로드
           <div
-            className={`flex-1 px-5 pb-3 ${isSearchFocused ? "overflow-hidden" : "overflow-y-auto"}`}
+            className={`flex-1 px-5 pb-3 ${isSearchActive ? "overflow-hidden" : "overflow-y-auto"}`}
           >
             <div ref={loadMoreRef} className="flex justify-center py-4">
               {isFetchingNextPage && <Spinner />}
@@ -198,7 +194,7 @@ export default function FavoritesPage() {
           </div>
         ) : (
           <div
-            className={`flex-1 px-5 pb-3 ${isSearchFocused ? "overflow-hidden" : "overflow-y-auto"}`}
+            className={`flex-1 px-5 pb-3 ${isSearchActive ? "overflow-hidden" : "overflow-y-auto"}`}
           >
             {/* 총 개수 */}
             <div className="mt-2 mb-2 flex items-center justify-between">
