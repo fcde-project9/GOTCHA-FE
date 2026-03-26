@@ -52,14 +52,18 @@ export default function FavoritesPage() {
   // input이 렌더링되지 않으면 포커스 상태 무효화
   const isSearchActive = isSearchFocused && allFavorites.length > 0;
 
-  // iOS Safari 키보드 올라올 때 body 스크롤 방지
+  // iOS Safari 키보드 올라올 때 body/html 스크롤 방지
   useEffect(() => {
     if (isSearchActive) {
+      document.documentElement.style.overflow = "hidden";
       document.body.style.overflow = "hidden";
+      window.scrollTo(0, 0);
     } else {
+      document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
     }
     return () => {
+      document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
     };
   }, [isSearchActive]);
@@ -112,7 +116,10 @@ export default function FavoritesPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => setIsSearchFocused(true)}
+                onFocus={() => {
+                  setIsSearchFocused(true);
+                  requestAnimationFrame(() => window.scrollTo(0, 0));
+                }}
                 onBlur={() => setIsSearchFocused(false)}
                 placeholder="찜한업체 검색"
                 className="flex-1 bg-transparent text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-900 placeholder:text-grey-500 focus:outline-none"
