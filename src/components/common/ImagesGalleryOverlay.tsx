@@ -54,16 +54,18 @@ export function ImagesGalleryOverlay({
 
   // 이미지 뷰어 열릴 때 타이머 시작, 닫힐 때 정리
   useEffect(() => {
-    if (selectedIndex !== null) {
-      resetHideTimer();
-    } else {
-      setShowControls(true);
-      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-    }
+    if (selectedIndex === null) return;
+
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    hideTimerRef.current = setTimeout(() => setShowControls(false), 3000);
+
     return () => {
-      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+      if (hideTimerRef.current) {
+        clearTimeout(hideTimerRef.current);
+        hideTimerRef.current = null;
+      }
     };
-  }, [selectedIndex, resetHideTimer]);
+  }, [selectedIndex]);
 
   const resetZoom = useCallback(() => {
     setScale(1);

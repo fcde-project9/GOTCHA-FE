@@ -358,7 +358,11 @@ export function ReviewWriteModal({
       {/* 모달 컨텐츠 */}
       <div
         className="relative w-full max-w-[480px] mx-auto bg-white rounded-t-[24px] max-h-[580px] flex flex-col animate-slide-up transition-transform duration-200"
-        style={{ transform: keyboardHeight > 0 ? `translateY(-${keyboardHeight}px)` : undefined }}
+        style={{
+          transform: keyboardHeight > 0 ? `translateY(-${keyboardHeight - 20}px)` : undefined,
+          paddingBottom: keyboardHeight > 0 ? 20 : undefined,
+          marginBottom: keyboardHeight > 0 ? -20 : undefined,
+        }}
       >
         {/* 헤더 */}
         <div className="relative flex items-center justify-between px-5 py-5">
