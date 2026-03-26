@@ -593,21 +593,15 @@ function ReportRegisterContent() {
 
           {/* 영업시간 리스트 */}
           <div className="flex flex-col gap-2">
-            {operatingHours.length === 0 ? (
-              <div className="flex items-center bg-grey-50 rounded-lg px-5 py-4">
-                <span className="text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-400">
-                  영업정보 없음 (+ 추가 버튼을 눌러주세요)
-                </span>
-              </div>
-            ) : (
-              operatingHours.map((entry) => (
-                <OperatingHoursItem
-                  key={entry.id}
-                  entry={entry}
-                  onDelete={handleDeleteOperatingHours}
-                />
-              ))
-            )}
+            {operatingHours.length === 0
+              ? null
+              : operatingHours.map((entry) => (
+                  <OperatingHoursItem
+                    key={entry.id}
+                    entry={entry}
+                    onDelete={handleDeleteOperatingHours}
+                  />
+                ))}
           </div>
           {errors.operatingHours && (
             <p className="text-[13px] font-medium leading-[1.5] tracking-[-0.13px] text-[#ff2115]">

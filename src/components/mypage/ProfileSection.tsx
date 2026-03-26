@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { Plus, SquarePen } from "lucide-react";
+import { ImageViewerModal } from "@/components/common";
 import { DEFAULT_IMAGES, getSocialProviderIcon } from "@/constants";
 
 const SOCIAL_PROVIDER_LABELS = {
@@ -34,6 +36,8 @@ export function ProfileSection({
   onEditNickname,
   onLogin,
 }: ProfileSectionProps) {
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+
   const handleProfileImageChange = () => {
     const input = document.createElement("input");
     input.type = "file";
@@ -99,7 +103,12 @@ export function ProfileSection({
       {/* Profile Image */}
       <div className="flex flex-col items-center gap-4">
         <div className="relative w-[100px] h-[100px]">
-          <div className="relative w-full h-full rounded-full overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setIsImageViewerOpen(true)}
+            className="relative w-full h-full rounded-full overflow-hidden"
+            aria-label="프로필 이미지 확대"
+          >
             <Image
               src={profileImage}
               alt="프로필 이미지"
@@ -107,7 +116,7 @@ export function ProfileSection({
               sizes="100px"
               className="object-cover"
             />
-          </div>
+          </button>
           {/* Edit Button */}
           <button
             onClick={handleProfileImageChange}
@@ -154,6 +163,14 @@ export function ProfileSection({
           </div>
         </div>
       </div>
+
+      {isImageViewerOpen && (
+        <ImageViewerModal
+          imageUrl={profileImage}
+          onClose={() => setIsImageViewerOpen(false)}
+          alt="프로필 이미지"
+        />
+      )}
     </div>
   );
 }
