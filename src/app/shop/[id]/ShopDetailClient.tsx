@@ -720,6 +720,7 @@ export default function ShopDetailClient({
           initialIndex={galleryState.initialIndex}
           onClose={() => setGalleryState(null)}
           alt="이미지"
+          hideArrows
         />
       )}
 
