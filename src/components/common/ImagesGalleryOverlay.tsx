@@ -56,8 +56,15 @@ export function ImagesGalleryOverlay({
   useEffect(() => {
     if (selectedIndex === null) return;
 
-    const timerId = setTimeout(() => setShowControls(false), 3000);
-    return () => clearTimeout(timerId);
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    hideTimerRef.current = setTimeout(() => setShowControls(false), 3000);
+
+    return () => {
+      if (hideTimerRef.current) {
+        clearTimeout(hideTimerRef.current);
+        hideTimerRef.current = null;
+      }
+    };
   }, [selectedIndex]);
 
   const resetZoom = useCallback(() => {
