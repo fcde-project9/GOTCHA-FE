@@ -1028,6 +1028,7 @@ export default function ShopPreviewBottomSheet({
           initialIndex={galleryState.initialIndex}
           onClose={() => setGalleryState(null)}
           alt="이미지"
+          hideArrows
         />
       )}
 
