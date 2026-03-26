@@ -54,16 +54,11 @@ export function ImagesGalleryOverlay({
 
   // 이미지 뷰어 열릴 때 타이머 시작, 닫힐 때 정리
   useEffect(() => {
-    if (selectedIndex !== null) {
-      resetHideTimer();
-    } else {
-      setShowControls(true);
-      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-    }
-    return () => {
-      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-    };
-  }, [selectedIndex, resetHideTimer]);
+    if (selectedIndex === null) return;
+
+    const timerId = setTimeout(() => setShowControls(false), 3000);
+    return () => clearTimeout(timerId);
+  }, [selectedIndex]);
 
   const resetZoom = useCallback(() => {
     setScale(1);
