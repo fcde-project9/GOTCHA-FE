@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ShopReportReason } from "@/api/types";
+import { isNativeApp } from "@/utils/platform";
 
 const SHOP_REPORT_REASONS: { value: ShopReportReason; label: string }[] = [
   { value: "SHOP_CLOSED", label: "영업 종료/폐업된 업체예요" },
@@ -26,6 +27,8 @@ export function ShopReportModal({
 }: ShopReportModalProps) {
   const [selectedReason, setSelectedReason] = useState<ShopReportReason | null>(null);
   const [detail, setDetail] = useState("");
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
   if (isOpen !== prevIsOpen) {
@@ -35,6 +38,74 @@ export function ShopReportModal({
       setDetail("");
     }
   }
+
+  // 모달이 열릴 때 body 스크롤 방지
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  // 키보드 높이 감지
+  useEffect(() => {
+    if (!isOpen) {
+      setKeyboardHeight(0);
+      return;
+    }
+
+    if (isNativeApp()) {
+      let cancelled = false;
+      let showListener: { remove: () => void | Promise<void> } | undefined;
+      let hideListener: { remove: () => void | Promise<void> } | undefined;
+
+      (async () => {
+        try {
+          const { Keyboard } = await import("@capacitor/keyboard");
+          if (cancelled) return;
+
+          showListener = await Keyboard.addListener("keyboardWillShow", (info) => {
+            setKeyboardHeight(info.keyboardHeight);
+          });
+          hideListener = await Keyboard.addListener("keyboardWillHide", () => {
+            setKeyboardHeight(0);
+          });
+        } catch {
+          setKeyboardHeight(0);
+        }
+      })();
+
+      return () => {
+        cancelled = true;
+        showListener?.remove();
+        hideListener?.remove();
+      };
+    }
+
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+
+    const handleResize = () => {
+      const height = window.innerHeight - viewport.height;
+      setKeyboardHeight(height > 0 ? height : 0);
+    };
+
+    viewport.addEventListener("resize", handleResize);
+    return () => viewport.removeEventListener("resize", handleResize);
+  }, [isOpen]);
+
+  // 키보드가 올라왔을 때 textarea로 스크롤
+  useEffect(() => {
+    if (keyboardHeight > 0 && textareaRef.current) {
+      setTimeout(() => {
+        textareaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+    }
+  }, [keyboardHeight]);
 
   if (!isOpen) return null;
 
@@ -107,21 +178,26 @@ export function ShopReportModal({
           ))}
 
           {isOtherSelected && (
-            <input
-              type="text"
+            <textarea
+              ref={textareaRef}
               value={detail}
               onChange={(e) => setDetail(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") e.currentTarget.blur();
+              onFocus={(e) => {
+                setTimeout(() => {
+                  e.target.scrollIntoView({ behavior: "smooth", block: "center" });
+                }, 300);
               }}
-              placeholder="직접 입력하기"
-              maxLength={200}
-              className="w-full rounded-none border-b border-grey-300 pb-2 text-[16px] leading-[1.5] tracking-[-0.16px] text-grey-900 placeholder:text-grey-400 focus:outline-none focus:border-main"
+              placeholder="신고 사유를 입력해주세요"
+              maxLength={500}
+              className="w-full min-h-32 shrink-0 p-3 border border-grey-200 rounded-lg text-[16px] leading-[1.5] tracking-[-0.16px] text-grey-600 placeholder:text-grey-400 resize-none focus:outline-none focus:border-main"
             />
           )}
         </div>
       </div>
-      <div className="flex gap-3 px-5 pb-[52px] pt-4">
+      <div
+        className="flex gap-3 px-5 pt-4"
+        style={{ paddingBottom: keyboardHeight > 0 ? keyboardHeight + 12 : 52 }}
+      >
         <button
           onClick={handleClose}
           className="flex-1 h-[44px] rounded-lg bg-grey-100 text-[16px] font-medium leading-[1.5] tracking-[-0.16px] text-grey-900"
