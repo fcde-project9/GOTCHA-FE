@@ -112,6 +112,7 @@ export function TimePickerModal({
         }, 0);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- hours, minutes, periods는 컴포넌트 내 상수
   }, [isOpen, initialTime]);
 
   // ESC 키로 모달 닫기
@@ -197,6 +198,7 @@ export function TimePickerModal({
       if (timeouts.hour) clearTimeout(timeouts.hour);
       if (timeouts.minute) clearTimeout(timeouts.minute);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- hours, minutes, periods는 컴포넌트 내 상수
   }, [isOpen, handleScroll, handleScrollEnd]);
 
   if (!isOpen) return null;

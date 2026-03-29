@@ -20,6 +20,7 @@ export const useUpdateReview = (shopId: number, reviewId: number) => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.reviews.byShop(shopId) });
+      queryClient.invalidateQueries({ queryKey: ["shops", "detail", shopId] });
     },
   });
 };

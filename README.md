@@ -7,7 +7,7 @@
 
 가챠샵(Gacha Shop)을 지도 기반으로 탐색하고, 리스트 및 상세 페이지를 통해 매장 정보를 확인할 수 있는 모바일 웹 서비스입니다.
 
-🔗 배포 주소: [https://gotcha.it.com](https://gotcha.it.com)
+[![Download on the App Store](https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg)](https://apps.apple.com/kr/app/id6759491099)
 
 ---
 
@@ -17,13 +17,13 @@
 - 🏪 매장 상세 정보 및 리뷰
 - ⭐ 즐겨찾기
 - 📝 새 업체 제보
-- 📱 PWA 지원
-- 🔔 Web Push 알림
 - 🚨 리뷰/매장/사용자 신고 및 차단
+- 🔔 Web Push 알림
+- 📱 PWA 지원
+- 📲 iOS App Store 출시
 
 ### 예정 기능
 
-- 📲 iOS 앱 출시 (Capacitor 래핑 완료, App Store 심사 준비 중)
 - 🤖 AI로 캐릭터명 도출하기
 
 ---

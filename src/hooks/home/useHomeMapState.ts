@@ -91,6 +91,7 @@ export function useHomeMapState(): UseHomeMapStateReturn {
 
     // 스토어에 저장된 위치가 있으면 복원
     if (storedMapCenter) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 스토어 hydration 후 초기 상태 복원
       setMapCenterState(storedMapCenter);
       // 이미 저장된 위치가 있으므로 자동 재검색 설정
       shouldAutoReloadRef.current = true;

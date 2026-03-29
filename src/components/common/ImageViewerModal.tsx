@@ -15,6 +15,8 @@ interface ImageViewerModalProps {
   onClose: () => void;
   /** 이미지 alt 텍스트 */
   alt?: string;
+  /** 좌우 화살표 버튼 숨기기 */
+  hideArrows?: boolean;
 }
 
 /**
@@ -27,6 +29,7 @@ export function ImageViewerModal({
   initialIndex = 0,
   onClose,
   alt = "이미지",
+  hideArrows = false,
 }: ImageViewerModalProps) {
   // 이미지 배열 결정 (단일 이미지도 배열로 변환)
   const imageList = images ?? (imageUrl ? [imageUrl] : []);
@@ -111,7 +114,7 @@ export function ImageViewerModal({
       {/* 이미지 + 버튼 컨테이너 */}
       <div className="flex items-center gap-[5px]" onClick={(e) => e.stopPropagation()}>
         {/* 이전 버튼 */}
-        {isMultiple && (
+        {isMultiple && !hideArrows && (
           <button
             onClick={goToPrev}
             disabled={currentIndex === 0}
@@ -140,7 +143,7 @@ export function ImageViewerModal({
         </div>
 
         {/* 다음 버튼 */}
-        {isMultiple && (
+        {isMultiple && !hideArrows && (
           <button
             onClick={goToNext}
             disabled={currentIndex === imageList.length - 1}

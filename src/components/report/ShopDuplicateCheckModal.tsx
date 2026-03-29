@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { X } from "lucide-react";
 import { Button } from "@/components/common";
 
@@ -117,9 +118,11 @@ export function ShopDuplicateCheckModal({
                     }
                   >
                     {shop.mainImageUrl ? (
-                      <img
+                      <Image
                         src={shop.mainImageUrl}
                         alt={shop.name}
+                        width={85}
+                        height={85}
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -174,9 +177,11 @@ export function ShopDuplicateCheckModal({
               {/* Image */}
               <div className="w-full px-6">
                 <div className="w-[327px] h-[435px] mx-auto flex items-center justify-center overflow-hidden rounded-3xl">
-                  <img
+                  <Image
                     src={selectedImage.url}
                     alt={selectedImage.name}
+                    width={327}
+                    height={435}
                     className="w-full h-full object-cover"
                   />
                 </div>

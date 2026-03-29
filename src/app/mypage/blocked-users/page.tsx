@@ -73,7 +73,7 @@ export default function BlockedUsersPage() {
   };
 
   return (
-    <div className="bg-default h-[calc(100dvh-env(safe-area-inset-top))] flex flex-col overflow-hidden">
+    <div className="bg-default h-safe-viewport flex flex-col overflow-hidden">
       <BackHeader title="차단한 사용자 목록" />
 
       {isLoading ? (

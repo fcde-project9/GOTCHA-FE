@@ -122,12 +122,17 @@ export function ReviewWriteModal({
     return () => viewport.removeEventListener("resize", handleResize);
   }, [isOpen]);
 
-  // 수정 모드일 때 초기 데이터 설정
+  // 수정 모드일 때 초기 데이터 설정 (모달이 열릴 때 1회만 실행)
+  const hasInitializedRef = useRef(false);
   useEffect(() => {
-    if (isOpen && isEditMode && initialData) {
+    if (isOpen && isEditMode && initialData && !hasInitializedRef.current) {
       setContent(initialData.content);
       setImageUrls(initialData.imageUrls);
-      setImagePreviewUrls(initialData.imageUrls); // 서버 URL을 미리보기로도 사용
+      setImagePreviewUrls(initialData.imageUrls);
+      hasInitializedRef.current = true;
+    }
+    if (!isOpen) {
+      hasInitializedRef.current = false;
     }
   }, [isOpen, isEditMode, initialData]);
 
@@ -353,7 +358,11 @@ export function ReviewWriteModal({
       {/* 모달 컨텐츠 */}
       <div
         className="relative w-full max-w-[480px] mx-auto bg-white rounded-t-[24px] max-h-[580px] flex flex-col animate-slide-up transition-transform duration-200"
-        style={{ transform: keyboardHeight > 0 ? `translateY(-${keyboardHeight}px)` : undefined }}
+        style={{
+          transform: keyboardHeight > 0 ? `translateY(-${keyboardHeight - 20}px)` : undefined,
+          paddingBottom: keyboardHeight > 0 ? 20 : undefined,
+          marginBottom: keyboardHeight > 0 ? -20 : undefined,
+        }}
       >
         {/* 헤더 */}
         <div className="relative flex items-center justify-between px-5 py-5">

@@ -1,3 +1,5 @@
+@import "pretendard/dist/web/variable/pretendardvariable.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,6 +7,12 @@
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  /* safe-area-inset-top을 뺀 뷰포트 높이 (Capacitor iOS vh fallback 포함) */
+  .h-safe-viewport {
+    height: calc(100vh - env(safe-area-inset-top, 0px));
+    height: calc(100dvh - env(safe-area-inset-top, 0px));
   }
 }
 

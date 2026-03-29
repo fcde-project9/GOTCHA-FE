@@ -87,9 +87,20 @@ export interface FavoriteShopResponse {
 }
 
 /**
+ * GET /api/users/me/favorites 페이지 응답
+ */
+export interface FavoritesPageResponse {
+  content: FavoriteShopResponse[];
+  totalCount: number;
+  page: number;
+  size: number;
+  hasNext: boolean;
+}
+
+/**
  * GET /api/users/me/favorites 전체 응답
  */
-export type FavoritesApiResponse = ApiResponse<FavoriteShopResponse[]>;
+export type FavoritesApiResponse = ApiResponse<FavoritesPageResponse>;
 
 /**
  * POST/DELETE /api/shops/{shopId}/favorite 응답
@@ -219,17 +230,15 @@ export interface ReviewLikeResponse {
 export type ReviewLikeApiResponse = ApiResponse<ReviewLikeResponse>;
 
 /**
- * GET /api/shops/{shopId}/images 응답
+ * GET /api/shops/{shopId}/reviews/images 응답
  */
 export interface ShopImagesResponse {
-  images: string[];
+  content: string[];
   totalCount: number;
+  page: number;
+  size: number;
+  hasNext: boolean;
 }
-
-/**
- * GET /api/shops/{shopId}/images 전체 응답
- */
-export type ShopImagesApiResponse = ApiResponse<ShopImagesResponse>;
 
 /**
  * 이미지 업로드 폴더 타입

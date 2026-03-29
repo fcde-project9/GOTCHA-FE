@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Heart, Navigation } from "lucide-react";
 import { DEFAULT_IMAGES } from "@/constants";
 import { useFavorite, useToast } from "@/hooks";
+import { isNativeApp } from "@/utils/platform";
 import StatusBadge from "./StatusBadge";
 
 interface ShopListItemProps {
@@ -42,6 +43,8 @@ export default function ShopListItem({
   const handleItemClick = () => {
     if (onSelect) {
       onSelect(shopId);
+    } else if (isNativeApp()) {
+      router.push(`/shop/0?shopId=${shopId}`);
     } else {
       router.push(`/shop/${shopId}`);
     }

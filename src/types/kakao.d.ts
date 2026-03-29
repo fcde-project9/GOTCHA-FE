@@ -217,6 +217,7 @@ declare global {
 }
 
 // kakao namespace 선언
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare namespace kakao {
   namespace maps {
     class Map {

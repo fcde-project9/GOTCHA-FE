@@ -67,6 +67,8 @@ export const ICON_IMAGES = {
   FAVORITE_LINE: "/images/icons/favorite-line.svg",
   /** 공유 아이콘 */
   SHARE: "/images/icons/share.svg",
+  /** 오른쪽 화살표 아이콘 */
+  ARROW_RIGHT: "/images/icons/arrow-right.svg",
 } as const;
 
 // 로고 이미지

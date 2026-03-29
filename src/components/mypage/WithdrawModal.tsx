@@ -27,8 +27,10 @@ export function WithdrawModal({ isOpen, onClose, onConfirm }: WithdrawModalProps
   // 모달이 닫힐 때 상태 초기화
   useEffect(() => {
     if (!isOpen) {
+      /* eslint-disable react-hooks/set-state-in-effect -- isOpen=false일 때 상태 리셋 */
       setSelectedReasons([]);
       setOtherReason("");
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [isOpen]);
 

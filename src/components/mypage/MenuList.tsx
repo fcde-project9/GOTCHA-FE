@@ -10,7 +10,7 @@ function MenuItem({ label, onClick, showBorder = true }: MenuItemProps) {
   return (
     <button
       onClick={onClick}
-      className={`-mx-1 flex items-center justify-between w-full px-1 py-4 ${
+      className={`flex items-center justify-between w-full px-0 py-4 ${
         showBorder ? "border-b border-line-100" : ""
       }`}
     >

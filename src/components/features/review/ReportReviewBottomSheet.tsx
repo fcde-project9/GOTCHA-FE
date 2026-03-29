@@ -1,14 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { X } from "lucide-react";
-import type {
-  ReportReason,
-  ReportTargetType,
-  ReviewReportReason,
-  ShopReportReason,
-  UserReportReason,
-} from "@/api/types";
+import { useEffect, useRef, useState } from "react";
+import type { ReportReason, ReviewReportReason, UserReportReason } from "@/api/types";
+import { isNativeApp } from "@/utils/platform";
+
+export type ReviewUserReportTargetType = "REVIEW" | "USER";
 
 const REVIEW_REASONS: { value: ReviewReportReason; label: string }[] = [
   { value: "REVIEW_SPAM", label: "글이 도배되어 있어요" },
@@ -23,14 +19,6 @@ const REVIEW_REASONS: { value: ReviewReportReason; label: string }[] = [
   { value: "REVIEW_OTHER", label: "기타" },
 ];
 
-const SHOP_REASONS: { value: ShopReportReason; label: string }[] = [
-  { value: "SHOP_CLOSED", label: "영업 종료/폐업된 업체예요" },
-  { value: "SHOP_INAPPROPRIATE", label: "부적절한 업체(불법/유해 업소)예요" },
-  { value: "SHOP_DUPLICATE", label: "중복 제보된 업체예요" },
-  { value: "SHOP_FALSE_INFO", label: "허위/거짓 정보예요" },
-  { value: "SHOP_OTHER", label: "기타" },
-];
-
 const USER_REASONS: { value: UserReportReason; label: string }[] = [
   { value: "USER_INAPPROPRIATE_NICKNAME", label: "부적절한 닉네임이에요" },
   { value: "USER_INAPPROPRIATE_PROFILE", label: "부적절한 프로필 사진이에요" },
@@ -40,24 +28,25 @@ const USER_REASONS: { value: UserReportReason; label: string }[] = [
   { value: "USER_OTHER", label: "기타" },
 ];
 
-const REASONS_BY_TARGET: Record<ReportTargetType, { value: ReportReason; label: string }[]> = {
+const REASONS_BY_TARGET: Record<
+  ReviewUserReportTargetType,
+  { value: ReportReason; label: string }[]
+> = {
   REVIEW: REVIEW_REASONS,
-  SHOP: SHOP_REASONS,
   USER: USER_REASONS,
 };
 
-const TARGET_TITLE: Record<ReportTargetType, string> = {
+const TARGET_TITLE: Record<ReviewUserReportTargetType, string> = {
   REVIEW: "리뷰",
-  SHOP: "가게",
   USER: "사용자",
 };
 
-const OTHER_REASONS: Set<ReportReason> = new Set(["REVIEW_OTHER", "SHOP_OTHER", "USER_OTHER"]);
+const OTHER_REASONS: Set<ReportReason> = new Set(["REVIEW_OTHER", "USER_OTHER"]);
 
 interface ReportBottomSheetProps {
   isOpen: boolean;
   isLoading?: boolean;
-  targetType: ReportTargetType;
+  targetType: ReviewUserReportTargetType;
   onClose: () => void;
   onSubmit: (reason: ReportReason, detail?: string) => void;
 }
@@ -71,6 +60,9 @@ export function ReportBottomSheet({
 }: ReportBottomSheetProps) {
   const [selectedReason, setSelectedReason] = useState<ReportReason | null>(null);
   const [detail, setDetail] = useState("");
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
   if (isOpen !== prevIsOpen) {
@@ -80,6 +72,75 @@ export function ReportBottomSheet({
       setDetail("");
     }
   }
+
+  // 모달이 열릴 때 body 스크롤 방지
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  // 키보드 높이 감지
+  useEffect(() => {
+    if (!isOpen) {
+      setKeyboardHeight(0);
+      return;
+    }
+
+    if (isNativeApp()) {
+      let cancelled = false;
+      let showListener: { remove: () => void | Promise<void> } | undefined;
+      let hideListener: { remove: () => void | Promise<void> } | undefined;
+
+      (async () => {
+        try {
+          const { Keyboard } = await import("@capacitor/keyboard");
+          if (cancelled) return;
+
+          showListener = await Keyboard.addListener("keyboardWillShow", (info) => {
+            setKeyboardHeight(info.keyboardHeight);
+          });
+          hideListener = await Keyboard.addListener("keyboardWillHide", () => {
+            setKeyboardHeight(0);
+          });
+        } catch {
+          setKeyboardHeight(0);
+        }
+      })();
+
+      return () => {
+        cancelled = true;
+        showListener?.remove();
+        hideListener?.remove();
+      };
+    }
+
+    // 웹: visualViewport resize 이벤트로 감지
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+
+    const handleResize = () => {
+      const height = window.innerHeight - viewport.height;
+      setKeyboardHeight(height > 0 ? height : 0);
+    };
+
+    viewport.addEventListener("resize", handleResize);
+    return () => viewport.removeEventListener("resize", handleResize);
+  }, [isOpen]);
+
+  // 키보드가 올라왔을 때 textarea로 스크롤
+  useEffect(() => {
+    if (keyboardHeight > 0 && textareaRef.current) {
+      setTimeout(() => {
+        textareaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+    }
+  }, [keyboardHeight]);
 
   if (!isOpen) return null;
 
@@ -104,48 +165,25 @@ export function ReportBottomSheet({
 
   const isSubmitDisabled = !selectedReason || (isOtherSelected && !detail.trim()) || isLoading;
 
-  const isShop = targetType === "SHOP";
-
   return (
-    <div className="fixed inset-0 z-50 flex items-end bg-black/70" onClick={handleClose}>
-      <div
-        className="w-full max-w-[480px] mx-auto bg-white rounded-t-3xl px-5 pt-5 pb-[52px] animate-slide-up"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between pb-[5px] border-b border-grey-50">
-          <div className="flex flex-col gap-2">
-            <h2 className="text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
-              {isShop ? (
-                "매장 문제 신고"
-              ) : (
-                <>
-                  {TARGET_TITLE[targetType]} <span className="text-main">신고하기</span>
-                </>
-              )}
-            </h2>
-            {!isShop && (
-              <p className="text-[13px] font-normal leading-[1.5] tracking-[-0.13px] text-grey-400">
-                * 신고는 익명으로 제보됩니다
-              </p>
-            )}
-          </div>
-          {!isShop && (
-            <button onClick={handleClose} className="p-1 self-start">
-              <X size={24} className="text-grey-700" />
-            </button>
-          )}
-        </div>
+    <div className="fixed inset-x-0 bottom-0 z-50 bg-white flex flex-col max-w-[480px] mx-auto h-safe-viewport">
+      <div ref={scrollRef} className="flex-1 px-5 pt-5 overflow-y-auto">
+        <h2 className="text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
+          {TARGET_TITLE[targetType]} <span className="text-main">신고하기</span>
+        </h2>
+        <p className="text-[13px] font-normal leading-[1.5] tracking-[-0.13px] text-grey-500 mt-[6px]">
+          * 신고는 익명으로 제보됩니다
+        </p>
 
         {/* Reason List */}
-        <div className="flex flex-col gap-[24px] py-[18px] max-h-[50vh] overflow-y-auto">
+        <div className="mt-6 flex flex-col gap-6">
           {reasons.map(({ value, label }) => (
             <button
               key={value}
               onClick={() => handleSelect(value)}
               className="flex items-center justify-between"
             >
-              <span className="text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-900">
+              <span className="text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-900 text-left">
                 {label}
               </span>
               <div
@@ -177,41 +215,40 @@ export function ReportBottomSheet({
           {/* 기타 사유 입력 */}
           {isOtherSelected && (
             <textarea
+              ref={textareaRef}
               value={detail}
               onChange={(e) => setDetail(e.target.value)}
-              placeholder={isShop ? "직접 입력하기" : "신고 사유를 입력해주세요"}
+              onFocus={(e) => {
+                setTimeout(() => {
+                  e.target.scrollIntoView({ behavior: "smooth", block: "center" });
+                }, 300);
+              }}
+              placeholder="신고 사유를 입력해주세요"
               maxLength={500}
               className="w-full min-h-32 shrink-0 p-3 border border-grey-200 rounded-lg text-[16px] leading-[1.5] tracking-[-0.16px] text-grey-600 placeholder:text-grey-400 resize-none focus:outline-none focus:border-main"
             />
           )}
         </div>
+      </div>
 
-        {/* Buttons */}
-        {isShop ? (
-          <div className="flex gap-3">
-            <button
-              onClick={handleClose}
-              className="flex-1 h-[46px] rounded-lg bg-grey-100 text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-grey-700"
-            >
-              취소
-            </button>
-            <button
-              onClick={handleSubmit}
-              disabled={isSubmitDisabled}
-              className="flex-1 h-[46px] rounded-lg bg-main text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white disabled:bg-grey-200 disabled:text-grey-400"
-            >
-              {isLoading ? "신고 접수 중..." : "신고하기"}
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={handleSubmit}
-            disabled={isSubmitDisabled}
-            className="w-full h-[46px] rounded-lg bg-main text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white disabled:bg-grey-200 disabled:text-grey-400"
-          >
-            {isLoading ? "신고 접수 중..." : "신고하기"}
-          </button>
-        )}
+      {/* Buttons */}
+      <div
+        className="flex gap-3 px-5 pt-4"
+        style={{ paddingBottom: keyboardHeight > 0 ? keyboardHeight + 12 : 52 }}
+      >
+        <button
+          onClick={handleClose}
+          className="flex-1 h-[44px] rounded-lg bg-grey-100 text-[16px] font-medium leading-[1.5] tracking-[-0.16px] text-grey-900"
+        >
+          취소
+        </button>
+        <button
+          onClick={handleSubmit}
+          disabled={isSubmitDisabled}
+          className="flex-1 h-[44px] rounded-lg bg-main text-[16px] font-medium leading-[1.5] tracking-[-0.16px] text-white disabled:bg-grey-200 disabled:text-grey-500"
+        >
+          {isLoading ? "신고 접수 중..." : "신고하기"}
+        </button>
       </div>
     </div>
   );

@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { Plus, SquarePen } from "lucide-react";
-import { DEFAULT_IMAGES, getSocialProviderIcon } from "@/constants";
+import { ImageViewerModal } from "@/components/common";
+import { DEFAULT_IMAGES, ICON_IMAGES, getSocialProviderIcon } from "@/constants";
 
 const SOCIAL_PROVIDER_LABELS = {
   google: "Google",
@@ -34,6 +36,8 @@ export function ProfileSection({
   onEditNickname,
   onLogin,
 }: ProfileSectionProps) {
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+
   const handleProfileImageChange = () => {
     const input = document.createElement("input");
     input.type = "file";
@@ -71,23 +75,7 @@ export function ProfileSection({
           <h2 className="text-[24px] font-semibold leading-[1.4] tracking-[-0.24px] text-grey-900">
             로그인을 해주세요
           </h2>
-          <div className="w-6 h-6 flex items-center justify-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="lucide lucide-chevron-left stroke-grey-900 rotate-180 scale-y-[-1]"
-              aria-hidden="true"
-            >
-              <path d="m15 18-6-6 6-6"></path>
-            </svg>
-          </div>
+          <Image src={ICON_IMAGES.ARROW_RIGHT} alt="" width={24} height={24} />
         </button>
       </div>
     );
@@ -99,7 +87,12 @@ export function ProfileSection({
       {/* Profile Image */}
       <div className="flex flex-col items-center gap-4">
         <div className="relative w-[100px] h-[100px]">
-          <div className="relative w-full h-full rounded-full overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setIsImageViewerOpen(true)}
+            className="relative w-full h-full rounded-full overflow-hidden"
+            aria-label="프로필 이미지 확대"
+          >
             <Image
               src={profileImage}
               alt="프로필 이미지"
@@ -107,7 +100,7 @@ export function ProfileSection({
               sizes="100px"
               className="object-cover"
             />
-          </div>
+          </button>
           {/* Edit Button */}
           <button
             onClick={handleProfileImageChange}
@@ -154,6 +147,14 @@ export function ProfileSection({
           </div>
         </div>
       </div>
+
+      {isImageViewerOpen && (
+        <ImageViewerModal
+          imageUrl={profileImage}
+          onClose={() => setIsImageViewerOpen(false)}
+          alt="프로필 이미지"
+        />
+      )}
     </div>
   );
 }

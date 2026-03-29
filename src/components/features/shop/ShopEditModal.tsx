@@ -80,6 +80,7 @@ export function ShopEditModal({
 
   // shopData 변경 시 상태 초기화
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- props 변경에 따른 파생 상태 동기화 */
     setName(shopData.name);
     setAddressName(shopData.addressName);
     setLocationHint(shopData.locationHint || "");
@@ -119,6 +120,7 @@ export function ShopEditModal({
       setOpenTimeValues(values);
       setDayStatus(statuses);
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [shopData]);
 
   // ESC 키로 모달 닫기
