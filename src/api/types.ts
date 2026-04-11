@@ -75,6 +75,9 @@ export interface User {
   profileImageUrl: string | null;
   socialType: SocialType;
   userType: UserType;
+  favoriteCount: number;
+  reportCount: number;
+  reviewCount: number;
 }
 
 /**

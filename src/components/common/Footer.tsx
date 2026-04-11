@@ -30,9 +30,9 @@ const navItems: NavItem[] = [
     inactiveIcon: "/images/icons/footer/report_blank.svg",
   },
   {
-    id: "favorites",
-    label: "찜한업체",
-    path: "/favorites",
+    id: "community",
+    label: "커뮤니티",
+    path: "/community",
     activeIcon: "/images/icons/footer/favorites_fill.svg",
     inactiveIcon: "/images/icons/footer/favorites_blank.svg",
   },
