@@ -214,7 +214,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ postId: s
   };
 
   const handleSubmitComment = () => {
-    if (!commentText.trim()) return;
+    if (!post || !commentText.trim()) return;
 
     createCommentMutation.mutate(
       { parentId: replyTarget?.commentId ?? null, content: commentText.trim(), isAnonymous },
@@ -379,55 +379,58 @@ export default function PostDetailPage({ params }: { params: Promise<{ postId: s
       </div>
 
       {/* 댓글 입력 바 */}
-      <div className="border-t border-grey-100 bg-white pb-[env(safe-area-inset-bottom,0px)]">
-        {replyTarget && (
-          <div className="flex items-center justify-between px-4 py-2 bg-grey-50">
-            <span className="text-[12px] text-grey-600">
-              <span className="font-semibold">{replyTarget.authorNickname}</span>님에게 답글 작성 중
-            </span>
-            <button onClick={() => setReplyTarget(null)} className="text-[12px] text-grey-400">
-              취소
-            </button>
-          </div>
-        )}
+      {post && (
+        <div className="border-t border-grey-100 bg-white pb-[env(safe-area-inset-bottom,0px)]">
+          {replyTarget && (
+            <div className="flex items-center justify-between px-4 py-2 bg-grey-50">
+              <span className="text-[12px] text-grey-600">
+                <span className="font-semibold">{replyTarget.authorNickname}</span>님에게 답글 작성
+                중
+              </span>
+              <button onClick={() => setReplyTarget(null)} className="text-[12px] text-grey-400">
+                취소
+              </button>
+            </div>
+          )}
 
-        <div className="flex items-center gap-2 px-4 py-3">
-          <label className="flex items-center gap-1 shrink-0 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={isAnonymous}
-              onChange={(e) => setIsAnonymous(e.target.checked)}
-              className="w-4 h-4 accent-grey-900"
-            />
-            <span className="text-[12px] font-normal text-grey-500">익명</span>
-          </label>
+          <div className="flex items-center gap-2 px-4 py-3">
+            <label className="flex items-center gap-1 shrink-0 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isAnonymous}
+                onChange={(e) => setIsAnonymous(e.target.checked)}
+                className="w-4 h-4 accent-grey-900"
+              />
+              <span className="text-[12px] font-normal text-grey-500">익명</span>
+            </label>
 
-          <div className="flex flex-1 items-center gap-2 bg-grey-50 rounded-full px-4 py-2">
-            <input
-              ref={inputRef}
-              type="text"
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSubmitComment();
-                }
-              }}
-              placeholder={replyTarget ? "답글을 입력해주세요" : "댓글을 입력해주세요"}
-              disabled={createCommentMutation.isPending}
-              className="flex-1 bg-transparent text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-900 placeholder:text-grey-400 focus:outline-none disabled:opacity-50"
-            />
-            <button
-              onClick={handleSubmitComment}
-              disabled={!commentText.trim() || createCommentMutation.isPending}
-              className="shrink-0 text-[13px] font-semibold text-main disabled:text-grey-300"
-            >
-              등록
-            </button>
+            <div className="flex flex-1 items-center gap-2 bg-grey-50 rounded-full px-4 py-2">
+              <input
+                ref={inputRef}
+                type="text"
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmitComment();
+                  }
+                }}
+                placeholder={replyTarget ? "답글을 입력해주세요" : "댓글을 입력해주세요"}
+                disabled={createCommentMutation.isPending}
+                className="flex-1 bg-transparent text-[14px] font-normal leading-[1.5] tracking-[-0.14px] text-grey-900 placeholder:text-grey-400 focus:outline-none disabled:opacity-50"
+              />
+              <button
+                onClick={handleSubmitComment}
+                disabled={!commentText.trim() || createCommentMutation.isPending}
+                className="shrink-0 text-[13px] font-semibold text-main disabled:text-grey-300"
+              >
+                등록
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </main>
   );
 }

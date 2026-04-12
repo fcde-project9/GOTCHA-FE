@@ -163,7 +163,7 @@ export default function CommunityWritePage() {
       {
         onSuccess: () => {
           showToast("게시글이 등록되었어요!");
-          router.back();
+          router.replace("/community");
         },
         onError: (error) => {
           showToast(error.message || "게시글 등록에 실패했어요.", { variant: "warning" });
