@@ -61,8 +61,45 @@ export const useToggleCommentLike = (postId: number) => {
 
       return { prev };
     },
-    onError: (_err, _vars, context) => {
-      if (context?.prev) queryClient.setQueryData(detailKey, context.prev);
+    onError: (_err, { commentId }, context) => {
+      if (!context?.prev) return;
+
+      // Find original values for the affected comment/reply from snapshot
+      let origIsLiked: boolean | undefined;
+      let origLikeCount: number | undefined;
+      for (const c of context.prev.comments) {
+        if (c.id === commentId) {
+          origIsLiked = c.isLiked;
+          origLikeCount = c.likeCount;
+          break;
+        }
+        const reply = c.replies?.find((r) => r.id === commentId);
+        if (reply) {
+          origIsLiked = reply.isLiked;
+          origLikeCount = reply.likeCount;
+          break;
+        }
+      }
+      if (origIsLiked === undefined) return;
+
+      // Selectively revert only the affected comment/reply
+      queryClient.setQueryData<PostDetail>(detailKey, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          comments: old.comments.map((comment) => {
+            if (comment.id === commentId) {
+              return { ...comment, isLiked: origIsLiked!, likeCount: origLikeCount! };
+            }
+            const updatedReplies = comment.replies?.map((reply) =>
+              reply.id === commentId
+                ? { ...reply, isLiked: origIsLiked!, likeCount: origLikeCount! }
+                : reply
+            );
+            return { ...comment, replies: updatedReplies };
+          }),
+        };
+      });
     },
   });
 };

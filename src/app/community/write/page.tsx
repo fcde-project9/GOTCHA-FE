@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { X, ImageIcon, Camera, ChevronDown } from "lucide-react";
@@ -34,6 +34,19 @@ export default function CommunityWritePage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  const previewUrlsRef = useRef<string[]>([]);
+
+  useEffect(() => {
+    previewUrlsRef.current = imagePreviewUrls;
+  }, [imagePreviewUrls]);
+
+  useEffect(() => {
+    return () => {
+      previewUrlsRef.current.forEach((url) => {
+        if (url.startsWith("blob:")) URL.revokeObjectURL(url);
+      });
+    };
+  }, []);
 
   const createPostMutation = useCreatePost();
   const uploadFileMutation = useUploadFile("posts");
@@ -66,10 +79,32 @@ export default function CommunityWritePage() {
         const compressedFiles = await Promise.all(
           validFiles.map((file) => compressShopImage(file))
         );
-        const results = await Promise.all(
+        const results = await Promise.allSettled(
           compressedFiles.map((file) => uploadFileMutation.mutateAsync(file))
         );
-        setImageUrls((prev) => [...prev, ...results.map((r) => r.fileUrl)]);
+
+        const fulfilledUrls: string[] = [];
+        const failedPreviewUrls: string[] = [];
+
+        results.forEach((result, index) => {
+          if (result.status === "fulfilled") {
+            fulfilledUrls.push(result.value.fileUrl);
+          } else {
+            failedPreviewUrls.push(newPreviewUrls[index]);
+          }
+        });
+
+        if (fulfilledUrls.length > 0) {
+          setImageUrls((prev) => [...prev, ...fulfilledUrls]);
+        }
+
+        if (failedPreviewUrls.length > 0) {
+          failedPreviewUrls.forEach((url) => URL.revokeObjectURL(url));
+          setImagePreviewUrls((prev) => prev.filter((url) => !failedPreviewUrls.includes(url)));
+          showToast(`${failedPreviewUrls.length}개 이미지 업로드에 실패했어요.`, {
+            variant: "warning",
+          });
+        }
       } catch {
         newPreviewUrls.forEach((url) => URL.revokeObjectURL(url));
         setImagePreviewUrls((prev) => prev.slice(0, prev.length - newPreviewUrls.length));

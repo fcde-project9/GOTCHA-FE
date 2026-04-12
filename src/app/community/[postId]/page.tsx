@@ -77,7 +77,10 @@ function CommentItem({
           </button>
           <button
             onClick={() =>
-              onReply({ commentId: comment.id, authorNickname: comment.authorNickname })
+              onReply({
+                commentId: comment.id,
+                authorNickname: comment.isAnonymous ? "익명" : comment.authorNickname,
+              })
             }
             className="text-[12px] font-medium text-grey-500"
           >
@@ -193,7 +196,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ postId: s
     deletePostMutation.mutate(undefined, {
       onSuccess: () => {
         showToast("게시글이 삭제되었어요.");
-        router.back();
+        router.replace("/community");
       },
       onError: (error) => {
         showToast(error.message || "게시글 삭제에 실패했어요.", { variant: "warning" });

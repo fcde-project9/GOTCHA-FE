@@ -261,7 +261,7 @@ export default function MyPage() {
               </button>
               <div className="w-px h-8 bg-grey-200" />
               <div className="flex flex-col items-center flex-1 gap-1 px-3">
-                <span className="text-[18px] fo조nt-semibold leading-[1.4] tracking-[-0.18px] text-grey-900">
+                <span className="text-[18px] font-semibold leading-[1.4] tracking-[-0.18px] text-grey-900">
                   {loggedInUser?.reportCount ?? 0}
                 </span>
                 <span className="text-[13px] font-medium leading-[1.5] tracking-[-0.13px] text-grey-600">

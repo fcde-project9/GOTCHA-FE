@@ -12,8 +12,9 @@ interface PostItemProps {
 
 export function PostItem({ post, onClick }: PostItemProps) {
   return (
-    <div
-      className="flex flex-col gap-3 px-5 py-4 border-b border-grey-100 cursor-pointer active:bg-grey-50"
+    <button
+      type="button"
+      className="flex flex-col gap-3 px-5 py-4 border-b border-grey-100 cursor-pointer active:bg-grey-50 w-full text-left"
       onClick={() => onClick?.(post.id)}
     >
       {/* 작성자 정보 */}
@@ -80,6 +81,6 @@ export function PostItem({ post, onClick }: PostItemProps) {
           </span>
         </div>
       </div>
-    </div>
+    </button>
   );
 }
