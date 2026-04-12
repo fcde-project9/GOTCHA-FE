@@ -207,6 +207,9 @@ export default function PostDetailPage({ params }: { params: Promise<{ postId: s
   const handleDeleteComment = (commentId: number) => {
     if (!window.confirm("댓글을 삭제할까요?")) return;
     deleteCommentMutation.mutate(commentId, {
+      onSuccess: () => {
+        if (replyTarget?.commentId === commentId) setReplyTarget(null);
+      },
       onError: (error) => {
         showToast(error.message || "댓글 삭제에 실패했어요.", { variant: "warning" });
       },
