@@ -83,6 +83,20 @@ export const queryKeys = {
   },
 
   /**
+   * 커뮤니티 게시글 관련 쿼리 키
+   */
+  posts: {
+    /** 모든 게시글 관련 쿼리의 기본 키 */
+    all: ["posts"] as const,
+
+    /** 게시글 목록 (카테고리별) */
+    list: (typeId?: number) => [...queryKeys.posts.all, "list", typeId] as const,
+
+    /** 게시글 상세 */
+    detail: (postId: number) => [...queryKeys.posts.all, "detail", postId] as const,
+  },
+
+  /**
    * 차단 관련 쿼리 키
    */
   blocks: {

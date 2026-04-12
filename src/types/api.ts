@@ -280,3 +280,78 @@ export interface BlockedUsersPageResponse {
   size: number;
   hasNext: boolean;
 }
+
+/**
+ * 커뮤니티 게시글
+ */
+export interface Post {
+  id: number;
+  typeId: number;
+  typeName: string;
+  authorNickname: string;
+  authorProfileImageUrl: string;
+  content: string;
+  imageUrls: string[];
+  likeCount: number;
+  commentCount: number;
+  timeAgo: string;
+  createdAt: string;
+}
+
+/**
+ * 커뮤니티 게시글 목록 (cursor 기반 무한 스크롤)
+ */
+export interface PostsPageResponse {
+  content: Post[];
+  nextCursor: number | null;
+  hasNext: boolean;
+}
+
+/**
+ * 댓글 대댓글
+ */
+export interface CommentReply {
+  id: number;
+  parentId: number;
+  authorNickname: string;
+  content: string;
+  isAnonymous: boolean;
+  isOwner: boolean;
+  likeCount: number;
+  isLiked: boolean;
+  createdAt: string;
+}
+
+/**
+ * 댓글
+ */
+export interface PostComment {
+  id: number;
+  parentId: number | null;
+  authorNickname: string;
+  content: string;
+  isAnonymous: boolean;
+  isOwner: boolean;
+  likeCount: number;
+  isLiked: boolean;
+  createdAt: string;
+  replies: CommentReply[];
+}
+
+/**
+ * 게시글 상세
+ */
+export interface PostDetail {
+  id: number;
+  typeId: number;
+  typeName: string;
+  authorNickname: string;
+  title: string;
+  content: string;
+  imageUrls: string[];
+  likeCount: number;
+  isLiked: boolean;
+  isOwner: boolean;
+  createdAt: string;
+  comments: PostComment[];
+}
