@@ -23,7 +23,10 @@ interface MapState {
 }
 
 const initialState = {
-  mapCenter: null as { latitude: number; longitude: number } | null,
+  mapCenter: { latitude: 37.4979, longitude: 127.0276 } as {
+    latitude: number;
+    longitude: number;
+  } | null,
   mapLevel: 5,
   searchQuery: "",
   hasHydrated: false,

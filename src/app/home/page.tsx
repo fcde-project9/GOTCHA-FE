@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { LocateFixed, RefreshCcw, CircleX, Loader2 } from "lucide-react";
+import { LocateFixed, RefreshCcw, CircleX, Loader2, AlertTriangle } from "lucide-react";
 import { Footer, LocationPermissionModal, Spinner, SplashScreen } from "@/components/common";
 import { SearchResultItem } from "@/components/features/search";
 import { ShopListBottomSheet, ShopPreviewBottomSheet } from "@/components/features/shop";
@@ -164,6 +164,9 @@ export default function Home() {
         isOpen={locationTracking.showLocationModal}
         onClose={locationTracking.closeLocationModal}
       />
+
+      {/* 서비스 중단 알림 배너 */}
+      <ServiceOutageBanner />
 
       <main
         className={`${bottomSheet.showPreviewSheet ? "h-[100dvh]" : "h-[calc(100dvh-var(--footer-height))]"} overflow-hidden relative touch-none`}
@@ -471,6 +474,22 @@ function SearchOverlay({ searchQuery, results, isPending, onResultClick }: Searc
             </div>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function ServiceOutageBanner() {
+  return (
+    <div
+      className="fixed left-0 right-0 z-50 mx-auto w-full max-w-[480px] px-5"
+      style={{ top: `calc(env(safe-area-inset-top) + ${RELOAD_BUTTON_TOP}px)` }}
+    >
+      <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 px-3 py-2.5 shadow-[0px_0px_5px_0px_rgba(0,0,0,0.1)]">
+        <AlertTriangle size={18} className="shrink-0 stroke-red-500" strokeWidth={2} />
+        <p className="text-[14px] font-medium leading-[1.4] tracking-[-0.14px] text-red-700">
+          현재 서비스 점검 기간입니다. 이용에 불편을 드려 죄송합니다.
+        </p>
       </div>
     </div>
   );
