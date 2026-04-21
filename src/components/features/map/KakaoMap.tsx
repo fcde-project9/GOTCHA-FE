@@ -527,53 +527,50 @@ export default function KakaoMap({
     clusters.forEach((cluster) => {
       const position = new window.kakao.maps.LatLng(cluster.latitude, cluster.longitude);
 
-      // 클릭 가능한 DOM 엘리먼트 생성
+      // DOM 프로그래밍 방식으로 생성 (XSS 방지)
       const container = document.createElement("div");
       container.style.cssText = "cursor: pointer; user-select: none;";
+      container.setAttribute("role", "button");
+      container.tabIndex = 0;
+      container.setAttribute("aria-label", `${cluster.districtName} ${cluster.shopCount}개 매장`);
 
-      container.innerHTML = `
-        <div style="
-          position: relative;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-        ">
-          <div style="
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            background-color: #FF4545;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 999px;
-            font-size: 13px;
-            font-weight: 600;
-            white-space: nowrap;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-            line-height: 1.3;
-          ">
-            <span>${cluster.districtName}</span>
-            <span style="
-              background-color: rgba(255,255,255,0.3);
-              padding: 1px 6px;
-              border-radius: 999px;
-              font-size: 12px;
-            ">${cluster.shopCount}</span>
-          </div>
-          <div style="
-            width: 0;
-            height: 0;
-            border-left: 6px solid transparent;
-            border-right: 6px solid transparent;
-            border-top: 6px solid #FF4545;
-            margin-top: -1px;
-          "></div>
-        </div>
-      `;
+      const wrapper = document.createElement("div");
+      wrapper.style.cssText =
+        "position: relative; display: flex; flex-direction: column; align-items: center;";
 
-      container.addEventListener("click", (e) => {
+      const badge = document.createElement("div");
+      badge.style.cssText =
+        "display: flex; align-items: center; gap: 4px; background-color: #FF4545; color: white; padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.25); line-height: 1.3;";
+
+      const label = document.createElement("span");
+      label.textContent = cluster.districtName;
+
+      const count = document.createElement("span");
+      count.style.cssText =
+        "background-color: rgba(255,255,255,0.3); padding: 1px 6px; border-radius: 999px; font-size: 12px;";
+      count.textContent = String(cluster.shopCount);
+
+      badge.appendChild(label);
+      badge.appendChild(count);
+
+      const pointer = document.createElement("div");
+      pointer.style.cssText =
+        "width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #FF4545; margin-top: -1px;";
+
+      wrapper.appendChild(badge);
+      wrapper.appendChild(pointer);
+      container.appendChild(wrapper);
+
+      const handleActivate = (e: Event) => {
         e.stopPropagation();
         onClusterClickRef.current?.(cluster);
+      };
+      container.addEventListener("click", handleActivate);
+      container.addEventListener("keydown", (e: KeyboardEvent) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleActivate(e);
+        }
       });
 
       const overlay = new window.kakao.maps.CustomOverlay({

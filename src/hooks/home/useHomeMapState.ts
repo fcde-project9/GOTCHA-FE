@@ -125,9 +125,7 @@ export function useHomeMapState(): UseHomeMapStateReturn {
   const filteredShopsData = useMemo(() => {
     if (!shopsData) return [];
     if (!districtFilter) return shopsData;
-    const filtered = shopsData.filter((s) => s.region2DepthName === districtFilter);
-    // BE 미배포 등으로 region2DepthName이 없으면 필터 미적용
-    return filtered.length > 0 ? filtered : shopsData;
+    return shopsData.filter((s) => s.region2DepthName === districtFilter);
   }, [shopsData, districtFilter]);
 
   // API 응답을 UI용 데이터로 변환
