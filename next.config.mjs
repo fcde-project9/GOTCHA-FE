@@ -32,6 +32,10 @@ const nextConfig = {
         hostname: "gotcha-storage.s3.ap-northeast-2.amazonaws.com",
       },
       {
+        protocol: "https",
+        hostname: "d30h2jkisryuo5.cloudfront.net",
+      },
+      {
         protocol: "http",
         hostname: "localhost",
       },
