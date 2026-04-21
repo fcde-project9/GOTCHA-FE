@@ -1,9 +1,12 @@
 "use client";
 
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import { useDistrictClusters } from "@/api/queries/useDistrictClusters";
 import { useShopsInBounds } from "@/api/queries/useShopsInBounds";
+import { CLUSTER_ZOOM_THRESHOLD, CLUSTER_CLICK_ZOOM_LEVEL } from "@/constants";
 import { useMapStore } from "@/stores";
 import type { MapBounds, ShopMapResponse } from "@/types/api";
+import { applyCenterCoords, type DisplayCluster } from "@/utils/cluster";
 import { shopMapResponsesToViews } from "@/utils/shop";
 
 interface MapCenter {
@@ -42,6 +45,12 @@ interface UseHomeMapStateReturn {
   hasHydrated: boolean;
   /** 스토어에 저장된 지도 중심 */
   storedMapCenter: MapCenter | null;
+  /** 클러스터 모드 여부 (줌 레벨 >= CLUSTER_ZOOM_THRESHOLD) */
+  isClusterMode: boolean;
+  /** 구별 클러스터 데이터 */
+  districtClusters: DisplayCluster[];
+  /** 클러스터 클릭 핸들러 */
+  handleClusterClick: (cluster: DisplayCluster) => void;
 }
 
 /**
@@ -71,17 +80,7 @@ export function useHomeMapState(): UseHomeMapStateReturn {
 
   const shouldAutoReloadRef = useRef(false);
   const hasRestoredFromStore = useRef(false);
-
-  // React Query로 가게 목록 조회
-  const { data: shopsData, isLoading: isShopsLoading } = useShopsInBounds(activeBounds);
-
-  // API 응답을 UI용 데이터로 변환
-  const shops = useMemo(() => {
-    if (!shopsData) return [];
-    return shopMapResponsesToViews(shopsData);
-  }, [shopsData]);
-
-  const markers = shopsData ?? [];
+  const [districtFilter, setDistrictFilter] = useState<string | null>(null);
 
   // 스토어에서 지도 상태 복원 (hydration 완료 후, 최초 1회)
   useEffect(() => {
@@ -105,6 +104,36 @@ export function useHomeMapState(): UseHomeMapStateReturn {
   // hydration 완료 전까지는 스토어 값을 직접 사용
   const effectiveMapCenter = hasHydrated ? (mapCenter ?? storedMapCenter) : null;
   const effectiveMapLevel = hasHydrated ? (mapLevel ?? storedMapLevel ?? 5) : 5;
+
+  // 클러스터 모드 판정 (카카오맵: level이 높을수록 축소)
+  const isClusterMode = effectiveMapLevel >= CLUSTER_ZOOM_THRESHOLD;
+
+  // 클러스터 모드에서 구별 클러스터 데이터 조회
+  const { data: districtClustersData } = useDistrictClusters(isClusterMode);
+  const districtClusters = useMemo(() => {
+    if (!isClusterMode || !districtClustersData) return [];
+    return applyCenterCoords(districtClustersData);
+  }, [isClusterMode, districtClustersData]);
+
+  // React Query로 가게 목록 조회 (클러스터 모드에서는 비활성화)
+  const { data: shopsData, isLoading: isShopsLoading } = useShopsInBounds(
+    activeBounds,
+    !isClusterMode
+  );
+
+  // 구 필터 적용된 가게 목록
+  const filteredShopsData = useMemo(() => {
+    if (!shopsData) return [];
+    if (!districtFilter) return shopsData;
+    return shopsData.filter((s) => s.region2DepthName === districtFilter);
+  }, [shopsData, districtFilter]);
+
+  // API 응답을 UI용 데이터로 변환
+  const shops = useMemo(() => {
+    return shopMapResponsesToViews(filteredShopsData);
+  }, [filteredShopsData]);
+
+  const markers = filteredShopsData;
 
   // 지도 중심 변경 시 스토어에 저장
   const setMapCenter = useCallback(
@@ -134,6 +163,26 @@ export function useHomeMapState(): UseHomeMapStateReturn {
     shouldAutoReloadRef.current = value;
   }, []);
 
+  // 클러스터 클릭 핸들러 — 가게 밀집 지점으로 줌인 + 해당 구만 필터
+  const handleClusterClick = useCallback(
+    (cluster: DisplayCluster) => {
+      setDistrictFilter(cluster.districtName);
+      setMapCenterState({
+        latitude: cluster.shopCenterLatitude,
+        longitude: cluster.shopCenterLongitude,
+      });
+      setStoredMapCenter({
+        latitude: cluster.shopCenterLatitude,
+        longitude: cluster.shopCenterLongitude,
+      });
+      setMapLevelState(CLUSTER_CLICK_ZOOM_LEVEL);
+      setStoredMapLevel(CLUSTER_CLICK_ZOOM_LEVEL);
+      setCenterUpdateTrigger((prev) => prev + 1);
+      shouldAutoReloadRef.current = true;
+    },
+    [setStoredMapCenter, setStoredMapLevel]
+  );
+
   // 지도 영역 변경 시 처리
   const handleBoundsChange = useCallback(
     (bounds: MapBounds) => {
@@ -142,6 +191,15 @@ export function useHomeMapState(): UseHomeMapStateReturn {
       // 지도 중심 좌표와 줌 레벨을 스토어에 저장 (뒤로가기 시 복원용)
       setStoredMapCenter({ latitude: bounds.latitude, longitude: bounds.longitude });
       setStoredMapLevel(bounds.level);
+
+      // 줌 레벨 상태 동기화 (클러스터 모드 판정을 위해)
+      setMapLevelState(bounds.level);
+
+      // 클러스터 모드에서는 재검색 버튼 숨김
+      if (bounds.level >= CLUSTER_ZOOM_THRESHOLD) {
+        setShowReloadButton(false);
+        return;
+      }
 
       if (!hasInitialLoad) {
         // 최초 로드 시 자동으로 가게 목록 조회
@@ -161,9 +219,10 @@ export function useHomeMapState(): UseHomeMapStateReturn {
     [hasInitialLoad, setStoredMapCenter, setStoredMapLevel]
   );
 
-  // 이 지역 재검색 핸들러
+  // 이 지역 재검색 핸들러 (구 필터 해제)
   const handleReloadArea = useCallback(() => {
     if (currentBounds) {
+      setDistrictFilter(null);
       setShowReloadButton(false);
       setActiveBounds(currentBounds);
     }
@@ -185,5 +244,8 @@ export function useHomeMapState(): UseHomeMapStateReturn {
     setShouldAutoReload,
     hasHydrated,
     storedMapCenter,
+    isClusterMode,
+    districtClusters,
+    handleClusterClick,
   };
 }

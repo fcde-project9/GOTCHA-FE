@@ -5,6 +5,7 @@ import { Spinner } from "@/components/common";
 import { MARKER_IMAGES, DEFAULT_LOCATION } from "@/constants";
 import { useKakaoLoader } from "@/hooks/useKakaoLoader";
 import { MapBounds, ShopMapResponse } from "@/types/api";
+import type { DisplayCluster } from "@/utils/cluster";
 
 // 마커 이미지 설정 (기본)
 const MARKER_IMAGE = {
@@ -47,6 +48,8 @@ interface KakaoMapProps {
   disableDoubleClickZoom?: boolean; // 더블클릭 확대 비활성화 (기본값: false)
   centerUpdateTrigger?: number; // 중심 좌표 업데이트 트리거
   selectedMarkerId?: number | null; // 선택된 마커 ID (null이면 선택 해제)
+  clusters?: DisplayCluster[]; // 구별 클러스터 데이터
+  onClusterClick?: (cluster: DisplayCluster) => void; // 클러스터 클릭 콜백
 }
 
 /**
@@ -70,6 +73,8 @@ export default function KakaoMap({
   disableDoubleClickZoom = false,
   centerUpdateTrigger,
   selectedMarkerId,
+  clusters = [],
+  onClusterClick,
 }: KakaoMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<KakaoMap | null>(null);
@@ -78,6 +83,7 @@ export default function KakaoMap({
   );
   const selectedMarkerRef = useRef<Marker | null>(null);
   const currentLocationOverlayRef = useRef<CustomOverlay | null>(null);
+  const clusterOverlaysRef = useRef<CustomOverlay[]>([]);
   // 지도 이벤트 리스너 참조 저장 (cleanup용)
   const mapListenersRef = useRef<Array<{ target: KakaoMap; type: string; handler: () => void }>>(
     []
@@ -89,6 +95,7 @@ export default function KakaoMap({
   const onBoundsChangeRef = useRef(onBoundsChange);
   const onMarkerClickRef = useRef(onMarkerClick);
   const onMapClickRef = useRef(onMapClick);
+  const onClusterClickRef = useRef(onClusterClick);
   useEffect(() => {
     onBoundsChangeRef.current = onBoundsChange;
   }, [onBoundsChange]);
@@ -98,6 +105,9 @@ export default function KakaoMap({
   useEffect(() => {
     onMapClickRef.current = onMapClick;
   }, [onMapClick]);
+  useEffect(() => {
+    onClusterClickRef.current = onClusterClick;
+  }, [onClusterClick]);
 
   // 커스텀 훅으로 SDK 로드 (싱글톤 패턴으로 전역 관리)
   const { loaded: scriptLoaded, error: sdkError } = useKakaoLoader();
@@ -501,6 +511,85 @@ export default function KakaoMap({
       }
     };
   }, [currentLocation, isLoading]);
+
+  // 클러스터 오버레이 렌더링
+  useEffect(() => {
+    // 기존 클러스터 오버레이 제거
+    clusterOverlaysRef.current.forEach((overlay) => overlay.setMap(null));
+    clusterOverlaysRef.current = [];
+
+    if (!mapInstance.current || !window.kakao?.maps || isLoading || clusters.length === 0) {
+      return;
+    }
+
+    const map = mapInstance.current;
+
+    clusters.forEach((cluster) => {
+      const position = new window.kakao.maps.LatLng(cluster.latitude, cluster.longitude);
+
+      // DOM 프로그래밍 방식으로 생성 (XSS 방지)
+      const container = document.createElement("div");
+      container.style.cssText = "cursor: pointer; user-select: none;";
+      container.setAttribute("role", "button");
+      container.tabIndex = 0;
+      container.setAttribute("aria-label", `${cluster.districtName} ${cluster.shopCount}개 매장`);
+
+      const wrapper = document.createElement("div");
+      wrapper.style.cssText =
+        "position: relative; display: flex; flex-direction: column; align-items: center;";
+
+      const badge = document.createElement("div");
+      badge.style.cssText =
+        "display: flex; align-items: center; gap: 4px; background-color: #FF4545; color: white; padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.25); line-height: 1.3;";
+
+      const label = document.createElement("span");
+      label.textContent = cluster.districtName;
+
+      const count = document.createElement("span");
+      count.style.cssText =
+        "background-color: rgba(255,255,255,0.3); padding: 1px 6px; border-radius: 999px; font-size: 12px;";
+      count.textContent = String(cluster.shopCount);
+
+      badge.appendChild(label);
+      badge.appendChild(count);
+
+      const pointer = document.createElement("div");
+      pointer.style.cssText =
+        "width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #FF4545; margin-top: -1px;";
+
+      wrapper.appendChild(badge);
+      wrapper.appendChild(pointer);
+      container.appendChild(wrapper);
+
+      const handleActivate = (e: Event) => {
+        e.stopPropagation();
+        onClusterClickRef.current?.(cluster);
+      };
+      container.addEventListener("click", handleActivate);
+      container.addEventListener("keydown", (e: KeyboardEvent) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleActivate(e);
+        }
+      });
+
+      const overlay = new window.kakao.maps.CustomOverlay({
+        position,
+        content: container,
+        yAnchor: 1,
+        xAnchor: 0.5,
+        zIndex: 50,
+      });
+
+      overlay.setMap(map);
+      clusterOverlaysRef.current.push(overlay);
+    });
+
+    return () => {
+      clusterOverlaysRef.current.forEach((overlay) => overlay.setMap(null));
+      clusterOverlaysRef.current = [];
+    };
+  }, [clusters, isLoading]);
 
   // SDK 에러와 지도 에러를 통합
   const error = sdkError || mapError;

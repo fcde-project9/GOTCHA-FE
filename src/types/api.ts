@@ -67,6 +67,7 @@ export interface ShopMapResponse {
   openStatus: string; // "영업 중", "영업 종료", "휴무", ""
   distance: string;
   isFavorite: boolean;
+  region2DepthName: string | null;
 }
 
 /**
@@ -336,6 +337,17 @@ export interface PostComment {
   isLiked: boolean;
   createdAt: string;
   replies: CommentReply[];
+}
+
+/**
+ * GET /api/shops/districts 응답 - 구별 가게 수 클러스터
+ */
+export interface DistrictClusterResponse {
+  region1DepthName: string;
+  districtName: string;
+  shopCount: number;
+  latitude: number;
+  longitude: number;
 }
 
 /**

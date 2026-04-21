@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { LocateFixed, RefreshCcw, CircleX, Loader2, AlertTriangle } from "lucide-react";
+import { LocateFixed, RefreshCcw, CircleX, Loader2 } from "lucide-react";
 import { Footer, LocationPermissionModal, Spinner, SplashScreen } from "@/components/common";
 import { SearchResultItem } from "@/components/features/search";
 import { ShopListBottomSheet, ShopPreviewBottomSheet } from "@/components/features/shop";
@@ -96,6 +96,13 @@ export default function Home() {
     };
   }, []);
 
+  // 클러스터 모드 진입 시 열린 프리뷰 시트 자동 닫기
+  useEffect(() => {
+    if (mapState.isClusterMode && bottomSheet.showPreviewSheet) {
+      bottomSheet.handlePreviewClose();
+    }
+  }, [mapState.isClusterMode, bottomSheet]);
+
   // 사용자 위치를 처음 받았을 때 지도 이동 + 자동 재검색
   useEffect(() => {
     if (!mapState.hasHydrated) return;
@@ -165,9 +172,6 @@ export default function Home() {
         onClose={locationTracking.closeLocationModal}
       />
 
-      {/* 서비스 중단 알림 배너 */}
-      <ServiceOutageBanner />
-
       <main
         className={`${bottomSheet.showPreviewSheet ? "h-[100dvh]" : "h-[calc(100dvh-var(--footer-height))]"} overflow-hidden relative touch-none`}
       >
@@ -181,12 +185,14 @@ export default function Home() {
               longitude={mapState.mapCenter?.longitude}
               level={mapState.mapLevel}
               centerUpdateTrigger={mapState.centerUpdateTrigger}
-              markers={mapState.markers}
+              markers={mapState.isClusterMode ? [] : mapState.markers}
               onBoundsChange={mapState.handleBoundsChange}
               onMarkerClick={bottomSheet.handleMarkerClick}
               onMapClick={bottomSheet.handleMapClick}
               selectedMarkerId={bottomSheet.selectedShop?.id ?? null}
               currentLocation={locationTracking.currentLocation}
+              clusters={mapState.districtClusters}
+              onClusterClick={mapState.handleClusterClick}
             />
 
             {/* 검색창 */}
@@ -199,8 +205,8 @@ export default function Home() {
               onClearSearch={search.handleClearSearch}
             />
 
-            {/* 이 지역 재검색 버튼 */}
-            {!search.isSearching && mapState.showReloadButton && (
+            {/* 이 지역 재검색 버튼 (클러스터 모드에서는 숨김) */}
+            {!search.isSearching && !mapState.isClusterMode && mapState.showReloadButton && (
               <ReloadButton onClick={handleReloadArea} />
             )}
 
@@ -208,8 +214,8 @@ export default function Home() {
             {!search.isSearching && (
               <CurrentLocationButton
                 onClick={locationTracking.handleCurrentLocation}
-                bottom={bottomSheet.buttonBottom}
-                isVisible={bottomSheet.isButtonVisible}
+                bottom={mapState.isClusterMode ? 24 : bottomSheet.buttonBottom}
+                isVisible={mapState.isClusterMode ? true : bottomSheet.isButtonVisible}
                 isSheetDragging={bottomSheet.isSheetDragging}
                 isLoading={locationTracking.isLocating}
                 isAtCurrentLocation={
@@ -236,8 +242,9 @@ export default function Home() {
             />
           )}
 
-          {/* 바텀시트 */}
+          {/* 바텀시트 (클러스터 모드에서는 숨김) */}
           {!search.isSearching &&
+            !mapState.isClusterMode &&
             (!bottomSheet.showPreviewSheet || bottomSheet.isListSheetLeaving) && (
               <ShopListBottomSheet
                 shops={mapState.shops}
@@ -249,14 +256,17 @@ export default function Home() {
               />
             )}
 
-          {/* 업체 미리보기 바텀시트 */}
-          {!search.isSearching && bottomSheet.showPreviewSheet && bottomSheet.selectedShop && (
-            <ShopPreviewBottomSheet
-              shopId={bottomSheet.selectedShop.id}
-              onClose={bottomSheet.handlePreviewClose}
-              isLeaving={bottomSheet.isPreviewSheetLeaving}
-            />
-          )}
+          {/* 업체 미리보기 바텀시트 (클러스터 모드에서는 숨김) */}
+          {!search.isSearching &&
+            !mapState.isClusterMode &&
+            bottomSheet.showPreviewSheet &&
+            bottomSheet.selectedShop && (
+              <ShopPreviewBottomSheet
+                shopId={bottomSheet.selectedShop.id}
+                onClose={bottomSheet.handlePreviewClose}
+                isLeaving={bottomSheet.isPreviewSheetLeaving}
+              />
+            )}
         </div>
       </main>
       {!search.isSearching && !bottomSheet.showPreviewSheet && <Footer />}
@@ -474,22 +484,6 @@ function SearchOverlay({ searchQuery, results, isPending, onResultClick }: Searc
             </div>
           </div>
         )}
-      </div>
-    </div>
-  );
-}
-
-function ServiceOutageBanner() {
-  return (
-    <div
-      className="fixed left-0 right-0 z-50 mx-auto w-full max-w-[480px] px-5"
-      style={{ top: `calc(env(safe-area-inset-top) + ${RELOAD_BUTTON_TOP}px)` }}
-    >
-      <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 px-3 py-2.5 shadow-[0px_0px_5px_0px_rgba(0,0,0,0.1)]">
-        <AlertTriangle size={18} className="shrink-0 stroke-red-500" strokeWidth={2} />
-        <p className="text-[14px] font-medium leading-[1.4] tracking-[-0.14px] text-red-700">
-          현재 서비스 점검 기간입니다. 이용에 불편을 드려 죄송합니다.
-        </p>
       </div>
     </div>
   );
