@@ -96,6 +96,13 @@ export default function Home() {
     };
   }, []);
 
+  // 클러스터 모드 진입 시 열린 프리뷰 시트 자동 닫기
+  useEffect(() => {
+    if (mapState.isClusterMode && bottomSheet.showPreviewSheet) {
+      bottomSheet.handlePreviewClose();
+    }
+  }, [mapState.isClusterMode, bottomSheet]);
+
   // 사용자 위치를 처음 받았을 때 지도 이동 + 자동 재검색
   useEffect(() => {
     if (!mapState.hasHydrated) return;
@@ -178,12 +185,14 @@ export default function Home() {
               longitude={mapState.mapCenter?.longitude}
               level={mapState.mapLevel}
               centerUpdateTrigger={mapState.centerUpdateTrigger}
-              markers={mapState.markers}
+              markers={mapState.isClusterMode ? [] : mapState.markers}
               onBoundsChange={mapState.handleBoundsChange}
               onMarkerClick={bottomSheet.handleMarkerClick}
               onMapClick={bottomSheet.handleMapClick}
               selectedMarkerId={bottomSheet.selectedShop?.id ?? null}
               currentLocation={locationTracking.currentLocation}
+              clusters={mapState.districtClusters}
+              onClusterClick={mapState.handleClusterClick}
             />
 
             {/* 검색창 */}
@@ -196,8 +205,8 @@ export default function Home() {
               onClearSearch={search.handleClearSearch}
             />
 
-            {/* 이 지역 재검색 버튼 */}
-            {!search.isSearching && mapState.showReloadButton && (
+            {/* 이 지역 재검색 버튼 (클러스터 모드에서는 숨김) */}
+            {!search.isSearching && !mapState.isClusterMode && mapState.showReloadButton && (
               <ReloadButton onClick={handleReloadArea} />
             )}
 
@@ -205,8 +214,8 @@ export default function Home() {
             {!search.isSearching && (
               <CurrentLocationButton
                 onClick={locationTracking.handleCurrentLocation}
-                bottom={bottomSheet.buttonBottom}
-                isVisible={bottomSheet.isButtonVisible}
+                bottom={mapState.isClusterMode ? 24 : bottomSheet.buttonBottom}
+                isVisible={mapState.isClusterMode ? true : bottomSheet.isButtonVisible}
                 isSheetDragging={bottomSheet.isSheetDragging}
                 isLoading={locationTracking.isLocating}
                 isAtCurrentLocation={
@@ -233,8 +242,9 @@ export default function Home() {
             />
           )}
 
-          {/* 바텀시트 */}
+          {/* 바텀시트 (클러스터 모드에서는 숨김) */}
           {!search.isSearching &&
+            !mapState.isClusterMode &&
             (!bottomSheet.showPreviewSheet || bottomSheet.isListSheetLeaving) && (
               <ShopListBottomSheet
                 shops={mapState.shops}
@@ -246,14 +256,17 @@ export default function Home() {
               />
             )}
 
-          {/* 업체 미리보기 바텀시트 */}
-          {!search.isSearching && bottomSheet.showPreviewSheet && bottomSheet.selectedShop && (
-            <ShopPreviewBottomSheet
-              shopId={bottomSheet.selectedShop.id}
-              onClose={bottomSheet.handlePreviewClose}
-              isLeaving={bottomSheet.isPreviewSheetLeaving}
-            />
-          )}
+          {/* 업체 미리보기 바텀시트 (클러스터 모드에서는 숨김) */}
+          {!search.isSearching &&
+            !mapState.isClusterMode &&
+            bottomSheet.showPreviewSheet &&
+            bottomSheet.selectedShop && (
+              <ShopPreviewBottomSheet
+                shopId={bottomSheet.selectedShop.id}
+                onClose={bottomSheet.handlePreviewClose}
+                isLeaving={bottomSheet.isPreviewSheetLeaving}
+              />
+            )}
         </div>
       </main>
       {!search.isSearching && !bottomSheet.showPreviewSheet && <Footer />}
