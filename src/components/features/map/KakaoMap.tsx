@@ -534,32 +534,15 @@ export default function KakaoMap({
       container.tabIndex = 0;
       container.setAttribute("aria-label", `${cluster.districtName} ${cluster.shopCount}개 매장`);
 
-      const wrapper = document.createElement("div");
-      wrapper.style.cssText =
-        "position: relative; display: flex; flex-direction: column; align-items: center;";
-
-      const badge = document.createElement("div");
-      badge.style.cssText =
-        "display: flex; align-items: center; gap: 4px; background-color: #FF4545; color: white; padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.25); line-height: 1.3;";
-
-      const label = document.createElement("span");
-      label.textContent = cluster.districtName;
+      const circle = document.createElement("div");
+      circle.style.cssText =
+        "display: flex; align-items: center; justify-content: center; background-color: #FF4545; color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 13px; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.25); line-height: 1;";
 
       const count = document.createElement("span");
-      count.style.cssText =
-        "background-color: rgba(255,255,255,0.3); padding: 1px 6px; border-radius: 999px; font-size: 12px;";
       count.textContent = String(cluster.shopCount);
 
-      badge.appendChild(label);
-      badge.appendChild(count);
-
-      const pointer = document.createElement("div");
-      pointer.style.cssText =
-        "width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #FF4545; margin-top: -1px;";
-
-      wrapper.appendChild(badge);
-      wrapper.appendChild(pointer);
-      container.appendChild(wrapper);
+      circle.appendChild(count);
+      container.appendChild(circle);
 
       const handleActivate = (e: Event) => {
         e.stopPropagation();
@@ -576,7 +559,7 @@ export default function KakaoMap({
       const overlay = new window.kakao.maps.CustomOverlay({
         position,
         content: container,
-        yAnchor: 1,
+        yAnchor: 0.5,
         xAnchor: 0.5,
         zIndex: 50,
       });

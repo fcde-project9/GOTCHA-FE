@@ -6,7 +6,7 @@ import { useShopsInBounds } from "@/api/queries/useShopsInBounds";
 import { CLUSTER_ZOOM_THRESHOLD, CLUSTER_CLICK_ZOOM_LEVEL } from "@/constants";
 import { useMapStore } from "@/stores";
 import type { MapBounds, ShopMapResponse } from "@/types/api";
-import { applyCenterCoords, type DisplayCluster } from "@/utils/cluster";
+import { applyCenterCoords, mergeNearbyClusters, type DisplayCluster } from "@/utils/cluster";
 import { shopMapResponsesToViews } from "@/utils/shop";
 
 interface MapCenter {
@@ -112,8 +112,9 @@ export function useHomeMapState(): UseHomeMapStateReturn {
   const { data: districtClustersData } = useDistrictClusters(isClusterMode);
   const districtClusters = useMemo(() => {
     if (!isClusterMode || !districtClustersData) return [];
-    return applyCenterCoords(districtClustersData);
-  }, [isClusterMode, districtClustersData]);
+    const clusters = applyCenterCoords(districtClustersData);
+    return mergeNearbyClusters(clusters, effectiveMapLevel);
+  }, [isClusterMode, districtClustersData, effectiveMapLevel]);
 
   // React Query로 가게 목록 조회 (클러스터 모드에서는 비활성화)
   const { data: shopsData, isLoading: isShopsLoading } = useShopsInBounds(

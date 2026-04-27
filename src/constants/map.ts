@@ -13,3 +13,6 @@ export const CLUSTER_ZOOM_THRESHOLD = 7;
 
 /** 클러스터 클릭 시 줌인 레벨 */
 export const CLUSTER_CLICK_ZOOM_LEVEL = 6;
+
+/** 이 레벨 이상이면 구별 클러스터를 병합 (더 축소된 상태) */
+export const MERGED_CLUSTER_ZOOM_THRESHOLD = 9;
