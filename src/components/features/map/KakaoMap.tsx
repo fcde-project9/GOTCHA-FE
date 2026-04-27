@@ -297,9 +297,10 @@ export default function KakaoMap({
     }
   }, [selectedMarkerId]);
 
-  // props 변경 시 지도 업데이트 (재생성하지 않음)
+  // 명시적 이동 요청 시에만 중심 좌표 + 줌 레벨 업데이트
+  // (검색 결과 클릭, 현재 위치 버튼, 클러스터 클릭 등)
   useEffect(() => {
-    if (!mapInstance.current) {
+    if (!mapInstance.current || !centerUpdateTrigger) {
       return;
     }
 
@@ -310,7 +311,8 @@ export default function KakaoMap({
     } catch (err) {
       setMapError(`지도 업데이트 실패: ${err}`);
     }
-  }, [latitude, longitude, level, centerUpdateTrigger]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [centerUpdateTrigger]);
 
   // 마커 렌더링 (지도 로드 완료 후)
   useEffect(() => {
