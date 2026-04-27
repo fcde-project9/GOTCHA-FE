@@ -536,12 +536,15 @@ export default function KakaoMap({
       container.tabIndex = 0;
       container.setAttribute("aria-label", `${cluster.districtName} ${cluster.shopCount}개 매장`);
 
+      const displayText = cluster.shopCount > 999 ? "999+" : String(cluster.shopCount);
+      const len = displayText.length;
+      const size = len <= 2 ? 36 : 36 + (len - 2) * 8;
+
       const circle = document.createElement("div");
-      circle.style.cssText =
-        "display: flex; align-items: center; justify-content: center; background-color: #FF4545; color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 13px; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.25); line-height: 1;";
+      circle.style.cssText = `display: flex; align-items: center; justify-content: center; background-color: #FF4545; color: white; min-width: ${size}px; height: 36px; padding: 0 ${len <= 2 ? 0 : 6}px; border-radius: 9999px; font-size: 13px; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.25); line-height: 1;`;
 
       const count = document.createElement("span");
-      count.textContent = String(cluster.shopCount);
+      count.textContent = displayText;
 
       circle.appendChild(count);
       container.appendChild(circle);

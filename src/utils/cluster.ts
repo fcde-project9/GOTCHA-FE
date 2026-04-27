@@ -90,14 +90,15 @@ export function mergeNearbyClusters(
         names.push(c.districtName);
       }
 
+      const divisor = totalCount || group.length;
       result.push({
         region1DepthName: group[0].region1DepthName,
         districtName: names.join(" · "),
         shopCount: totalCount,
-        latitude: latSum / totalCount,
-        longitude: lngSum / totalCount,
-        shopCenterLatitude: shopLatSum / totalCount,
-        shopCenterLongitude: shopLngSum / totalCount,
+        latitude: latSum / divisor,
+        longitude: lngSum / divisor,
+        shopCenterLatitude: shopLatSum / divisor,
+        shopCenterLongitude: shopLngSum / divisor,
       });
     }
   }
