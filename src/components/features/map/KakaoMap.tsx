@@ -297,9 +297,10 @@ export default function KakaoMap({
     }
   }, [selectedMarkerId]);
 
-  // props 변경 시 지도 업데이트 (재생성하지 않음)
+  // 명시적 이동 요청 시에만 중심 좌표 + 줌 레벨 업데이트
+  // (검색 결과 클릭, 현재 위치 버튼, 클러스터 클릭 등)
   useEffect(() => {
-    if (!mapInstance.current) {
+    if (!mapInstance.current || !centerUpdateTrigger) {
       return;
     }
 
@@ -310,7 +311,8 @@ export default function KakaoMap({
     } catch (err) {
       setMapError(`지도 업데이트 실패: ${err}`);
     }
-  }, [latitude, longitude, level, centerUpdateTrigger]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [centerUpdateTrigger]);
 
   // 마커 렌더링 (지도 로드 완료 후)
   useEffect(() => {
@@ -534,32 +536,18 @@ export default function KakaoMap({
       container.tabIndex = 0;
       container.setAttribute("aria-label", `${cluster.districtName} ${cluster.shopCount}개 매장`);
 
-      const wrapper = document.createElement("div");
-      wrapper.style.cssText =
-        "position: relative; display: flex; flex-direction: column; align-items: center;";
+      const displayText = cluster.shopCount > 999 ? "999+" : String(cluster.shopCount);
+      const len = displayText.length;
+      const size = len <= 2 ? 36 : 36 + (len - 2) * 8;
 
-      const badge = document.createElement("div");
-      badge.style.cssText =
-        "display: flex; align-items: center; gap: 4px; background-color: #FF4545; color: white; padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.25); line-height: 1.3;";
-
-      const label = document.createElement("span");
-      label.textContent = cluster.districtName;
+      const circle = document.createElement("div");
+      circle.style.cssText = `display: flex; align-items: center; justify-content: center; background-color: #FF4545; color: white; min-width: ${size}px; height: 36px; padding: 0 ${len <= 2 ? 0 : 6}px; border-radius: 9999px; font-size: 13px; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.25); line-height: 1;`;
 
       const count = document.createElement("span");
-      count.style.cssText =
-        "background-color: rgba(255,255,255,0.3); padding: 1px 6px; border-radius: 999px; font-size: 12px;";
-      count.textContent = String(cluster.shopCount);
+      count.textContent = displayText;
 
-      badge.appendChild(label);
-      badge.appendChild(count);
-
-      const pointer = document.createElement("div");
-      pointer.style.cssText =
-        "width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #FF4545; margin-top: -1px;";
-
-      wrapper.appendChild(badge);
-      wrapper.appendChild(pointer);
-      container.appendChild(wrapper);
+      circle.appendChild(count);
+      container.appendChild(circle);
 
       const handleActivate = (e: Event) => {
         e.stopPropagation();
@@ -576,7 +564,7 @@ export default function KakaoMap({
       const overlay = new window.kakao.maps.CustomOverlay({
         position,
         content: container,
-        yAnchor: 1,
+        yAnchor: 0.5,
         xAnchor: 0.5,
         zIndex: 50,
       });
