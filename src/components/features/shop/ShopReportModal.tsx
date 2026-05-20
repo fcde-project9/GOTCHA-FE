@@ -1,16 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useReportReasonsByTarget } from "@/api/queries/useReportReasons";
 import type { ShopReportReason } from "@/api/types";
 import { isNativeApp } from "@/utils/platform";
-
-const SHOP_REPORT_REASONS: { value: ShopReportReason; label: string }[] = [
-  { value: "SHOP_CLOSED", label: "영업 종료/폐업된 업체예요" },
-  { value: "SHOP_INAPPROPRIATE", label: "부적절한 업체(불법/유해 업소)예요" },
-  { value: "SHOP_DUPLICATE", label: "중복 제보된 업체예요" },
-  { value: "SHOP_FALSE_INFO", label: "허위/거짓 정보예요" },
-  { value: "SHOP_OTHER", label: "기타" },
-];
 
 interface ShopReportModalProps {
   isOpen: boolean;
@@ -25,6 +18,8 @@ export function ShopReportModal({
   onClose,
   onSubmit,
 }: ShopReportModalProps) {
+  const { data: reportReasons, isLoading: isReasonsLoading } =
+    useReportReasonsByTarget("SHOP_REPORT");
   const [selectedReason, setSelectedReason] = useState<ShopReportReason | null>(null);
   const [detail, setDetail] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -109,11 +104,11 @@ export function ShopReportModal({
 
   if (!isOpen) return null;
 
-  const isOtherSelected = selectedReason === "SHOP_OTHER";
+  const isOtherSelected = selectedReason === "SHOP_REPORT_OTHER";
 
   const handleSelect = (reason: ShopReportReason) => {
     setSelectedReason(reason === selectedReason ? null : reason);
-    if (reason !== "SHOP_OTHER") {
+    if (reason !== "SHOP_REPORT_OTHER") {
       setDetail("");
     }
   };
@@ -129,7 +124,8 @@ export function ShopReportModal({
     onClose();
   };
 
-  const isSubmitDisabled = !selectedReason || (isOtherSelected && !detail.trim()) || isLoading;
+  const isSubmitDisabled =
+    !selectedReason || (isOtherSelected && !detail.trim()) || isLoading || isReasonsLoading;
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 bg-white flex flex-col max-w-[480px] mx-auto h-safe-viewport">
@@ -142,40 +138,47 @@ export function ShopReportModal({
           삭제돼요
         </p>
         <div className="mt-6 flex flex-col gap-6">
-          {SHOP_REPORT_REASONS.map(({ value, label }) => (
-            <button
-              key={value}
-              onClick={() => handleSelect(value)}
-              className="flex items-center justify-between"
-            >
-              <span className="text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-900 text-left">
-                {label}
-              </span>
-              <div
-                className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
-                  selectedReason === value ? "bg-main" : "border-2 border-grey-300"
-                }`}
-              >
-                {selectedReason === value && (
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 14 10"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
+          {isReasonsLoading || !reportReasons
+            ? Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center justify-between animate-pulse">
+                  <div className="h-[25px] w-2/3 bg-grey-100 rounded" />
+                  <div className="w-6 h-6 rounded-full border-2 border-grey-300 shrink-0" />
+                </div>
+              ))
+            : reportReasons.map(({ code, description }) => (
+                <button
+                  key={code}
+                  onClick={() => handleSelect(code as ShopReportReason)}
+                  className="flex items-center justify-between"
+                >
+                  <span className="text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-900 text-left">
+                    {description}
+                  </span>
+                  <div
+                    className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
+                      selectedReason === code ? "bg-main" : "border-2 border-grey-300"
+                    }`}
                   >
-                    <path
-                      d="M1 5L5 9L13 1"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                )}
-              </div>
-            </button>
-          ))}
+                    {selectedReason === code && (
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 14 10"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M1 5L5 9L13 1"
+                          stroke="white"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                </button>
+              ))}
 
           {isOtherSelected && (
             <textarea

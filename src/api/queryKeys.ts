@@ -109,6 +109,28 @@ export const queryKeys = {
     /** 차단 목록 */
     list: () => [...queryKeys.blocks.all, "list"] as const,
   },
+
+  /**
+   * 정보 수정 제안 관련 쿼리 키
+   */
+  suggests: {
+    /** 모든 제안 관련 쿼리의 기본 키 */
+    all: ["suggests"] as const,
+
+    /** 제안 사유 목록 */
+    reasons: () => [...queryKeys.suggests.all, "reasons"] as const,
+  },
+
+  /**
+   * 신고 관련 쿼리 키
+   */
+  reports: {
+    /** 모든 신고 관련 쿼리의 기본 키 */
+    all: ["reports"] as const,
+
+    /** 신고 사유 목록 (targetType별 그룹) */
+    reasons: () => [...queryKeys.reports.all, "reasons"] as const,
+  },
 } as const;
 
 /**

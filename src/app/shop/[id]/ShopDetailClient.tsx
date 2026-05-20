@@ -408,7 +408,7 @@ export default function ShopDetailClient({
 
   const handleSubmitShopReport = (reason: ReportReason, detail?: string) => {
     createReportMutation.mutate(
-      { targetType: "SHOP", targetId: validShopId, reason, detail },
+      { targetType: "SHOP_REPORT", targetId: validShopId, reason, detail },
       {
         onSuccess: () => {
           setIsShopReportOpen(false);
