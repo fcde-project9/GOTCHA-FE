@@ -53,10 +53,12 @@ export const ENDPOINTS = {
   // 신고
   REPORTS: {
     CREATE: "/api/reports",
+    REASONS: "/api/reports/reasons",
   },
   // 정보 수정 제안
   SUGGESTS: {
     CREATE: (shopId: number) => `/api/shops/${shopId}/suggest`,
+    REASONS: "/api/shops/suggest-reasons",
   },
   // 차단
   BLOCKS: {

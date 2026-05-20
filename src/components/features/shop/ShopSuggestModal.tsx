@@ -1,17 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useSuggestReasons } from "@/api/queries/useSuggestReasons";
 import type { ShopSuggestReason } from "@/api/types";
 import { isNativeApp } from "@/utils/platform";
-
-const SUGGEST_ITEMS: { value: ShopSuggestReason; label: string }[] = [
-  { value: "WRONG_ADDRESS", label: "잘못된 주소예요" },
-  { value: "WRONG_PHOTO", label: "매장 사진이 달라요" },
-  { value: "WRONG_LOCATION_HINT", label: "매장 위치힌트가 달라요" },
-  { value: "WRONG_BUSINESS_HOURS", label: "영업시간 정보가 달라요" },
-  { value: "WRONG_PAYMENT_INFO", label: "카드 결제/ATM 등 결제 정보가 달라요" },
-  { value: "OTHER", label: "기타" },
-];
 
 interface ShopSuggestModalProps {
   isOpen: boolean;
@@ -26,6 +18,7 @@ export function ShopSuggestModal({
   onClose,
   onSubmit,
 }: ShopSuggestModalProps) {
+  const { data: suggestItems, isLoading: isReasonsLoading } = useSuggestReasons();
   const [selectedReasons, setSelectedReasons] = useState<Set<ShopSuggestReason>>(new Set());
   const [detail, setDetail] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -139,7 +132,10 @@ export function ShopSuggestModal({
   };
 
   const isSubmitDisabled =
-    selectedReasons.size === 0 || (isOtherSelected && !detail.trim()) || isLoading;
+    selectedReasons.size === 0 ||
+    (isOtherSelected && !detail.trim()) ||
+    isLoading ||
+    isReasonsLoading;
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 bg-white flex flex-col max-w-[480px] mx-auto h-safe-viewport">
@@ -151,40 +147,47 @@ export function ShopSuggestModal({
           *중복선택 가능
         </p>
         <div className="mt-6 flex flex-col gap-6">
-          {SUGGEST_ITEMS.map(({ value, label }) => (
-            <button
-              key={value}
-              onClick={() => handleToggle(value)}
-              className="flex items-center justify-between"
-            >
-              <span className="text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-900 text-left">
-                {label}
-              </span>
-              <div
-                className={`w-5 h-5 rounded-[4px] border-2 flex items-center justify-center shrink-0 ${
-                  selectedReasons.has(value) ? "bg-main border-main" : "border-grey-300"
-                }`}
-              >
-                {selectedReasons.has(value) && (
-                  <svg
-                    width="10"
-                    height="10"
-                    viewBox="0 0 14 10"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
+          {isReasonsLoading || !suggestItems
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="flex items-center justify-between animate-pulse">
+                  <div className="h-[25px] w-2/3 bg-grey-100 rounded" />
+                  <div className="w-5 h-5 rounded-[4px] border-2 border-grey-300 shrink-0" />
+                </div>
+              ))
+            : suggestItems.map(({ code, description }) => (
+                <button
+                  key={code}
+                  onClick={() => handleToggle(code)}
+                  className="flex items-center justify-between"
+                >
+                  <span className="text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-900 text-left">
+                    {description}
+                  </span>
+                  <div
+                    className={`w-5 h-5 rounded-[4px] border-2 flex items-center justify-center shrink-0 ${
+                      selectedReasons.has(code) ? "bg-main border-main" : "border-grey-300"
+                    }`}
                   >
-                    <path
-                      d="M1 5L5 9L13 1"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                )}
-              </div>
-            </button>
-          ))}
+                    {selectedReasons.has(code) && (
+                      <svg
+                        width="10"
+                        height="10"
+                        viewBox="0 0 14 10"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M1 5L5 9L13 1"
+                          stroke="white"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                </button>
+              ))}
 
           {isOtherSelected && (
             <textarea
