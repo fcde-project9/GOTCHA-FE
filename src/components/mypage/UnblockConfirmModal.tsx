@@ -55,7 +55,7 @@ export function UnblockConfirmModal({
             disabled={isLoading}
             className="flex-1 h-[46px] rounded-lg bg-main text-[17px] font-semibold text-white tracking-[-0.17px] leading-[1.5] disabled:opacity-50"
           >
-            {isLoading ? "해제 중..." : "확인"}
+            확인
           </button>
         </div>
       </div>
