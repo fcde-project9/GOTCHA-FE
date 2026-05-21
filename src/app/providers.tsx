@@ -7,6 +7,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
 import { ToastProvider, useDeepLink } from "@/hooks";
 import { checkSessionAndRedirect } from "@/utils";
+import { pageview } from "@/utils/analytics";
 import { isNativeApp } from "@/utils/platform";
 import { registerPushNotifications } from "@/utils/pushNotifications";
 
@@ -56,6 +57,12 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     if (!isPublicPath) {
       checkSessionAndRedirect();
     }
+  }, [pathname]);
+
+  // GA4 페이지뷰 추적 (SPA 라우트 변경 시마다 발화 → UTM 자동 귀속)
+  useEffect(() => {
+    if (!pathname) return;
+    pageview(pathname);
   }, [pathname]);
 
   // 순차적 권한 요청: 위치 → 알림 (시스템 다이얼로그 사용, 1회만 실행)
