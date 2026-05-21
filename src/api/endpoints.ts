@@ -37,13 +37,28 @@ export const ENDPOINTS = {
     LIKE: (reviewId: number) => `/api/shops/reviews/${reviewId}/like`,
     IMAGES: (shopId: number) => `/api/shops/${shopId}/reviews/images`,
   },
+  // 커뮤니티 게시글
+  POSTS: {
+    LIST: "/api/posts",
+    CREATE: "/api/posts",
+    DETAIL: (postId: number) => `/api/posts/${postId}`,
+    COMMENTS: (postId: number) => `/api/posts/${postId}/comments`,
+    DELETE: (postId: number) => `/api/posts/${postId}`,
+    DELETE_COMMENT: (postId: number, commentId: number) =>
+      `/api/posts/${postId}/comments/${commentId}`,
+    LIKE: (postId: number) => `/api/posts/${postId}/like`,
+    COMMENT_LIKE: (postId: number, commentId: number) =>
+      `/api/posts/${postId}/comments/${commentId}/like`,
+  },
   // 신고
   REPORTS: {
     CREATE: "/api/reports",
+    REASONS: "/api/reports/reasons",
   },
   // 정보 수정 제안
   SUGGESTS: {
     CREATE: (shopId: number) => `/api/shops/${shopId}/suggest`,
+    REASONS: "/api/shops/suggest-reasons",
   },
   // 차단
   BLOCKS: {

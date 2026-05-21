@@ -26,6 +26,9 @@ export const queryKeys = {
     /** 지도 영역 내 매장 목록 */
     map: (bounds: MapBounds | null) => [...queryKeys.shops.all, "map", bounds] as const,
 
+    /** 구별 클러스터 */
+    districts: () => [...queryKeys.shops.all, "districts"] as const,
+
     /** 근처 매장 확인 */
     nearby: (latitude: number, longitude: number) =>
       [...queryKeys.shops.all, "nearby", latitude, longitude] as const,
@@ -78,8 +81,25 @@ export const queryKeys = {
     /** 현재 로그인한 사용자 정보 */
     me: () => [...queryKeys.user.all, "me"] as const,
 
-    /** 내가 제보한 매장 목록 */
-    myReports: () => [...queryKeys.user.all, "reports"] as const,
+    /** 내가 제보한 매장 목록의 prefix 키 (invalidate용) */
+    myReportsAll: () => [...queryKeys.user.all, "reports"] as const,
+
+    /** 내가 제보한 매장 목록 (정렬 기준 포함) */
+    myReports: (sortBy: string) => [...queryKeys.user.all, "reports", sortBy] as const,
+  },
+
+  /**
+   * 커뮤니티 게시글 관련 쿼리 키
+   */
+  posts: {
+    /** 모든 게시글 관련 쿼리의 기본 키 */
+    all: ["posts"] as const,
+
+    /** 게시글 목록 (카테고리별) */
+    list: (typeId?: number) => [...queryKeys.posts.all, "list", typeId] as const,
+
+    /** 게시글 상세 */
+    detail: (postId: number) => [...queryKeys.posts.all, "detail", postId] as const,
   },
 
   /**
@@ -91,6 +111,28 @@ export const queryKeys = {
 
     /** 차단 목록 */
     list: () => [...queryKeys.blocks.all, "list"] as const,
+  },
+
+  /**
+   * 정보 수정 제안 관련 쿼리 키
+   */
+  suggests: {
+    /** 모든 제안 관련 쿼리의 기본 키 */
+    all: ["suggests"] as const,
+
+    /** 제안 사유 목록 */
+    reasons: () => [...queryKeys.suggests.all, "reasons"] as const,
+  },
+
+  /**
+   * 신고 관련 쿼리 키
+   */
+  reports: {
+    /** 모든 신고 관련 쿼리의 기본 키 */
+    all: ["reports"] as const,
+
+    /** 신고 사유 목록 (targetType별 그룹) */
+    reasons: () => [...queryKeys.reports.all, "reasons"] as const,
   },
 } as const;
 

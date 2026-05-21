@@ -499,7 +499,7 @@ export default function ShopPreviewBottomSheet({
   const handleSubmitShopReport = (reason: ReportReason, detail?: string) => {
     if (!shopId) return;
     createReportMutation.mutate(
-      { targetType: "SHOP", targetId: shopId, reason, detail },
+      { targetType: "SHOP_REPORT", targetId: shopId, reason, detail },
       {
         onSuccess: () => {
           setIsShopReportOpen(false);

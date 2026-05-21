@@ -64,6 +64,10 @@ export default function MyPage() {
     }
   };
 
+  const handleFavorites = () => {
+    router.push("/favorites");
+  };
+
   const handleMyReports = () => {
     router.push("/mypage/my-reports");
   };
@@ -227,18 +231,54 @@ export default function MyPage() {
 
         {/* Main Content */}
         <div className="flex flex-col gap-8 px-5 pb-5">
-          {/* Profile Section */}
-          <ProfileSection
-            isLoggedIn={isLoggedIn}
-            nickname={loggedInUser?.nickname}
-            email={loggedInUser?.email}
-            profileImage={loggedInUser?.profileImageUrl ?? undefined}
-            socialProvider={socialProvider}
-            isAdmin={isAdmin}
-            onEditProfile={handleEditProfile}
-            onEditNickname={handleEditNickname}
-            onLogin={handleLogin}
-          />
+          {/* Profile Section + Stats */}
+          <div className="flex flex-col gap-6">
+            <ProfileSection
+              isLoggedIn={isLoggedIn}
+              nickname={loggedInUser?.nickname}
+              email={loggedInUser?.email}
+              profileImage={loggedInUser?.profileImageUrl ?? undefined}
+              socialProvider={socialProvider}
+              isAdmin={isAdmin}
+              onEditProfile={handleEditProfile}
+              onEditNickname={handleEditNickname}
+              onLogin={handleLogin}
+            />
+
+            {/* Stats Card */}
+            <div className="flex items-center border rounded-[8px] py-3 px-4">
+              <button
+                onClick={handleFavorites}
+                className="flex flex-col items-center flex-1 gap-1 px-3"
+                aria-label="관심있는 매장으로 이동"
+              >
+                <span className="text-[18px] font-semibold leading-[1.4] tracking-[-0.18px] text-grey-900">
+                  {loggedInUser?.favoriteCount ?? 0}
+                </span>
+                <span className="text-[13px] font-medium leading-[1.5] tracking-[-0.13px] text-grey-600">
+                  관심있는 매장
+                </span>
+              </button>
+              <div className="w-px h-8 bg-grey-200" />
+              <div className="flex flex-col items-center flex-1 gap-1 px-3">
+                <span className="text-[18px] font-semibold leading-[1.4] tracking-[-0.18px] text-grey-900">
+                  {loggedInUser?.reportCount ?? 0}
+                </span>
+                <span className="text-[13px] font-medium leading-[1.5] tracking-[-0.13px] text-grey-600">
+                  제보한 매장
+                </span>
+              </div>
+              <div className="w-px h-8 bg-grey-200" />
+              <div className="flex flex-col items-center flex-1 gap-1 px-3">
+                <span className="text-[18px] font-semibold leading-[1.4] tracking-[-0.18px] text-grey-900">
+                  {loggedInUser?.reviewCount ?? 0}
+                </span>
+                <span className="text-[13px] font-medium leading-[1.5] tracking-[-0.13px] text-grey-600">
+                  작성한 리뷰
+                </span>
+              </div>
+            </div>
+          </div>
 
           {/* Menu List */}
           <div className="w-full">

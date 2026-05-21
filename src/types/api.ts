@@ -67,6 +67,7 @@ export interface ShopMapResponse {
   openStatus: string; // "영업 중", "영업 종료", "휴무", ""
   distance: string;
   isFavorite: boolean;
+  region2DepthName: string | null;
 }
 
 /**
@@ -279,4 +280,90 @@ export interface BlockedUsersPageResponse {
   page: number;
   size: number;
   hasNext: boolean;
+}
+
+/**
+ * 커뮤니티 게시글
+ */
+export interface Post {
+  id: number;
+  typeId: number;
+  typeName: string;
+  authorNickname: string;
+  authorProfileImageUrl: string;
+  content: string;
+  imageUrls: string[];
+  likeCount: number;
+  commentCount: number;
+  timeAgo: string;
+  createdAt: string;
+}
+
+/**
+ * 커뮤니티 게시글 목록 (cursor 기반 무한 스크롤)
+ */
+export interface PostsPageResponse {
+  content: Post[];
+  nextCursor: number | null;
+  hasNext: boolean;
+}
+
+/**
+ * 댓글 대댓글
+ */
+export interface CommentReply {
+  id: number;
+  parentId: number;
+  authorNickname: string;
+  content: string;
+  isAnonymous: boolean;
+  isOwner: boolean;
+  likeCount: number;
+  isLiked: boolean;
+  createdAt: string;
+}
+
+/**
+ * 댓글
+ */
+export interface PostComment {
+  id: number;
+  parentId: number | null;
+  authorNickname: string;
+  content: string;
+  isAnonymous: boolean;
+  isOwner: boolean;
+  likeCount: number;
+  isLiked: boolean;
+  createdAt: string;
+  replies: CommentReply[];
+}
+
+/**
+ * GET /api/shops/districts 응답 - 구별 가게 수 클러스터
+ */
+export interface DistrictClusterResponse {
+  region1DepthName: string;
+  districtName: string;
+  shopCount: number;
+  latitude: number;
+  longitude: number;
+}
+
+/**
+ * 게시글 상세
+ */
+export interface PostDetail {
+  id: number;
+  typeId: number;
+  typeName: string;
+  authorNickname: string;
+  title: string;
+  content: string;
+  imageUrls: string[];
+  likeCount: number;
+  isLiked: boolean;
+  isOwner: boolean;
+  createdAt: string;
+  comments: PostComment[];
 }

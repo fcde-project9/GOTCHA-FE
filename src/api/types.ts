@@ -75,6 +75,9 @@ export interface User {
   profileImageUrl: string | null;
   socialType: SocialType;
   userType: UserType;
+  favoriteCount: number;
+  reportCount: number;
+  reviewCount: number;
 }
 
 /**
@@ -167,7 +170,7 @@ export interface NearbyShopsResponse {
 
 // ── 신고 ──
 
-export type ReportTargetType = "REVIEW" | "SHOP" | "USER";
+export type ReportTargetType = "REVIEW" | "SHOP_REPORT" | "USER";
 
 // 리뷰 신고
 export type ReviewReportReason =
@@ -184,12 +187,11 @@ export type ReviewReportReason =
 
 // 가게 신고
 export type ShopReportReason =
-  | "SHOP_WRONG_ADDRESS"
-  | "SHOP_CLOSED"
-  | "SHOP_INAPPROPRIATE"
-  | "SHOP_DUPLICATE"
-  | "SHOP_FALSE_INFO"
-  | "SHOP_OTHER";
+  | "SHOP_REPORT_INAPPROPRIATE"
+  | "SHOP_REPORT_INAPPROPRIATE_CONTENT"
+  | "SHOP_REPORT_INAPPROPRIATE_HINT"
+  | "SHOP_REPORT_DUPLICATE"
+  | "SHOP_REPORT_OTHER";
 
 // 사용자 신고
 export type UserReportReason =
@@ -201,6 +203,22 @@ export type UserReportReason =
   | "USER_OTHER";
 
 export type ReportReason = ReviewReportReason | ShopReportReason | UserReportReason;
+
+/**
+ * 신고 사유 그룹 응답 타입
+ * GET /api/reports/reasons 응답
+ * - 백엔드 ReportReasonResponse와 일치
+ */
+export interface ReportReasonItem {
+  code: ReportReason;
+  description: string;
+}
+
+export interface ReportReasonGroup {
+  targetType: ReportTargetType;
+  targetTypeDescription: string;
+  reasons: ReportReasonItem[];
+}
 
 export type ReportStatus = "PENDING" | "ACCEPTED" | "REJECTED" | "CANCELLED";
 
@@ -223,13 +241,23 @@ export interface ReportResponse {
 
 // ── 정보 수정 제안 ──
 
+/**
+ * 매장 정보 수정 제안 사유 코드
+ * - 실제 선택지 목록은 GET /api/shops/suggest-reasons 응답으로 주어지므로,
+ *   이 union은 타입 안전성을 위한 클라이언트 측 참고용
+ */
 export type ShopSuggestReason =
   | "WRONG_ADDRESS"
-  | "WRONG_PHOTO"
   | "WRONG_LOCATION_HINT"
+  | "BUSINESS_CLOSED"
   | "WRONG_BUSINESS_HOURS"
   | "WRONG_PAYMENT_INFO"
   | "OTHER";
+
+export interface ShopSuggestReasonItem {
+  code: ShopSuggestReason;
+  description: string;
+}
 
 export interface CreateShopSuggestRequest {
   reasons: ShopSuggestReason[];
