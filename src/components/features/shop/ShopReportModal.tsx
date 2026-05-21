@@ -212,7 +212,7 @@ export function ShopReportModal({
           disabled={isSubmitDisabled}
           className="flex-1 h-[44px] rounded-lg bg-main text-[16px] font-medium leading-[1.5] tracking-[-0.16px] text-white disabled:bg-grey-200 disabled:text-grey-500"
         >
-          {isLoading ? "신고 접수 중..." : "신고하기"}
+          신고하기
         </button>
       </div>
     </div>

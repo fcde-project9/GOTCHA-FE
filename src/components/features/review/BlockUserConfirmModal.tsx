@@ -48,7 +48,7 @@ export function BlockUserConfirmModal({
             disabled={isLoading}
             className="flex-1 h-[46px] rounded-lg bg-main text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white disabled:opacity-50"
           >
-            {isLoading ? "차단 중..." : "확인"}
+            확인
           </button>
         </div>
       </div>
