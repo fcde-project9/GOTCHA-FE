@@ -25,7 +25,7 @@ export const useCreateShop = () => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.shops.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.myReports() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.myReportsAll() });
     },
   });
 };

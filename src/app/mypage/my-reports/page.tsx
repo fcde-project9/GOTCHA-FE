@@ -3,14 +3,12 @@
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ChevronDown, Navigation } from "lucide-react";
-import { useMyReports } from "@/api/queries/useMyReports";
+import { ChevronDown, ChevronUp, Navigation } from "lucide-react";
+import { useMyReports, type MyReportsSort } from "@/api/queries/useMyReports";
 import { BackHeader, Spinner } from "@/components/common";
 import StatusBadge from "@/components/features/shop/StatusBadge";
 import { DEFAULT_IMAGES } from "@/constants";
 import { isNativeApp } from "@/utils/platform";
-
-type SortOrder = "latest" | "oldest";
 
 /**
  * 주소에서 시/도 + 구/군만 추출
@@ -38,11 +36,11 @@ const formatAddress = (addressName: string | null | undefined): string => {
 
 export default function MyReportsPage() {
   const router = useRouter();
-  const [sortOrder, setSortOrder] = useState<SortOrder>("latest");
+  const [sortBy, setSortBy] = useState<MyReportsSort>("LATEST");
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
-  // API로 내가 제보한 업체 목록 조회
-  const { data: reportsData, isLoading, error } = useMyReports();
+  // API로 내가 제보한 업체 목록 조회 (서버 사이드 정렬)
+  const { data: reportsData, isLoading, error } = useMyReports(sortBy);
 
   // API 응답을 UI용 데이터로 변환
   const reports = useMemo(() => {
@@ -58,17 +56,6 @@ export default function MyReportsPage() {
     }));
   }, [reportsData]);
 
-  // 정렬된 리스트
-  const sortedReports = useMemo(() => {
-    return [...reports].sort((a, b) => {
-      const dateA = new Date(a.reportedAt.replace(/\./g, "-"));
-      const dateB = new Date(b.reportedAt.replace(/\./g, "-"));
-      return sortOrder === "latest"
-        ? dateB.getTime() - dateA.getTime()
-        : dateA.getTime() - dateB.getTime();
-    });
-  }, [reports, sortOrder]);
-
   const totalCount = reportsData?.totalCount ?? reports.length;
 
   const handleShopClick = (shopId: number) => {
@@ -79,8 +66,8 @@ export default function MyReportsPage() {
     }
   };
 
-  const handleSortChange = (order: SortOrder) => {
-    setSortOrder(order);
+  const handleSortChange = (next: MyReportsSort) => {
+    setSortBy(next);
     setShowSortDropdown(false);
   };
 
@@ -151,8 +138,12 @@ export default function MyReportsPage() {
                 onClick={() => setShowSortDropdown(!showSortDropdown)}
                 className="flex items-center gap-1 text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-700"
               >
-                <span>{sortOrder === "latest" ? "최신순" : "오래된순"}</span>
-                <ChevronDown size={18} className="stroke-grey-700" />
+                <span>{sortBy === "LATEST" ? "최신순" : "좋아요순"}</span>
+                {showSortDropdown ? (
+                  <ChevronUp size={18} className="stroke-grey-700" />
+                ) : (
+                  <ChevronDown size={18} className="stroke-grey-700" />
+                )}
               </button>
 
               {showSortDropdown && (
@@ -160,28 +151,26 @@ export default function MyReportsPage() {
                   {/* 드롭다운 닫기용 오버레이 */}
                   <div className="fixed inset-0 z-10" onClick={() => setShowSortDropdown(false)} />
                   {/* 드롭다운 메뉴 */}
-                  <div className="absolute right-0 top-6 z-20 bg-white rounded-lg shadow-lg border border-grey-100 py-1 min-w-[80px]">
+                  <div className="absolute right-0 top-6 z-20 bg-white rounded-lg shadow-lg border border-grey-100 py-1 min-w-[100px]">
                     <button
                       type="button"
-                      onClick={() => handleSortChange("latest")}
+                      onClick={() => handleSortChange("LATEST")}
                       className={`w-full px-3 py-2 text-left text-[16px] leading-[1.5] tracking-[-0.16px] ${
-                        sortOrder === "latest"
-                          ? "text-main font-medium"
-                          : "text-grey-700 font-normal"
+                        sortBy === "LATEST" ? "text-main font-medium" : "text-grey-700 font-normal"
                       }`}
                     >
                       최신순
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleSortChange("oldest")}
+                      onClick={() => handleSortChange("FAVORITE_COUNT")}
                       className={`w-full px-3 py-2 text-left text-[16px] leading-[1.5] tracking-[-0.16px] ${
-                        sortOrder === "oldest"
+                        sortBy === "FAVORITE_COUNT"
                           ? "text-main font-medium"
                           : "text-grey-700 font-normal"
                       }`}
                     >
-                      오래된순
+                      좋아요순
                     </button>
                   </div>
                 </>
@@ -192,7 +181,7 @@ export default function MyReportsPage() {
           {/* 리스트 */}
           <div className="flex-1 overflow-y-auto px-5 pb-3">
             <div className="flex flex-col">
-              {sortedReports.map((shop) => (
+              {reports.map((shop) => (
                 <div key={shop.id} className="relative w-full">
                   <button
                     type="button"

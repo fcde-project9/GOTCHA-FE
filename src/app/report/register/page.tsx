@@ -344,7 +344,7 @@ function ReportRegisterContent() {
 
       // 캐시 무효화 완료 후 페이지 이동
       await queryClient.invalidateQueries({ queryKey: queryKeys.shops.all });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.user.myReports() });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.user.myReportsAll() });
 
       router.push("/report/complete");
     } catch (error) {
