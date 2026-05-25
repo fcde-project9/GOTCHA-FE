@@ -18,6 +18,9 @@ export default function FavoritesPage() {
   const [selectedShopId, setSelectedShopId] = useState<number | null>(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  // 검색 활성 시 우리가 덮어쓰기 전의 overflow 값 보존 (다른 레이어의 스크롤 락 보호)
+  const prevDocOverflowRef = useRef<string | null>(null);
+  const prevBodyOverflowRef = useRef<string | null>(null);
 
   // 오버레이 열릴 때 history entry 추가 → 뒤로가기로 닫힘 처리
   useEffect(() => {
@@ -56,24 +59,34 @@ export default function FavoritesPage() {
   // iOS Safari 키보드 올라올 때 body/html 스크롤 방지 + 키보드 높이 추적
   // (dvh는 키보드를 반영하지 않아 main이 키보드 뒤로 밀려 Safari가 자동 스크롤하는 현상 차단)
   useEffect(() => {
+    // 우리가 덮어쓰기 직전 값으로 복원 (덮어쓰지 않았다면 no-op)
+    const restoreOverflow = () => {
+      if (prevDocOverflowRef.current !== null) {
+        document.documentElement.style.overflow = prevDocOverflowRef.current;
+        prevDocOverflowRef.current = null;
+      }
+      if (prevBodyOverflowRef.current !== null) {
+        document.body.style.overflow = prevBodyOverflowRef.current;
+        prevBodyOverflowRef.current = null;
+      }
+    };
+
     if (!isSearchActive) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- 검색 종료 시 키보드 높이 초기화
       setKeyboardHeight(0);
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
+      restoreOverflow();
       return;
     }
 
+    prevDocOverflowRef.current = document.documentElement.style.overflow;
+    prevBodyOverflowRef.current = document.body.style.overflow;
     document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
     window.scrollTo(0, 0);
 
     const vv = window.visualViewport;
     if (!vv) {
-      return () => {
-        document.documentElement.style.overflow = "";
-        document.body.style.overflow = "";
-      };
+      return restoreOverflow;
     }
 
     const handleViewportChange = () => {
@@ -90,8 +103,7 @@ export default function FavoritesPage() {
     return () => {
       vv.removeEventListener("resize", handleViewportChange);
       vv.removeEventListener("scroll", handleViewportChange);
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
+      restoreOverflow();
     };
   }, [isSearchActive]);
 
