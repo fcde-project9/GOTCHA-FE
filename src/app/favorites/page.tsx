@@ -16,7 +16,11 @@ export default function FavoritesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [selectedShopId, setSelectedShopId] = useState<number | null>(null);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  // 검색 활성 시 우리가 덮어쓰기 전의 overflow 값 보존 (다른 레이어의 스크롤 락 보호)
+  const prevDocOverflowRef = useRef<string | null>(null);
+  const prevBodyOverflowRef = useRef<string | null>(null);
 
   // 오버레이 열릴 때 history entry 추가 → 뒤로가기로 닫힘 처리
   useEffect(() => {
@@ -52,19 +56,54 @@ export default function FavoritesPage() {
   // input이 렌더링되지 않으면 포커스 상태 무효화
   const isSearchActive = isSearchFocused && allFavorites.length > 0;
 
-  // iOS Safari 키보드 올라올 때 body/html 스크롤 방지
+  // iOS Safari 키보드 올라올 때 body/html 스크롤 방지 + 키보드 높이 추적
+  // (dvh는 키보드를 반영하지 않아 main이 키보드 뒤로 밀려 Safari가 자동 스크롤하는 현상 차단)
   useEffect(() => {
-    if (isSearchActive) {
-      document.documentElement.style.overflow = "hidden";
-      document.body.style.overflow = "hidden";
-      window.scrollTo(0, 0);
-    } else {
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
+    // 우리가 덮어쓰기 직전 값으로 복원 (덮어쓰지 않았다면 no-op)
+    const restoreOverflow = () => {
+      if (prevDocOverflowRef.current !== null) {
+        document.documentElement.style.overflow = prevDocOverflowRef.current;
+        prevDocOverflowRef.current = null;
+      }
+      if (prevBodyOverflowRef.current !== null) {
+        document.body.style.overflow = prevBodyOverflowRef.current;
+        prevBodyOverflowRef.current = null;
+      }
+    };
+
+    if (!isSearchActive) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 검색 종료 시 키보드 높이 초기화
+      setKeyboardHeight(0);
+      restoreOverflow();
+      return;
     }
+
+    prevDocOverflowRef.current = document.documentElement.style.overflow;
+    prevBodyOverflowRef.current = document.body.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    window.scrollTo(0, 0);
+
+    const vv = window.visualViewport;
+    if (!vv) {
+      return restoreOverflow;
+    }
+
+    const handleViewportChange = () => {
+      const kbHeight = window.innerHeight - vv.height;
+      setKeyboardHeight(kbHeight > 0 ? kbHeight : 0);
+      // 키보드/뷰포트 변동 시마다 Safari 자동 스크롤 무효화
+      window.scrollTo(0, 0);
+    };
+
+    handleViewportChange();
+    vv.addEventListener("resize", handleViewportChange);
+    vv.addEventListener("scroll", handleViewportChange);
+
     return () => {
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
+      vv.removeEventListener("resize", handleViewportChange);
+      vv.removeEventListener("scroll", handleViewportChange);
+      restoreOverflow();
     };
   }, [isSearchActive]);
 
@@ -106,6 +145,13 @@ export default function FavoritesPage() {
     <>
       <main
         className={`${isSearchActive ? "h-[calc(100dvh-env(safe-area-inset-top,0px))]" : "h-[calc(100dvh-env(safe-area-inset-top,0px)-var(--footer-height))]"} overflow-hidden relative bg-default flex flex-col`}
+        style={
+          isSearchActive && keyboardHeight > 0
+            ? {
+                height: `calc(100dvh - env(safe-area-inset-top, 0px) - ${keyboardHeight}px)`,
+              }
+            : undefined
+        }
       >
         {/* 헤더 */}
         <SimpleHeader title="찜한업체" />
@@ -175,11 +221,24 @@ export default function FavoritesPage() {
             </div>
           </div>
         ) : trimmedSearch && filteredFavorites.length === 0 ? (
-          // 모든 페이지 로드 완료 후에도 검색 결과 없음
-          <div className="flex flex-1 flex-col items-center justify-center px-5">
-            <p className="text-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-600">
-              검색 결과가 없어요
-            </p>
+          // 모든 페이지 로드 완료 후에도 검색 결과 없음 (지도 내 검색과 동일한 UI)
+          <div className="flex flex-1 flex-col items-center justify-center px-5 -mt-12">
+            <div className="mb-6 flex items-center justify-center">
+              <Image
+                src={DEFAULT_IMAGES.SHOP_LIST_EMPTY}
+                alt="검색 결과 없음"
+                width={79}
+                height={50}
+              />
+            </div>
+            <div className="flex flex-col gap-1 text-center">
+              <p className="text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900">
+                검색 결과가 없어요
+              </p>
+              <p className="text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-500">
+                오타가 있는지 확인해보세요
+              </p>
+            </div>
           </div>
         ) : filteredFavorites.length === 0 ? (
           // Empty State
