@@ -55,8 +55,14 @@ SENTRY_AUTH_TOKEN=sntrys_xxx...    # Organization Auth Token (scope: org:ci)
 
 ### Vercel 배포
 
-Settings → Environment Variables에 위 4개 등록.
-**`SENTRY_AUTH_TOKEN`은 Sensitive로 표시.**
+Settings → Environment Variables에 위 4개 등록. 적용 환경 체크박스에서
+**Production + Preview 둘 다** 체크.
+
+- `SENTRY_AUTH_TOKEN`은 **Sensitive로 표시**
+- 환경 구분: 코드에서 `process.env.NEXT_PUBLIC_VERCEL_ENV ?? process.env.NODE_ENV`로
+  `environment` 태깅. Vercel이 자동으로 `NEXT_PUBLIC_VERCEL_ENV`에
+  `production` / `preview` / `development` 중 하나 주입 → Preview 배포는
+  Sentry에서 `environment: preview`로 분류되어 Discord 알림(`production`만 필터)에 안 섞임.
 
 ### iOS 빌드 (Capacitor)
 

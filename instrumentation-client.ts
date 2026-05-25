@@ -6,7 +6,9 @@ const baseConfig = {
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
   release: process.env.NEXT_PUBLIC_SENTRY_RELEASE,
-  environment: process.env.NODE_ENV,
+  // Vercel은 Production/Preview 모두 NODE_ENV=production이라 둘이 안 구분됨.
+  // VERCEL_ENV("production" | "preview" | "development")로 분리해야 Preview 이슈가 prod 알림에 안 섞임.
+  environment: process.env.NEXT_PUBLIC_VERCEL_ENV ?? process.env.NODE_ENV,
   enabled: !!process.env.NEXT_PUBLIC_SENTRY_DSN,
 };
 
