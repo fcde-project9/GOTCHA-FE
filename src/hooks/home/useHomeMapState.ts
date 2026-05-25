@@ -118,11 +118,12 @@ export function useHomeMapState(): UseHomeMapStateReturn {
     return mergeNearbyClusters(clusters, effectiveMapLevel);
   }, [isClusterMode, districtClustersData, effectiveMapLevel]);
 
-  // 구 필터가 활성화된 동안엔 가시영역을 넘어가는 매장도 잡히도록 bounds를 확장
+  // 구 필터가 활성화된 동안엔 가시영역을 넘어가는 매장도 잡히도록 bounds를 1.5배로 확장
+  // (양쪽에 span * 0.25씩 더해야 최종 span = 1.5 × 원본 span)
   const queryBounds = useMemo(() => {
     if (!activeBounds || !districtFilter) return activeBounds;
-    const latPad = (activeBounds.northEastLat - activeBounds.southWestLat) * 1.5;
-    const lngPad = (activeBounds.northEastLng - activeBounds.southWestLng) * 1.5;
+    const latPad = (activeBounds.northEastLat - activeBounds.southWestLat) * 0.25;
+    const lngPad = (activeBounds.northEastLng - activeBounds.southWestLng) * 0.25;
     return {
       ...activeBounds,
       northEastLat: activeBounds.northEastLat + latPad,
