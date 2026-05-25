@@ -315,4 +315,6 @@ Sentry.init({
 - [공식 Next.js 가이드](https://docs.sentry.io/platforms/javascript/guides/nextjs/)
 - [Capacitor 가이드](https://docs.sentry.io/platforms/javascript/guides/capacitor/)
 - [Source maps 트러블슈팅](https://docs.sentry.io/platforms/javascript/sourcemaps/troubleshooting_js/)
-- 프로젝트 SDK 버전: `@sentry/nextjs@^10.53.1`, `@sentry/capacitor@^4.0.0`
+- 프로젝트 SDK 버전: `@sentry/nextjs@10.43.0` (exact), `@sentry/capacitor@^4.0.0`
+  > `@sentry/capacitor`가 sibling `@sentry/core`를 정확히 10.43.0으로 고정하므로
+  > `@sentry/nextjs`도 같은 버전으로 핀해야 빌드 통과. 업그레이드 시 둘이 같은 버전으로 같이 올려야 함.

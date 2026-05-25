@@ -31,7 +31,7 @@
     "@capacitor/splash-screen": "^8.0.1",
     "@capacitor/status-bar": "^8.0.1",
     "@sentry/capacitor": "^4.0.0",
-    "@sentry/nextjs": "^10.53.1",
+    "@sentry/nextjs": "10.43.0",
     "@tanstack/react-query": "^5.62.8",
     "axios": "1.15.2",
     "browser-image-compression": "^2.0.2",
