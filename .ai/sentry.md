@@ -1,0 +1,312 @@
+# Sentry 에러 모니터링 가이드
+
+## 개요
+
+GOTCHA 프로젝트는 [Sentry](https://sentry.io)로 런타임 에러, 성능, 세션 리플레이를 수집한다.
+Next.js (웹) + Capacitor (iOS 네이티브) 하이브리드 구성이라 두 환경 모두 같은 Sentry 프로젝트로 이벤트가 모인다.
+
+- **웹**: `@sentry/nextjs` (client + server + edge 모두 지원)
+- **iOS 네이티브 크래시**: `@sentry/capacitor`가 JS SDK를 래핑하고 iOS native SDK를 자동 연동
+
+### 운영 계정
+
+| 항목               | 값                                                |
+| ------------------ | ------------------------------------------------- |
+| Sentry 로그인 계정 | **GOTCHA! 팀 구글 계정** (`fcdegotcha@gmail.com`) |
+| Organization slug  | `gotcha-aj`                                       |
+| Project slug       | `gotcha-web` (웹/iOS 통합 단일 프로젝트)          |
+| 대시보드           | https://gotcha-aj.sentry.io/issues/               |
+
+> 🔐 계정 자격증명 분실 시 팀 구글 계정 복구 절차를 따른다.
+> Auth Token이 노출되면 즉시 **Organization Settings → Auth Tokens**에서 revoke 후 재발급.
+
+## 파일 구조
+
+```
+프로젝트 루트/
+├── instrumentation-client.ts    # 브라우저/Capacitor 초기화 (빌드 타깃 분기)
+├── instrumentation.ts            # 서버 런타임 등록 + onRequestError
+├── sentry.server.config.ts       # Node.js 런타임 init
+├── sentry.edge.config.ts         # Edge 런타임 init
+├── next.config.mjs               # withSentryConfig() 래핑
+└── src/app/
+    └── global-error.tsx          # App Router 글로벌 에러 바운더리
+```
+
+## 환경 설정
+
+### 로컬 개발 (`.env.local`)
+
+```bash
+# 필수 — 클라이언트/서버 공용 DSN (DSN 자체는 공개되어도 무방)
+NEXT_PUBLIC_SENTRY_DSN=https://xxxxxxxx@oXXXXXX.ingest.sentry.io/XXXXXX
+
+# 소스맵 업로드 (빌드 시에만 사용, 절대 클라이언트 노출 금지)
+SENTRY_ORG=gotcha-aj
+SENTRY_PROJECT=gotcha-web
+SENTRY_AUTH_TOKEN=sntrys_xxx...    # Organization Auth Token (scope: org:ci)
+
+# 선택 — 릴리스 식별자 (CI에서 git sha로 주입 권장)
+# NEXT_PUBLIC_SENTRY_RELEASE=v1.2.3-abc1234
+```
+
+> ⚠️ `SENTRY_AUTH_TOKEN`은 **Organization Settings → Auth Tokens**에서 발급.
+> scope는 `org:ci` 하나면 Source Map Upload + Release Creation + Code Mappings 다 됨.
+
+### Vercel 배포
+
+Settings → Environment Variables에 위 4개 등록.
+**`SENTRY_AUTH_TOKEN`은 Sensitive로 표시.**
+
+### iOS 빌드 (Capacitor)
+
+```bash
+NEXT_PUBLIC_BUILD_TARGET=capacitor npm run build:capacitor
+npx cap sync ios
+```
+
+`instrumentation-client.ts`의 빌드 타깃 분기가 `NEXT_PUBLIC_BUILD_TARGET=capacitor`일 때
+`@sentry/capacitor`를 init하도록 동작.
+
+## 아키텍처
+
+### 빌드 타깃 분기
+
+| 빌드                                  | 클라이언트                                  | 서버/엣지       | 네이티브 크래시  |
+| ------------------------------------- | ------------------------------------------- | --------------- | ---------------- |
+| **웹** (`next build`)                 | `@sentry/nextjs` 직접 init + Replay         | ✓ 동작          | —                |
+| **Capacitor iOS** (`build:capacitor`) | `@sentry/capacitor`로 `@sentry/nextjs` 래핑 | ✗ (정적 export) | ✓ iOS native SDK |
+
+분기 키는 `process.env.NEXT_PUBLIC_BUILD_TARGET === "capacitor"`. 빌드 타임에 상수로 인라인되어
+사용하지 않는 브랜치는 트리쉐이킹됨.
+
+### withSentryConfig 옵션
+
+`next.config.mjs`에서 `withSentryConfig()`로 래핑하고, Capacitor 빌드에선 일부 옵션 비활성화:
+
+- `tunnelRoute: "/monitoring"` — 광고 차단기 우회용 rewrite. **Capacitor 정적 export엔 rewrite 불가하므로 비활성**
+- `webpack.automaticVercelMonitors` — Vercel Cron 자동 등록. **Capacitor와 무관하므로 비활성**
+- `webpack.treeshake.removeDebugLogging` — 디버그 로거 트리쉐이킹 (번들 ↓)
+- `widenClientFileUpload` — 더 많은 파일의 소스맵 업로드
+
+### 샘플링 정책
+
+| 항목                       | dev        | prod       |
+| -------------------------- | ---------- | ---------- |
+| `tracesSampleRate`         | 1.0 (100%) | 0.1 (10%)  |
+| `replaysSessionSampleRate` | 0.1 (10%)  | 0.1 (10%)  |
+| `replaysOnErrorSampleRate` | 1.0 (100%) | 1.0 (100%) |
+
+prod 트레이싱 10%는 비용 통제용. 에러 발생 세션은 100% 리플레이 캡처.
+
+## 사용법
+
+### 자동 캡처
+
+별도 코드 없이 자동으로 잡히는 것들:
+
+- React 컴포넌트 렌더 중 throw → `global-error.tsx`가 잡아서 자동 전송
+- `window.onerror` / `unhandledrejection` → SDK 글로벌 핸들러
+- Next.js 서버 사이드 에러 → `instrumentation.ts`의 `onRequestError`
+- iOS 네이티브 크래시 (Capacitor 빌드만) → @sentry/capacitor가 자동
+
+### 수동 캡처
+
+```ts
+import * as Sentry from "@sentry/nextjs";
+
+try {
+  await someRiskyOperation();
+} catch (error) {
+  Sentry.captureException(error, {
+    tags: { feature: "review-write" },
+    contexts: { review: { shopId, contentLength } },
+  });
+  throw error; // UI에서 처리해야 한다면 다시 던지기
+}
+```
+
+### 메시지/브레드크럼
+
+```ts
+// 비-에러 이벤트
+Sentry.captureMessage("결제 토큰 만료 — 자동 재로그인 시도", "warning");
+
+// 디버깅 컨텍스트 (이후 에러 발생 시 첨부)
+Sentry.addBreadcrumb({
+  category: "auth",
+  message: "사용자 카카오 로그인 시도",
+  level: "info",
+});
+```
+
+### 사용자 식별
+
+로그인 직후 `Providers` 같은 곳에서:
+
+```ts
+import * as Sentry from "@sentry/nextjs";
+
+Sentry.setUser({
+  id: user.id,
+  // email/username은 PII 정책에 따라 결정. 사내 정책 확인 필요
+});
+
+// 로그아웃 시
+Sentry.setUser(null);
+```
+
+> 개인정보보호 관점에서 `email`/`username` 같은 PII는 기본 비전송 권장. 필요 시 Sentry의 `beforeSend` 후크로 스크럽.
+
+## 소스맵
+
+`SENTRY_AUTH_TOKEN`만 있으면 `next build` / `build:capacitor` 시 자동 업로드됨.
+업로드 안 되면 스택트레이스가 난독화된 채로 보임 (라인이 `chunks/abc123.js:1:9482` 같이 표시).
+
+### 검증
+
+빌드 로그에 다음과 비슷한 줄이 나오면 성공:
+
+```
+[@sentry/webpack-plugin] Successfully uploaded source maps to Sentry
+```
+
+## iOS 네이티브 (Capacitor)
+
+### 설치 후 1회 실행
+
+```bash
+npx cap sync ios
+cd ios/App && pod install
+```
+
+이로써 `Sentry-Cocoa` Pod이 설치되고, `@sentry/capacitor`의 JS init이 자동으로 native bridge를 활성화.
+
+### dSYM 업로드 (Xcode 빌드 시)
+
+iOS native 크래시의 심볼리케이션을 위해 dSYM이 Sentry에 업로드되어야 함.
+
+1. Xcode → 프로젝트 → Build Phases → "+" → New Run Script Phase
+2. 스크립트:
+   ```sh
+   export SENTRY_ORG=gotcha-aj
+   export SENTRY_PROJECT=gotcha-web
+   export SENTRY_AUTH_TOKEN=<your-token>
+   sentry-cli debug-files upload --include-sources "$DWARF_DSYM_FOLDER_PATH"
+   ```
+3. `sentry-cli` 설치: `brew install getsentry/tools/sentry-cli`
+
+> 자동화 안 하면 native 크래시는 잡히지만 어느 함수에서 떨어졌는지 알 수 없음.
+
+## 검증 방법
+
+### 1. 일회성 Node 스크립트 (DSN/네트워크 검증)
+
+```bash
+node --no-warnings -e '
+import("@sentry/node").then(async (Sentry) => {
+  Sentry.init({ dsn: process.env.NEXT_PUBLIC_SENTRY_DSN, environment: "verify" });
+  Sentry.captureException(new Error("[SENTRY VERIFY] " + new Date().toISOString()));
+  await Sentry.flush(5000);
+  process.exit(0);
+})'
+```
+
+`event id` 출력 + `flushed: true`면 성공. 30초 안에 Sentry 대시보드 → Issues 탭에 이벤트 표시.
+
+### 2. 브라우저 클라이언트 에러
+
+```bash
+npm run dev
+# 브라우저 http://localhost:3000/test-error 접속
+# 5번 섹션 → "Error Boundary 테스트 보기" → "에러 발생시키기"
+```
+
+> Note: `ErrorBoundary`로 잡힌 에러는 unhandled가 아니라 Sentry에 자동 전송되지 않을 수 있음.
+> 확실히 테스트하려면 브라우저 콘솔에서 `setTimeout(() => { throw new Error("client test"); }, 0);` 실행.
+
+### 3. 서버 사이드 에러
+
+Next.js 페이지 RSC/loader에서 throw → 자동으로 `onRequestError`가 캡처.
+
+## 알림 (Discord)
+
+이슈가 Sentry에 들어오면 Discord 채널로 자동 알림.
+
+### 연결 구조
+
+- Sentry **Discord Integration**(공식)을 통한 봇 연동 — webhook 방식보다 메시지 포맷이 깔끔 (이슈 링크, 미리보기, "Resolve" 버튼 포함)
+- Discord 봇 설치엔 `Manage Server` 권한 필요 → 팀 알림용 별도 Discord 서버 운영 권장
+
+### 알림 채널 구성
+
+| 채널           | 받는 환경       | 트리거                          |
+| -------------- | --------------- | ------------------------------- |
+| `#sentry-prod` | `production` 만 | 신규 이슈 / escalating / 재발생 |
+
+> dev/staging 환경은 **Discord 알림에서 제외**. 개발 중 발생하는 에러는 Sentry 대시보드에서만 확인하고, Discord 노이즈는 prod 이슈로만 한정.
+
+### 알림 규칙 (Sentry → Alerts → Issue Alert)
+
+생성 시 핵심 옵션:
+
+- **Source**: project = `gotcha-web`
+- **Filter Issues**: Environment = **`production` 만** 선택 (`All Environments`는 dev 노이즈까지 옴 → 금지)
+- **WHEN** (any of):
+  - `A new issue is created` ✓ 필수
+  - `An issue escalates` ✓ 필수 (잠잠하던 에러 폭증)
+  - `A resolved issue becomes unresolved` ✓ 권장 (재발 추적)
+  - `An issue is resolved` ✗ 비권장 (메시지 폭주)
+- **THEN**: `Send a Discord notification` → 서버/채널 선택
+
+### 알림 메시지에서 받는 정보
+
+- 에러 메시지 / 스택 첫 몇 줄
+- 환경 / 릴리스 / 사용자 수 / 발생 횟수
+- Sentry 이슈 페이지 직접 링크
+- (선택) 버튼: `Resolve`, `Archive`, `Assign`
+
+## 트러블슈팅
+
+### "이벤트는 보냈는데 Sentry에 안 떠요"
+
+1. **DSN 오타**: 대시보드 → Settings → Client Keys (DSN)에서 비교
+2. **광고 차단기**: 일부 차단기가 `*.ingest.sentry.io`를 막음 → `tunnelRoute: "/monitoring"`이 우회 (웹 빌드에서만 동작)
+3. **샘플링**: prod에서 `tracesSampleRate: 0.1`이면 90%가 안 보냄. **에러는 100% 전송**되지만 트랜잭션은 샘플링 적용
+4. **`enabled: false`**: DSN이 없으면 자동으로 비활성. `.env.local` 다시 확인
+5. **CORS / 네트워크**: 브라우저 콘솔에서 `*.ingest.sentry.io` 호출 실패 로그 확인
+
+### "스택트레이스가 chunks/abc.js:1:9482 처럼 난독화돼요"
+
+소스맵이 Sentry로 업로드 안 된 것. 위의 [소스맵](#소스맵) 섹션 참고.
+
+### "Capacitor 빌드에서 build 깨져요"
+
+- `tunnelRoute`가 활성화돼 있는지 확인. `next.config.mjs`에서 `isCapacitor ? undefined : "/monitoring"` 분기 유지 필수
+- `output: "export"`와 호환 안 되는 Sentry 기능: API routes 기반 features 전부 (tunneling, cron, etc.)
+
+### "@sentry/capacitor와 @sentry/nextjs 타입 충돌"
+
+두 패키지가 서로 다른 `@sentry/core` 버전을 nested 의존성으로 가져옴.
+`instrumentation-client.ts`에서 `@sentry/capacitor`를 `require()`로 받는 이유.
+직접 `import` 후 두 SDK의 integration 객체를 섞으면 타입 에러 발생.
+
+### "PII가 자꾸 들어가요"
+
+`Sentry.init({ sendDefaultPii: false })` 명시 + `beforeSend` 후크로 추가 스크럽:
+
+```ts
+Sentry.init({
+  beforeSend(event) {
+    if (event.user) delete event.user.email;
+    return event;
+  },
+});
+```
+
+## 참고 자료
+
+- [공식 Next.js 가이드](https://docs.sentry.io/platforms/javascript/guides/nextjs/)
+- [Capacitor 가이드](https://docs.sentry.io/platforms/javascript/guides/capacitor/)
+- [Source maps 트러블슈팅](https://docs.sentry.io/platforms/javascript/sourcemaps/troubleshooting_js/)
+- 프로젝트 SDK 버전: `@sentry/nextjs@^10.53.1`, `@sentry/capacitor@^4.0.0`
