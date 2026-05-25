@@ -6,7 +6,7 @@ import { useShopsInBounds } from "@/api/queries/useShopsInBounds";
 import { CLUSTER_ZOOM_THRESHOLD, CLUSTER_CLICK_ZOOM_LEVEL } from "@/constants";
 import { useMapStore } from "@/stores";
 import type { MapBounds, ShopMapResponse } from "@/types/api";
-import { applyCenterCoords, mergeNearbyClusters, type DisplayCluster } from "@/utils/cluster";
+import { toDisplayClusters, mergeNearbyClusters, type DisplayCluster } from "@/utils/cluster";
 import { shopMapResponsesToViews } from "@/utils/shop";
 
 interface MapCenter {
@@ -80,6 +80,7 @@ export function useHomeMapState(): UseHomeMapStateReturn {
 
   const shouldAutoReloadRef = useRef(false);
   const hasRestoredFromStore = useRef(false);
+  const prevBoundsLevelRef = useRef<number | null>(null);
   const [districtFilter, setDistrictFilter] = useState<string | null>(null);
 
   // 스토어에서 지도 상태 복원 (hydration 완료 후, 최초 1회)
@@ -106,27 +107,46 @@ export function useHomeMapState(): UseHomeMapStateReturn {
   const effectiveMapLevel = hasHydrated ? (mapLevel ?? storedMapLevel ?? 5) : 5;
 
   // 클러스터 모드 판정 (카카오맵: level이 높을수록 축소)
-  const isClusterMode = effectiveMapLevel >= CLUSTER_ZOOM_THRESHOLD;
+  // 구 필터가 활성화된 동안엔 항상 개별 마커를 보여줘야 하므로 클러스터 모드는 OFF
+  const isClusterMode = !districtFilter && effectiveMapLevel >= CLUSTER_ZOOM_THRESHOLD;
 
   // 클러스터 모드에서 구별 클러스터 데이터 조회
   const { data: districtClustersData } = useDistrictClusters(isClusterMode);
   const districtClusters = useMemo(() => {
     if (!isClusterMode || !districtClustersData) return [];
-    const clusters = applyCenterCoords(districtClustersData);
+    const clusters = toDisplayClusters(districtClustersData);
     return mergeNearbyClusters(clusters, effectiveMapLevel);
   }, [isClusterMode, districtClustersData, effectiveMapLevel]);
 
+  // 구 필터가 활성화된 동안엔 가시영역을 넘어가는 매장도 잡히도록 bounds를 1.5배로 확장
+  // (양쪽에 span * 0.25씩 더해야 최종 span = 1.5 × 원본 span)
+  const queryBounds = useMemo(() => {
+    if (!activeBounds || !districtFilter) return activeBounds;
+    const latPad = (activeBounds.northEastLat - activeBounds.southWestLat) * 0.25;
+    const lngPad = (activeBounds.northEastLng - activeBounds.southWestLng) * 0.25;
+    return {
+      ...activeBounds,
+      northEastLat: activeBounds.northEastLat + latPad,
+      northEastLng: activeBounds.northEastLng + lngPad,
+      southWestLat: activeBounds.southWestLat - latPad,
+      southWestLng: activeBounds.southWestLng - lngPad,
+    };
+  }, [activeBounds, districtFilter]);
+
   // React Query로 가게 목록 조회 (클러스터 모드에서는 비활성화)
   const { data: shopsData, isLoading: isShopsLoading } = useShopsInBounds(
-    activeBounds,
+    queryBounds,
     !isClusterMode
   );
 
-  // 구 필터 적용된 가게 목록
+  // 구 필터 적용된 가게 목록 (병합 클러스터는 "A · B" 형태이므로 분해해서 매칭)
   const filteredShopsData = useMemo(() => {
     if (!shopsData) return [];
     if (!districtFilter) return shopsData;
-    return shopsData.filter((s) => s.region2DepthName === districtFilter);
+    const districtNames = new Set(districtFilter.split(" · "));
+    return shopsData.filter(
+      (s) => s.region2DepthName !== null && districtNames.has(s.region2DepthName)
+    );
   }, [shopsData, districtFilter]);
 
   // API 응답을 UI용 데이터로 변환
@@ -196,8 +216,21 @@ export function useHomeMapState(): UseHomeMapStateReturn {
       // 줌 레벨 상태 동기화 (클러스터 모드 판정을 위해)
       setMapLevelState(bounds.level);
 
-      // 클러스터 모드에서는 재검색 버튼 숨김
-      if (bounds.level >= CLUSTER_ZOOM_THRESHOLD) {
+      // 사용자가 직접 줌 레벨을 변경했는지 판정 (클러스터 클릭에 의한 자동 줌은 제외)
+      const userZoomed =
+        prevBoundsLevelRef.current !== null &&
+        prevBoundsLevelRef.current !== bounds.level &&
+        !shouldAutoReloadRef.current;
+      prevBoundsLevelRef.current = bounds.level;
+
+      // 사용자가 직접 줌하면 구 필터 해제 → 현재 화면 영역의 매장을 새로 조회
+      if (districtFilter && userZoomed) {
+        setDistrictFilter(null);
+        shouldAutoReloadRef.current = true;
+      }
+
+      // 클러스터 모드에서는 재검색 버튼 숨김 (단, 구 필터 활성 시엔 마커 모드이므로 정상 흐름)
+      if (!districtFilter && bounds.level >= CLUSTER_ZOOM_THRESHOLD) {
         setShowReloadButton(false);
         return;
       }
@@ -217,7 +250,7 @@ export function useHomeMapState(): UseHomeMapStateReturn {
         setShowReloadButton(true);
       }
     },
-    [hasInitialLoad, setStoredMapCenter, setStoredMapLevel]
+    [hasInitialLoad, setStoredMapCenter, setStoredMapLevel, districtFilter]
   );
 
   // 이 지역 재검색 핸들러 (구 필터 해제)
