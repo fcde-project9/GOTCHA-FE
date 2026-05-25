@@ -217,11 +217,20 @@ export function useHomeMapState(): UseHomeMapStateReturn {
       setMapLevelState(bounds.level);
 
       // 사용자가 직접 줌 레벨을 변경했는지 판정 (클러스터 클릭에 의한 자동 줌은 제외)
+      const prevLevel = prevBoundsLevelRef.current;
       const userZoomed =
-        prevBoundsLevelRef.current !== null &&
-        prevBoundsLevelRef.current !== bounds.level &&
-        !shouldAutoReloadRef.current;
+        prevLevel !== null && prevLevel !== bounds.level && !shouldAutoReloadRef.current;
       prevBoundsLevelRef.current = bounds.level;
+
+      // 클러스터 모드 → 마커 모드 전환 시 새 영역의 매장을 자동 재조회
+      // (클러스터 모드에서는 activeBounds가 갱신되지 않아 직전 marker bounds가 남아있음)
+      const exitedClusterMode =
+        prevLevel !== null &&
+        prevLevel >= CLUSTER_ZOOM_THRESHOLD &&
+        bounds.level < CLUSTER_ZOOM_THRESHOLD;
+      if (exitedClusterMode) {
+        shouldAutoReloadRef.current = true;
+      }
 
       // 사용자가 직접 줌하면 구 필터 해제 → 현재 화면 영역의 매장을 새로 조회
       if (districtFilter && userZoomed) {

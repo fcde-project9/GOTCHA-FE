@@ -384,9 +384,10 @@ export function ReviewWriteModal({
           </div>
 
           {/* 등록/수정 버튼 */}
+          {/* 비활성화 사유 안내를 위해 isValid는 disabled에서 제외 — handleSubmit이 toast로 안내 */}
           <button
             onClick={handleSubmit}
-            disabled={!isValid || isProcessing}
+            disabled={isProcessing}
             className={`text-[16px] font-medium px-4 py-1.5 rounded-full ${
               isValid && !isProcessing ? "text-white bg-main" : "text-grey-500 bg-grey-200"
             } disabled:opacity-50`}
