@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { X, ImageIcon, Camera, ChevronDown } from "lucide-react";
 import { useCreatePost } from "@/api/mutations/useCreatePost";
 import { useUploadFile } from "@/api/mutations/useUploadFile";
-import { SimpleHeader } from "@/components/common";
+import { BackHeader } from "@/components/common";
 import { useToast } from "@/hooks";
 import { compressShopImage } from "@/utils";
 import { isNativeApp } from "@/utils/platform";
@@ -173,9 +173,9 @@ export default function CommunityWritePage() {
   };
 
   return (
-    <main className="h-[100dvh] w-full max-w-[480px] mx-auto bg-white flex flex-col">
+    <main className="h-safe-viewport w-full max-w-[480px] mx-auto bg-white flex flex-col overflow-hidden">
       {/* 헤더 */}
-      <SimpleHeader
+      <BackHeader
         title="게시글 작성"
         rightElement={
           <button
@@ -190,9 +190,9 @@ export default function CommunityWritePage() {
         }
       />
 
-      <div className="flex-1 overflow-y-auto flex flex-col">
+      <div className="flex-1 flex flex-col min-h-0">
         {/* 주제 드롭다운 */}
-        <div className="px-5 pt-5 pb-4 border-b border-grey-100">
+        <div className="shrink-0 px-5 pt-5 pb-4 border-b border-grey-100">
           <div className="relative">
             <button
               type="button"
@@ -238,7 +238,7 @@ export default function CommunityWritePage() {
         </div>
 
         {/* 제목 */}
-        <div className="px-5 py-4 border-b border-grey-100">
+        <div className="shrink-0 px-5 py-4 border-b border-grey-100">
           <input
             type="text"
             value={title}
@@ -250,19 +250,19 @@ export default function CommunityWritePage() {
         </div>
 
         {/* 내용 */}
-        <div className="px-5 py-4 flex-1">
+        <div className="px-5 py-4 flex-1 min-h-0">
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="내용을 입력해주세요"
             disabled={isProcessing}
-            className="w-full h-full min-h-[200px] text-[16px] font-normal leading-[1.6] tracking-[-0.16px] text-grey-900 placeholder:text-grey-400 resize-none focus:outline-none disabled:opacity-50"
+            className="w-full h-full text-[16px] font-normal leading-[1.6] tracking-[-0.16px] text-grey-900 placeholder:text-grey-400 resize-none focus:outline-none disabled:opacity-50"
           />
         </div>
 
         {/* 이미지 미리보기 */}
         {imagePreviewUrls.length > 0 && (
-          <div className="px-5 pb-4">
+          <div className="shrink-0 px-5 pb-4">
             <div className="flex gap-3 overflow-x-auto">
               {imagePreviewUrls.map((url, index) => (
                 <div key={index} className="shrink-0 relative w-16 h-16">
@@ -291,7 +291,7 @@ export default function CommunityWritePage() {
       </div>
 
       {/* 하단 툴바 */}
-      <div className="flex items-center gap-5 px-5 pt-3 pb-[calc(12px+env(safe-area-inset-bottom,0px))] border-t border-grey-100">
+      <div className="shrink-0 flex items-center gap-5 px-5 pt-3 pb-[calc(12px+env(safe-area-inset-bottom,0px))] border-t border-grey-100">
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
