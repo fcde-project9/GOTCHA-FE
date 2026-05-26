@@ -72,6 +72,14 @@ export default function MyPage() {
     router.push("/mypage/my-reports");
   };
 
+  const handleMyReviews = () => {
+    router.push("/mypage/my-reviews");
+  };
+
+  const handleNotices = () => {
+    router.push("/mypage/notices");
+  };
+
   const handleBlockedUsers = () => {
     router.push("/mypage/blocked-users");
   };
@@ -246,7 +254,7 @@ export default function MyPage() {
             />
 
             {/* Stats Card */}
-            <div className="flex items-center border rounded-[8px] py-3 px-4">
+            <div className="flex items-center bg-grey-50 rounded-[8px] py-3 px-4">
               <button
                 onClick={handleFavorites}
                 className="flex flex-col items-center flex-1 gap-1 px-3"
@@ -259,31 +267,39 @@ export default function MyPage() {
                   관심있는 매장
                 </span>
               </button>
-              <div className="w-px h-8 bg-grey-200" />
-              <div className="flex flex-col items-center flex-1 gap-1 px-3">
+              <div className="w-px h-7 bg-line-100" />
+              <button
+                onClick={handleMyReports}
+                className="flex flex-col items-center flex-1 gap-1 px-3"
+                aria-label="제보한 매장으로 이동"
+              >
                 <span className="text-[18px] font-semibold leading-[1.4] tracking-[-0.18px] text-grey-900">
                   {loggedInUser?.reportCount ?? 0}
                 </span>
                 <span className="text-[13px] font-medium leading-[1.5] tracking-[-0.13px] text-grey-600">
                   제보한 매장
                 </span>
-              </div>
-              <div className="w-px h-8 bg-grey-200" />
-              <div className="flex flex-col items-center flex-1 gap-1 px-3">
+              </button>
+              <div className="w-px h-7 bg-line-100" />
+              <button
+                onClick={handleMyReviews}
+                className="flex flex-col items-center flex-1 gap-1 px-3"
+                aria-label="작성한 리뷰로 이동"
+              >
                 <span className="text-[18px] font-semibold leading-[1.4] tracking-[-0.18px] text-grey-900">
                   {loggedInUser?.reviewCount ?? 0}
                 </span>
                 <span className="text-[13px] font-medium leading-[1.5] tracking-[-0.13px] text-grey-600">
                   작성한 리뷰
                 </span>
-              </div>
+              </button>
             </div>
           </div>
 
           {/* Menu List */}
           <div className="w-full">
             <MenuList
-              onMyReports={handleMyReports}
+              onNotices={handleNotices}
               onBlockedUsers={handleBlockedUsers}
               onTerms={handleTerms}
               onAbout={handleAbout}
