@@ -5,7 +5,6 @@ import { post } from "@/api/request";
 
 interface CreatePostRequest {
   typeId: number;
-  title: string;
   content: string;
   imageUrls: string[];
 }
