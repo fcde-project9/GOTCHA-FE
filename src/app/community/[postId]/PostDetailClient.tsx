@@ -298,10 +298,6 @@ export default function PostDetailPage({ params }: { params: Promise<{ postId: s
                 </div>
               </div>
 
-              <h1 className="text-[18px] font-semibold leading-[1.4] tracking-[-0.18px] text-grey-900">
-                {post.title}
-              </h1>
-
               <p className="text-[15px] font-normal leading-[1.6] tracking-[-0.15px] text-grey-800 whitespace-pre-wrap">
                 {post.content}
               </p>
