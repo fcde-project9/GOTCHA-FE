@@ -86,6 +86,12 @@ export const queryKeys = {
 
     /** 내가 제보한 매장 목록 (정렬 기준 포함) */
     myReports: (sortBy: string) => [...queryKeys.user.all, "reports", sortBy] as const,
+
+    /** 내가 작성한 리뷰 목록의 prefix 키 (invalidate용) */
+    myReviewsAll: () => [...queryKeys.user.all, "reviews"] as const,
+
+    /** 내가 작성한 리뷰 목록 (정렬 기준 포함) */
+    myReviews: (sortBy: string) => [...queryKeys.user.all, "reviews", sortBy] as const,
   },
 
   /**

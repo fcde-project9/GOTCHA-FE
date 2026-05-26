@@ -39,7 +39,7 @@ function MenuItem({ label, onClick, showBorder = true }: MenuItemProps) {
 }
 
 interface MenuListProps {
-  onMyReports?: () => void;
+  onNotices?: () => void;
   onBlockedUsers?: () => void;
   onTerms?: () => void;
   onAbout?: () => void;
@@ -47,7 +47,7 @@ interface MenuListProps {
 }
 
 export function MenuList({
-  onMyReports,
+  onNotices,
   onBlockedUsers,
   onTerms,
   onAbout,
@@ -55,7 +55,7 @@ export function MenuList({
 }: MenuListProps) {
   return (
     <div className="flex flex-col items-start w-full">
-      <MenuItem label="내가 제보한 매장" onClick={onMyReports} />
+      <MenuItem label="공지사항" onClick={onNotices} />
       {isLoggedIn && <MenuItem label="차단한 사용자 목록" onClick={onBlockedUsers} />}
       <MenuItem label="약관/라이센스" onClick={onTerms} />
       <MenuItem label="이 앱을 만든 녀석들" onClick={onAbout} showBorder={false} />

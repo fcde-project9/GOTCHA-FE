@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { CircleX, RefreshCcw } from "lucide-react";
 import { useFavorites } from "@/api/queries/useFavorites";
 import ShopDetailClient from "@/app/shop/[id]/ShopDetailClient";
-import { Footer, Button, SimpleHeader, Spinner } from "@/components/common";
+import { BackHeader, Button, Spinner } from "@/components/common";
 import { FavoriteShopItem } from "@/components/features/favorites";
 import { DEFAULT_IMAGES } from "@/constants";
 import { useAuth } from "@/hooks";
@@ -144,7 +144,7 @@ export default function FavoritesPage() {
   return (
     <>
       <main
-        className={`${isSearchActive ? "h-[calc(100dvh-env(safe-area-inset-top,0px))]" : "h-[calc(100dvh-env(safe-area-inset-top,0px)-var(--footer-height))]"} overflow-hidden relative bg-default flex flex-col`}
+        className="h-[calc(100dvh-env(safe-area-inset-top,0px))] overflow-hidden relative bg-default flex flex-col"
         style={
           isSearchActive && keyboardHeight > 0
             ? {
@@ -154,7 +154,7 @@ export default function FavoritesPage() {
         }
       >
         {/* 헤더 */}
-        <SimpleHeader title="찜한업체" />
+        <BackHeader title="관심있는 매장" />
 
         {/* 검색창 - 찜한 업체가 있을 때만 표시 */}
         {allFavorites.length > 0 && (
@@ -169,7 +169,7 @@ export default function FavoritesPage() {
                   requestAnimationFrame(() => window.scrollTo(0, 0));
                 }}
                 onBlur={() => setIsSearchFocused(false)}
-                placeholder="찜한업체 검색"
+                placeholder="관심있는 매장 검색"
                 className="flex-1 bg-transparent text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-900 placeholder:text-grey-500 focus:outline-none"
               />
               {searchQuery ? (
@@ -303,7 +303,6 @@ export default function FavoritesPage() {
       {selectedShopId !== null && (
         <ShopDetailClient shopId={selectedShopId} onClose={() => history.back()} />
       )}
-      {!isSearchActive && <Footer />}
     </>
   );
 }
