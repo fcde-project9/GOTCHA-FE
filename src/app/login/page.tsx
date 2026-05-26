@@ -198,7 +198,7 @@ export default function LoginPage() {
               <button
                 onClick={handleAgree}
                 disabled={!agreedToTerms}
-                className={`h-[46px] w-full rounded-lg text-[16px] font-semibold leading-[1.5] tracking-[-0.16px] text-white transition-colors ${
+                className={`h-[44px] w-full rounded-lg text-[16px] font-semibold leading-[1.5] tracking-[-0.16px] text-white transition-colors ${
                   agreedToTerms
                     ? "bg-grey-900 hover:bg-grey-800 active:bg-grey-700"
                     : "cursor-not-allowed bg-grey-300"

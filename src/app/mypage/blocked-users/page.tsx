@@ -88,7 +88,7 @@ export default function BlockedUsersPage() {
           </p>
         </div>
       ) : (
-        <div className="flex-1 overflow-y-auto flex flex-col px-5 mt-4">
+        <div className="flex-1 overflow-y-auto flex flex-col px-5 mt-4 pb-[52px]">
           <p className="text-[16px] font-normal text-grey-900 tracking-[-0.16px] leading-[1.5] mb-2">
             총 {totalCount}명
           </p>

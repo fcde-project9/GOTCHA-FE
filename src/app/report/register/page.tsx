@@ -576,7 +576,7 @@ function ReportRegisterContent() {
                   (selectedDays.length === 0 && !isDaysUnknown) ||
                   !(isOpenTimeConfirmed && isCloseTimeConfirmed)
                 }
-                className={`flex items-center justify-center gap-1 h-[46px] rounded-lg transition-colors ${
+                className={`flex items-center justify-center gap-1 h-[44px] rounded-lg transition-colors ${
                   (selectedDays.length === 0 && !isDaysUnknown) ||
                   !(isOpenTimeConfirmed && isCloseTimeConfirmed)
                     ? "bg-grey-200 text-grey-500 cursor-not-allowed"

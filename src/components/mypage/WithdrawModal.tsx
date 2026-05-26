@@ -110,17 +110,17 @@ export function WithdrawModal({ isOpen, onClose, onConfirm }: WithdrawModalProps
         </div>
 
         {/* Buttons */}
-        <div className="px-5 pb-8 pt-4 flex gap-[9px]">
+        <div className="px-5 pb-[52px] pt-4 flex gap-[9px]">
           <button
             onClick={handleClose}
-            className="flex-1 h-[46px] rounded-lg bg-grey-100 text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-grey-900"
+            className="flex-1 h-[44px] rounded-lg bg-grey-100 text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-grey-900"
           >
             취소
           </button>
           <button
             onClick={handleConfirm}
             disabled={isButtonDisabled}
-            className="flex-1 h-[46px] rounded-lg bg-main text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white disabled:bg-grey-200 disabled:text-grey-500"
+            className="flex-1 h-[44px] rounded-lg bg-main text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white disabled:bg-grey-200 disabled:text-grey-500"
           >
             확인
           </button>

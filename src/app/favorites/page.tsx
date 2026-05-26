@@ -203,7 +203,7 @@ export default function FavoritesPage() {
             <button
               type="button"
               onClick={handleRefresh}
-              className="rounded-lg bg-grey-900 w-[174px] h-[46px] flex items-center justify-center gap-1 text-white"
+              className="rounded-lg bg-grey-900 w-[174px] h-[44px] flex items-center justify-center gap-1 text-white"
             >
               <span className="text-[16px] text-white font-normal leading-[1.5] tracking-[-0.16px]">
                 다시 시도
@@ -214,7 +214,7 @@ export default function FavoritesPage() {
         ) : trimmedSearch && filteredFavorites.length === 0 && hasNextPage ? (
           // 검색 중 + 아직 더 가져올 페이지 있음 → sentinel 유지하며 계속 로드
           <div
-            className={`flex-1 px-5 pb-3 ${isSearchActive ? "overflow-hidden" : "overflow-y-auto"}`}
+            className={`flex-1 px-5 pb-[52px] ${isSearchActive ? "overflow-hidden" : "overflow-y-auto"}`}
           >
             <div ref={loadMoreRef} className="flex justify-center py-4">
               {isFetchingNextPage && <Spinner />}
@@ -274,7 +274,7 @@ export default function FavoritesPage() {
           </div>
         ) : (
           <div
-            className={`flex-1 px-5 pb-3 ${isSearchActive ? "overflow-hidden" : "overflow-y-auto"}`}
+            className={`flex-1 px-5 pb-[52px] ${isSearchActive ? "overflow-hidden" : "overflow-y-auto"}`}
           >
             {/* 총 개수 */}
             <div className="mt-2 mb-2 flex items-center justify-between">

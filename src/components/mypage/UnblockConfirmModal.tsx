@@ -46,14 +46,14 @@ export function UnblockConfirmModal({
           <button
             onClick={onClose}
             disabled={isLoading}
-            className="flex-1 h-[46px] rounded-lg bg-grey-100 text-[17px] font-semibold text-grey-900 tracking-[-0.17px] leading-[1.5] disabled:opacity-50"
+            className="flex-1 h-[44px] rounded-lg bg-grey-100 text-[17px] font-semibold text-grey-900 tracking-[-0.17px] leading-[1.5] disabled:opacity-50"
           >
             취소
           </button>
           <button
             onClick={onConfirm}
             disabled={isLoading}
-            className="flex-1 h-[46px] rounded-lg bg-main text-[17px] font-semibold text-white tracking-[-0.17px] leading-[1.5] disabled:opacity-50"
+            className="flex-1 h-[44px] rounded-lg bg-main text-[17px] font-semibold text-white tracking-[-0.17px] leading-[1.5] disabled:opacity-50"
           >
             확인
           </button>

@@ -567,7 +567,7 @@ export default function ShopDetailClient({
       </div>
 
       {/* 스크롤 컨텐츠 */}
-      <div className="flex-1 overflow-y-auto pb-3">
+      <div className="flex-1 overflow-y-auto pb-[52px]">
         {/* 업체명 */}
         <div className="px-5 pt-2 pb-0">
           <h2 className="text-[20px] font-semibold text-grey-900 leading-[150%] tracking-[-0.2px] overflow-hidden text-ellipsis whitespace-nowrap">
@@ -607,7 +607,7 @@ export default function ShopDetailClient({
         <div className="h-2 bg-grey-50" />
 
         {/* 방문 리뷰 */}
-        <section className="py-4">
+        <section className="pt-4">
           <div className="px-5 mb-4">
             <h3 className="text-[19px] font-medium text-grey-900 leading-[1.5] tracking-[-0.19px]">
               방문리뷰
@@ -830,7 +830,7 @@ export default function ShopDetailClient({
                   <p className="text-[15px] text-grey-500 mb-4">아직 작성된 리뷰가 없어요.</p>
                 </div>
               ) : (
-                <div className="px-5 pt-3">
+                <div className="px-5 pt-3 pb-[52px]">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center text-[16px] text-grey-900 tracking-[-0.16px]">
                       <span>총&nbsp;</span>
@@ -885,7 +885,7 @@ export default function ShopDetailClient({
                       />
                     ))}
                   </div>
-                  <div ref={loadMoreRef} className="py-4">
+                  <div ref={loadMoreRef} className="pt-4">
                     {isFetchingNextPage && (
                       <div className="flex items-center justify-center">
                         <div className="h-6 w-6 animate-spin rounded-full border-2 border-grey-200 border-t-main" />
@@ -906,7 +906,7 @@ export default function ShopDetailClient({
           onClick={() => setIsUserMenuOpen(false)}
         >
           <div
-            className="w-full max-w-[480px] mx-auto bg-white rounded-t-2xl pb-3 h-[188px] animate-slide-up"
+            className="w-full max-w-[480px] mx-auto bg-white rounded-t-2xl pb-[52px] h-[188px] animate-slide-up"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-end px-5 pt-4 pb-2">

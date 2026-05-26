@@ -129,7 +129,7 @@ export default function MyReviewsPage() {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-5 pb-5">
+          <div className="flex-1 overflow-y-auto px-5 pb-[52px]">
             <div className="flex flex-col gap-2">
               {reviews.map((review) => (
                 <button
