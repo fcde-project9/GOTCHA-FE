@@ -61,7 +61,7 @@ git checkout -b <branch-name> origin/dev
 
 `git log --oneline -10`으로 최근 커밋 메시지 형식 확인 후 그 스타일 모방. 일반적 형식:
 
-```
+```text
 <type>: <한국어 요약 (1줄)>
 
 - 무엇을 왜 변경했는지 (선택)
@@ -96,7 +96,7 @@ git checkout -b <branch-name> origin/dev
 
 커밋이 완료되면 **반드시 멈춰서** 다음을 사용자에게 보고:
 
-```
+```text
 ✅ 커밋 완료
 - 브랜치: <branch-name>
 - 커밋 메시지: <summary>
