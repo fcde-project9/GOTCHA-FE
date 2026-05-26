@@ -42,8 +42,8 @@ export default function ReportCompletePage() {
       </div>
 
       {/* 하단 버튼 */}
-      <div className="px-5 pb-8">
-        <Button variant="primary" size="large" fullWidth onClick={handleGoHome}>
+      <div className="px-5 pb-[52px]">
+        <Button variant="primary" size="medium" fullWidth onClick={handleGoHome}>
           홈으로 가기
         </Button>
       </div>

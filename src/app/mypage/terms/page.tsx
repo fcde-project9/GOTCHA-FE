@@ -28,7 +28,7 @@ export default function TermsPage() {
       <BackHeader title="약관/라이센스" onBack={handleBack} />
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto flex flex-col px-5 pt-[7px]">
+      <main className="flex-1 overflow-y-auto flex flex-col px-5 pt-[7px] pb-[52px]">
         <div className="flex flex-col w-full">
           {/* 커뮤니티 가이드 */}
           <button

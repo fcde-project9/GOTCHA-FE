@@ -151,10 +151,10 @@ export default function NicknamePage() {
         </main>
 
         {/* 시작하기 버튼 - 바닥에서 52px 위 */}
-        <div className="mb-12 left-0 right-0 px-5">
+        <div className="mb-[52px] left-0 right-0 px-5">
           <button
             onClick={handleStart}
-            className="h-[46px] w-full rounded-lg bg-main text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white transition-colors hover:bg-main-700 active:bg-main-900"
+            className="h-[44px] w-full rounded-lg bg-main text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white transition-colors hover:bg-main-700 active:bg-main-900"
           >
             시작하기
           </button>

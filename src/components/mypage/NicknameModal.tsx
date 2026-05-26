@@ -162,14 +162,14 @@ export function NicknameModal({ isOpen, currentNickname, onClose, onSave }: Nick
         <div className="flex gap-2">
           <button
             onClick={handleClose}
-            className="flex-1 h-[46px] rounded-lg bg-grey-100 text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-grey-900"
+            className="flex-1 h-[44px] rounded-lg bg-grey-100 text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-grey-900"
           >
             취소
           </button>
           <button
             onClick={handleSave}
             disabled={isButtonDisabled}
-            className="flex-1 h-[46px] rounded-lg bg-grey-900 text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white disabled:bg-grey-200 disabled:text-grey-500"
+            className="flex-1 h-[44px] rounded-lg bg-grey-900 text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white disabled:bg-grey-200 disabled:text-grey-500"
           >
             변경
           </button>

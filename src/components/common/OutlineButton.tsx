@@ -71,7 +71,7 @@ export const OutlineButton = forwardRef<HTMLButtonElement, OutlineButtonProps>(
     // Size별 스타일
     const sizeStyles: Record<OutlineButtonSize, string> = {
       large: "h-[56px] px-6 text-[16px] leading-[1.5]",
-      medium: "h-[46px] px-5 text-[16px] leading-[1.5]",
+      medium: "h-[44px] px-5 text-[16px] leading-[1.5]",
       small: "h-[40px] px-4 text-[14px] leading-[1.5]",
     };
 
