@@ -39,14 +39,14 @@ export function BlockUserConfirmModal({
           <button
             onClick={onClose}
             disabled={isLoading}
-            className="flex-1 h-[46px] rounded-lg bg-grey-100 text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-grey-900 disabled:opacity-50"
+            className="flex-1 h-[44px] rounded-lg bg-grey-100 text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-grey-900 disabled:opacity-50"
           >
             취소
           </button>
           <button
             onClick={onConfirm}
             disabled={isLoading}
-            className="flex-1 h-[46px] rounded-lg bg-main text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white disabled:opacity-50"
+            className="flex-1 h-[44px] rounded-lg bg-main text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white disabled:opacity-50"
           >
             확인
           </button>

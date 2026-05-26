@@ -24,13 +24,13 @@ export function LogoutModal({ isOpen, onClose, onConfirm }: LogoutModalProps) {
         <div className="flex gap-2">
           <button
             onClick={onClose}
-            className="flex-1 h-[46px] rounded-lg bg-grey-100 text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-grey-900"
+            className="flex-1 h-[44px] rounded-lg bg-grey-100 text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-grey-900"
           >
             취소
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 h-[46px] rounded-lg bg-grey-900 text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white"
+            className="flex-1 h-[44px] rounded-lg bg-grey-900 text-[17px] font-semibold leading-[1.5] tracking-[-0.17px] text-white"
           >
             확인
           </button>

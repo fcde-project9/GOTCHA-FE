@@ -87,9 +87,7 @@ export function BackHeader({
       </div>
 
       {/* 우측 영역 */}
-      {rightElement && (
-        <div className="w-10 h-10 flex items-center justify-center -mr-2">{rightElement}</div>
-      )}
+      {rightElement && <div className="flex items-center justify-center">{rightElement}</div>}
     </header>
   );
 }

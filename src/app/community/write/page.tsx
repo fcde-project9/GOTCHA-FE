@@ -6,12 +6,12 @@ import { useRouter } from "next/navigation";
 import { X, ImageIcon, Camera, ChevronDown } from "lucide-react";
 import { useCreatePost } from "@/api/mutations/useCreatePost";
 import { useUploadFile } from "@/api/mutations/useUploadFile";
-import { SimpleHeader } from "@/components/common";
+import { BackHeader } from "@/components/common";
 import { useToast } from "@/hooks";
 import { compressShopImage } from "@/utils";
 import { isNativeApp } from "@/utils/platform";
 
-const MAX_IMAGES = 10;
+const MAX_IMAGES = 5;
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
 const POST_TYPES = [
@@ -25,7 +25,6 @@ export default function CommunityWritePage() {
   const { showToast } = useToast();
 
   const [typeId, setTypeId] = useState<number | null>(null);
-  const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
@@ -52,7 +51,7 @@ export default function CommunityWritePage() {
   const uploadFileMutation = useUploadFile("posts");
 
   const isProcessing = createPostMutation.isPending || isUploading;
-  const isValid = typeId !== null && title.trim().length > 0 && content.trim().length > 0;
+  const isValid = typeId !== null && content.trim().length > 0;
 
   const selectedType = POST_TYPES.find((t) => t.typeId === typeId);
 
@@ -159,7 +158,7 @@ export default function CommunityWritePage() {
     if (!isValid || typeId === null) return;
 
     createPostMutation.mutate(
-      { typeId, title: title.trim(), content: content.trim(), imageUrls },
+      { typeId, content: content.trim(), imageUrls },
       {
         onSuccess: () => {
           showToast("게시글이 등록되었어요!");
@@ -173,170 +172,162 @@ export default function CommunityWritePage() {
   };
 
   return (
-    <main className="h-[100dvh] w-full max-w-[480px] mx-auto bg-white flex flex-col">
-      {/* 헤더 */}
-      <SimpleHeader
-        title="게시글 작성"
-        rightElement={
-          <button
-            onClick={handleSubmit}
-            disabled={!isValid || isProcessing}
-            className={`text-[16px] font-medium px-4 py-1.5 rounded-full ${
-              isValid && !isProcessing ? "text-white bg-main" : "text-grey-500 bg-grey-200"
-            }`}
-          >
-            {isUploading ? "업로드 중..." : "등록"}
-          </button>
-        }
-      />
-
-      <div className="flex-1 overflow-y-auto flex flex-col">
-        {/* 주제 드롭다운 */}
-        <div className="px-5 pt-5 pb-4 border-b border-grey-100">
-          <div className="relative">
+    <div className="relative flex w-full flex-col bg-white overflow-hidden h-safe-viewport">
+      <div className="mx-auto flex h-full w-full max-w-[480px] flex-col">
+        {/* 헤더 */}
+        <BackHeader
+          title="게시글 작성"
+          rightElement={
             <button
-              type="button"
-              onClick={() => setIsDropdownOpen((prev) => !prev)}
-              className={`w-full flex items-center justify-between px-4 py-3 border rounded-[10px] ${
-                isDropdownOpen ? "border-grey-900" : "border-grey-200"
+              onClick={handleSubmit}
+              disabled={!isValid || isProcessing}
+              className={`text-[16px] font-medium px-4 py-1.5 rounded-full ${
+                isValid && !isProcessing ? "text-white bg-main" : "text-grey-500 bg-grey-200"
               }`}
             >
-              <span
-                className={`text-[16px] leading-[1.5] tracking-[-0.16px] ${
-                  selectedType ? "text-grey-900 font-medium" : "text-grey-400 font-normal"
+              {isUploading ? "업로드 중..." : "등록"}
+            </button>
+          }
+        />
+
+        <div className="flex-1 flex flex-col min-h-0">
+          {/* 주제 드롭다운 */}
+          <div className="shrink-0 px-5 pt-5 pb-4 border-b border-grey-100">
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsDropdownOpen((prev) => !prev)}
+                className={`w-full flex items-center justify-between px-4 py-3 border rounded-[10px] ${
+                  isDropdownOpen ? "border-grey-900" : "border-grey-200"
                 }`}
               >
-                {selectedType ? selectedType.label : "게시글 주제를 선택해주세요 (필수)"}
-              </span>
-              <ChevronDown
-                size={20}
-                className={`stroke-grey-500 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
-                strokeWidth={2}
-              />
-            </button>
+                <span
+                  className={`text-[16px] leading-[1.5] tracking-[-0.16px] ${
+                    selectedType ? "text-grey-900 font-medium" : "text-grey-400 font-normal"
+                  }`}
+                >
+                  {selectedType ? selectedType.label : "게시글 주제를 선택해주세요 (필수)"}
+                </span>
+                <ChevronDown
+                  size={20}
+                  className={`stroke-grey-500 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+                  strokeWidth={2}
+                />
+              </button>
 
-            {isDropdownOpen && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-grey-200 rounded-[10px] shadow-md z-10 overflow-hidden">
-                {POST_TYPES.map((type) => (
-                  <button
-                    key={type.typeId}
-                    type="button"
-                    onClick={() => {
-                      setTypeId(type.typeId);
-                      setIsDropdownOpen(false);
-                    }}
-                    className={`w-full text-left px-4 py-3 text-[16px] leading-[1.5] tracking-[-0.16px] hover:bg-grey-50 transition-colors ${
-                      typeId === type.typeId ? "text-main font-medium" : "text-grey-900 font-normal"
-                    }`}
-                  >
-                    {type.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* 제목 */}
-        <div className="px-5 py-4 border-b border-grey-100">
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="제목을 입력해주세요"
-            disabled={isProcessing}
-            className="w-full text-[17px] font-normal leading-[1.5] tracking-[-0.17px] text-grey-900 placeholder:text-grey-400 focus:outline-none disabled:opacity-50"
-          />
-        </div>
-
-        {/* 내용 */}
-        <div className="px-5 py-4 flex-1">
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="내용을 입력해주세요"
-            disabled={isProcessing}
-            className="w-full h-full min-h-[200px] text-[16px] font-normal leading-[1.6] tracking-[-0.16px] text-grey-900 placeholder:text-grey-400 resize-none focus:outline-none disabled:opacity-50"
-          />
-        </div>
-
-        {/* 이미지 미리보기 */}
-        {imagePreviewUrls.length > 0 && (
-          <div className="px-5 pb-4">
-            <div className="flex gap-3 overflow-x-auto">
-              {imagePreviewUrls.map((url, index) => (
-                <div key={index} className="shrink-0 relative w-16 h-16">
-                  <Image
-                    src={url}
-                    alt={`업로드 이미지 ${index + 1}`}
-                    fill
-                    sizes="64px"
-                    className="rounded-lg object-cover"
-                  />
-                  {!isProcessing && (
+              {isDropdownOpen && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-grey-200 rounded-[10px] shadow-md z-10 overflow-hidden">
+                  {POST_TYPES.map((type) => (
                     <button
+                      key={type.typeId}
                       type="button"
-                      onClick={() => handleImageRemove(index)}
-                      className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-grey-900 flex items-center justify-center z-10"
-                      aria-label={`이미지 ${index + 1} 삭제`}
+                      onClick={() => {
+                        setTypeId(type.typeId);
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-3 text-[16px] leading-[1.5] tracking-[-0.16px] hover:bg-grey-50 transition-colors ${
+                        typeId === type.typeId
+                          ? "text-main font-medium"
+                          : "text-grey-900 font-normal"
+                      }`}
                     >
-                      <X size={12} className="text-white" />
+                      {type.label}
                     </button>
-                  )}
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           </div>
-        )}
+
+          {/* 내용 */}
+          <div className="px-5 py-4 flex-1 min-h-0">
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="내용을 입력해주세요"
+              disabled={isProcessing}
+              className="w-full h-full text-[16px] font-normal leading-[1.6] tracking-[-0.16px] text-grey-900 placeholder:text-grey-400 resize-none focus:outline-none disabled:opacity-50"
+            />
+          </div>
+
+          {/* 이미지 미리보기 */}
+          {imagePreviewUrls.length > 0 && (
+            <div className="shrink-0 px-5 pb-4">
+              <div className="flex gap-3 overflow-x-auto pt-2 pr-3 last:pr-0">
+                {imagePreviewUrls.map((url, index) => (
+                  <div key={index} className="shrink-0 relative w-16 h-16">
+                    <Image
+                      src={url}
+                      alt={`업로드 이미지 ${index + 1}`}
+                      fill
+                      sizes="64px"
+                      className="rounded-lg object-cover"
+                    />
+                    {!isProcessing && (
+                      <button
+                        type="button"
+                        onClick={() => handleImageRemove(index)}
+                        className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-grey-900 flex items-center justify-center z-10"
+                        aria-label={`이미지 ${index + 1} 삭제`}
+                      >
+                        <X size={12} className="text-white" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 하단 툴바 */}
+        <div className="shrink-0 flex items-center gap-5 px-5 pt-3 pb-[calc(12px+env(safe-area-inset-bottom,0px))] border-t border-grey-100">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isProcessing || imageUrls.length >= MAX_IMAGES}
+            className="flex items-center justify-center disabled:opacity-50"
+            aria-label="카메라로 촬영"
+          >
+            <Camera size={24} className="stroke-grey-800" strokeWidth={1.5} />
+          </button>
+
+          <button
+            type="button"
+            onClick={
+              isNativeApp() ? handleNativeGallerySelect : () => galleryInputRef.current?.click()
+            }
+            disabled={isProcessing || imageUrls.length >= MAX_IMAGES}
+            className="flex items-center justify-center disabled:opacity-50"
+            aria-label="갤러리에서 선택"
+          >
+            <ImageIcon size={24} className="stroke-grey-800" strokeWidth={1.5} />
+          </button>
+
+          {imageUrls.length > 0 && (
+            <span className="text-[13px] text-grey-400 ml-auto">
+              {imageUrls.length}/{MAX_IMAGES}
+            </span>
+          )}
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif"
+            capture="environment"
+            onChange={handleImageSelect}
+            className="hidden"
+          />
+          <input
+            ref={galleryInputRef}
+            type="file"
+            accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif"
+            multiple
+            onChange={handleImageSelect}
+            className="hidden"
+          />
+        </div>
       </div>
-
-      {/* 하단 툴바 */}
-      <div className="flex items-center gap-5 px-5 pt-3 pb-[calc(12px+env(safe-area-inset-bottom,0px))] border-t border-grey-100">
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isProcessing || imageUrls.length >= MAX_IMAGES}
-          className="flex items-center justify-center disabled:opacity-50"
-          aria-label="카메라로 촬영"
-        >
-          <Camera size={24} className="stroke-grey-800" strokeWidth={1.5} />
-        </button>
-
-        <button
-          type="button"
-          onClick={
-            isNativeApp() ? handleNativeGallerySelect : () => galleryInputRef.current?.click()
-          }
-          disabled={isProcessing || imageUrls.length >= MAX_IMAGES}
-          className="flex items-center justify-center disabled:opacity-50"
-          aria-label="갤러리에서 선택"
-        >
-          <ImageIcon size={24} className="stroke-grey-800" strokeWidth={1.5} />
-        </button>
-
-        {imageUrls.length > 0 && (
-          <span className="text-[13px] text-grey-400 ml-auto">
-            {imageUrls.length}/{MAX_IMAGES}
-          </span>
-        )}
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif"
-          capture="environment"
-          onChange={handleImageSelect}
-          className="hidden"
-        />
-        <input
-          ref={galleryInputRef}
-          type="file"
-          accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif"
-          multiple
-          onChange={handleImageSelect}
-          className="hidden"
-        />
-      </div>
-    </main>
+    </div>
   );
 }

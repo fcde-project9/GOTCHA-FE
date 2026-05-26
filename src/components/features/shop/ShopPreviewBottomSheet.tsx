@@ -749,7 +749,7 @@ export default function ShopPreviewBottomSheet({
 
         <div
           ref={contentScrollRef}
-          className={`${isExpanded ? "flex-1 overflow-y-auto pb-3" : "overflow-hidden"}`}
+          className={`${isExpanded ? "flex-1 overflow-y-auto pb-[52px]" : "overflow-hidden"}`}
         >
           <div className="flex flex-col px-5">
             {/* 업체명 + 찜/공유 (확장 시 찜/공유는 헤더에만 표시) */}
@@ -915,7 +915,7 @@ export default function ShopPreviewBottomSheet({
             {/* 방문 리뷰 (확장 시에만 표시) */}
             {isExpanded && (
               <>
-                <div className="py-4">
+                <div className="pt-4">
                   <h3 className="text-[19px] font-medium text-grey-900 leading-[1.5] tracking-[-0.19px] mb-4">
                     방문리뷰
                   </h3>
@@ -1209,7 +1209,7 @@ export default function ShopPreviewBottomSheet({
                   </div>
 
                   {/* 무한 스크롤 로딩 */}
-                  <div ref={loadMoreRef} className="py-4">
+                  <div ref={loadMoreRef} className="pt-4">
                     {isFetchingNextPage && (
                       <div className="flex items-center justify-center">
                         <div className="h-6 w-6 animate-spin rounded-full border-2 border-grey-200 border-t-main" />
@@ -1230,7 +1230,7 @@ export default function ShopPreviewBottomSheet({
           onClick={() => setIsUserMenuOpen(false)}
         >
           <div
-            className="w-full max-w-[480px] mx-auto bg-white rounded-t-2xl pb-3 h-[188px] animate-slide-up"
+            className="w-full max-w-[480px] mx-auto bg-white rounded-t-2xl pb-[52px] h-[188px] animate-slide-up"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-end px-5 pt-4 pb-2">

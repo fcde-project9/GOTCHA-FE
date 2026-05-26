@@ -82,7 +82,7 @@ export default function CommunityPage() {
             <button
               type="button"
               onClick={() => refetch()}
-              className="rounded-lg bg-grey-900 w-[174px] h-[46px] flex items-center justify-center gap-1"
+              className="rounded-lg bg-grey-900 w-[174px] h-[44px] flex items-center justify-center gap-1"
             >
               <span className="text-[16px] text-white font-normal leading-[1.5] tracking-[-0.16px]">
                 다시 시도

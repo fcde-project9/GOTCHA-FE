@@ -282,7 +282,7 @@ export default function ReportLocationPage() {
       </div>
 
       {/* Bottom Sheet */}
-      <div className="shrink-0 bg-white rounded-t-3xl px-5 pt-5 pb-[68px] shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] relative z-10 -mt-11">
+      <div className="shrink-0 bg-white rounded-t-3xl px-5 pt-5 pb-[52px] shadow-[0_-3px_10px_0_rgba(163,163,163,0.15)] relative z-10 -mt-11">
         <div className="flex flex-col gap-[22px]">
           {/* Address */}
           <div className="flex flex-col gap-2">

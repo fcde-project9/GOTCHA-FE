@@ -279,7 +279,7 @@ export function ShopImageGrid({
         <div className="mt-3">
           <button
             onClick={onViewAll}
-            className="flex items-center justify-center w-full h-[46px] rounded-lg border border-grey-300"
+            className="flex items-center justify-center w-full h-[44px] rounded-lg border border-grey-300"
           >
             <span className="text-[16px] font-medium text-grey-600 leading-[1.5] tracking-[-0.16px]">
               사진 전체보기

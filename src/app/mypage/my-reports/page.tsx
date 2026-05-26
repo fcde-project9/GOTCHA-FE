@@ -179,7 +179,7 @@ export default function MyReportsPage() {
           </div>
 
           {/* 리스트 */}
-          <div className="flex-1 overflow-y-auto px-5 pb-3">
+          <div className="flex-1 overflow-y-auto px-5 pb-[52px]">
             <div className="flex flex-col">
               {reports.map((shop) => (
                 <div key={shop.id} className="relative w-full">

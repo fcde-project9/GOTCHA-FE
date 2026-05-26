@@ -23,6 +23,7 @@ export const ENDPOINTS = {
     UPDATE_PROFILE_IMAGE: "/api/users/me/profile-image",
     WITHDRAW: "/api/users/me",
     MY_SHOPS: "/api/users/me/shops",
+    MY_REVIEWS: "/api/users/me/reviews",
   },
   // 파일
   FILE: {

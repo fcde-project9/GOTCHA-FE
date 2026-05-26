@@ -306,8 +306,9 @@ export default function KakaoMap({
 
     try {
       const newCenter = new window.kakao.maps.LatLng(latitude, longitude);
-      mapInstance.current.setCenter(newCenter);
+      // 레벨을 먼저 변경한 뒤 센터를 옮겨, idle 이벤트가 중간 레벨로 트리거되는 걸 줄임
       mapInstance.current.setLevel(level);
+      mapInstance.current.setCenter(newCenter);
     } catch (err) {
       setMapError(`지도 업데이트 실패: ${err}`);
     }
