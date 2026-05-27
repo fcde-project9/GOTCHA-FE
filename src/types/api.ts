@@ -358,6 +358,7 @@ export interface PostDetail {
   typeId: number;
   typeName: string;
   authorNickname: string;
+  authorProfileImageUrl: string | null;
   title: string;
   content: string;
   imageUrls: string[];
