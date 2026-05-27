@@ -12,6 +12,13 @@ if command -v nvm >/dev/null 2>&1; then
   nvm use 24
 fi
 
+# Sentry release 태그: iOS 마케팅 버전 + 빌드 번호 + 짧은 git SHA
+MARKETING_VERSION=$(grep -m1 "MARKETING_VERSION" ios/App/App.xcodeproj/project.pbxproj | sed -E 's/.*= *([^;]+);.*/\1/')
+BUILD_NUMBER=$(grep -m1 "CURRENT_PROJECT_VERSION" ios/App/App.xcodeproj/project.pbxproj | sed -E 's/.*= *([^;]+);.*/\1/')
+GIT_SHA=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+SENTRY_RELEASE="ios@${MARKETING_VERSION}+${BUILD_NUMBER}.${GIT_SHA}"
+echo "▶ Sentry release: ${SENTRY_RELEASE}"
+
 # .env.local 백업 및 운영 환경으로 교체
 cp .env.local .env.local.bak
 trap 'cp .env.local.bak .env.local && rm -f .env.local.bak' EXIT
@@ -20,7 +27,10 @@ sed -e 's|^NEXT_PUBLIC_API_BASE_URL=.*|NEXT_PUBLIC_API_BASE_URL=https://api.gotc
     .env.local.bak > .env.local
 
 # 빌드 (실패 시 trap에서 롤백 후 set -e로 종료)
-NEXT_PUBLIC_BUILD_TARGET=capacitor npx next build
+NEXT_PUBLIC_BUILD_TARGET=capacitor \
+NEXT_PUBLIC_SENTRY_RELEASE="${SENTRY_RELEASE}" \
+SENTRY_RELEASE="${SENTRY_RELEASE}" \
+  npx next build
 
 # Capacitor sync & Xcode 열기
 npx cap sync ios
