@@ -10,7 +10,7 @@ import { useDeletePost } from "@/api/mutations/useDeletePost";
 import { useToggleCommentLike } from "@/api/mutations/useToggleCommentLike";
 import { useTogglePostLike } from "@/api/mutations/useTogglePostLike";
 import { usePostDetail } from "@/api/queries/usePostDetail";
-import { SimpleHeader, Spinner } from "@/components/common";
+import { BackHeader, Spinner } from "@/components/common";
 import { DEFAULT_IMAGES } from "@/constants";
 import { useToast } from "@/hooks";
 import type { PostComment, CommentReply } from "@/types/api";
@@ -236,7 +236,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ postId: s
 
   return (
     <main className="h-[100dvh] w-full max-w-[480px] mx-auto bg-white flex flex-col">
-      <SimpleHeader title={post?.typeName ?? "게시글"} />
+      <BackHeader title={post?.typeName ?? "게시글"} />
 
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
@@ -266,7 +266,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ postId: s
               <div className="flex items-center gap-2">
                 <div className="relative w-9 h-9 rounded-full overflow-hidden shrink-0">
                   <Image
-                    src={DEFAULT_IMAGES.PROFILE}
+                    src={post.authorProfileImageUrl || DEFAULT_IMAGES.PROFILE}
                     alt={post.authorNickname}
                     fill
                     sizes="36px"

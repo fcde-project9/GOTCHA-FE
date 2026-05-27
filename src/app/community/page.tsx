@@ -117,14 +117,16 @@ export default function CommunityPage() {
       </main>
 
       {/* 글쓰기 플로팅 버튼 */}
-      <button
-        onClick={() => router.push("/community/write")}
-        className="fixed bottom-[calc(var(--footer-height)+16px)] right-4 flex items-center gap-1.5 bg-grey-900 text-white rounded-full px-4 py-2.5 shadow-lg z-10"
-        aria-label="게시글 작성"
-      >
-        <PenLine size={16} className="stroke-white" strokeWidth={2} />
-        <span className="text-[14px] font-medium leading-[1.5] tracking-[-0.14px]">글쓰기</span>
-      </button>
+      <div className="fixed bottom-[calc(var(--footer-height)+52px)] left-0 right-0 mx-auto w-full max-w-[480px] z-[50] pointer-events-none">
+        <button
+          onClick={() => router.push("/community/write")}
+          className="absolute right-6 flex items-center gap-1.5 bg-grey-900 text-white rounded-full px-4 py-2.5 shadow-lg pointer-events-auto"
+          aria-label="게시글 작성"
+        >
+          <PenLine size={16} className="stroke-white" strokeWidth={2} />
+          <span className="text-[14px] font-medium leading-[1.5] tracking-[-0.14px]">글쓰기</span>
+        </button>
+      </div>
 
       <Footer />
     </>
