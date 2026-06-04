@@ -13,6 +13,21 @@ export interface ApiError {
 }
 
 /**
+ * HTTP 상태 코드를 보존하는 API 요청 에러
+ */
+export class ApiRequestError extends Error {
+  status: number;
+  code?: string;
+
+  constructor(message: string, status: number, code?: string) {
+    super(message);
+    this.name = "ApiRequestError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
+/**
  * API 공통 응답 타입
  * @template T - 응답 데이터 타입
  */

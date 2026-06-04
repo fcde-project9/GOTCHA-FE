@@ -3,13 +3,14 @@
 import { useState, useRef, useEffect, use } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Heart, MessageCircle, RefreshCcw, CornerDownRight, Trash2 } from "lucide-react";
+import { Heart, MessageCircle, RefreshCcw, CornerDownRight, Trash2, ArrowLeft } from "lucide-react";
 import { useCreateComment } from "@/api/mutations/useCreateComment";
 import { useDeleteComment } from "@/api/mutations/useDeleteComment";
 import { useDeletePost } from "@/api/mutations/useDeletePost";
 import { useToggleCommentLike } from "@/api/mutations/useToggleCommentLike";
 import { useTogglePostLike } from "@/api/mutations/useTogglePostLike";
 import { usePostDetail } from "@/api/queries/usePostDetail";
+import { ApiRequestError } from "@/api/types";
 import { BackHeader, Spinner } from "@/components/common";
 import { DEFAULT_IMAGES } from "@/constants";
 import { useToast } from "@/hooks";
@@ -246,18 +247,35 @@ export default function PostDetailPage({ params }: { params: Promise<{ postId: s
         ) : error || !post ? (
           <div className="flex flex-col items-center justify-center gap-4 h-full px-5">
             <p className="text-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-600">
-              {error instanceof Error ? error.message : "게시글을 불러올 수 없어요."}
+              {error instanceof ApiRequestError && error.status === 404
+                ? "삭제되었거나 존재하지 않는 게시글이에요."
+                : error instanceof Error
+                  ? error.message
+                  : "게시글을 불러올 수 없어요."}
             </p>
-            <button
-              type="button"
-              onClick={() => refetch()}
-              className="rounded-lg bg-grey-900 w-[174px] h-[44px] flex items-center justify-center gap-1"
-            >
-              <span className="text-[16px] text-white font-normal leading-[1.5] tracking-[-0.16px]">
-                다시 시도
-              </span>
-              <RefreshCcw size={16} className="stroke-white" strokeWidth={2} />
-            </button>
+            {error instanceof ApiRequestError && error.status === 404 ? (
+              <button
+                type="button"
+                onClick={() => router.back()}
+                className="rounded-lg bg-grey-900 w-[174px] h-[44px] flex items-center justify-center gap-1"
+              >
+                <ArrowLeft size={16} className="stroke-white" strokeWidth={2} />
+                <span className="text-[16px] text-white font-normal leading-[1.5] tracking-[-0.16px]">
+                  돌아가기
+                </span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => refetch()}
+                className="rounded-lg bg-grey-900 w-[174px] h-[44px] flex items-center justify-center gap-1"
+              >
+                <span className="text-[16px] text-white font-normal leading-[1.5] tracking-[-0.16px]">
+                  다시 시도
+                </span>
+                <RefreshCcw size={16} className="stroke-white" strokeWidth={2} />
+              </button>
+            )}
           </div>
         ) : (
           <>

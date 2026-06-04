@@ -1,7 +1,7 @@
 import type { AxiosRequestConfig } from "axios";
 import apiClient from "./client";
 import type { ApiResponse } from "./types";
-import { extractApiError } from "./types";
+import { ApiRequestError, extractApiError } from "./types";
 
 type HttpMethod = "get" | "post" | "put" | "patch" | "delete";
 
@@ -127,10 +127,11 @@ export async function request<T>(
       }
     }
 
-    // API 에러 메시지 추출
+    // API 에러 메시지 추출 (HTTP 상태 코드 보존)
     const apiError = extractApiError(error);
     if (apiError) {
-      throw new Error(apiError.message);
+      const status = (error as { response?: { status?: number } })?.response?.status ?? 0;
+      throw new ApiRequestError(apiError.message, status, apiError.code);
     }
 
     // 이미 Error 객체면 그대로 throw
