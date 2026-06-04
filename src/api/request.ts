@@ -127,11 +127,11 @@ export async function request<T>(
       }
     }
 
-    // API 에러 메시지 추출 (HTTP 상태 코드 보존)
-    const apiError = extractApiError(error);
-    if (apiError) {
-      const status = (error as { response?: { status?: number } })?.response?.status ?? 0;
-      throw new ApiRequestError(apiError.message, status, apiError.code);
+    // HTTP 상태 코드가 있으면 ApiRequestError로 보존
+    const status = (error as { response?: { status?: number } })?.response?.status;
+    if (status !== undefined) {
+      const apiError = extractApiError(error);
+      throw new ApiRequestError(apiError?.message ?? errorMessage, status, apiError?.code);
     }
 
     // 이미 Error 객체면 그대로 throw
