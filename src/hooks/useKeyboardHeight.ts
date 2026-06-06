@@ -28,7 +28,8 @@ export function useKeyboardHeight(enabled = true) {
           hideListener = await Keyboard.addListener("keyboardWillHide", () => {
             setKeyboardHeight(0);
           });
-        } catch {
+        } catch (error) {
+          console.error("Failed to setup keyboard listeners:", error);
           setKeyboardHeight(0);
         }
       })();
