@@ -112,6 +112,7 @@ prod 트레이싱 10%는 비용 통제용. 에러 발생 세션은 100% 리플�
 별도 코드 없이 자동으로 잡히는 것들:
 
 - React 컴포넌트 렌더 중 throw → `global-error.tsx`가 잡아서 자동 전송
+- `<ErrorBoundary>`로 잡힌 React 트리 에러 → `componentDidCatch`에서 자동 전송 (`componentStack` 컨텍스트 포함)
 - `window.onerror` / `unhandledrejection` → SDK 글로벌 핸들러
 - Next.js 서버 사이드 에러 → `instrumentation.ts`의 `onRequestError`
 - iOS 네이티브 크래시 (Capacitor 빌드만) → @sentry/capacitor가 자동
@@ -228,8 +229,8 @@ npm run dev
 # 5번 섹션 → "Error Boundary 테스트 보기" → "에러 발생시키기"
 ```
 
-> Note: `ErrorBoundary`로 잡힌 에러는 unhandled가 아니라 Sentry에 자동 전송되지 않을 수 있음.
-> 확실히 테스트하려면 브라우저 콘솔에서 `setTimeout(() => { throw new Error("client test"); }, 0);` 실행.
+> `ErrorBoundary` (`src/components/common/ErrorBoundary.tsx`)는 `componentDidCatch`에서 `Sentry.captureException`을 호출하므로 트리 안 에러도 자동 전송된다. fallback UI는 뜨고 Sentry에도 같이 들어감.
+> 글로벌 unhandled 경로(`window.onerror`)까지 확인하려면 브라우저 콘솔에서 `setTimeout(() => { throw new Error("client test"); }, 0);` 실행.
 
 ### 3. 서버 사이드 에러
 
@@ -246,24 +247,39 @@ Next.js 페이지 RSC/loader에서 throw → 자동으로 `onRequestError`가 �
 
 ### 알림 채널 구성
 
-| 채널           | 받는 환경       | 트리거                          |
-| -------------- | --------------- | ------------------------------- |
-| `#sentry-prod` | `production` 만 | 신규 이슈 / escalating / 재발생 |
+| 채널           | Sentry environment | 대상 배포                  | 트리거                          |
+| -------------- | ------------------ | -------------------------- | ------------------------------- |
+| `#sentry-prod` | `production`       | `www.gotcha.it.com` (main) | 신규 이슈 / escalating / 재발생 |
+| `#sentry-dev`  | `vercel-preview`   | `dev.gotcha.it.com` (dev)  | 신규 이슈 / escalating          |
 
-> dev/staging 환경은 **Discord 알림에서 제외**. 개발 중 발생하는 에러는 Sentry 대시보드에서만 확인하고, Discord 노이즈는 prod 이슈로만 한정.
+> **환경 작명 주의**: 코드(`sentry.*.config.ts`, `instrumentation-client.ts`)는 `process.env.VERCEL_ENV ?? NODE_ENV`로 environment를 잡지만, 실제 Sentry에 쌓인 값은 `vercel-preview` / `vercel-production` 등 prefix가 붙은 형태이다. 이는 **Vercel 대시보드 Environment Variables에서 `VERCEL_ENV` / `NEXT_PUBLIC_VERCEL_ENV`를 명시적으로 override**한 결과로 추정된다. 알림 필터는 코드 가정값이 아닌 **Sentry Issues에 실제로 찍힌 environment 태그 값**을 기준으로 설정해야 한다.
+>
+> ⚠️ PR 자동 preview 배포가 활성화돼 있다면 같은 `vercel-preview` 환경으로 들어와 `#sentry-dev`에 섞일 수 있다. 노이즈가 심해지면 `dev-deploy.yml`에서 별도 env 주입(예: `NEXT_PUBLIC_VERCEL_ENV=dev` override)으로 분리 검토.
 
 ### 알림 규칙 (Sentry → Alerts → Issue Alert)
 
-생성 시 핵심 옵션:
+#### 운영 (production)
 
 - **Source**: project = `gotcha-web`
-- **Filter Issues**: Environment = **`production` 만** 선택 (`All Environments`는 dev 노이즈까지 옴 → 금지)
+- **Environment**: `production`
 - **WHEN** (any of):
   - `A new issue is created` ✓ 필수
   - `An issue escalates` ✓ 필수 (잠잠하던 에러 폭증)
   - `A resolved issue becomes unresolved` ✓ 권장 (재발 추적)
   - `An issue is resolved` ✗ 비권장 (메시지 폭주)
-- **THEN**: `Send a Discord notification` → 서버/채널 선택
+- **THEN**: `Send a Discord notification` → `#sentry-prod`
+- **Throttling**: 30분
+
+#### 개발 (dev)
+
+- **Source**: project = `gotcha-web`
+- **Environment**: `vercel-preview`
+- **WHEN** (any of):
+  - `A new issue is created` ✓
+  - `An issue escalates` ✓
+  - `A resolved issue becomes unresolved` ✗ (dev에선 노이즈)
+- **THEN**: `Send a Discord notification` → `#sentry-dev`
+- **Rate Limit**: `최대 10건 / 60분` 권장 (dev 이슈 폭증 시 채널 도배 방지)
 
 ### 알림 메시지에서 받는 정보
 

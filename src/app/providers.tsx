@@ -1,5 +1,9 @@
 "use client";
 
+// Next.js 16 Turbopack 호환성 우회 — instrumentation-client.ts 자동 entry 로드 실패 회피
+// 참고: github.com/getsentry/sentry-javascript/issues/19367
+import "../../instrumentation-client";
+
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";

@@ -142,6 +142,47 @@ EOF
 
 완료 후 PR URL을 사용자에게 출력.
 
+### 8. PR 머지 후 로컬 브랜치 정리
+
+PR 생성 직후, 사용자에게 머지 후 자동 정리 여부를 안내:
+
+```text
+PR 머지가 완료되면 알려주세요. 다음을 자동으로 처리합니다:
+  - dev로 체크아웃
+  - origin/dev pull (최신화)
+  - 로컬 작업 브랜치 삭제
+  - (원격 브랜치는 GitHub "Delete branch" 버튼이 처리)
+```
+
+사용자가 "머지됐다" / "merged" 등을 알리면 **반드시 머지 여부를 먼저 확인**한 뒤 정리 실행:
+
+**1) 머지 여부 확인** (병렬):
+
+- `gh pr view <PR번호> --json state,mergedAt,mergeCommit` — `state == "MERGED"` 인지 검증
+- `git branch --show-current` — 현재 브랜치 확인
+
+머지 상태가 아니면 정리 중단하고 사용자에게 현 상태 보고.
+
+**2) 정리 실행** (순차):
+
+```bash
+git checkout dev
+git pull origin dev
+git branch -D <branch-name>
+```
+
+- 이 저장소는 **squash merge가 기본**이므로 머지된 브랜치라도 `git branch -d`(안전 삭제)는 거의 항상 실패한다 (커밋 SHA가 다름). 따라서 `gh pr view`로 `state == "MERGED"` 검증을 마쳤다면 `-D`(강제 삭제) 사용이 정상 경로.
+- **전제 조건**: 1단계의 `gh pr view` 머지 검증을 반드시 통과한 상태여야 함. 검증 없이 `-D` 사용 금지.
+- merge 방식이 squash가 아닌 일반/rebase merge인 경우엔 `-d`도 성공하지만, 일관성을 위해 `-D` 사용해도 무방.
+
+**3) 결과 보고**:
+
+```text
+✅ 정리 완료
+- 현재 브랜치: dev (origin/dev 최신)
+- 삭제된 로컬 브랜치: <branch-name>
+```
+
 ## 안전 수칙 (항상 적용)
 
 - main/master 직접 푸시 금지
