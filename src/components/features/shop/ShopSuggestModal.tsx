@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSuggestReasons } from "@/api/queries/useSuggestReasons";
 import type { ShopSuggestReason } from "@/api/types";
-import { isNativeApp } from "@/utils/platform";
+import { useKeyboardHeight } from "@/hooks";
 
 interface ShopSuggestModalProps {
   isOpen: boolean;
@@ -21,7 +21,7 @@ export function ShopSuggestModal({
   const { data: suggestItems, isLoading: isReasonsLoading } = useSuggestReasons();
   const [selectedReasons, setSelectedReasons] = useState<Set<ShopSuggestReason>>(new Set());
   const [detail, setDetail] = useState("");
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const keyboardHeight = useKeyboardHeight(isOpen);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
@@ -43,53 +43,6 @@ export function ShopSuggestModal({
     return () => {
       document.body.style.overflow = "";
     };
-  }, [isOpen]);
-
-  // 키보드 높이 감지
-  useEffect(() => {
-    if (!isOpen) {
-      setKeyboardHeight(0);
-      return;
-    }
-
-    if (isNativeApp()) {
-      let cancelled = false;
-      let showListener: { remove: () => void | Promise<void> } | undefined;
-      let hideListener: { remove: () => void | Promise<void> } | undefined;
-
-      (async () => {
-        try {
-          const { Keyboard } = await import("@capacitor/keyboard");
-          if (cancelled) return;
-
-          showListener = await Keyboard.addListener("keyboardWillShow", (info) => {
-            setKeyboardHeight(info.keyboardHeight);
-          });
-          hideListener = await Keyboard.addListener("keyboardWillHide", () => {
-            setKeyboardHeight(0);
-          });
-        } catch {
-          setKeyboardHeight(0);
-        }
-      })();
-
-      return () => {
-        cancelled = true;
-        showListener?.remove();
-        hideListener?.remove();
-      };
-    }
-
-    const viewport = window.visualViewport;
-    if (!viewport) return;
-
-    const handleResize = () => {
-      const height = window.innerHeight - viewport.height;
-      setKeyboardHeight(height > 0 ? height : 0);
-    };
-
-    viewport.addEventListener("resize", handleResize);
-    return () => viewport.removeEventListener("resize", handleResize);
   }, [isOpen]);
 
   // 키보드가 올라왔을 때 textarea로 스크롤

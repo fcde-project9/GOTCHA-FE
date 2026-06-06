@@ -6,7 +6,7 @@ import { X, Camera, ImageIcon } from "lucide-react";
 import { useCreateReview } from "@/api/mutations/useCreateReview";
 import { useUpdateReview } from "@/api/mutations/useUpdateReview";
 import { useUploadFile } from "@/api/mutations/useUploadFile";
-import { useToast } from "@/hooks";
+import { useToast, useKeyboardHeight } from "@/hooks";
 import type { ReviewResponse } from "@/types/api";
 import { compressShopImage } from "@/utils";
 import { isNativeApp } from "@/utils/platform";
@@ -41,7 +41,7 @@ export function ReviewWriteModal({
   const { showToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const keyboardHeight = useKeyboardHeight(isOpen);
 
   const isEditMode = !!reviewId && !!initialData;
 
@@ -70,56 +70,6 @@ export function ReviewWriteModal({
     return () => {
       document.body.style.overflow = "";
     };
-  }, [isOpen]);
-
-  // 키보드 높이 감지 (모바일 앱)
-  useEffect(() => {
-    if (!isOpen) {
-      setKeyboardHeight(0);
-      return;
-    }
-
-    if (isNativeApp()) {
-      // Capacitor resize:"body" 모드에서는 visualViewport가 변하지 않으므로
-      // @capacitor/keyboard 이벤트로 실제 키보드 높이를 직접 수신
-      let cancelled = false;
-      let showListener: { remove: () => void | Promise<void> } | undefined;
-      let hideListener: { remove: () => void | Promise<void> } | undefined;
-
-      (async () => {
-        try {
-          const { Keyboard } = await import("@capacitor/keyboard");
-          if (cancelled) return;
-
-          showListener = await Keyboard.addListener("keyboardWillShow", (info) => {
-            setKeyboardHeight(info.keyboardHeight);
-          });
-          hideListener = await Keyboard.addListener("keyboardWillHide", () => {
-            setKeyboardHeight(0);
-          });
-        } catch {
-          setKeyboardHeight(0);
-        }
-      })();
-
-      return () => {
-        cancelled = true;
-        showListener?.remove();
-        hideListener?.remove();
-      };
-    }
-
-    // 웹: visualViewport resize 이벤트로 감지
-    const viewport = window.visualViewport;
-    if (!viewport) return;
-
-    const handleResize = () => {
-      const height = window.innerHeight - viewport.height;
-      setKeyboardHeight(height > 0 ? height : 0);
-    };
-
-    viewport.addEventListener("resize", handleResize);
-    return () => viewport.removeEventListener("resize", handleResize);
   }, [isOpen]);
 
   // 수정 모드일 때 초기 데이터 설정 (모달이 열릴 때 1회만 실행)
