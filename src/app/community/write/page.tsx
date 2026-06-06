@@ -7,7 +7,7 @@ import { X, ImageIcon, Camera, ChevronDown } from "lucide-react";
 import { useCreatePost } from "@/api/mutations/useCreatePost";
 import { useUploadFile } from "@/api/mutations/useUploadFile";
 import { BackHeader } from "@/components/common";
-import { useToast } from "@/hooks";
+import { useToast, useKeyboardHeight } from "@/hooks";
 import { compressShopImage } from "@/utils";
 import { isNativeApp } from "@/utils/platform";
 
@@ -47,6 +47,7 @@ export default function CommunityWritePage() {
     };
   }, []);
 
+  const keyboardHeight = useKeyboardHeight();
   const createPostMutation = useCreatePost();
   const uploadFileMutation = useUploadFile("posts");
 
@@ -154,6 +155,12 @@ export default function CommunityWritePage() {
     setImagePreviewUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleDismissKeyboard = useCallback(() => {
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+  }, []);
+
   const handleSubmit = () => {
     if (!isValid || typeId === null) return;
 
@@ -172,7 +179,14 @@ export default function CommunityWritePage() {
   };
 
   return (
-    <div className="relative flex w-full flex-col bg-white overflow-hidden h-safe-viewport">
+    <div
+      className="relative flex w-full flex-col bg-white overflow-hidden h-safe-viewport"
+      style={
+        keyboardHeight > 0
+          ? { height: `calc(100dvh - env(safe-area-inset-top, 0px) - ${keyboardHeight}px)` }
+          : undefined
+      }
+    >
       <div className="mx-auto flex h-full w-full max-w-[480px] flex-col">
         {/* 헤더 */}
         <BackHeader
@@ -190,7 +204,14 @@ export default function CommunityWritePage() {
           }
         />
 
-        <div className="flex-1 flex flex-col min-h-0">
+        <div
+          className="flex-1 flex flex-col min-h-0"
+          onTouchStart={(e) => {
+            if (!(e.target instanceof HTMLTextAreaElement)) {
+              handleDismissKeyboard();
+            }
+          }}
+        >
           {/* 주제 드롭다운 */}
           <div className="shrink-0 px-5 pt-5 pb-4 border-b border-grey-100">
             <div className="relative">
@@ -281,7 +302,9 @@ export default function CommunityWritePage() {
         </div>
 
         {/* 하단 툴바 */}
-        <div className="shrink-0 flex items-center gap-5 px-5 pt-3 pb-[calc(12px+env(safe-area-inset-bottom,0px))] border-t border-grey-100">
+        <div
+          className={`shrink-0 flex items-center gap-5 px-5 pt-3 border-t border-grey-100 ${keyboardHeight > 0 ? "pb-3" : "pb-[calc(12px+env(safe-area-inset-bottom,0px))]"}`}
+        >
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
