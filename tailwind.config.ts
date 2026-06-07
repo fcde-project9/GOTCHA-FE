@@ -157,6 +157,11 @@ const config: Config = {
           from: { opacity: "1" },
           to: { opacity: "0" },
         },
+        // 페이지 전환 — iOS push 표준 (오른쪽에서 슬라이드 진입)
+        "slide-in-right": {
+          from: { transform: "translateX(100%)" },
+          to: { transform: "translateX(0)" },
+        },
       },
       animation: {
         // 바텀시트 표준 모션 — iOS Sheet / Vaul 호환 cubic-bezier
@@ -168,6 +173,8 @@ const config: Config = {
         "modal-content-out": "modal-content-out 0.2s cubic-bezier(0.32, 0.72, 0, 1) forwards",
         "modal-backdrop-in": "modal-backdrop-in 0.2s ease-out",
         "modal-backdrop-out": "modal-backdrop-out 0.2s ease-in forwards",
+        // 페이지 전환 — iOS push 표준
+        "slide-in-right": "slide-in-right 0.4s cubic-bezier(0.32, 0.72, 0, 1)",
       },
       borderRadius: {
         lg: "var(--radius)",
