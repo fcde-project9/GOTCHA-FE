@@ -199,18 +199,76 @@ cd ios/App && pod install
 ### dSYM 업로드 (Xcode 빌드 시)
 
 iOS native 크래시의 심볼리케이션을 위해 dSYM이 Sentry에 업로드되어야 함.
+**SPM Sentry는 archive에 dSYM이 자동 포함되지 않으므로** 빌드 단계에서 sentry-cli로
+업로드하는 작업이 필수다 (안 하면 `Sentry.framework + 0x1234` 같이 난독화됨).
 
-1. Xcode → 프로젝트 → Build Phases → "+" → New Run Script Phase
-2. 스크립트:
+#### 1회 셋업 (개발자 머신마다)
+
+##### A. `sentry-cli` 설치
+
+```bash
+brew install getsentry/tools/sentry-cli
+```
+
+##### B. `.env.local`에 Sentry 키 4개 채워두기 (이미 있을 수 있음)
+
+```bash
+NEXT_PUBLIC_SENTRY_DSN=https://...
+SENTRY_ORG=gotcha-aj
+SENTRY_PROJECT=gotcha-web
+SENTRY_AUTH_TOKEN=sntrys_xxx...
+```
+
+##### C. Xcode에 Run Script Phase 추가 (저장소당 1회)
+
+1. Xcode → Project navigator → **App** (target) 선택
+2. **Build Phases** 탭 → 좌상단 **`+`** → **New Run Script Phase**
+3. Phase 이름을 `Upload Sentry dSYMs` 로 변경
+4. Shell: `/bin/sh` (기본값 유지)
+5. 스크립트 본문에 다음 한 줄 입력:
+
    ```sh
-   export SENTRY_ORG=gotcha-aj
-   export SENTRY_PROJECT=gotcha-web
-   export SENTRY_AUTH_TOKEN=<your-token>
-   sentry-cli debug-files upload --include-sources "$DWARF_DSYM_FOLDER_PATH"
+   "${SRCROOT}/../../scripts/upload-dsym.sh"
    ```
-3. `sentry-cli` 설치: `brew install getsentry/tools/sentry-cli`
 
-> 자동화 안 하면 native 크래시는 잡히지만 어느 함수에서 떨어졌는지 알 수 없음.
+6. **Run script only when installing** 는 체크 해제(=Archive에서 실행됨)
+7. **For install builds only** 도 체크 해제
+8. Phase 순서: 기본 위치(맨 아래) 유지. Archive 시 dSYM 생성 후 실행됨
+
+> Run Script가 git에 커밋되는 영역(`pbxproj`)이라 1명이 추가하면 팀 전체에 적용된다.
+> 스크립트 본체는 `scripts/upload-dsym.sh` 한 곳에서 관리한다.
+
+#### `scripts/upload-dsym.sh` 동작
+
+- `.env.local`에서 `SENTRY_*` 환경변수 자동 로드 (Xcode 빌드 환경엔 `.env.local`이
+  안 보이므로 스크립트가 직접 파싱해서 export — 단, 다른 키는 건드리지 않음)
+- `DWARF_DSYM_FOLDER_PATH` (Xcode가 자동 주입) 또는 첫 인자로 받은 경로의 dSYM을
+  Sentry에 업로드
+- `--include-sources`로 소스맵 함께 업로드 → 스택트레이스에 코드 인용 표시
+
+#### Archive 사후 수동 호출 (Run Script Phase 누락된 빌드 복구용)
+
+이전 Archive에서 dSYM이 안 올라간 경우:
+
+1. Xcode → Window → Organizer
+2. 해당 Archive 우클릭 → **Show in Finder**
+3. `.xcarchive` 우클릭 → **Package Contents** → `dSYMs` 폴더 경로 복사
+4. 터미널에서:
+
+   ```bash
+   bash scripts/upload-dsym.sh "<dSYMs 폴더 경로>"
+   ```
+
+#### 빌드 로그 확인
+
+Run Script Phase가 동작하면 Archive 로그 마지막에 다음 줄이 보인다:
+
+```text
+▶ Sentry dSYM 업로드 — org=gotcha-aj project=gotcha-web
+✅ Sentry dSYM 업로드 완료
+```
+
+Archive 직후 dSYM 누락 경고가 안 뜨면 성공.
 
 ## 검증 방법
 
