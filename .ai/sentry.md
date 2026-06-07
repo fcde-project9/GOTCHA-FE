@@ -60,9 +60,16 @@ Settings → Environment Variables에 위 4개 등록. 적용 환경 체크박�
 
 - `SENTRY_AUTH_TOKEN`은 **Sensitive로 표시**
 - 환경 구분: 코드에서 `process.env.NEXT_PUBLIC_VERCEL_ENV ?? process.env.NODE_ENV`로
-  `environment` 태깅. Vercel이 자동으로 `NEXT_PUBLIC_VERCEL_ENV`에
-  `production` / `preview` / `development` 중 하나 주입 → Preview 배포는
-  Sentry에서 `environment: preview`로 분류되어 Discord 알림(`production`만 필터)에 안 섞임.
+  `environment` 태깅. Vercel은 서버용 `VERCEL_ENV`만 자동 주입하고 `NEXT_PUBLIC_*`
+  접두사 변수는 자동 주입하지 않으므로, `next.config.mjs`의 `env` 블록에서
+  `NEXT_PUBLIC_VERCEL_ENV: process.env.VERCEL_ENV`로 매핑해 빌드타임에 클라이언트
+  번들에 인라인한다. → Preview 배포는 Sentry에서 `environment: preview`로 분류되어
+  Discord 알림(`production`만 필터)에 안 섞임.
+
+> ⚠️ `next.config.mjs`의 `env` 매핑이 빠지면 클라이언트에서 `NEXT_PUBLIC_VERCEL_ENV`가
+> `undefined` → `NODE_ENV`로 fallback → Vercel 빌드에선 NODE_ENV가 항상 `production`이라
+> dev 서버 에러까지 `environment: production`으로 태깅되어 `#sentry-prod`에 섞이는
+> 버그가 발생한다.
 
 ### iOS 빌드 (Capacitor)
 
@@ -250,11 +257,11 @@ Next.js 페이지 RSC/loader에서 throw → 자동으로 `onRequestError`가 �
 | 채널           | Sentry environment | 대상 배포                  | 트리거                          |
 | -------------- | ------------------ | -------------------------- | ------------------------------- |
 | `#sentry-prod` | `production`       | `www.gotcha.it.com` (main) | 신규 이슈 / escalating / 재발생 |
-| `#sentry-dev`  | `vercel-preview`   | `dev.gotcha.it.com` (dev)  | 신규 이슈 / escalating          |
+| `#sentry-dev`  | `preview`          | `dev.gotcha.it.com` (dev)  | 신규 이슈 / escalating          |
 
-> **환경 작명 주의**: 코드(`sentry.*.config.ts`, `instrumentation-client.ts`)는 `process.env.VERCEL_ENV ?? NODE_ENV`로 environment를 잡지만, 실제 Sentry에 쌓인 값은 `vercel-preview` / `vercel-production` 등 prefix가 붙은 형태이다. 이는 **Vercel 대시보드 Environment Variables에서 `VERCEL_ENV` / `NEXT_PUBLIC_VERCEL_ENV`를 명시적으로 override**한 결과로 추정된다. 알림 필터는 코드 가정값이 아닌 **Sentry Issues에 실제로 찍힌 environment 태그 값**을 기준으로 설정해야 한다.
+> **환경 작명**: `next.config.mjs`의 `env` 매핑으로 Vercel이 주입하는 `VERCEL_ENV` 값(`production` / `preview` / `development`)이 그대로 `NEXT_PUBLIC_VERCEL_ENV`에 인라인되어 Sentry environment 태그로 박힌다. 알림 룰의 environment 필터도 동일한 값(`production`, `preview`)으로 설정한다.
 >
-> ⚠️ PR 자동 preview 배포가 활성화돼 있다면 같은 `vercel-preview` 환경으로 들어와 `#sentry-dev`에 섞일 수 있다. 노이즈가 심해지면 `dev-deploy.yml`에서 별도 env 주입(예: `NEXT_PUBLIC_VERCEL_ENV=dev` override)으로 분리 검토.
+> ⚠️ PR 자동 preview 배포가 활성화돼 있다면 같은 `preview` 환경으로 들어와 `#sentry-dev`에 섞일 수 있다. 노이즈가 심해지면 `dev-deploy.yml`에서 별도 env 주입(예: `NEXT_PUBLIC_VERCEL_ENV=dev` override)으로 분리 검토.
 
 ### 알림 규칙 (Sentry → Alerts → Issue Alert)
 
@@ -273,7 +280,7 @@ Next.js 페이지 RSC/loader에서 throw → 자동으로 `onRequestError`가 �
 #### 개발 (dev)
 
 - **Source**: project = `gotcha-web`
-- **Environment**: `vercel-preview`
+- **Environment**: `preview`
 - **WHEN** (any of):
   - `A new issue is created` ✓
   - `An issue escalates` ✓
