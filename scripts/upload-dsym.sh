@@ -16,12 +16,25 @@
 
 set -e
 
-# .env.local에서 Sentry 환경변수 로드 (이미 export됐다면 덮어쓰지 않음)
+# .env.local에서 Sentry 환경변수 로드
+# eval 대신 line-by-line parser 사용 — .env.local 값에 포함된 $(...), `...`, ;,
+# && 등이 명령으로 실행되는 인젝션 방지 (defense-in-depth)
 if [ -f ".env.local" ]; then
-  # shellcheck disable=SC1091
   set -a
-  # 주석/공백 제외 SENTRY_* 키만 로드 (.env.local 전체 source는 부작용 우려)
-  eval "$(grep -E '^SENTRY_(ORG|PROJECT|AUTH_TOKEN)=' .env.local || true)"
+  while IFS= read -r line || [ -n "$line" ]; do
+    # 주석/공백 라인 skip
+    case "$line" in
+      \#*|"") continue ;;
+    esac
+    # SENTRY_(ORG|PROJECT|AUTH_TOKEN)= 만 매치
+    case "$line" in
+      SENTRY_ORG=*|SENTRY_PROJECT=*|SENTRY_AUTH_TOKEN=*)
+        key=${line%%=*}
+        value=${line#*=}
+        export "$key=$value"
+        ;;
+    esac
+  done < .env.local
   set +a
 fi
 
