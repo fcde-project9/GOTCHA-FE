@@ -5,6 +5,13 @@ import { withSentryConfig } from "@sentry/nextjs";
 const isCapacitor = process.env.NEXT_PUBLIC_BUILD_TARGET === "capacitor";
 
 const nextConfig = {
+  // Vercel이 자동 주입하는 VERCEL_ENV(서버 전용)를 클라이언트 번들에 인라인.
+  // NEXT_PUBLIC_VERCEL_ENV는 Vercel이 자동 주입하지 않아 빈 값으로 들어와
+  // Sentry environment가 NODE_ENV("production")로 fallback되는 버그가 있었음.
+  env: {
+    NEXT_PUBLIC_VERCEL_ENV: process.env.VERCEL_ENV ?? "",
+  },
+
   // Capacitor 빌드 시 정적 내보내기
   ...(isCapacitor && {
     output: "export",

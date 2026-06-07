@@ -1,5 +1,7 @@
 "use client";
 
+import { ModalShell } from "@/components/common/ModalShell";
+
 interface WithdrawConfirmModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -10,10 +12,8 @@ interface WithdrawConfirmModalProps {
  * 회원탈퇴 최종 확인 모달 컴포넌트
  */
 export function WithdrawConfirmModal({ isOpen, onClose, onConfirm }: WithdrawConfirmModalProps) {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+    <ModalShell isOpen={isOpen} onClose={onClose}>
       <div className="bg-white rounded-[16px] w-[335px] px-4 py-5 flex flex-col gap-[22px]">
         {/* Title & Description */}
         <div className="flex flex-col gap-1">
@@ -44,6 +44,6 @@ export function WithdrawConfirmModal({ isOpen, onClose, onConfirm }: WithdrawCon
           </button>
         </div>
       </div>
-    </div>
+    </ModalShell>
   );
 }

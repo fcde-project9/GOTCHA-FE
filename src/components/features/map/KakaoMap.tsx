@@ -88,6 +88,7 @@ export default function KakaoMap({
   const mapListenersRef = useRef<Array<{ target: KakaoMap; type: string; handler: () => void }>>(
     []
   );
+  const suppressIdleRef = useRef(false);
   const [isLoading, setIsLoading] = useState(true);
   const [mapError, setMapError] = useState<string | null>(null);
 
@@ -177,8 +178,9 @@ export default function KakaoMap({
           const map = new window.kakao.maps.Map(mapContainer.current, options);
           mapInstance.current = map;
 
-          // 지도 이동 완료 시 bounds 변경 알림
+          // 지도 이동 완료 시 bounds 변경 알림 (프로그래밍적 이동 중에는 억제)
           const idleHandler = () => {
+            if (suppressIdleRef.current) return;
             notifyBoundsChange(map);
           };
           window.kakao.maps.event.addListener(map, "idle", idleHandler);
@@ -305,11 +307,21 @@ export default function KakaoMap({
     }
 
     try {
+      const map = mapInstance.current;
       const newCenter = new window.kakao.maps.LatLng(latitude, longitude);
-      // 레벨을 먼저 변경한 뒤 센터를 옮겨, idle 이벤트가 중간 레벨로 트리거되는 걸 줄임
-      mapInstance.current.setLevel(level);
-      mapInstance.current.setCenter(newCenter);
+
+      // setLevel + setCenter가 각각 idle 이벤트를 발생시키므로,
+      // 중간 idle을 억제하고 완료 후 한 번만 bounds 변경을 알림
+      suppressIdleRef.current = true;
+      map.setLevel(level);
+      map.setCenter(newCenter);
+
+      requestAnimationFrame(() => {
+        suppressIdleRef.current = false;
+        notifyBoundsChange(map);
+      });
     } catch (err) {
+      suppressIdleRef.current = false;
       setMapError(`지도 업데이트 실패: ${err}`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

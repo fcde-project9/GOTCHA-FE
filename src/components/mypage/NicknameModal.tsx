@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
+import { ModalShell } from "@/components/common/ModalShell";
 
 interface NicknameModalProps {
   isOpen: boolean;
@@ -21,8 +22,6 @@ interface NicknameModalProps {
 export function NicknameModal({ isOpen, currentNickname, onClose, onSave }: NicknameModalProps) {
   const [nickname, setNickname] = useState("");
   const [error, setError] = useState<string>("");
-
-  if (!isOpen) return null;
 
   const validateNickname = (value: string): string | null => {
     // 빈 값 체크
@@ -94,7 +93,7 @@ export function NicknameModal({ isOpen, currentNickname, onClose, onSave }: Nick
   const isButtonDisabled = nickname.trim().length < 2;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+    <ModalShell isOpen={isOpen} onClose={handleClose}>
       <div className="bg-white rounded-[16px] w-[335px] px-4 py-5 flex flex-col gap-[22px]">
         {/* Header */}
         <div className="flex flex-col gap-3">
@@ -175,6 +174,6 @@ export function NicknameModal({ isOpen, currentNickname, onClose, onSave }: Nick
           </button>
         </div>
       </div>
-    </div>
+    </ModalShell>
   );
 }

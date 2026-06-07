@@ -3,14 +3,15 @@
 import { useState, useRef, useEffect, use } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Heart, MessageCircle, RefreshCcw, CornerDownRight, Trash2 } from "lucide-react";
+import { Heart, MessageCircle, RefreshCcw, CornerDownRight, Trash2, ArrowLeft } from "lucide-react";
 import { useCreateComment } from "@/api/mutations/useCreateComment";
 import { useDeleteComment } from "@/api/mutations/useDeleteComment";
 import { useDeletePost } from "@/api/mutations/useDeletePost";
 import { useToggleCommentLike } from "@/api/mutations/useToggleCommentLike";
 import { useTogglePostLike } from "@/api/mutations/useTogglePostLike";
 import { usePostDetail } from "@/api/queries/usePostDetail";
-import { SimpleHeader, Spinner } from "@/components/common";
+import { ApiRequestError } from "@/api/types";
+import { BackHeader, Spinner } from "@/components/common";
 import { DEFAULT_IMAGES } from "@/constants";
 import { useToast } from "@/hooks";
 import type { PostComment, CommentReply } from "@/types/api";
@@ -236,7 +237,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ postId: s
 
   return (
     <main className="h-[100dvh] w-full max-w-[480px] mx-auto bg-white flex flex-col">
-      <SimpleHeader title={post?.typeName ?? "게시글"} />
+      <BackHeader title={post?.typeName ?? "게시글"} />
 
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
@@ -246,18 +247,35 @@ export default function PostDetailPage({ params }: { params: Promise<{ postId: s
         ) : error || !post ? (
           <div className="flex flex-col items-center justify-center gap-4 h-full px-5">
             <p className="text-center text-[16px] font-normal leading-[1.5] tracking-[-0.16px] text-grey-600">
-              {error instanceof Error ? error.message : "게시글을 불러올 수 없어요."}
+              {error instanceof ApiRequestError && error.status === 404
+                ? "삭제되었거나 존재하지 않는 게시글이에요."
+                : error instanceof Error
+                  ? error.message
+                  : "게시글을 불러올 수 없어요."}
             </p>
-            <button
-              type="button"
-              onClick={() => refetch()}
-              className="rounded-lg bg-grey-900 w-[174px] h-[44px] flex items-center justify-center gap-1"
-            >
-              <span className="text-[16px] text-white font-normal leading-[1.5] tracking-[-0.16px]">
-                다시 시도
-              </span>
-              <RefreshCcw size={16} className="stroke-white" strokeWidth={2} />
-            </button>
+            {error instanceof ApiRequestError && error.status === 404 ? (
+              <button
+                type="button"
+                onClick={() => router.back()}
+                className="rounded-lg bg-grey-900 w-[174px] h-[44px] flex items-center justify-center gap-1"
+              >
+                <ArrowLeft size={16} className="stroke-white" strokeWidth={2} />
+                <span className="text-[16px] text-white font-normal leading-[1.5] tracking-[-0.16px]">
+                  돌아가기
+                </span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => refetch()}
+                className="rounded-lg bg-grey-900 w-[174px] h-[44px] flex items-center justify-center gap-1"
+              >
+                <span className="text-[16px] text-white font-normal leading-[1.5] tracking-[-0.16px]">
+                  다시 시도
+                </span>
+                <RefreshCcw size={16} className="stroke-white" strokeWidth={2} />
+              </button>
+            )}
           </div>
         ) : (
           <>
@@ -266,7 +284,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ postId: s
               <div className="flex items-center gap-2">
                 <div className="relative w-9 h-9 rounded-full overflow-hidden shrink-0">
                   <Image
-                    src={DEFAULT_IMAGES.PROFILE}
+                    src={post.authorProfileImageUrl || DEFAULT_IMAGES.PROFILE}
                     alt={post.authorNickname}
                     fill
                     sizes="36px"

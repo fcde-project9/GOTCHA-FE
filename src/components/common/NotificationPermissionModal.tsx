@@ -6,6 +6,7 @@ import { trackNotificationPermission } from "@/utils/analytics";
 import { isNativeApp } from "@/utils/platform";
 import { checkNativePushPermission } from "@/utils/pushNotifications";
 import { Button } from "./Button";
+import { ModalShell } from "./ModalShell";
 
 interface NotificationPermissionModalProps {
   isOpen: boolean;
@@ -122,21 +123,15 @@ export function NotificationPermissionModal({
     }
   }, [onClose, onPermissionGranted]);
 
-  if (!isOpen) return null;
-
   const isDenied = permissionState === "denied";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* 배경 오버레이 */}
-      <div className="absolute inset-0 bg-black/50" aria-hidden="true" />
-
-      {/* 모달 컨텐츠 */}
+    <ModalShell isOpen={isOpen} backdropClassName="bg-black/50">
       <div
         role="dialog"
         aria-labelledby="notification-permission-title"
         aria-describedby="notification-permission-description"
-        className="relative z-10 mx-5 w-full max-w-[340px] rounded-2xl bg-white p-6"
+        className="mx-5 w-full max-w-[340px] rounded-2xl bg-white p-6"
       >
         {/* 아이콘 */}
         <div className="mb-4 flex justify-center">
@@ -199,6 +194,6 @@ export function NotificationPermissionModal({
           )}
         </div>
       </div>
-    </div>
+    </ModalShell>
   );
 }

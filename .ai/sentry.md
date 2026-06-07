@@ -60,9 +60,16 @@ Settings → Environment Variables에 위 4개 등록. 적용 환경 체크박�
 
 - `SENTRY_AUTH_TOKEN`은 **Sensitive로 표시**
 - 환경 구분: 코드에서 `process.env.NEXT_PUBLIC_VERCEL_ENV ?? process.env.NODE_ENV`로
-  `environment` 태깅. Vercel이 자동으로 `NEXT_PUBLIC_VERCEL_ENV`에
-  `production` / `preview` / `development` 중 하나 주입 → Preview 배포는
-  Sentry에서 `environment: preview`로 분류되어 Discord 알림(`production`만 필터)에 안 섞임.
+  `environment` 태깅. Vercel은 서버용 `VERCEL_ENV`만 자동 주입하고 `NEXT_PUBLIC_*`
+  접두사 변수는 자동 주입하지 않으므로, `next.config.mjs`의 `env` 블록에서
+  `NEXT_PUBLIC_VERCEL_ENV: process.env.VERCEL_ENV`로 매핑해 빌드타임에 클라이언트
+  번들에 인라인한다. → Preview 배포는 Sentry에서 `environment: preview`로 분류되어
+  Discord 알림(`production`만 필터)에 안 섞임.
+
+> ⚠️ `next.config.mjs`의 `env` 매핑이 빠지면 클라이언트에서 `NEXT_PUBLIC_VERCEL_ENV`가
+> `undefined` → `NODE_ENV`로 fallback → Vercel 빌드에선 NODE_ENV가 항상 `production`이라
+> dev 서버 에러까지 `environment: production`으로 태깅되어 `#sentry-prod`에 섞이는
+> 버그가 발생한다.
 
 ### iOS 빌드 (Capacitor)
 
@@ -112,6 +119,7 @@ prod 트레이싱 10%는 비용 통제용. 에러 발생 세션은 100% 리플�
 별도 코드 없이 자동으로 잡히는 것들:
 
 - React 컴포넌트 렌더 중 throw → `global-error.tsx`가 잡아서 자동 전송
+- `<ErrorBoundary>`로 잡힌 React 트리 에러 → `componentDidCatch`에서 자동 전송 (`componentStack` 컨텍스트 포함)
 - `window.onerror` / `unhandledrejection` → SDK 글로벌 핸들러
 - Next.js 서버 사이드 에러 → `instrumentation.ts`의 `onRequestError`
 - iOS 네이티브 크래시 (Capacitor 빌드만) → @sentry/capacitor가 자동
@@ -228,8 +236,8 @@ npm run dev
 # 5번 섹션 → "Error Boundary 테스트 보기" → "에러 발생시키기"
 ```
 
-> Note: `ErrorBoundary`로 잡힌 에러는 unhandled가 아니라 Sentry에 자동 전송되지 않을 수 있음.
-> 확실히 테스트하려면 브라우저 콘솔에서 `setTimeout(() => { throw new Error("client test"); }, 0);` 실행.
+> `ErrorBoundary` (`src/components/common/ErrorBoundary.tsx`)는 `componentDidCatch`에서 `Sentry.captureException`을 호출하므로 트리 안 에러도 자동 전송된다. fallback UI는 뜨고 Sentry에도 같이 들어감.
+> 글로벌 unhandled 경로(`window.onerror`)까지 확인하려면 브라우저 콘솔에서 `setTimeout(() => { throw new Error("client test"); }, 0);` 실행.
 
 ### 3. 서버 사이드 에러
 
@@ -246,24 +254,39 @@ Next.js 페이지 RSC/loader에서 throw → 자동으로 `onRequestError`가 �
 
 ### 알림 채널 구성
 
-| 채널           | 받는 환경       | 트리거                          |
-| -------------- | --------------- | ------------------------------- |
-| `#sentry-prod` | `production` 만 | 신규 이슈 / escalating / 재발생 |
+| 채널           | Sentry environment | 대상 배포                  | 트리거                          |
+| -------------- | ------------------ | -------------------------- | ------------------------------- |
+| `#sentry-prod` | `production`       | `www.gotcha.it.com` (main) | 신규 이슈 / escalating / 재발생 |
+| `#sentry-dev`  | `preview`          | `dev.gotcha.it.com` (dev)  | 신규 이슈 / escalating          |
 
-> dev/staging 환경은 **Discord 알림에서 제외**. 개발 중 발생하는 에러는 Sentry 대시보드에서만 확인하고, Discord 노이즈는 prod 이슈로만 한정.
+> **환경 작명**: `next.config.mjs`의 `env` 매핑으로 Vercel이 주입하는 `VERCEL_ENV` 값(`production` / `preview` / `development`)이 그대로 `NEXT_PUBLIC_VERCEL_ENV`에 인라인되어 Sentry environment 태그로 박힌다. 알림 룰의 environment 필터도 동일한 값(`production`, `preview`)으로 설정한다.
+>
+> ⚠️ PR 자동 preview 배포가 활성화돼 있다면 같은 `preview` 환경으로 들어와 `#sentry-dev`에 섞일 수 있다. 노이즈가 심해지면 `dev-deploy.yml`에서 별도 env 주입(예: `NEXT_PUBLIC_VERCEL_ENV=dev` override)으로 분리 검토.
 
 ### 알림 규칙 (Sentry → Alerts → Issue Alert)
 
-생성 시 핵심 옵션:
+#### 운영 (production)
 
 - **Source**: project = `gotcha-web`
-- **Filter Issues**: Environment = **`production` 만** 선택 (`All Environments`는 dev 노이즈까지 옴 → 금지)
+- **Environment**: `production`
 - **WHEN** (any of):
   - `A new issue is created` ✓ 필수
   - `An issue escalates` ✓ 필수 (잠잠하던 에러 폭증)
   - `A resolved issue becomes unresolved` ✓ 권장 (재발 추적)
   - `An issue is resolved` ✗ 비권장 (메시지 폭주)
-- **THEN**: `Send a Discord notification` → 서버/채널 선택
+- **THEN**: `Send a Discord notification` → `#sentry-prod`
+- **Throttling**: 30분
+
+#### 개발 (dev)
+
+- **Source**: project = `gotcha-web`
+- **Environment**: `preview`
+- **WHEN** (any of):
+  - `A new issue is created` ✓
+  - `An issue escalates` ✓
+  - `A resolved issue becomes unresolved` ✗ (dev에선 노이즈)
+- **THEN**: `Send a Discord notification` → `#sentry-dev`
+- **Rate Limit**: `최대 10건 / 60분` 권장 (dev 이슈 폭증 시 채널 도배 방지)
 
 ### 알림 메시지에서 받는 정보
 
