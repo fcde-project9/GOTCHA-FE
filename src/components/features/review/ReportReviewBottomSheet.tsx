@@ -118,7 +118,7 @@ export function ReportBottomSheet({
   const isSubmitDisabled = !selectedReason || (isOtherSelected && !detail.trim()) || isLoading;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 bg-white flex flex-col max-w-[480px] mx-auto h-safe-viewport">
+    <div className="fixed inset-x-0 bottom-0 z-50 bg-white flex flex-col max-w-[480px] mx-auto h-safe-viewport animate-slide-up">
       <div ref={scrollRef} className="flex-1 px-5 pt-5 overflow-y-auto">
         <h2 className="text-[20px] font-semibold leading-[1.4] tracking-[-0.2px] text-grey-900">
           {TARGET_TITLE[targetType]} <span className="text-main">신고하기</span>

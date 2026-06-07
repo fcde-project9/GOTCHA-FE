@@ -142,8 +142,9 @@ const config: Config = {
         },
       },
       animation: {
-        "slide-up": "slide-up 0.45s ease-out",
-        "slide-down": "slide-down 0.45s ease-in forwards",
+        // 바텀시트 표준 모션 — iOS Sheet / Vaul 호환 cubic-bezier
+        "slide-up": "slide-up 0.4s cubic-bezier(0.32, 0.72, 0, 1)",
+        "slide-down": "slide-down 0.4s cubic-bezier(0.32, 0.72, 0, 1) forwards",
         "slide-down-header": "slide-down-header 0.4s ease-out forwards",
       },
       borderRadius: {

@@ -219,7 +219,7 @@ export default function ShopPreviewBottomSheet({
   const DEFAULT_HEIGHT = 410;
   const MINIMIZED_HEIGHT = 92; // grabber(36) + 업체명 행(40) + 하단 여백(16)
   const LOCATION_HINT_HEIGHT = 36;
-  const TRANSITION_MS = 550;
+  const TRANSITION_MS = 400;
   const [sheetHeight, setSheetHeight] = useState(DEFAULT_HEIGHT);
   const [isDragging, setIsDragging] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
