@@ -19,7 +19,7 @@ import { ReactNode } from "react";
 export default function Template({ children }: { children: ReactNode }) {
   return (
     <div className="overflow-x-hidden">
-      <div className="animate-slide-in-right">{children}</div>
+      <div className="animate-slide-in-right motion-reduce:animate-none">{children}</div>
     </div>
   );
 }

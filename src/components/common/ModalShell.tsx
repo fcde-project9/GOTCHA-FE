@@ -28,21 +28,34 @@ export function ModalShell({
 }: ModalShellProps) {
   const [isClosing, setIsClosing] = useState(false);
   const wasOpen = useRef(isOpen);
+  const exitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       wasOpen.current = true;
+      // 빠른 reopen 시 stuck된 closing 상태/타이머 해제
+      if (exitTimerRef.current) {
+        clearTimeout(exitTimerRef.current);
+        exitTimerRef.current = null;
+      }
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsClosing(false);
       return;
     }
     if (!wasOpen.current) return;
     // 외부 prop 변화(isOpen → false)에 동기화 — exit 애니메이션 트리거
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsClosing(true);
     wasOpen.current = false;
-    const timer = setTimeout(() => {
+    exitTimerRef.current = setTimeout(() => {
       setIsClosing(false);
+      exitTimerRef.current = null;
     }, EXIT_DURATION_MS);
-    return () => clearTimeout(timer);
+    return () => {
+      if (exitTimerRef.current) {
+        clearTimeout(exitTimerRef.current);
+        exitTimerRef.current = null;
+      }
+    };
   }, [isOpen]);
 
   if (!isOpen && !isClosing) return null;

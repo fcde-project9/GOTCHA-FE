@@ -191,7 +191,10 @@ export function ImageViewerModal({
 
       {/* 닫기 버튼 */}
       <button
-        onClick={handleClose}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleClose();
+        }}
         className="mt-4 flex items-center justify-center w-11 h-11 rounded-full bg-grey-500"
         aria-label="닫기"
       >
