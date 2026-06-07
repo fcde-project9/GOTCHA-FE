@@ -1,5 +1,7 @@
 "use client";
 
+import { ModalShell } from "@/components/common/ModalShell";
+
 interface ReportSuccessModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -10,10 +12,8 @@ interface ReportSuccessModalProps {
  * 피그마: 차단/신고/계정 일시중지 및 정지 > 리뷰 신고 정상처리
  */
 export function ReportSuccessModal({ isOpen, onClose }: ReportSuccessModalProps) {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+    <ModalShell isOpen={isOpen} onClose={onClose}>
       <div className="bg-white rounded-[16px] w-[335px] px-4 py-5 flex flex-col gap-[22px]">
         <div className="flex flex-col gap-3 text-center">
           <h2 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900">
@@ -38,6 +38,6 @@ export function ReportSuccessModal({ isOpen, onClose }: ReportSuccessModalProps)
           확인
         </button>
       </div>
-    </div>
+    </ModalShell>
   );
 }

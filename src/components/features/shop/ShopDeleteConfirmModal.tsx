@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { ModalShell } from "@/components/common/ModalShell";
 
 interface ShopDeleteConfirmModalProps {
   isOpen: boolean;
@@ -42,10 +43,8 @@ export function ShopDeleteConfirmModal({
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+    <ModalShell isOpen={isOpen} onClose={onClose}>
       <div
         role="dialog"
         aria-labelledby="shop-delete-modal-title"
@@ -84,6 +83,6 @@ export function ShopDeleteConfirmModal({
           </button>
         </div>
       </div>
-    </div>
+    </ModalShell>
   );
 }

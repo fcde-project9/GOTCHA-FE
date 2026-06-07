@@ -19,7 +19,7 @@ export interface ToastProps {
   action?: ToastAction;
 }
 
-const ANIMATION_MS = 700;
+const ANIMATION_MS = 400;
 
 const ICON_MAP: Record<ToastVariant, string> = {
   success: "/images/icons/toast-check.svg",
@@ -57,7 +57,7 @@ export function Toast({
 
   return (
     <div
-      className={`fixed top-[calc(env(safe-area-inset-top))] left-1/2 z-50 -translate-x-1/2 transition-all duration-700 ease-out ${
+      className={`fixed top-[calc(env(safe-area-inset-top))] left-1/2 z-50 -translate-x-1/2 transition-all duration-[400ms] ease-out ${
         show ? "translate-y-0 opacity-100" : "-translate-y-[200%] opacity-0"
       }`}
     >

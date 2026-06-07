@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { MapPin, X } from "lucide-react";
 import { isNativeApp } from "@/utils/platform";
 import { Button } from "./Button";
+import { ModalShell } from "./ModalShell";
 
 interface LocationPermissionModalProps {
   isOpen: boolean;
@@ -78,19 +79,18 @@ export function LocationPermissionModal({ isOpen, onClose }: LocationPermissionM
     setSettingsGuide(guide);
   }, []);
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* 배경 오버레이 */}
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden="true" />
-
-      {/* 모달 컨텐츠 */}
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      backdropClassName="bg-black/50"
+      closeOnBackdropClick
+    >
       <div
         role="dialog"
         aria-labelledby="location-permission-title"
         aria-describedby="location-permission-description"
-        className="relative z-10 mx-5 w-full max-w-[340px] rounded-2xl bg-white p-6"
+        className="mx-5 w-full max-w-[340px] rounded-2xl bg-white p-6"
       >
         {/* 닫기 버튼 */}
         <button
@@ -143,6 +143,6 @@ export function LocationPermissionModal({ isOpen, onClose }: LocationPermissionM
           </Button>
         </div>
       </div>
-    </div>
+    </ModalShell>
   );
 }

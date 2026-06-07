@@ -1,5 +1,7 @@
 "use client";
 
+import { ModalShell } from "@/components/common/ModalShell";
+
 interface ReviewExitConfirmModalProps {
   isOpen: boolean;
   onCancel: () => void;
@@ -14,10 +16,8 @@ export function ReviewExitConfirmModal({
   onCancel,
   onConfirm,
 }: ReviewExitConfirmModalProps) {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70">
+    <ModalShell isOpen={isOpen} onClose={onCancel} zIndexClass="z-[60]">
       <div className="bg-white rounded-[16px] w-[335px] px-4 py-5 flex flex-col gap-[24px]">
         {/* Title */}
         <div className="text-[18px] font-semibold leading-[1.5] tracking-[-0.18px] text-grey-900 text-center whitespace-pre-line">
@@ -40,6 +40,6 @@ export function ReviewExitConfirmModal({
           </button>
         </div>
       </div>
-    </div>
+    </ModalShell>
   );
 }
