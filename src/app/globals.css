@@ -118,20 +118,6 @@
   }
 }
 
-/* 바텀시트 슬라이드업 애니메이션 */
-@keyframes slide-up {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-.animate-slide-up {
-  animation: slide-up 0.45s ease-out;
-}
-
 /* 공통 스피너 (바운싱 볼) */
 .gotcha-loader {
   width: 60px;

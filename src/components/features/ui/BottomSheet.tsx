@@ -246,7 +246,7 @@ export default function BottomSheet({
         maxHeight: isExpanding
           ? undefined
           : `calc(100% - env(safe-area-inset-top, 0px) - ${TOP_AREA_HEIGHT}px)`,
-        transition: isDragging ? "none" : "height 0.3s ease-out",
+        transition: isDragging ? "none" : "height 0.4s cubic-bezier(0.32, 0.72, 0, 1)",
       }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}

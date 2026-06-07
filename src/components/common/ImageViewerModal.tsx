@@ -34,11 +34,19 @@ export function ImageViewerModal({
   // 이미지 배열 결정 (단일 이미지도 배열로 변환)
   const imageList = images ?? (imageUrl ? [imageUrl] : []);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [isClosing, setIsClosing] = useState(false);
 
   // 스와이프 관련 상태
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // 닫기 — exit 애니메이션 후 부모 콜백 호출 (200ms = animate-modal-content-out duration)
+  const handleClose = useCallback(() => {
+    if (isClosing) return;
+    setIsClosing(true);
+    setTimeout(onClose, 200);
+  }, [isClosing, onClose]);
 
   // initialIndex가 변경되면 currentIndex 업데이트
   useEffect(() => {
@@ -63,13 +71,13 @@ export function ImageViewerModal({
       } else if (e.key === "ArrowRight") {
         goToNext();
       } else if (e.key === "Escape") {
-        onClose();
+        handleClose();
       }
     };
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [goToPrev, goToNext, onClose]);
+  }, [goToPrev, goToNext, handleClose]);
 
   // 터치 시작
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -108,11 +116,18 @@ export function ImageViewerModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/70"
-      onClick={onClose}
+      className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/70 ${
+        isClosing ? "animate-modal-backdrop-out" : "animate-modal-backdrop-in"
+      }`}
+      onClick={handleClose}
     >
       {/* 이미지 + 버튼 컨테이너 */}
-      <div className="flex items-center gap-[5px]" onClick={(e) => e.stopPropagation()}>
+      <div
+        className={`flex items-center gap-[5px] ${
+          isClosing ? "animate-modal-content-out" : "animate-modal-content-in"
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* 이전 버튼 */}
         {isMultiple && !hideArrows && (
           <button
@@ -176,7 +191,10 @@ export function ImageViewerModal({
 
       {/* 닫기 버튼 */}
       <button
-        onClick={onClose}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleClose();
+        }}
         className="mt-4 flex items-center justify-center w-11 h-11 rounded-full bg-grey-500"
         aria-label="닫기"
       >

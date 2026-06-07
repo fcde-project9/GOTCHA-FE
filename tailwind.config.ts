@@ -140,11 +140,41 @@ const config: Config = {
           from: { transform: "translateY(-100%)", opacity: "0" },
           to: { transform: "translateY(0)", opacity: "1" },
         },
+        // 모달 콘텐츠 — iOS Alert 표준 (scale + fade)
+        "modal-content-in": {
+          from: { transform: "scale(0.95)", opacity: "0" },
+          to: { transform: "scale(1)", opacity: "1" },
+        },
+        "modal-content-out": {
+          from: { transform: "scale(1)", opacity: "1" },
+          to: { transform: "scale(0.95)", opacity: "0" },
+        },
+        "modal-backdrop-in": {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
+        "modal-backdrop-out": {
+          from: { opacity: "1" },
+          to: { opacity: "0" },
+        },
+        // 페이지 전환 — iOS push 표준 (오른쪽에서 슬라이드 진입)
+        "slide-in-right": {
+          from: { transform: "translateX(100%)" },
+          to: { transform: "translateX(0)" },
+        },
       },
       animation: {
-        "slide-up": "slide-up 0.45s ease-out",
-        "slide-down": "slide-down 0.45s ease-in forwards",
+        // 바텀시트 표준 모션 — iOS Sheet / Vaul 호환 cubic-bezier
+        "slide-up": "slide-up 0.4s cubic-bezier(0.32, 0.72, 0, 1)",
+        "slide-down": "slide-down 0.4s cubic-bezier(0.32, 0.72, 0, 1) forwards",
         "slide-down-header": "slide-down-header 0.4s ease-out forwards",
+        // 모달 표준 모션 — iOS Alert 호환
+        "modal-content-in": "modal-content-in 0.25s cubic-bezier(0.32, 0.72, 0, 1)",
+        "modal-content-out": "modal-content-out 0.2s cubic-bezier(0.32, 0.72, 0, 1) forwards",
+        "modal-backdrop-in": "modal-backdrop-in 0.2s ease-out",
+        "modal-backdrop-out": "modal-backdrop-out 0.2s ease-in forwards",
+        // 페이지 전환 — iOS push 표준
+        "slide-in-right": "slide-in-right 0.4s cubic-bezier(0.32, 0.72, 0, 1)",
       },
       borderRadius: {
         lg: "var(--radius)",

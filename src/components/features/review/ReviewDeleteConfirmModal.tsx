@@ -1,5 +1,7 @@
 "use client";
 
+import { ModalShell } from "@/components/common/ModalShell";
+
 interface ReviewDeleteConfirmModalProps {
   isOpen: boolean;
   isLoading?: boolean;
@@ -16,10 +18,8 @@ export function ReviewDeleteConfirmModal({
   onClose,
   onConfirm,
 }: ReviewDeleteConfirmModalProps) {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+    <ModalShell isOpen={isOpen} onClose={onClose}>
       <div className="bg-white rounded-[16px] w-[335px] px-4 py-5 flex flex-col gap-6">
         {/* Title & Description */}
         <div className="flex flex-col gap-3">
@@ -49,6 +49,6 @@ export function ReviewDeleteConfirmModal({
           </button>
         </div>
       </div>
-    </div>
+    </ModalShell>
   );
 }
